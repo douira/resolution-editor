@@ -1,6 +1,6 @@
 {
   "name": "resolution-editor",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "node ./bin/www"
@@ -13,5 +13,26 @@
     "morgan": "~1.8.1",
     "pug": "~2.0.0-beta11",
     "serve-favicon": "~2.4.2"
-  }
+  },
+  "description": "guides the creation of a correctly formatted resolution document",
+  "main": "app.js",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/douira/resolution-editor.git"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "resolution",
+    "munol",
+    "editor",
+    "latex"
+  ],
+  "author": "douira",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/douira/resolution-editor/issues"
+  },
+  "homepage": "https://github.com/douira/resolution-editor#readme"
 }
