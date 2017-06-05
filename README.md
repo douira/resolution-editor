@@ -8,3 +8,5 @@
  drop me (douira) a line if you are part of/affiliated with MUNOL or otherwise think you should have the right to directly contribute
  
  run with `DEBUG=myapp:* npm start` or `set DEBUG=myapp:* & npm start` when in development depending on your OS
+ 
+ install after cloning the repo with `npm install`
