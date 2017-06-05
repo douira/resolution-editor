@@ -1,7 +1,33 @@
 doctype html
-html
+html(lang="en")
   head
-    title= title
-    link(rel='stylesheet', href='/stylesheets/style.css')
-  body
-    block content
+    //-charset setup for exotic chars
+    meta(charset="utf-8")
+
+    //-setup for bootstrap responsive design
+    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+
+    title Resolution Editor
+
+    //-custom and bootsrap style sheets
+    link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous")
+    link(rel="stylesheet" href="/stylesheets/style.css")
+  body.text-center
+    //-title of page
+    header
+      h1.text-muted.mb-3 Resolution Editor
+
+    //-specific page contents
+    main
+      block content
+    footer
+      //-footer credit text
+      small.text-muted.pt-1
+        br
+        | on&nbsp
+        a(href="https://github.com/douira/resolution-editor") GitHub
+        |  |
+        a(href="https://github.com/douira/resolution-editor/graphs/contributors") Contributors
+
+    //-specific scripts
+    block scripts
