@@ -11,29 +11,45 @@ html(lang="en")
 
     //-custom and materialize style sheets
     link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
-    link(href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection")
-    link(href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection")
+    //-link(href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700" rel="stylesheet")
+    link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/css/materialize.min.css")
+    link(href="css/style.css" type="text/css" rel="stylesheet")
   body.text-center
-    //-title of page
-    header
-      h1.text-muted.mb-3 Resolution Editor
+    //-navigation and title of page
+    nav
+      h1 Resolution Editor
 
     //-specific page contents
-    main
+    main.container
       block content
+
+    //-general footer
     footer
-      //-footer credit text
-      small.text-muted.pt-1
-        br
-        | on&nbsp
-        a(href="https://github.com/douira/resolution-editor") GitHub
-        |  |&nbsp
-        a(href="https://github.com/douira/resolution-editor/graphs/contributors") Contributors
+      .page-footer.amber
+        .container
+          .row
+            .col.l6.s12
+              h5.white-text Created originally for MUNOL
+              p.grey-text.text-lighten-4 Lorem ipsum dolor sit amet...
+            .col.l6.s12
+              h5.white-text Contact
+              ul
+                li: a.white-text(href="https://github.com/douira/resolution-editor") Repository
+                li: a.white-text(href="https://github.com/douira/resolution-editor/issues/new") File a Bug
+                li: a.white-text(href="https://github.com/douira/resolution-editor/pulls") Contribute
+                li: a.white-text(href="http://munol.org") MUNOL
+                li: a.white-text(href="http://app.munol.org") MUNOL App
+        .footer-copyright
+          .container Copyright © 2017 the
+            a.amber-text.text-lighten-3(href="https://github.com/douira/resolution-editor/graphs/contributors")  Contributors
+            |  on
+            a.amber-text.text-lighten-3(href="https://github.com/douira/resolution-editor")  Github
 
     //-general scripts
     script(src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous")
-    //use for when materialize is ok with jq3: script(src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous")
-    script(src="js/init.js")
+    //-use for when materialize is ok with jq3: script(src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous")
     script(src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/js/materialize.min.js")
+    script(src="js/mainInit.js")
+
     //-specific scripts
     block scripts
