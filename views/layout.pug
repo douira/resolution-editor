@@ -4,14 +4,15 @@ html(lang="en")
     //-charset setup for exotic chars
     meta(charset="utf-8")
 
-    //-setup for bootstrap responsive design
-    meta(name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no")
+    //-setup for materialize
+    meta(name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0")
 
     title Resolution Editor
 
-    //-custom and bootsrap style sheets
-    link(rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous")
-    link(rel="stylesheet" href="/stylesheets/style.css")
+    //-custom and materialize style sheets
+    link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
+    link(href="css/materialize.css" type="text/css" rel="stylesheet" media="screen,projection")
+    link(href="css/style.css" type="text/css" rel="stylesheet" media="screen,projection")
   body.text-center
     //-title of page
     header
@@ -26,8 +27,13 @@ html(lang="en")
         br
         | on&nbsp
         a(href="https://github.com/douira/resolution-editor") GitHub
-        |  |
+        |  |&nbsp
         a(href="https://github.com/douira/resolution-editor/graphs/contributors") Contributors
 
+    //-general scripts
+    script(src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous")
+    //use for when materialize is ok with jq3: script(src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous")
+    script(src="js/init.js")
+    script(src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/js/materialize.min.js")
     //-specific scripts
     block scripts
