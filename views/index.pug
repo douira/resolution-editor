@@ -4,7 +4,7 @@ block styles
   link(href="css/indexStyle.css" type="text/css" rel="stylesheet")
 
 block content
-  .section: .container
+  .container
     br
     br
     h1.header.center(class=sectext) Resolution Editor
@@ -12,7 +12,7 @@ block content
       em  simple
       |  way of creating and editing resolutions without having to have to deal with formatting.
     br
-    .center: a.btn-large.waves-effect.waves-light(href="#main-content" class=sec) Start Writing
+    .center: a.btn-large.waves-effect.waves-light(href="#editor-main" class=sec) Start Writing
     br
     br
     .row
@@ -35,19 +35,52 @@ block content
         "Easy to Use",
         "The interface provides hints and is usable on any device. You can generate a formatted document, add a clause or reorder with the push of a button. We'll do all the heavy lifting in the background and you just have to worry about what you want to say.")
 
-  .section: .container
-    mixin button(text, icon, iconSide, classes)
-      a.waves-effect.waves-light.btn(class=classes)
+  .section#editor-main: .container
+    mixin meta-button(text, icon, iconSide)
+      a.waves-effect.waves-light.btn.right.white-text(class=pri)
         +icon(icon, iconSide)
         =text
-    .right-align
-      +button("load", "input", "left")
-      |
-      +button("save", "description", "left")
-      |
-      +button("render pdf", "launch", "left")
-
-
+    #meta-buttons
+      +meta-button("load", "input", "left")
+      +meta-button("save", "description", "left")
+      +meta-button("view pdf", "launch", "left")
+    h3 Editor
+    //-
+      mixin meta-button(text, icon, iconSide)
+        .col.m4.s12
+          a.waves-effect.waves-light.btn.white-text(class=pri)
+            +icon(icon, iconSide)
+            =text
+      h3#editor-title Editor
+      .row#meta-buttons.center-align
+        +meta-button("load", "input", "left")
+        +meta-button("save", "description", "left")
+        +meta-button("view pdf", "launch", "left")
+    .row
+      //-.lighten-5(class=pri)
+      form.col.s12.z-depth-2#meta_data
+        .right.btn-floating.btn-large.waves-effect.waves-light.red.box-padding.reset-button(for="meta_data")
+          +icon("replay")
+        h5 General Data
+        .input-field
+          input#author_name(type="text")
+          label(for="author_name") Document Author
+        .divider
+        .row
+          .col.xl4.m6.s12
+            .input-field
+              input#forum_name(type="text")
+              label(for="forum_name") Forum
+          .col.xl4.m6.s12
+            .input-field
+              input#question_of(type="text")
+              label(for="question_of") Question of
+          .col.xl4.s12
+            .input-field
+              input#main_spon(type="text")
+              label(for="main_spon") Main Sponsor
+          .col.s12
+            .chips#co_spon
 
   //-use http://materializecss.com/chips.html for sponsors
   //-use http://materializecss.com/forms.html autocomplete for phrases
