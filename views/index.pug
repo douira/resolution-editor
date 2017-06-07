@@ -36,7 +36,19 @@ block content
         "The interface provides hints and is usable on any device. You can generate a formatted document, add a clause or reorder with the push of a button. We'll do all the heavy lifting in the background and you just have to worry about what you want to say.")
 
   .section: .container
-    | editor goes here
+    mixin button(text, icon, iconSide, classes)
+      a.waves-effect.waves-light.btn(class=classes)
+        +icon(icon, iconSide)
+        =text
+    .right-align
+      +button("load", "input", "left")
+      |
+      +button("save", "description", "left")
+      |
+      +button("render pdf", "launch", "left")
+
+
+
   //-use http://materializecss.com/chips.html for sponsors
   //-use http://materializecss.com/forms.html autocomplete for phrases
 
