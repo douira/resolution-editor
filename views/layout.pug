@@ -1,3 +1,15 @@
+//-setup primary and secondary colors and their text variants
+-
+  const pri = "teal";
+  const sec = "amber";
+  const textSuffix = "-text";
+  const pritext = pri + textSuffix;
+  const sectext = sec + textSuffix;
+
+//-icon maker
+mixin icon(name, ...classes)
+  i.material-icons(class=classes)= name
+
 doctype html
 html(lang="en")
   head
@@ -15,32 +27,63 @@ html(lang="en")
     link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.2/css/materialize.min.css")
     link(href="css/style.css" type="text/css" rel="stylesheet")
   body.text-center
-    //-navigation and title of page
-    nav
-      h1 Resolution Editor
+    //-display error here if there is one
+    block error
+
+    //-navigation, prepend with .navbar-fixed: for sticky navbar
+    nav.lighten-2(class=pri role="navigation"): .nav-wrapper
+      .container
+        -
+          const navElements = [
+            ["Editor", "/"],
+            ["About", "about"],
+            ["Help", "help"],
+            ["FooBar", "foobar"]
+          ];
+        mixin navList(arr, useWave)
+          each element in navElements
+            li: a(class=useWave ? ["waves-effect", "waves-dark"] : [] href=element[1])=element[0]
+        ul.right.hide-on-small-and-down
+          +navList(navElements, false)
+        ul.side-nav#nav-mobile
+          li(class=pritext)
+            h4.center-align Navigation
+            .divider
+          +navList(navElements, true)
+      a.button-collapse(href="#" data-activates="nav-mobile"): +icon("menu")
 
     //-specific page contents
-    main.container
+    main
       block content
 
     //-general footer
     footer
-      .page-footer.amber
+      .page-footer(class=sec)
         .container
           .row
             .col.l6.s12
               h5.white-text Created originally for MUNOL
               p.grey-text.text-lighten-4 Lorem ipsum dolor sit amet...
-            .col.l6.s12
+            .col.l3.s6
               h5.white-text Contact
               ul
                 li: a.white-text(href="https://github.com/douira/resolution-editor") Repository
                 li: a.white-text(href="https://github.com/douira/resolution-editor/issues/new") File a Bug
                 li: a.white-text(href="https://github.com/douira/resolution-editor/pulls") Contribute
                 li: a.white-text(href="http://munol.org") MUNOL
-                li: a.white-text(href="http://app.munol.org") MUNOL App
+                li: a.white-text(href="http://app.munol.org") MUNOL-App
+            .col.l3.s6
+              h5.white-text Stack
+              ul
+                li: a.white-text(href="https://material.io") Material Design
+                li: a.white-text(href="http://materializecss.com") Materialize
+                li: a.white-text(href="https://jquery.com") jQuery
+                li: a.white-text(href="https://pugjs.org") Pug
+                li: a.white-text(href="https://nodejs.org/en") node.js
+                li: a.white-text(href="https://github.com") GitHub
+
         .footer-copyright
-          .container Copyright © 2017 the
+          .container Copyright © 2017 by the
             a.amber-text.text-lighten-3(href="https://github.com/douira/resolution-editor/graphs/contributors")  Contributors
             |  on
             a.amber-text.text-lighten-3(href="https://github.com/douira/resolution-editor")  Github
