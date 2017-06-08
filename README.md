@@ -9,4 +9,9 @@
  
  run with `DEBUG=myapp:* npm start` or `set DEBUG=myapp:* & npm start` when in development depending on your OS
  
- install after cloning the repo with `npm install`
+ install after cloning the repo with `npm install` (I can try to help you to set this up if you run into problems unsolvable with google)
+ 
+ Here are some screenshots if you don't want to/can't get the repo to run on your machine:
+ ![Images of the Website]
+ (http://imgur.com/KOmsvHK)
+ (http://imgur.com/VJAPs74)
