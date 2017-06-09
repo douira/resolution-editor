@@ -63,21 +63,21 @@ block content
           +icon("replay")
         h5 General Data
         .input-field
-          input#author_name(type="text")
+          input.simple-input#author_name(type="text")
           label(for="author_name") Document Author
         .divider
         .row
           .col.xl4.m6.s12
             .input-field
-              input#forum_name(type="text")
+              input.simple-input#forum_name(type="text")
               label(for="forum_name") Forum
           .col.xl4.m6.s12
             .input-field
-              input#question_of(type="text")
+              input.simple-input#question_of(type="text")
               label(for="question_of") Question of
           .col.xl4.s12
             .input-field
-              input#main_spon(type="text")
+              input.autocomplete#main_spon(type="text")
               label(for="main_spon") Main Sponsor
           .col.s12
             .chips#co_spon

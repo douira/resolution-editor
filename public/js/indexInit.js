@@ -5,7 +5,7 @@ var listOfSponsors = {
   Google: "http://placehold.it/250x250"
 };
 
-//data used to inititalize autocompletes and their other options
+//data used to inititalize input fields/thingies and their other options
 var initData = {
   "#co_spon": {
     autocompleteOptions: {
@@ -13,27 +13,50 @@ var initData = {
       limit: 20,
       minLength: 1
     },
-    secondaryPlaceholder: "Co-Sponors"
+    secondaryPlaceholder: "Co-Sponors",
+    placeholder: "Co-Sponors"
   },
   "#main_spon": {
     data: listOfSponsors,
     limit: 20,
     onAutocomplete: function(val) { /* callback */ },
     minLength: 1
-  }
+  },
+  ".simple-input": {} //normal inout fields need to init data but need to be in this object in order to have all their events registered
 };
+
+//resets sibling labels
+function resetSiblingLabels(field) {
+  //get the siblings of the field and reset them by removing the active class
+  $(field).siblings("label").removeClass("active");
+}
 
 //types of initialization to do
 var eventPrefix = "fieldTypes_";
 var fieldTypes = [
   {
-    typeSelector: "input",
+    typeSelector: ".autocomplete",
     events: {
-      init: function(element, data) {
-        element.autocomplete(data);
+      init: function(event) {
+        //first convert plain html element to jQuery element because the materialize functions only work on that
+        $(this).autocomplete(event.data);
       },
       reset: function(element, data) {
-        element.val("");
+        //reset by setting value to empty string
+        $(this).val("");
+
+        //also reset label for this field
+        resetSiblingLabels(this);
+      }
+    }
+  },
+  {
+    typeSelector: "input",
+    events: {
+      init: function(element, data) { },
+      reset: function(element, data) {
+        $(this).val("");
+        resetSiblingLabels(this);
       }
     }
   },
@@ -41,11 +64,12 @@ var fieldTypes = [
     typeSelector: ".chips",
     events: {
       init: function(element, data) {
-        element.material_chip(data);
+        $(this).material_chip(event.data);
       },
       reset: function(element, data) {
-        element.empty();
-        element.trigger(eventPrefix + "init", [data]);
+        console.log("fired chips reset");
+        $(this).empty();
+        $(this).trigger(eventPrefix + "init");
       }
     }
   }
@@ -72,11 +96,8 @@ $(document).ready(function(){
       var typeEvents = fieldTypes[typeIndex].events;
       for (var eventName in typeEvents) {
         console.log(eventName, typeIndex);
-        //pass function that has the element and data in it's closure
-        element.bind(eventPrefix + eventName, function() {
-          console.log("fired", eventName);
-          typeEvents[eventName](element, elementInitData);
-        });
+        //pass function that has the element and data bound
+        element.on(eventPrefix + eventName, elementInitData,typeEvents[eventName]);
       }
     }
   }
