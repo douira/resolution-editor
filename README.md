@@ -16,3 +16,6 @@
  ![Images of the Website](http://imgur.com/KOmsvHK.png)
  
  ![Images of the Website](http://imgur.com/VJAPs74.png)
+ 
+ Hand drawn sketch of editor:
+ ![hand drawn sketch of editor](http://imgur.com/XXdc24Q.png)
