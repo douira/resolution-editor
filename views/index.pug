@@ -47,15 +47,17 @@ block content
     h3 Editor
     mixin content-card(cardId)
       .row
-        .col.s12.z-depth-2(id=cardId)
+        .col.s12.z-depth-2(id=cardId class!=attributes.class)
           block
     mixin floating-sm-btn(color, type, icon)
       a.btn-floating(class=color + " " + type): +icon(icon)
     mixin clause(clauseType)
       div(class=clauseType)
+        .divider
+        h6.grey-text.text-darken-2 Clause #4
         .absolute-fab-wrapper
           .fixed-action-btn.horizontal.click-to-toggle.absolute-fab
-            a.btn-floating.btn-large.teal
+            a.btn-floating.btn-large.light-blue
               +icon("mode_edit")
             ul
               li: +floating-sm-btn("blue", "fab-move-up", "keyboard_arrow_up")
