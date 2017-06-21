@@ -1,8 +1,18 @@
 //all countries/orgs that can be sponsors or co-sponsors
 var listOfSponsors = {
-  Apple: null,
-  Microsoft: null,
-  Google: "http://placehold.it/250x250"
+  "Placeholder Coutry": "http://placehold.it/250x250",
+  "Italy": null,
+  "China": null,
+  "United States of America": null,
+  "Germany": null
+};
+
+//all phrases possible in the two different clause types
+var listOfPreambPhrases = {
+  "Notices": null,
+  "Approves of": null,
+  "BLAHBLAHBLAH": null,
+  "Calls out with joy": null
 };
 
 //data used to inititalize input fields/thingies and their other options
@@ -22,7 +32,13 @@ var initData = {
     onAutocomplete: function(val) { /* callback */ },
     minLength: 1
   },
-  ".simple-input": {} //normal inout fields need to init data but need to be in this object in order to have all their events registered
+  ".preamb_phrase_input": {
+    data: listOfPreambPhrases,
+    limit: 20,
+    onAutocomplete: function(val) { /* callback */ },
+    minLength: 1
+  },
+  ".simple_input": {} //normal inout fields need to init data but need to be in this object in order to have all their events registered
 };
 
 //resets sibling labels

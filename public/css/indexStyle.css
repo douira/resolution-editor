@@ -6,6 +6,15 @@
   margin-top: 20px;
 }
 
-.box-padding {
+.REM_box-padding {
   margin-top: 0.75rem;
+}
+
+.absolute-fab-wrapper {
+  float: right;
+  position: relative;
+}
+
+.absolute-fab {
+  position: absolute;
 }

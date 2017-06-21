@@ -36,44 +36,58 @@ block content
         "The interface provides hints and is usable on any device. You can generate a formatted document, add a clause or reorder with the push of a button. We'll do all the heavy lifting in the background and you just have to worry about what you want to say.")
 
   .section#editor-main: .container
-    mixin meta-button(text, icon, iconSide)
+    mixin meta-button(text, icon)
       a.waves-effect.waves-light.btn.right.white-text(class=pri)
-        +icon(icon, iconSide)
+        +icon(icon, "left")
         =text
     #meta-buttons
-      +meta-button("load", "input", "left")
-      +meta-button("save", "description", "left")
-      +meta-button("view pdf", "launch", "left")
+      +meta-button("load", "input")
+      +meta-button("save", "description")
+      +meta-button("view pdf", "launch")
     h3 Editor
-    //-
-      mixin meta-button(text, icon, iconSide)
-        .col.m4.s12
-          a.waves-effect.waves-light.btn.white-text(class=pri)
-            +icon(icon, iconSide)
-            =text
-      h3#editor-title Editor
-      .row#meta-buttons.center-align
-        +meta-button("load", "input", "left")
-        +meta-button("save", "description", "left")
-        +meta-button("view pdf", "launch", "left")
-    .row
-      //-.lighten-5(class=pri)
-      form.col.s12.z-depth-2#meta_data
+    mixin content-card(cardId)
+      .row
+        .col.s12.z-depth-2(id=cardId)
+          block
+    mixin floating-sm-btn(color, type, icon)
+      a.btn-floating(class=color + " " + type): +icon(icon)
+    mixin clause(clauseType)
+      div(class=clauseType)
+        .absolute-fab-wrapper
+          .fixed-action-btn.horizontal.click-to-toggle.absolute-fab
+            a.btn-floating.btn-large.teal
+              +icon("mode_edit")
+            ul
+              li: +floating-sm-btn("blue", "fab-move-up", "keyboard_arrow_up")
+              li: +floating-sm-btn("blue", "fab-move-down", "keyboard_arrow_down")
+              li: +floating-sm-btn("orange", "fab-reset", "restore")
+              li: +floating-sm-btn("red", "fab-delete", "delete")
+        .row
+          .col.xl4.m6.s12
+            .input-field
+              input.autocomplete.preamb_phrase_input(type="text")
+              label(for=".preamb_phrase_input") Phrase
+    mixin clause-card(cardId, cardTitle)
+      +content-card(cardId)
+        h5=cardTitle
+        +clause("op-clause")
+    +content-card("meta_data")
+      form
         .right.btn-floating.btn-large.waves-effect.waves-light.red.box-padding.reset-button(for="meta_data")
           +icon("delete")
         h5 General Data
         .input-field
-          input.simple-input#author_name(type="text")
+          input.simple_input#author_name(type="text")
           label(for="author_name") Document Author
         .divider
         .row
           .col.xl4.m6.s12
             .input-field
-              input.simple-input#forum_name(type="text")
+              input.simple_input#forum_name(type="text")
               label(for="forum_name") Forum
           .col.xl4.m6.s12
             .input-field
-              input.simple-input#question_of(type="text")
+              input.simple_input#question_of(type="text")
               label(for="question_of") Question of
           .col.xl4.s12
             .input-field
@@ -81,6 +95,8 @@ block content
               label(for="main_spon") Main Sponsor
           .col.s12
             .chips#co_spon
+    +clause-card("preamb-clauses", "Preambulatory Clauses")
+    +clause-card("op-clauses", "Operative Clauses")
 
   //-use http://materializecss.com/chips.html for sponsors
   //-use http://materializecss.com/forms.html autocomplete for phrases
