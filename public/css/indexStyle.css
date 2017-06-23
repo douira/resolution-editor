@@ -18,3 +18,7 @@
 .absolute-fab {
   position: absolute;
 }
+
+.reduced-width-divider {
+  margin-right: 70px;
+}

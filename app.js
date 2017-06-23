@@ -1,3 +1,4 @@
+/*jshint asi: false, esnext: true, node: true, indent: 2*/
 const express = require('express');
 const path = require('path');
 const favicon = require('serve-favicon');

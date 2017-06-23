@@ -53,7 +53,7 @@ block content
       a.btn-floating(class=color + " " + type): +icon(icon)
     mixin clause(clauseType)
       div(class=clauseType)
-        .divider
+        .divider.reduced-width-divider
         h6.grey-text.text-darken-2 Clause #4
         .absolute-fab-wrapper
           .fixed-action-btn.horizontal.click-to-toggle.absolute-fab
@@ -67,38 +67,39 @@ block content
         .row
           .col.xl4.m6.s12
             .input-field
-              input.autocomplete.preamb_phrase_input(type="text")
-              label(for=".preamb_phrase_input") Phrase
-    mixin clause-card(cardId, cardTitle)
+              input.autocomplete.phrase-input(type="text")
+              label(for=".phrase-input") Phrase
+    mixin clause-card(cardId, clauseClass, cardType)
       +content-card(cardId)
-        h5=cardTitle
-        +clause("op-clause")
-    +content-card("meta_data")
+        h5=cardType + " Clauses"
+        +clause(clauseClass)
+    +content-card("meta-data")
       form
-        .right.btn-floating.btn-large.waves-effect.waves-light.red.box-padding.reset-button(for="meta_data")
+        .right.btn-floating.btn-large.waves-effect.waves-light.red.box-padding.reset-button(for="meta-data")
           +icon("delete")
         h5 General Data
+        .divider.reduced-width-divider
         .input-field
-          input.simple_input#author_name(type="text")
-          label(for="author_name") Document Author
+          input.simple-input#author-name(type="text")
+          label(for="author-name") Document Author
         .divider
         .row
           .col.xl4.m6.s12
             .input-field
-              input.simple_input#forum_name(type="text")
-              label(for="forum_name") Forum
+              input.simple-input#forum-name(type="text")
+              label(for="forum-name") Forum
           .col.xl4.m6.s12
             .input-field
-              input.simple_input#question_of(type="text")
-              label(for="question_of") Question of
+              input.simple-input#question-of(type="text")
+              label(for="question-of") Question of
           .col.xl4.s12
             .input-field
-              input.autocomplete#main_spon(type="text")
-              label(for="main_spon") Main Sponsor
+              input.autocomplete#main-spon(type="text")
+              label(for="main-spon") Main Sponsor
           .col.s12
-            .chips#co_spon
-    +clause-card("preamb-clauses", "Preambulatory Clauses")
-    +clause-card("op-clauses", "Operative Clauses")
+            .chips#co-spon
+    +clause-card("preamb-clauses", "preamb-clause", "Preambulatory")
+    +clause-card("op-clauses", "op-clause", "Operative")
 
   //-use http://materializecss.com/chips.html for sponsors
   //-use http://materializecss.com/forms.html autocomplete for phrases
