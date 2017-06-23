@@ -1,53 +1,52 @@
 /*jshint asi: false, esnext: false, browser: true, jquery: true, indent: 2*/
-//all countries/orgs that can be sponsors or co-sponsors
-var listOfSponsors = {
-  "Placeholder Coutry": "http://placehold.it/250x250",
-  "Italy": null,
-  "China": null,
-  "United States of America": null,
-  "Germany": null
-};
-
-//all phrases possible in the two different clause types
-var listOfPreambPhrases = {
-  "Notices": null,
-  "Approves of": null,
-  "BLAHBLAHBLAH": null,
-  "Calls out with joy": null
-};
-var listOfOpPhrases = {
-  "Recommends": null,
-  "Calls uppon": null,
-  "other things": null
-};
-
-//data used to inititalize input fields/thingies and their other options
-var initData = {
-  "#co-spon": {
-    autocompleteOptions: {
-      data: listOfSponsors,
-      limit: 20,
-      minLength: 1
-    },
-    secondaryPlaceholder: "Co-Sponors",
-    placeholder: "Co-Sponors"
-  },
-  "#main-spon": {
-    data: listOfSponsors,
-    limit: 20,
-    minLength: 1
-  },
-  "#preamb-clauses .phrase-input": {
-    data: listOfPreambPhrases,
-    limit: 20,
-    minLength: 1
-  },
-  "#op-clauses .phrase-input": {
-    data: listOfOpPhrases,
-    limit: 20,
-    minLength: 1
+//transforms arrays containign a certain flag in an object and array json structure
+function transformMarkedArrays(structure, flag, propValue, depth) {
+  //propValue is null if not given otherwise
+  if (typeof propValue === "undefined") {
+    propValue = null;
   }
-};
+
+  //start at depth if not given
+  if (typeof depth === "undefined") {
+    depth = 0;
+  }
+
+  //don't recurse if at max depth and is actually an array or object
+  if (depth < 10 && typeof structure === "object") {
+    //is an array
+    if (structure instanceof Array) {
+      //if it actuallly has anything to deal with
+      if (structure.length) {
+        //check if this array should be converted
+        if (structure[0] === flag) {
+          //remove flag
+          structure.shift();
+
+          //convert to prop object
+          var obj = {};
+          structure.forEach(function(str) {
+            obj[str] = propValue;
+          });
+          structure = obj;
+        } else {
+          //recurse deeper
+          structure.map(function(obj, index) {
+            return transformMarkedArrays(obj, flag, propValue, depth + 1);
+          });
+        }
+      }
+    } else {
+      //call for all properties
+      for (var propName in structure) {
+        structure[propName] = transformMarkedArrays(structure[propName],
+                                                    flag, propValue, depth + 1);
+      }
+    }
+  }
+
+  //return object back
+  return structure;
+}
 
 //resets sibling labels
 function resetSiblingLabels(field) {
@@ -59,40 +58,9 @@ function resetSiblingLabels(field) {
 function getData(context) {
   return $(context).data("resEd");
 }
-var fieldTypes = {
-  ".autocomplete": {
-    init: function() {
-      //first convert plain html element to jQuery element because the materialize functions only work on that
-      console.log(getData(this));
-      $(this).autocomplete(getData(this));
-    },
-    reset: function() {
-      //reset by setting value to empty string
-      $(this).val("");
 
-      //also reset label for this field
-      resetSiblingLabels(this);
-    }
-  },
-  "input": {
-    reset: function() {
-      $(this).val("");
-      resetSiblingLabels(this);
-    }
-  },
-  ".chips": {
-    init: function() {
-      $(this).material_chip(getData(this));
-    },
-    reset: function() {
-      $(this).empty();
-      $(this).trigger("init");
-    }
-  }
-};
-
-//do things when the document has finished loading
-$(document).ready(function() {
+//registers event handler and init data
+function registerEventsAndData(fieldTypes, initData) {
   //for all types of things we need to attach events to
   for (var selector in fieldTypes) {
     //get the elements this type is for
@@ -113,15 +81,96 @@ $(document).ready(function() {
       elements.on(eventName, typeEvents[eventName]);
     }
   }
+}
 
-  //trigger all init events
-  $("#editor-main").find("*").trigger("init");
+//do things when the document has finished loading
+$(document).ready(function() {
+  //load external sponsor, phrase and forum name data
+  var autofillData;
+  $.getJSON("/autofillData.json")
+    .fail(function(data, status, error) {
+      console.log(status, error);
+    })
+    .done(function(data) {
+      //transform into correct data structure when gotten data
+      autofillData = transformMarkedArrays(data,
+                                            "_convert",
+                                            null);
+      console.log(autofillData);
+      //call with to register events and init data
+      registerEventsAndData(
+        //types of fields to attach events and data to
+        {
+          ".autocomplete": {
+            init: function() {
+              //first convert plain html element to jQuery element because the materialize functions
+              //only work on that
+              console.log(getData(this));
+              $(this).autocomplete(getData(this));
+            },
+            reset: function() {
+              //reset by setting value to empty string
+              $(this).val("");
 
-  //register reset buttons
-  $(".reset-button").click(function(event) {
-    //trigger reset for all contained elements
-    $("#" + event.currentTarget.getAttribute("for"))
-      .find("*")
-      .trigger("reset");
-  });
+              //also reset label for this field
+              resetSiblingLabels(this);
+            }
+          },
+          "input": {
+            reset: function() {
+              $(this).val("");
+              resetSiblingLabels(this);
+            }
+          },
+          ".chips": {
+            init: function() {
+              $(this).material_chip(getData(this));
+            },
+            reset: function() {
+              $(this).empty();
+              $(this).trigger("init");
+            }
+          }
+        },
+
+        //data used to inititalize input fields/thingies and their other options
+        {
+          "#co-spon": {
+            autocompleteOptions: {
+              data: autofillData.sponsors,
+              limit: 20,
+              minLength: 1
+            },
+            secondaryPlaceholder: "Co-Sponors",
+            placeholder: "Co-Sponors"
+          },
+          "#main-spon": {
+            data: autofillData.sponsors,
+            limit: 20,
+            minLength: 1
+          },
+          "#preamb-clauses .phrase-input": {
+            data: autofillData.phrases.preamb,
+            limit: 20,
+            minLength: 1
+          },
+          "#op-clauses .phrase-input": {
+            data: autofillData.phrases.op,
+            limit: 20,
+            minLength: 1
+          }
+        }
+      );
+
+      //trigger all init events
+      $("#editor-main").find("*").trigger("init");
+
+      //register reset buttons
+      $(".reset-button").click(function(event) {
+        //trigger reset for all contained elements
+        $("#" + event.currentTarget.getAttribute("for"))
+          .find("*")
+          .trigger("reset");
+      });
+    });
 });
