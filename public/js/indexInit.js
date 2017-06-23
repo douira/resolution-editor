@@ -124,7 +124,7 @@ $(document).ready(function() {
     autofillData = transformMarkedArrays(data,
                                           "_convert",
                                           null);
-    console.log(autofillData);
+
     //call with to register events and init data
     registerEventsAndData(
       //types of fields to attach events and data to
@@ -133,19 +133,12 @@ $(document).ready(function() {
           init: function() {
             //first convert plain html element to jQuery element because the materialize functions
             //only work on that
-            console.log(getData(this));
             $(this).autocomplete(getData(this));
-          },
-          reset: function() {
-            //reset by setting value to empty string
-            $(this).val("");
-
-            //also reset label for this field
-            resetSiblingLabels(this);
           }
         },
         "input": {
-          reset: function() {
+          reset: function(e) {
+            e.stopPropagation();
             $(this).val("");
             resetSiblingLabels(this);
           }
@@ -154,9 +147,38 @@ $(document).ready(function() {
           init: function() {
             $(this).material_chip(getData(this));
           },
-          reset: function() {
+          reset: function(e) {
+            e.stopPropagation();
             $(this).empty();
             $(this).trigger("init");
+          }
+        },
+        ".clause": {
+          //resets this clause after cloning
+          reset: function(e) {
+            e.stopPropagation();
+            $(this).find("input").trigger("reset");
+          },
+          updateId: function() {
+            //set the displayed id of the clause
+            $(this)
+              .find("span.clause-number")
+              .text($(this)
+                .siblings(".clause")
+                .length + 1
+              );
+          }
+        },
+        ".add-clause-btn": {
+          click: function() {
+            //add a new clause to the enclosing list by
+            //duplicating and resetting the first one of the current type
+            $(this).siblings(".clause")
+              .first()
+              .clone(true, true)
+              .trigger("reset")
+              .insertBefore($(this).siblings(".divider").last())
+              .trigger("updateId");
           }
         }
       },

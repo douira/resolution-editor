@@ -52,9 +52,10 @@ block content
     mixin floating-sm-btn(color, type, icon)
       a.btn-floating(class=color + " " + type): +icon(icon)
     mixin clause(clauseType)
-      div(class=clauseType)
+      .clause(clause-type=clauseType)
         .divider.reduced-width-divider
-        h6.grey-text.text-darken-2 Clause #4
+        h6.grey-text.text-darken-2 Clause #
+          span.clause-number 1
         .absolute-fab-wrapper
           .fixed-action-btn.horizontal.click-to-toggle.absolute-fab
             a.btn-floating.btn-large.light-blue
@@ -72,10 +73,15 @@ block content
     mixin clause-card(cardId, clauseClass, cardType)
       +content-card(cardId)
         h5=cardType + " Clauses"
-        +clause(clauseClass)
+        .clause-list
+          +clause(clauseClass)
+          .divider
+          a.btn.white-text.left.btn-mrg.add-clause-btn(class=pri)
+            +icon("add", "left")
+            | Add Clause
     +content-card("meta-data")
       form
-        .right.btn-floating.btn-large.waves-effect.waves-light.red.box-padding.reset-button(for="meta-data")
+        .right.btn-floating.btn-large.waves-effect.waves-light.red.reset-button(for="meta-data")
           +icon("delete")
         h5 General Data
         .divider.reduced-width-divider
@@ -98,11 +104,7 @@ block content
               label(for="main-spon") Main Sponsor
           .col.s12
             .chips#co-spon
-    +clause-card("preamb-clauses", "preamb-clause", "Preambulatory")
-    +clause-card("op-clauses", "op-clause", "Operative")
-
-  //-use http://materializecss.com/chips.html for sponsors
-  //-use http://materializecss.com/forms.html autocomplete for phrases
-
+    +clause-card("preamb-clauses", "preamb", "Preambulatory")
+    +clause-card("op-clauses", "op", "Operative")
 block scripts
   script(src="js/indexInit.js")

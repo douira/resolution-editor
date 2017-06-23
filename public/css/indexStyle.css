@@ -22,3 +22,16 @@
 .reduced-width-divider {
   margin-right: 70px;
 }
+
+.btn-mrg-b {
+  margin-bottom: 20px;
+}
+
+.btn-mrg-t {
+  margin-bottom: 20px;
+}
+
+.btn-mrg {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
