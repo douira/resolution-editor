@@ -41,9 +41,9 @@ block content
         +icon(icon, "left")
         =text
     #meta-buttons
-      +meta-button("load", "input")
-      +meta-button("save", "description")
-      +meta-button("view pdf", "launch")
+      +meta-button("load", "file_upload")
+      +meta-button("save", "file_download")
+      +meta-button("view pdf", "note")
     h3 Editor
     mixin content-card(cardId)
       .row
@@ -70,13 +70,17 @@ block content
             .input-field
               input.autocomplete.phrase-input(type="text")
               label(for=".phrase-input") Phrase
+        .input-field
+          //-+icon("arrow_forward", "prefix")
+          textarea.materialize-textarea.clause-content-text
+          label(for="materialize-textarea") Clause Content
     mixin clause-card(cardId, clauseClass, cardType)
       +content-card(cardId)
         h5=cardType + " Clauses"
         .clause-list
           +clause(clauseClass)
           .divider
-          a.btn.white-text.left.btn-mrg.add-clause-btn(class=pri)
+          a.btn.white-text.left.btn-mrg.add-clause-btn.lighten-1(class=pri)
             +icon("add", "left")
             | Add Clause
     +content-card("meta-data")

@@ -143,13 +143,21 @@ $(document).ready(function() {
             resetSiblingLabels(this);
           }
         },
+        "textarea": {
+          reset: function(e) {
+            e.stopPropagation();
+            $(this).val("");
+            $(this).trigger("autoresize");
+            resetSiblingLabels(this);
+          }
+        },
         ".chips": {
           init: function() {
             $(this).material_chip(getData(this));
           },
           reset: function(e) {
             e.stopPropagation();
-            $(this).empty();
+            $(this).val("");
             $(this).trigger("init");
           }
         },
@@ -157,7 +165,7 @@ $(document).ready(function() {
           //resets this clause after cloning
           reset: function(e) {
             e.stopPropagation();
-            $(this).find("input").trigger("reset");
+            $(this).find("textarea, input").trigger("reset");
           },
           updateId: function() {
             //set the displayed id of the clause
