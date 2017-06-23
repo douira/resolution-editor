@@ -15,10 +15,10 @@
  - Indent everything with 2 spaces
  - Use JSHint with the given configuration file to validate your code before comitting (and remove all errors!)
  
- Here are some screenshots if you don't want to/can't get the repo to run on your machine: (from 08 Jun 2017)
+ Here are some screenshots if you don't want to/can't get the repo to run on your machine: (from 26 Jun 2017)
  
- ![Images of the Website](http://imgur.com/KOmsvHK.png)
- ![Images of the Website](http://imgur.com/VJAPs74.png)
+ ![Images of the Website](http://i.imgur.com/fF4Unqy.png)
+ ![Images of the Website](http://i.imgur.com/woHD52X.png)
  
  Hand drawn sketch of editor:
  ![hand drawn sketch of editor](http://imgur.com/XXdc24Q.png)
