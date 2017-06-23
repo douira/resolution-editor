@@ -11,6 +11,10 @@
  
  install after cloning the repo with `npm install` (I can try to help you to set this up if you run into problems unsolvable with google)
  
+ Code style shoudl be adapted to the already used style and kept as consistent as possible:
+ - Indent everything with 2 spaces
+ - Use JSHint with the given configuration file to validate your code before comitting (and remove all errors!)
+ 
  Here are some screenshots if you don't want to/can't get the repo to run on your machine: (from 08 Jun 2017)
  
  ![Images of the Website](http://imgur.com/KOmsvHK.png)
