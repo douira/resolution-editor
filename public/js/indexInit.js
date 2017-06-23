@@ -46,8 +46,7 @@ var initData = {
     data: listOfOpPhrases,
     limit: 20,
     minLength: 1
-  },
-  ".simple-input": {} //normal inout fields need to init data but need to be in this object in order to have all their events registered
+  }
 };
 
 //resets sibling labels
@@ -56,79 +55,62 @@ function resetSiblingLabels(field) {
   $(field).siblings("label").removeClass("active");
 }
 
-//types of initialization to do
-var fieldTypes = [
-  {
-    typeSelector: ".autocomplete",
-    events: {
-      init: function(event) {
-        //first convert plain html element to jQuery element because the materialize functions only work on that
-        $(this).autocomplete(event.data);
-      },
-      reset: function(element, data) {
-        //reset by setting value to empty string
-        $(this).val("");
+//gets esolution-editor specific data from given dom element
+function getData(context) {
+  return $(context).data("resEd");
+}
+var fieldTypes = {
+  ".autocomplete": {
+    init: function() {
+      //first convert plain html element to jQuery element because the materialize functions only work on that
+      console.log(getData(this));
+      $(this).autocomplete(getData(this));
+    },
+    reset: function() {
+      //reset by setting value to empty string
+      $(this).val("");
 
-        //also reset label for this field
-        resetSiblingLabels(this);
-      }
+      //also reset label for this field
+      resetSiblingLabels(this);
     }
   },
-  {
-    typeSelector: "input",
-    events: {
-      init: function(element, data) { },
-      reset: function(element, data) {
-        $(this).val("");
-        resetSiblingLabels(this);
-      }
+  "input": {
+    reset: function() {
+      $(this).val("");
+      resetSiblingLabels(this);
     }
   },
-  {
-    typeSelector: ".chips",
-    events: {
-      init: function(element, data) {
-        $(this).material_chip(event.data);
-      },
-      reset: function(element, data) {
-        console.log("fired chips reset");
-        $(this).empty();
-        $(this).trigger("init");
-      }
+  ".chips": {
+    init: function() {
+      $(this).material_chip(getData(this));
+    },
+    reset: function() {
+      $(this).empty();
+      $(this).trigger("init");
     }
   }
-];
+};
 
 //do things when the document has finished loading
-$(document).ready(function(){
-  //attach event handlers to all things that match in data
-  for (var selector in initData) {
-    //data for this element
-    var elementInitData = initData[selector];
+$(document).ready(function() {
+  //for all types of things we need to attach events to
+  for (var selector in fieldTypes) {
+    //get the elements this type is for
+    var elements = $(selector);
 
-    //get the element we should do an init with
-    var element = $(selector);
-
-    //check with the type selector until we find a match
-    var typeIndex = 0;
-    while (typeIndex < fieldTypes.length && ! element.is(fieldTypes[typeIndex].typeSelector)) {
-      typeIndex ++;
+    //for all init data attach the data to the element
+    for (var dataSelector in initData) {
+      //attach data to all elements that match
+      elements
+        .filter(dataSelector)
+        .data("resEd", initData[dataSelector]);
     }
 
-    //stop for this element if cant find type
-    if (typeIndex === fieldTypes.length) {
-      console.log("exited element", element);
-      continue;
-    }
-
-    //if there actually was a match then attach all the events for this type
-    if (typeIndex < fieldTypes.length) {
-      var typeEvents = fieldTypes[typeIndex].events;
-      for (var eventName in typeEvents) {
-        console.log(eventName, typeIndex);
-        //pass function that has the element and data bound
-        element.on(eventName, elementInitData, typeEvents[eventName]);
-      }
+    //attach all event handler specified
+    var typeEvents = fieldTypes[selector];
+    for (var eventName in typeEvents) {
+      //attach current event to all elements
+      elements.on(eventName, typeEvents[eventName]);
     }
   }
 
