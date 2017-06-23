@@ -83,94 +83,110 @@ function registerEventsAndData(fieldTypes, initData) {
   }
 }
 
+//global autofill settings
+var autofillSettings = {
+  limit: 20,
+  minLength: 1
+};
+
+//makes a autofill settings object
+function makeAutofillSettingsPre(defaultSettings, data, settings) {
+  //use default settings if no extra settings given
+  if (typeof settings === "undefined") {
+    settings = defaultSettings;
+  }
+
+  //merge settings and data prop object
+  return $.extend({
+    data: data
+  }, settings);
+}
+
+//flag for keepng track of wether or not the editor can be used
+var canUseEditor = false; //false until data loaded
+
+//attach the default settings
+var makeAutofillSettings = makeAutofillSettingsPre.bind({}, autofillSettings);
+
 //do things when the document has finished loading
 $(document).ready(function() {
   //load external sponsor, phrase and forum name data
   var autofillData;
   $.getJSON("/autofillData.json")
-    .fail(function(data, status, error) {
-      console.log(status, error);
-    })
-    .done(function(data) {
-      //transform into correct data structure when gotten data
-      autofillData = transformMarkedArrays(data,
-                                            "_convert",
-                                            null);
-      console.log(autofillData);
-      //call with to register events and init data
-      registerEventsAndData(
-        //types of fields to attach events and data to
-        {
-          ".autocomplete": {
-            init: function() {
-              //first convert plain html element to jQuery element because the materialize functions
-              //only work on that
-              console.log(getData(this));
-              $(this).autocomplete(getData(this));
-            },
-            reset: function() {
-              //reset by setting value to empty string
-              $(this).val("");
+  .fail(function(data, status, error) {
+    //log the error we have with getting the data
+    console.log(status, error);
+    window.alert("Failed to get auto-complete data! Check the console for more info." +
+                 "(The editor won't work until you reload the page and the data is downloaded)");
+  })
+  .done(function(data) {
+    //transform into correct data structure when gotten data
+    autofillData = transformMarkedArrays(data,
+                                          "_convert",
+                                          null);
+    console.log(autofillData);
+    //call with to register events and init data
+    registerEventsAndData(
+      //types of fields to attach events and data to
+      {
+        ".autocomplete": {
+          init: function() {
+            //first convert plain html element to jQuery element because the materialize functions
+            //only work on that
+            console.log(getData(this));
+            $(this).autocomplete(getData(this));
+          },
+          reset: function() {
+            //reset by setting value to empty string
+            $(this).val("");
 
-              //also reset label for this field
-              resetSiblingLabels(this);
-            }
-          },
-          "input": {
-            reset: function() {
-              $(this).val("");
-              resetSiblingLabels(this);
-            }
-          },
-          ".chips": {
-            init: function() {
-              $(this).material_chip(getData(this));
-            },
-            reset: function() {
-              $(this).empty();
-              $(this).trigger("init");
-            }
+            //also reset label for this field
+            resetSiblingLabels(this);
           }
         },
-
-        //data used to inititalize input fields/thingies and their other options
-        {
-          "#co-spon": {
-            autocompleteOptions: {
-              data: autofillData.sponsors,
-              limit: 20,
-              minLength: 1
-            },
-            secondaryPlaceholder: "Co-Sponors",
-            placeholder: "Co-Sponors"
+        "input": {
+          reset: function() {
+            $(this).val("");
+            resetSiblingLabels(this);
+          }
+        },
+        ".chips": {
+          init: function() {
+            $(this).material_chip(getData(this));
           },
-          "#main-spon": {
-            data: autofillData.sponsors,
-            limit: 20,
-            minLength: 1
-          },
-          "#preamb-clauses .phrase-input": {
-            data: autofillData.phrases.preamb,
-            limit: 20,
-            minLength: 1
-          },
-          "#op-clauses .phrase-input": {
-            data: autofillData.phrases.op,
-            limit: 20,
-            minLength: 1
+          reset: function() {
+            $(this).empty();
+            $(this).trigger("init");
           }
         }
-      );
+      },
 
-      //trigger all init events
-      $("#editor-main").find("*").trigger("init");
+      //data used to inititalize input fields/thingies and their other options
+      {
+        "#forum-name": makeAutofillSettings(autofillData.forums),
+        "#co-spon": {
+          autocompleteOptions: makeAutofillSettings(autofillData.sponsors),
+          secondaryPlaceholder: "Co-Sponors",
+          placeholder: "Co-Sponors"
+        },
+        "#main-spon": makeAutofillSettings(autofillData.sponsors),
+        "#preamb-clauses .phrase-input": makeAutofillSettings(autofillData.phrases.preamb),
+        "#op-clauses .phrase-input": makeAutofillSettings(autofillData.phrases.op),
+      }
+    );
 
-      //register reset buttons
-      $(".reset-button").click(function(event) {
-        //trigger reset for all contained elements
-        $("#" + event.currentTarget.getAttribute("for"))
-          .find("*")
-          .trigger("reset");
-      });
+    //trigger all init events
+    $("#editor-main").find("*").trigger("init");
+
+    //register reset buttons
+    $(".reset-button").click(function(event) {
+      //trigger reset for all contained elements
+      $("#" + event.currentTarget.getAttribute("for"))
+        .find("*")
+        .trigger("reset");
     });
+
+    //set flag on completion of setup
+    canUseEditor = true;
+  });
 });
