@@ -83,6 +83,25 @@ function registerEventsAndData(fieldTypes, initData) {
   }
 }
 
+//creates an alert message
+function makeAlertMessage(type, message) {
+
+}
+
+//detects and warns about an extension manipulating the content and events on our page
+function detectManipulator(elements) {
+  //stop if no elements given
+  if (! elements.length) {
+    return;
+  }
+
+  //detect grammarly
+  if (elements.filter("grammarly-ghost").length) {
+    //make disabling alert
+    makeAlertMessage("alert", "Please disable Grammarly spellchecking on this website because it may break the website visually, its internal workings or even obstruct its usage. It's advised that you save your progrsss before reloading the page after having disabled Grammarly or ay other Browser extention that manipulates website content. Grammarly integration may become a feature some time in the future."); // jshint ignore:line
+  }
+}
+
 //global autofill settings
 var autofillSettings = {
   limit: 20,
@@ -121,11 +140,10 @@ $(document).ready(function() {
   })
   .done(function(data) {
     //transform into correct data structure when gotten data
-    autofillData = transformMarkedArrays(data,
-                                          "_convert",
-                                          null);
+    autofillData = transformMarkedArrays(data, "_convert", null);
 
     //call with to register events and init data
+    //all reset events and some others must use stopPropagation!
     registerEventsAndData(
       //types of fields to attach events and data to
       {
@@ -144,11 +162,32 @@ $(document).ready(function() {
           }
         },
         "textarea": {
+          click: function() {
+            var triggerOn = $(this);
+
+            //set on timeout to trigger after extension has finished doing things
+            window.setTimeout(function() {
+              triggerOn.trigger("removeForeign");
+            }, 200);
+          },
           reset: function(e) {
             e.stopPropagation();
-            $(this).val("");
-            $(this).trigger("autoresize");
+            var elem = $(this);
+            elem.val(""); //empty content
+            elem.removeAttr("style"); //restore size
             resetSiblingLabels(this);
+          },
+          removeForeign: function() {
+            //removes other things than what we put there, like grammarly stuff
+            //this may be removed at some point when we get the cloning to work properly
+            var otherElements = $(this).siblings().not("label, textarea");
+
+            //if any found, detect and remove
+            detectManipulator(otherElements);
+            //otherElements.remove();
+
+            //cleanup textarea element
+            $(this).removeAttr("data-gramm");
           }
         },
         ".chips": {
@@ -184,6 +223,7 @@ $(document).ready(function() {
             $(this).siblings(".clause")
               .first()
               .clone(true, true)
+              //.empty()
               .trigger("reset")
               .insertBefore($(this).siblings(".divider").last())
               .trigger("updateId");
