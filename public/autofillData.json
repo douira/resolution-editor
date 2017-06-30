@@ -1,0 +1,31 @@
+{
+  "sponsors": [
+    "_convert",
+    "Placeholder Coutry",
+    "Italy",
+    "China",
+    "United States of America",
+    "Germany"
+  ],
+  "phrases": {
+    "preamb": [
+      "_convert",
+      "Notices",
+      "Approves of",
+      "BLAHBLAHBLAH",
+      "Calls out with joy"
+    ],
+    "op": [
+      "_convert",
+      "Recommends",
+      "Calls uppon",
+      "other things"
+    ]
+  },
+  "forums": [
+    "_convert",
+    "1st Commitee",
+    "Human Rights Council",
+    "Security Council"
+  ]
+}

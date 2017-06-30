@@ -1,0 +1,37 @@
+#meta-buttons a {
+  margin: 10px;
+}
+
+#co_spon {
+  margin-top: 20px;
+}
+
+.REM_box-padding {
+  margin-top: 0.75rem;
+}
+
+.absolute-fab-wrapper {
+  float: right;
+  position: relative;
+}
+
+.absolute-fab {
+  position: absolute;
+}
+
+.reduced-width-divider {
+  margin-right: 70px;
+}
+
+.btn-mrg-b {
+  margin-bottom: 20px;
+}
+
+.btn-mrg-t {
+  margin-bottom: 20px;
+}
+
+.btn-mrg {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}

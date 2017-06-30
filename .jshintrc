@@ -1,8 +1,9 @@
 {
-	"asi": false,
-	"esnext": true,
-	"browser": true,
-	"node": true,
-	"jquery": true,
-	"indent": 2
+  "asi": false,
+  "esnext": true,
+  "browser": true,
+  "node": true,
+  "jquery": true,
+  "indent": 2,
+  "maxlen": 100
 }

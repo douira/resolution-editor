@@ -4,7 +4,7 @@ block styles
   link(href="css/indexStyle.css" type="text/css" rel="stylesheet")
 
 block content
-  .section: .container
+  .container
     br
     br
     h1.header.center(class=sectext) Resolution Editor
@@ -12,7 +12,7 @@ block content
       em  simple
       |  way of creating and editing resolutions without having to have to deal with formatting.
     br
-    .center: a.btn-large.waves-effect.waves-light(href="#main-content" class=sec) Start Writing
+    .center: a.btn-large.waves-effect.waves-light(href="#editor-main" class=sec) Start Writing
     br
     br
     .row
@@ -35,10 +35,80 @@ block content
         "Easy to Use",
         "The interface provides hints and is usable on any device. You can generate a formatted document, add a clause or reorder with the push of a button. We'll do all the heavy lifting in the background and you just have to worry about what you want to say.")
 
-  .section: .container
-    | editor goes here
-  //-use http://materializecss.com/chips.html for sponsors
-  //-use http://materializecss.com/forms.html autocomplete for phrases
-
+  .section#editor-main: .container
+    mixin meta-button(text, icon)
+      a.waves-effect.waves-light.btn.right.white-text(class=pri)
+        +icon(icon, "left")
+        =text
+    #meta-buttons
+      +meta-button("load", "file_upload")
+      +meta-button("save", "file_download")
+      +meta-button("view pdf", "note")
+    h3 Editor
+    mixin content-card(cardId)
+      .row
+        .col.s12.z-depth-2(id=cardId class!=attributes.class)
+          block
+    mixin floating-sm-btn(color, type, icon)
+      a.btn-floating(class=color + " " + type): +icon(icon)
+    mixin clause(clauseType)
+      .clause(clause-type=clauseType)
+        .divider.reduced-width-divider
+        h6.grey-text.text-darken-2 Clause #
+          span.clause-number 1
+        .absolute-fab-wrapper
+          .fixed-action-btn.horizontal.click-to-toggle.absolute-fab
+            a.btn-floating.btn-large.light-blue
+              +icon("mode_edit")
+            ul
+              li: +floating-sm-btn("blue", "fab-move-up", "keyboard_arrow_up")
+              li: +floating-sm-btn("blue", "fab-move-down", "keyboard_arrow_down")
+              li: +floating-sm-btn("orange", "fab-reset", "restore")
+              li: +floating-sm-btn("red", "fab-delete", "delete")
+        .row
+          .col.xl4.m6.s12
+            .input-field
+              input.autocomplete.phrase-input(type="text")
+              label(for=".phrase-input") Phrase
+        .input-field
+          //-+icon("arrow_forward", "prefix")
+          textarea.materialize-textarea.clause-content-text
+          label(for="materialize-textarea") Clause Content
+    mixin clause-card(cardId, clauseClass, cardType)
+      +content-card(cardId)
+        h5=cardType + " Clauses"
+        .clause-list
+          +clause(clauseClass)
+          .divider
+          a.btn.white-text.left.btn-mrg.add-clause-btn.lighten-1(class=pri)
+            +icon("add", "left")
+            | Add Clause
+    +content-card("meta-data")
+      form
+        .right.btn-floating.btn-large.waves-effect.waves-light.red.reset-button(for="meta-data")
+          +icon("delete")
+        h5 General Data
+        .divider.reduced-width-divider
+        .input-field
+          input#author-name(type="text")
+          label(for="author-name") Document Author
+        .divider
+        .row
+          .col.xl4.m6.s12
+            .input-field
+              input.autocomplete#forum-name(type="text")
+              label(for="forum-name") Forum
+          .col.xl4.m6.s12
+            .input-field
+              input#question-of(type="text")
+              label(for="question-of") Question of
+          .col.xl4.s12
+            .input-field
+              input.autocomplete#main-spon(type="text")
+              label(for="main-spon") Main Sponsor
+          .col.s12
+            .chips#co-spon
+    +clause-card("preamb-clauses", "preamb", "Preambulatory")
+    +clause-card("op-clauses", "op", "Operative")
 block scripts
   script(src="js/indexInit.js")
