@@ -116,6 +116,12 @@ function detectManipulator(elements) {
   }
 }
 
+//for making jquery debugging easier:
+$.fn.printThis = function() {
+  console.log(this);
+  return this;
+};
+
 //global autofill settings
 var autofillSettings = {
   limit: 20,
@@ -228,6 +234,7 @@ $(document).ready(function() {
           reset: function(e) {
             e.stopPropagation();
             $(this).find("textarea, input").trigger("reset");
+            $(this).find(".clause-list").remove();
           },
           updateId: function() {
             //set the displayed id of the clause
@@ -240,21 +247,21 @@ $(document).ready(function() {
           },
           updateTreeDepth: function() {
             //updates the tree depth of this clause and adds "Sub"s to the clause name
-            var subClauseDepth = $(this).parents(".clause-list").length - 1;
+            var subClauseDepth = $(this).parents(".clause-list-sub").length;
             if (subClauseDepth) {
               $(this).find(".clause-prefix").text("Sub".repeat(subClauseDepth) + "-");
             }
           }
         },
-        ".add-clause-btn": {
+        ".add-clause-container": {
           click: function() {
             //add a new clause to the enclosing list by
             //duplicating and resetting the first one of the current type
             $(this).siblings(".clause")
               .first()
               .clone(true, true)
-              .trigger("reset")
-              .insertBefore($(this).siblings(".divider").last())
+              .trigger("reset").printThis()
+              .insertBefore(this)
               .trigger("updateId");
           }
         },
@@ -263,18 +270,32 @@ $(document).ready(function() {
             var elem = $(this);
 
             //prepare sublause list
-            var newList = elem.append("<div></div>").addClass("clause-list");
+            var newList = elem
+              .parent()
+              .append("<div></div>")
+              .children()
+              .last()
+              .addClass("clause-list clause-list-sub")
+              .append(elem
+                .parent(".clause")
+                .siblings(".add-clause-container")
+                .clone(true, true)
+              );
 
             //add new subclause by copying clause without phrase field
-            elem.siblings(".clause")
-              .first()
+            var strippedClause = elem
+              .parent(".clause")
               .clone(true, true)
-              .trigger("reset")
+              .trigger("reset");
+            strippedClause
               .children(".row")
-              .remove()
-              .parent()
-              .appendTo(newList)
+              .remove();
+            strippedClause
+              .insertBefore(newList.find(".add-clause-container"))
               .trigger("updateId updateTreeDepth");
+
+            //remove this button after subclause was added
+            elem.remove();
           }
         }
       },

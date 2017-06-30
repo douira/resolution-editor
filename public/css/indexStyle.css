@@ -23,19 +23,19 @@
   margin-right: 70px;
 }
 
-.btn-mrg-b {
+.mrg-b {
   margin-bottom: 20px;
 }
 
-.btn-mrg-l {
+.mrg-l {
   margin-left: 20px;
 }
 
-.btn-mrg-t {
+.mrg-t {
   margin-bottom: 20px;
 }
 
-.btn-mrg {
+.mrg {
   margin-bottom: 20px;
   margin-top: 20px;
 }
@@ -51,4 +51,8 @@
 .nmrg-0 {
   margin-bottom: 0px;
   margin-top: 0px;
+}
+
+.clause-list-sub {
+  margin-left: 20px;
 }
