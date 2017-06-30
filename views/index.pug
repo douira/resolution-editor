@@ -86,13 +86,14 @@ block content
               //-+icon("arrow_forward", "prefix")
               textarea.materialize-textarea.clause-content-text
               label(for="materialize-textarea") Clause Content
-            a.btn.white-text.mrg-b.mrg-l.add-sub-btn.lighten-1(class=pri)
-              +icon("subdirectory_arrow_right", "left")
+            a.btn.white-text.mrg-b.clause-list-sub-mrg.add-sub-btn.lighten-1(class=pri)
+              //-subdirectory_arrow_right
+              +icon("format_indent_increase", "left")
               | Add Subclause
           .add-clause-container
             .divider
             a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)
-              +icon("add", "left")
+              +icon("arrow_downward", "left")
               | Add Clause
     +content-card("meta-data")
       form

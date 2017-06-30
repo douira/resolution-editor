@@ -236,16 +236,18 @@ $(document).ready(function() {
             $(this).find("textarea, input").trigger("reset");
             $(this).find(".clause-list").remove();
           },
-          updateId: function() {
+          updateId: function(e) {
+            e.stopPropagation();
             //set the displayed id of the clause
             $(this)
-              .find("span.clause-number")
+              .find(".clause-number")
               .text($(this)
                 .siblings(".clause")
                 .length + 1
               );
           },
-          updateTreeDepth: function() {
+          updateTreeDepth: function(e) {
+            e.stopPropagation();
             //updates the tree depth of this clause and adds "Sub"s to the clause name
             var subClauseDepth = $(this).parents(".clause-list-sub").length;
             if (subClauseDepth) {
@@ -260,7 +262,7 @@ $(document).ready(function() {
             $(this).siblings(".clause")
               .first()
               .clone(true, true)
-              .trigger("reset").printThis()
+              .trigger("reset")
               .insertBefore(this)
               .trigger("updateId");
           }
