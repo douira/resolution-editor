@@ -61,7 +61,9 @@ block content
     mixin clause(clauseType)
       .clause(clause-type=clauseType)
         .divider.reduced-width-divider
-        h6.grey-text.text-darken-2 Clause #
+        h6.grey-text.text-darken-2
+          span.clause-prefix
+          | Clause #
           span.clause-number 1
         .absolute-fab-wrapper
           .fixed-action-btn.horizontal.click-to-toggle.absolute-fab

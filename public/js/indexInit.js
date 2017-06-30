@@ -237,6 +237,13 @@ $(document).ready(function() {
                 .siblings(".clause")
                 .length + 1
               );
+          },
+          updateTreeDepth: function() {
+            //updates the tree depth of this clause and adds "Sub"s to the clause name
+            var subClauseDepth = $(this).parents(".clause-list").length - 1;
+            if (subClauseDepth) {
+              $(this).find(".clause-prefix").text("Sub".repeat(subClauseDepth) + "-");
+            }
           }
         },
         ".add-clause-btn": {
@@ -246,10 +253,28 @@ $(document).ready(function() {
             $(this).siblings(".clause")
               .first()
               .clone(true, true)
-              //.empty()
               .trigger("reset")
               .insertBefore($(this).siblings(".divider").last())
               .trigger("updateId");
+          }
+        },
+        ".add-sub-btn": {
+          click: function() {
+            var elem = $(this);
+
+            //prepare sublause list
+            var newList = elem.append("<div></div>").addClass("clause-list");
+
+            //add new subclause by copying clause without phrase field
+            elem.siblings(".clause")
+              .first()
+              .clone(true, true)
+              .trigger("reset")
+              .children(".row")
+              .remove()
+              .parent()
+              .appendTo(newList)
+              .trigger("updateId updateTreeDepth");
           }
         }
       },
