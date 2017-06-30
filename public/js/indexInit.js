@@ -113,6 +113,9 @@ function detectManipulator(elements) {
   if (elements.filter("grammarly-ghost").length) {
     //make disabling alert
     makeAlertMessage("alert", "Attention!", "Please <b>disable</b> Grammarly spellchecking on this website because it may break the website visually, its internal workings or even obstruct its usage. It's advised that you save your progress before <b>reloading</b> the page after having disabled Grammarly or any other Browser extention that manipulates website content. Grammarly integration may become a feature some time in the future.", "Yes, I will do that now"); // jshint ignore:line
+
+    //set flag in case modal breaks
+    canUseEditor = false;
   }
 }
 
@@ -213,7 +216,6 @@ $(document).ready(function() {
 
             //if any found, detect and remove
             detectManipulator(otherElements);
-            //otherElements.remove();
 
             //cleanup textarea element
             $(this).removeAttr("data-gramm");
@@ -294,7 +296,7 @@ $(document).ready(function() {
               .remove();
             strippedClause
               .insertBefore(newList.find(".add-clause-container"))
-              .trigger("updateId updateTreeDepth");
+              .trigger("updateId").trigger("updateTreeDepth"); //why does it have to be this way?
 
             //remove this button after subclause was added
             elem.remove();
