@@ -84,8 +84,22 @@ function registerEventsAndData(fieldTypes, initData) {
 }
 
 //creates an alert message
-function makeAlertMessage(type, message) {
+function makeAlertMessage(type, title, message, buttonText) {
+  //default button text
+  if (typeof buttonText === "undefined") {
+    buttonText = "OK";
+  }
 
+  //get the modal element
+  var modalElement = $("#alert-message-modal");
+  console.log(modalElement);
+  //add content to the modal
+  modalElement.find(".modal-content-title").html(title);
+  modalElement.find(".modal-content-body").html(message);
+  modalElement.find(".modal-dismiss-btn").html(buttonText);
+
+  //open the modal for the user to see
+  modalElement.modal("open");
 }
 
 //detects and warns about an extension manipulating the content and events on our page
@@ -98,7 +112,7 @@ function detectManipulator(elements) {
   //detect grammarly
   if (elements.filter("grammarly-ghost").length) {
     //make disabling alert
-    makeAlertMessage("alert", "Please disable Grammarly spellchecking on this website because it may break the website visually, its internal workings or even obstruct its usage. It's advised that you save your progrsss before reloading the page after having disabled Grammarly or ay other Browser extention that manipulates website content. Grammarly integration may become a feature some time in the future."); // jshint ignore:line
+    makeAlertMessage("alert", "Attention!", "Please <b>disable</b> Grammarly spellchecking on this website because it may break the website visually, its internal workings or even obstruct its usage. It's advised that you save your progress before <b>reloading</b> the page after having disabled Grammarly or any other Browser extention that manipulates website content. Grammarly integration may become a feature some time in the future.", "Yes, I will do that now"); // jshint ignore:line
   }
 }
 
@@ -152,6 +166,15 @@ $(document).ready(function() {
             //first convert plain html element to jQuery element because the materialize functions
             //only work on that
             $(this).autocomplete(getData(this));
+          }
+        },
+        ".modal": {
+          init: function() {
+            //not using element specific data because this will be the same for all modals
+            //(only the one modal atm)
+            $(this).modal({
+              dismissible: false
+            });
           }
         },
         "input": {

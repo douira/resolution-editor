@@ -44,6 +44,13 @@ block content
       +meta-button("load", "file_upload")
       +meta-button("save", "file_download")
       +meta-button("view pdf", "note")
+    //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
+    .modal#alert-message-modal
+      .modal-content
+        h4.modal-content-title Message
+        p.modal-content-body Text content
+      .modal-footer
+        a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves href="#!") OK
     h3 Editor
     mixin content-card(cardId)
       .row
