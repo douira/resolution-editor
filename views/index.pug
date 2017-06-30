@@ -81,13 +81,16 @@ block content
           //-+icon("arrow_forward", "prefix")
           textarea.materialize-textarea.clause-content-text
           label(for="materialize-textarea") Clause Content
+        a.btn.white-text.btn-mrg.add-sub-btn.lighten-1(class=pri)
+          +icon("subdirectory_arrow_right", "left")
+          | Add Subclause
     mixin clause-card(cardId, clauseClass, cardType)
       +content-card(cardId)
         h5=cardType + " Clauses"
         .clause-list
           +clause(clauseClass)
           .divider
-          a.btn.white-text.left.btn-mrg.add-clause-btn.lighten-1(class=pri)
+          a.btn.white-text.btn-mrg.add-clause-btn.lighten-1(class=pri)
             +icon("add", "left")
             | Add Clause
     +content-card("meta-data")
