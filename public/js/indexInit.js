@@ -1,4 +1,6 @@
 /*jshint asi: false, esnext: false, browser: true, jquery: true, indent: 2*/
+var dataPrefix = "resEd"; //prefix for data stored in elements
+
 //transforms arrays containign a certain flag in an object and array json structure
 function transformMarkedArrays(structure, flag, propValue, depth) {
   //propValue is null if not given otherwise
@@ -56,7 +58,14 @@ function resetSiblingLabels(field) {
 
 //gets esolution-editor specific data from given dom element
 function getData(context) {
-  return $(context).data("resEd");
+  var gottenData = $(context).data(dataPrefix);
+
+  //make data if none present
+  if (typeof gottenData === "undefined") {
+    gottenData = {};
+    $(context).data(dataPrefix, gottenData);
+  }
+  return gottenData;
 }
 
 //registers event handler and init data
@@ -71,7 +80,7 @@ function registerEventsAndData(fieldTypes, initData) {
       //attach data to all elements that match
       elements
         .filter(dataSelector)
-        .data("resEd", initData[dataSelector]);
+        .data(dataPrefix, initData[dataSelector]);
     }
 
     //attach all event handler specified
@@ -238,6 +247,25 @@ $(document).ready(function() {
             $(this).find("textarea, input").trigger("reset");
             $(this).find(".clause-list").remove();
           },
+          editActive: function(e) {
+            e.stopPropagation();
+            getData($(this)).editMode = true;
+
+            //set to false for all other clauses
+            $(".clause").not(this).trigger("editInactive");
+            console.log(this, "active");
+
+            //show edit action buttons
+
+          },
+          editInactive: function(e) {
+            e.stopPropagation();
+            getData($(this)).editMode = false;
+            console.log(this, "inactive");
+
+            //hide edit action buttons
+
+          },
           updateId: function(e) {
             e.stopPropagation();
             //set the displayed id of the clause
@@ -258,7 +286,8 @@ $(document).ready(function() {
           }
         },
         ".add-clause-container": {
-          click: function() {
+          click: function(e) {
+            e.stopPropagation();
             //add a new clause to the enclosing list by
             //duplicating and resetting the first one of the current type
             $(this).siblings(".clause")
@@ -266,11 +295,13 @@ $(document).ready(function() {
               .clone(true, true)
               .trigger("reset")
               .insertBefore(this)
-              .trigger("updateId");
+              .trigger("updateId")
+              .trigger("editActive");
           }
         },
         "#add-sub-btn": {
-          click: function() {
+          click: function(e) {
+            e.stopPropagation();
             var elem = $(this);
 
             //prepare sublause list
@@ -300,6 +331,17 @@ $(document).ready(function() {
 
             //remove this button after subclause was added
             elem.remove();
+          }
+        },
+        ".edit-mode-btn": {
+          click: function(e) {
+            e.stopPropagation();
+
+            //get current clause we are in
+            var thisClause = $(this).closest(".clause");
+
+            //set edit mode for this clause to true
+            thisClause.trigger("editActive");
           }
         }
       },

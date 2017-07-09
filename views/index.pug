@@ -59,7 +59,7 @@ block content
     mixin floating-sm-btn(color, type, icon)
       a.btn-floating(class=color + " " + type): +icon(icon)
     mixin edit-mode-btn
-      a.btn.right.edit-mode-btn.white-text(class=pri)
+      a.edit-mode-btn.btn.right.white-text(class=pri)
         +icon("create", "icon-sm-med")
     mixin clause-card(cardId, clauseType, cardType)
       +content-card(cardId)
