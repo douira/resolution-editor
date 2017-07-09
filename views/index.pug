@@ -58,43 +58,46 @@ block content
           block
     mixin floating-sm-btn(color, type, icon)
       a.btn-floating(class=color + " " + type): +icon(icon)
+    mixin edit-mode-btn
+      a.btn.right.edit-mode-btn.white-text(class=pri)
+        +icon("create", "icon-sm-med")
     mixin clause-card(cardId, clauseType, cardType)
       +content-card(cardId)
         h5=cardType + " Clauses"
         .clause-list
           .clause(clause-type=clauseType)
-            .divider.reduced-width-divider
-            h6.grey-text.text-darken-2
+            .divider
+            h6.grey-text.text-darken-2.clause-title
+              +edit-mode-btn
               span.clause-prefix
               | Clause #
               span.clause-number 1
-            .absolute-fab-wrapper
-              .fixed-action-btn.horizontal.click-to-toggle.absolute-fab
-                a.btn-floating.btn-large.light-blue
-                  +icon("mode_edit")
-                ul
-                  li: +floating-sm-btn("blue", "fab-move-up", "keyboard_arrow_up")
-                  li: +floating-sm-btn("blue", "fab-move-down", "keyboard_arrow_down")
-                  li: +floating-sm-btn("orange", "fab-reset", "restore")
-                  li: +floating-sm-btn("red", "fab-delete", "delete")
             .row
               .col.xl4.m6.s12
                 .input-field
                   input.autocomplete.phrase-input(type="text")
                   label(for=".phrase-input") Phrase
             .input-field
-              //-+icon("arrow_forward", "prefix")
               textarea.materialize-textarea.clause-content-text
               label(for="materialize-textarea") Clause Content
-            a.btn.white-text.mrg-b.clause-list-sub-mrg.add-sub-btn.lighten-1(class=pri)
-              //-subdirectory_arrow_right
-              +icon("format_indent_increase", "left")
-              | Add Subclause
           .add-clause-container
             .divider
             a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)
               +icon("arrow_downward", "left")
               | Add Clause
+    #absolute-fab-wrapper.hide-this
+      .fixed-action-btn.horizontal.click-to-toggle.absolute-fab
+        a.btn-floating.btn-large.light-blue
+          +icon("mode_edit")
+        ul
+          li: +floating-sm-btn("blue", "fab-move-up", "keyboard_arrow_up")
+          li: +floating-sm-btn("blue", "fab-move-down", "keyboard_arrow_down")
+          li: +floating-sm-btn("orange", "fab-reset", "restore")
+          li: +floating-sm-btn("red", "fab-delete", "delete")
+    a#add-sub-btn.btn.white-text.mrg-b.clause-list-sub-mrg.lighten-1.hide-this(class=pri)
+      //-subdirectory_arrow_right
+      +icon("format_indent_increase", "left")
+      | Add Subclause
     +content-card("meta-data")
       form
         .right.btn-floating.btn-large.waves-effect.waves-light.red.reset-button(for="meta-data")

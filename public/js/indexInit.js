@@ -269,7 +269,7 @@ $(document).ready(function() {
               .trigger("updateId");
           }
         },
-        ".add-sub-btn": {
+        "#add-sub-btn": {
           click: function() {
             var elem = $(this);
 
