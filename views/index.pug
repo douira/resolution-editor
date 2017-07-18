@@ -51,16 +51,29 @@ block content
         p.modal-content-body Text content
       .modal-footer
         a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves href="#!") OK
+    mixin floating-sm-btn(color, type, icon)
+      a.btn-floating(class=color + " " + type): +icon(icon)
+    #eab-wrapper.right.hide-this
+      //-
+        .fixed-action-btn.horizontal.click-to-toggle.absolute-fab
+          a.btn-floating.btn-large.light-blue
+            +icon("mode_edit")
+        ul
+          li: +floating-sm-btn("blue", "fab-move-up", "keyboard_arrow_up")
+          li: +floating-sm-btn("blue", "fab-move-down", "keyboard_arrow_down")
+          li: +floating-sm-btn("orange", "fab-reset", "restore")
+          li: +floating-sm-btn("red", "fab-delete", "delete")
+      //-eab stand for edit action button
+      +floating-sm-btn("blue", "eab-move-up", "arrow_downward")
+      +floating-sm-btn("blue", "eab-move-down", "arrow_upward")
+      +floating-sm-btn("orange", "eab-reset", "close")
+      +floating-sm-btn("red", "eab-delete", "delete")
+      +floating-sm-btn("green", "eab-done", "done")
     h3 Editor
     mixin content-card(cardId)
       .row
         .col.s12.z-depth-2(id=cardId class!=attributes.class)
           block
-    mixin floating-sm-btn(color, type, icon)
-      a.btn-floating(class=color + " " + type): +icon(icon)
-    mixin edit-mode-btn
-      a.edit-mode-btn.btn.right.white-text(class=pri)
-        +icon("create", "icon-sm-med")
     mixin clause-card(cardId, clauseType, cardType)
       +content-card(cardId)
         h5=cardType + " Clauses"
@@ -68,7 +81,8 @@ block content
           .clause(clause-type=clauseType)
             .divider
             h6.grey-text.text-darken-2.clause-title
-              +edit-mode-btn
+              a.edit-mode-btn.btn.right.white-text(class=pri)
+                +icon("mode_edit", "icon-sm-med")
               span.clause-prefix
               | Clause #
               span.clause-number 1
@@ -85,17 +99,7 @@ block content
             a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)
               +icon("arrow_downward", "left")
               | Add Clause
-    #absolute-fab-wrapper.hide-this
-      .fixed-action-btn.horizontal.click-to-toggle.absolute-fab
-        a.btn-floating.btn-large.light-blue
-          +icon("mode_edit")
-        ul
-          li: +floating-sm-btn("blue", "fab-move-up", "keyboard_arrow_up")
-          li: +floating-sm-btn("blue", "fab-move-down", "keyboard_arrow_down")
-          li: +floating-sm-btn("orange", "fab-reset", "restore")
-          li: +floating-sm-btn("red", "fab-delete", "delete")
     a#add-sub-btn.btn.white-text.mrg-b.clause-list-sub-mrg.lighten-1.hide-this(class=pri)
-      //-subdirectory_arrow_right
       +icon("format_indent_increase", "left")
       | Add Subclause
     +content-card("meta-data")

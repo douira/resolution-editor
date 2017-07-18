@@ -255,16 +255,26 @@ $(document).ready(function() {
             $(".clause").not(this).trigger("editInactive");
             console.log(this, "active");
 
-            //show edit action buttons
+            //prepare for ui change
+            var elem = $(this);
+            var editModeBtn = elem.find(".edit-mode-btn");
 
+            //hide edit button
+            editModeBtn
+              .hide()
+              .before($("#eab-wrapper").show()); //show edit action buttons
           },
           editInactive: function(e) {
             e.stopPropagation();
             getData($(this)).editMode = false;
             console.log(this, "inactive");
 
-            //hide edit action buttons
+            //show edit button to make switch to edit mode possible again
+            var elem = $(this);
+            elem.find(".edit-mode-btn").show();
 
+            //hide edit action buttons
+            elem.find("#eab-wrapper").hide();
           },
           updateId: function(e) {
             e.stopPropagation();
