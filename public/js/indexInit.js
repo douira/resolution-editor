@@ -157,6 +157,10 @@ var autofillSettings = {
   minLength: 1
 };
 
+//how long to take for the eabs to fade in, fade out doesn't work at all yet
+//set to 0 to disable fading altogether
+var eabFadeInTime = 0;
+
 //makes a autofill settings object
 function makeAutofillSettingsPre(defaultSettings, data, settings) {
   //use default settings if no extra settings given
@@ -197,7 +201,8 @@ $(document).ready(function() {
       //types of fields to attach events and data to
       {
         ".autocomplete": {
-          init: function() {
+          init: function(e) {
+            e.stopPropagation();
             //first convert plain html element to jQuery element because the materialize functions
             //only work on that
             $(this).autocomplete(getData(this));
@@ -235,7 +240,8 @@ $(document).ready(function() {
             elem.removeAttr("style"); //restore size
             resetSiblingLabels(this);
           },
-          removeForeign: function() {
+          removeForeign: function(e) {
+            e.stopPropagation();
             //removes other things than what we put there, like grammarly stuff
             //this may be removed at some point when we get the cloning to work properly
             var otherElements = $(this).siblings().not("label, textarea");
@@ -248,7 +254,8 @@ $(document).ready(function() {
           }
         },
         ".chips": {
-          init: function() {
+          init: function(e) {
+            e.stopPropagation();
             $(this).material_chip(getData(this));
           },
           reset: function(e) {
@@ -287,12 +294,14 @@ $(document).ready(function() {
 
             //show edit button to make switch to edit mode possible again
             var elem = $(this);
-            elem.find(".edit-mode-btn").show();
 
             //hide edit action buttons
-            elem.find("#eab-wrapper")
-              .hide()
-              .insertAfter($("#eab-inactive-anchor"));
+            var eab = elem.find("#eab-wrapper");
+            eab.fadeOut(eabFadeInTime, function() {
+              eab.insertAfter($("#eab-inactive-anchor"));
+              elem.find(".edit-mode-btn").show();
+            });
+
           },
           updateId: function(e) {
             e.stopPropagation();
@@ -309,7 +318,8 @@ $(document).ready(function() {
               $(this).find(".clause-prefix").text("Sub".repeat(subClauseDepth) + "-");
             }
           },
-          attemptRemove: function() {
+          attemptRemove: function(e) {
+            e.stopPropagation();
             //tries to remove this clause
             if (getIndexInParent(this)) {
               //inactivate to make eab go away
@@ -323,6 +333,13 @@ $(document).ready(function() {
 
               //update ids of other clauses around it
               parent.children(".clause").trigger("updateId");
+            }
+          },
+          click: function(e) {
+            //only activate if came from input fields
+            if ($(e.target).is("input, textarea")) {
+              e.stopPropagation();
+              $(this).trigger("editActive");
             }
           }
         },

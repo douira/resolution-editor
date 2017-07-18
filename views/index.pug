@@ -43,7 +43,7 @@ block content
     #meta-buttons
       +meta-button("load", "file_upload")
       +meta-button("save", "file_download")
-      +meta-button("view pdf", "note")
+      +meta-button("view pdf", "description")
     //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
     .modal#alert-message-modal
       .modal-content
@@ -58,7 +58,7 @@ block content
       //-eab stands for edit action button
       +floating-sm-btn("blue", "eab-move-down", "arrow_downward")
       +floating-sm-btn("blue", "eab-move-up", "arrow_upward")
-      +floating-sm-btn("deep-orange", "eab-reset", "clear")
+      +floating-sm-btn("deep-orange", "eab-reset", resetIcon)
       +floating-sm-btn("red", "eab-delete", "delete")
       +floating-sm-btn("green", "eab-done", "done")
     h3 Editor
@@ -97,7 +97,7 @@ block content
     +content-card("meta-data")
       form
         .right.btn-floating.btn-large.waves-effect.waves-light.deep-orange.reset-button(for="meta-data")
-          +icon("clear")
+          +icon(resetIcon)
         h5 General Data
         .divider.reduced-width-divider
         .input-field
