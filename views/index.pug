@@ -53,20 +53,12 @@ block content
         a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves href="#!") OK
     mixin floating-sm-btn(color, type, icon)
       a.btn-floating(class=color + " " + type): +icon(icon)
+    #eab-inactive-anchor
     #eab-wrapper.right.hide-this
-      //-
-        .fixed-action-btn.horizontal.click-to-toggle.absolute-fab
-          a.btn-floating.btn-large.light-blue
-            +icon("mode_edit")
-        ul
-          li: +floating-sm-btn("blue", "fab-move-up", "keyboard_arrow_up")
-          li: +floating-sm-btn("blue", "fab-move-down", "keyboard_arrow_down")
-          li: +floating-sm-btn("orange", "fab-reset", "restore")
-          li: +floating-sm-btn("red", "fab-delete", "delete")
-      //-eab stand for edit action button
-      +floating-sm-btn("blue", "eab-move-up", "arrow_downward")
-      +floating-sm-btn("blue", "eab-move-down", "arrow_upward")
-      +floating-sm-btn("orange", "eab-reset", "close")
+      //-eab stands for edit action button
+      +floating-sm-btn("blue", "eab-move-down", "arrow_downward")
+      +floating-sm-btn("blue", "eab-move-up", "arrow_upward")
+      +floating-sm-btn("deep-orange", "eab-reset", "clear")
       +floating-sm-btn("red", "eab-delete", "delete")
       +floating-sm-btn("green", "eab-done", "done")
     h3 Editor
@@ -104,8 +96,8 @@ block content
       | Add Subclause
     +content-card("meta-data")
       form
-        .right.btn-floating.btn-large.waves-effect.waves-light.red.reset-button(for="meta-data")
-          +icon("delete")
+        .right.btn-floating.btn-large.waves-effect.waves-light.deep-orange.reset-button(for="meta-data")
+          +icon("clear")
         h5 General Data
         .divider.reduced-width-divider
         .input-field

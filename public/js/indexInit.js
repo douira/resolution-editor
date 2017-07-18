@@ -128,6 +128,23 @@ function detectManipulator(elements) {
   }
 }
 
+//function that returns the index of a given element in the prent element it's in
+function getIndexInParent(elem) {
+  elem = $(elem);
+  return elem
+    .parent()
+    .children()
+    .index(elem);
+}
+
+//triggers updateId on all clauses of parent
+function triggerAllIdUpdate(clause) {
+  $(clause)
+    .parent()
+    .children(".clause")
+    .trigger("updateId");
+}
+
 //for making jquery debugging easier:
 $.fn.printThis = function() {
   console.log(this);
@@ -244,8 +261,9 @@ $(document).ready(function() {
           //resets this clause after cloning
           reset: function(e) {
             e.stopPropagation();
-            $(this).find("textarea, input").trigger("reset");
-            $(this).find(".clause-list").remove();
+            var elem = $(this);
+            elem.find("textarea, input").trigger("reset");
+            elem.find(".clause-list").remove();
           },
           editActive: function(e) {
             e.stopPropagation();
@@ -253,7 +271,6 @@ $(document).ready(function() {
 
             //set to false for all other clauses
             $(".clause").not(this).trigger("editInactive");
-            console.log(this, "active");
 
             //prepare for ui change
             var elem = $(this);
@@ -267,24 +284,22 @@ $(document).ready(function() {
           editInactive: function(e) {
             e.stopPropagation();
             getData($(this)).editMode = false;
-            console.log(this, "inactive");
 
             //show edit button to make switch to edit mode possible again
             var elem = $(this);
             elem.find(".edit-mode-btn").show();
 
             //hide edit action buttons
-            elem.find("#eab-wrapper").hide();
+            elem.find("#eab-wrapper")
+              .hide()
+              .insertAfter($("#eab-inactive-anchor"));
           },
           updateId: function(e) {
             e.stopPropagation();
             //set the displayed id of the clause
             $(this)
               .find(".clause-number")
-              .text($(this)
-                .siblings(".clause")
-                .length + 1
-              );
+              .text(getIndexInParent(this) + 1);
           },
           updateTreeDepth: function(e) {
             e.stopPropagation();
@@ -292,6 +307,22 @@ $(document).ready(function() {
             var subClauseDepth = $(this).parents(".clause-list-sub").length;
             if (subClauseDepth) {
               $(this).find(".clause-prefix").text("Sub".repeat(subClauseDepth) + "-");
+            }
+          },
+          attemptRemove: function() {
+            //tries to remove this clause
+            if (getIndexInParent(this)) {
+              //inactivate to make eab go away
+              $(this).trigger("editInactive");
+
+              //save parent
+              var parent = $(this).parent();
+
+              //remove element
+              $(this).remove();
+
+              //update ids of other clauses around it
+              parent.children(".clause").trigger("updateId");
             }
           }
         },
@@ -302,6 +333,7 @@ $(document).ready(function() {
             //duplicating and resetting the first one of the current type
             $(this).siblings(".clause")
               .first()
+              .trigger("editInactive")
               .clone(true, true)
               .trigger("reset")
               .insertBefore(this)
@@ -353,7 +385,45 @@ $(document).ready(function() {
             //set edit mode for this clause to true
             thisClause.trigger("editActive");
           }
-        }
+        },
+        ".eab-move-down": {
+          click: function(e) {
+            e.stopPropagation();
+            var clause = $(this).closest(".clause");
+            clause.next(".clause").after(clause);
+
+            //update id of all clauses in section
+            triggerAllIdUpdate(clause);
+          }
+        },
+        ".eab-move-up": {
+          click: function(e) {
+            e.stopPropagation();
+            var clause = $(this).closest(".clause");
+            clause.prev(".clause").before(clause);
+
+            //update id of all clauses in section
+            triggerAllIdUpdate(clause);
+          }
+        },
+        ".eab-reset": {
+          click: function(e) {
+            e.stopPropagation();
+            $(this).closest(".clause").trigger("reset");
+          }
+        },
+        ".eab-delete": {
+          click: function(e) {
+            e.stopPropagation();
+            $(this).closest(".clause").trigger("attemptRemove");
+          }
+        },
+        ".eab-done": {
+          click: function(e) {
+            e.stopPropagation();
+            $(this).closest(".clause").trigger("editInactive");
+          }
+        },
       },
 
       //data used to inititalize input fields/thingies and their other options
