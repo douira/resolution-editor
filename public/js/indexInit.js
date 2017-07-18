@@ -101,7 +101,7 @@ function makeAlertMessage(type, title, message, buttonText) {
 
   //get the modal element
   var modalElement = $("#alert-message-modal");
-  console.log(modalElement);
+
   //add content to the modal
   modalElement.find(".modal-content-title").html(title);
   modalElement.find(".modal-content-body").html(message);
@@ -187,7 +187,7 @@ $(document).ready(function() {
   $.getJSON("/autofillData.json")
   .fail(function(data, status, error) {
     //log the error we have with getting the data
-    console.log(status, error);
+    console.error(status, error);
     window.alert("Failed to get auto-complete data! Check the console for more info." +
                  "(The editor won't work until you reload the page and the data is downloaded)");
   })
