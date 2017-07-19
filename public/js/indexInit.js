@@ -50,24 +50,6 @@ function transformMarkedArrays(structure, flag, propValue, depth) {
   return structure;
 }
 
-//resets sibling labels
-function resetSiblingLabels(field) {
-  //get the siblings of the field and reset them by removing the active class
-  $(field).siblings("label").removeClass("active");
-}
-
-//gets esolution-editor specific data from given dom element
-function getData(context) {
-  var gottenData = $(context).data(dataPrefix);
-
-  //make data if none present
-  if (typeof gottenData === "undefined") {
-    gottenData = {};
-    $(context).data(dataPrefix, gottenData);
-  }
-  return gottenData;
-}
-
 //registers event handler and init data
 function registerEventsAndData(fieldTypes, initData) {
   //for all types of things we need to attach events to
@@ -111,6 +93,24 @@ function makeAlertMessage(type, title, message, buttonText) {
   modalElement.modal("open");
 }
 
+//resets sibling labels
+function resetSiblingLabels(field) {
+  //get the siblings of the field and reset them by removing the active class
+  $(field).siblings("label").removeClass("active");
+}
+
+//gets resolution-editor specific data from given dom element
+function getData(context) {
+  var gottenData = $(context).data(dataPrefix);
+
+  //make data if none present
+  if (typeof gottenData === "undefined") {
+    gottenData = {};
+    $(context).data(dataPrefix, gottenData);
+  }
+  return gottenData;
+}
+
 //detects and warns about an extension manipulating the content and events on our page
 function detectManipulator(elements) {
   //stop if no elements given
@@ -128,7 +128,7 @@ function detectManipulator(elements) {
   }
 }
 
-//function that returns the index of a given element in the prent element it's in
+//function that returns the index of a given element in the parent element it's in
 function getIndexInParent(elem) {
   elem = $(elem);
   return elem
@@ -143,6 +143,40 @@ function triggerAllIdUpdate(clause) {
     .parent()
     .children(".clause")
     .trigger("updateId");
+}
+
+//returns the collection of clauses the nearest enclosing clause is part of
+function getEnclosingClauseCollection(elem) {
+  return $(elem).closest(".clause").parent().children(".clause");
+}
+
+//updates the disabling state of eab movement buttons, used as event handler
+function makeEabMoveUpdateDisabledHandler(isUpButton) {
+  //return event handler function, type flag is preserved in closure
+  return function(e) {
+    e.stopPropagation();
+
+    //get index of enclosing clause in list of clauses
+    var enclosingClause = $(this).closest(".clause");
+    var clauses = enclosingClause.parent().children(".clause");
+    var clauseIndex = clauses.index(enclosingClause);
+
+    //depending on direction flag, decide wether or not to disable
+    $(this)[
+      (isUpButton ? ! clauseIndex : clauseIndex === clauses.length - 1) ?
+      "addClass" : "removeClass"
+    ]("disabled");
+  };
+}
+
+//checks if clause can be removed
+function checkClauseRemovable(clause) {
+  return $(clause).parent().children(".clause").length >= 2;
+}
+
+//sets the disabled state for element by adding or removing the .disabled class
+function setDisabledState(elem, makeDisabled) {
+  $(elem)[makeDisabled ? "addClass" : "removeClass"]("disabled");
 }
 
 //for making jquery debugging easier:
@@ -308,6 +342,12 @@ $(document).ready(function() {
             $(this)
               .find(".clause-number")
               .text(getIndexInParent(this) + 1);
+
+            //update disabled state of buttons
+            $(this)
+              .find("#eab-wrapper")
+              .children()
+              .trigger("updateDisabled");
           },
           updateTreeDepth: function(e) {
             e.stopPropagation();
@@ -320,7 +360,7 @@ $(document).ready(function() {
           attemptRemove: function(e) {
             e.stopPropagation();
             //tries to remove this clause
-            if (getIndexInParent(this)) {
+            if (checkClauseRemovable(this)) {
               //inactivate to make eab go away
               $(this).trigger("editInactive");
 
@@ -353,8 +393,8 @@ $(document).ready(function() {
               .clone(true, true)
               .trigger("reset")
               .insertBefore(this)
-              .trigger("updateId")
-              .trigger("editActive");
+              .trigger("editActive")
+              .trigger("updateId");
           }
         },
         "#add-sub-btn": {
@@ -400,6 +440,12 @@ $(document).ready(function() {
 
             //set edit mode for this clause to true
             thisClause.trigger("editActive");
+
+            //update disabled state of movement buttons
+            thisClause
+              .find("#eab-wrapper")
+              .children()
+              .trigger("updateDisabled");
           }
         },
         ".eab-move-down": {
@@ -410,7 +456,8 @@ $(document).ready(function() {
 
             //update id of all clauses in section
             triggerAllIdUpdate(clause);
-          }
+          },
+          updateDisabled: makeEabMoveUpdateDisabledHandler(false)
         },
         ".eab-move-up": {
           click: function(e) {
@@ -420,7 +467,8 @@ $(document).ready(function() {
 
             //update id of all clauses in section
             triggerAllIdUpdate(clause);
-          }
+          },
+          updateDisabled: makeEabMoveUpdateDisabledHandler(true)
         },
         ".eab-reset": {
           click: function(e) {
@@ -432,6 +480,12 @@ $(document).ready(function() {
           click: function(e) {
             e.stopPropagation();
             $(this).closest(".clause").trigger("attemptRemove");
+          },
+          updateDisabled: function(e) {
+            e.stopPropagation();
+
+            //check if enclosing clause can be removed
+            setDisabledState(this, ! checkClauseRemovable($(this).closest(".clause")));
           }
         },
         ".eab-done": {
