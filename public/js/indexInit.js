@@ -301,7 +301,6 @@ $(document).ready(function() {
               eab.insertAfter($("#eab-inactive-anchor"));
               elem.find(".edit-mode-btn").show();
             });
-
           },
           updateId: function(e) {
             e.stopPropagation();

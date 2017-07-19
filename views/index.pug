@@ -58,9 +58,15 @@ block content
       //-eab stands for edit action button
       +floating-sm-btn("blue", "eab-move-down", "arrow_downward")
       +floating-sm-btn("blue", "eab-move-up", "arrow_upward")
+      +floating-sm-btn("indigo", "eab-add-sub", "format_indent_increase")
       +floating-sm-btn("deep-orange", "eab-reset", resetIcon)
       +floating-sm-btn("red", "eab-delete", "delete")
       +floating-sm-btn("green", "eab-done", "done")
+    //-
+      #add-sub-inactive-anchor
+        a#add-sub-btn.btn.white-text.mrg-b.clause-list-sub-mrg.lighten-1.hide-this(class=pri)
+          +icon("format_indent_increase", "left")
+          | Add Subclause
     h3 Editor
     mixin content-card(cardId)
       .row
@@ -91,9 +97,6 @@ block content
             a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)
               +icon("add_circle_outline", "left")
               | Add Clause
-    a#add-sub-btn.btn.white-text.mrg-b.clause-list-sub-mrg.lighten-1.hide-this(class=pri)
-      +icon("format_indent_increase", "left")
-      | Add Subclause
     +content-card("meta-data")
       form
         .right.btn-floating.btn-large.waves-effect.waves-light.deep-orange.reset-button(for="meta-data")
