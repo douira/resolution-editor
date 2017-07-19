@@ -52,7 +52,7 @@ block content
       .modal-footer
         a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves href="#!") OK
     mixin floating-sm-btn(color, type, icon)
-      a.btn-floating(class=color + " " + type): +icon(icon)
+      a.btn-floating(class=color id=type): +icon(icon)
     #eab-inactive-anchor
     #eab-wrapper.right.hide-this
       //-eab stands for edit action button

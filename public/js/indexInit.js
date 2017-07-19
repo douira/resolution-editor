@@ -414,7 +414,7 @@ $(document).ready(function() {
             }
           }
         },
-        "#add-sub-btn": {
+        "#eab-add-sub": {
           click: function(e) {
             e.stopPropagation();
             var elem = $(this);
@@ -465,7 +465,7 @@ $(document).ready(function() {
               .trigger("updateDisabled");
           }
         },
-        ".eab-move-down": {
+        "#eab-move-down": {
           click: function(e) {
             e.stopPropagation();
             var clause = $(this).closest(".clause");
@@ -476,7 +476,7 @@ $(document).ready(function() {
           },
           updateDisabled: makeEabMoveUpdateDisabledHandler(false)
         },
-        ".eab-move-up": {
+        "#eab-move-up": {
           click: function(e) {
             e.stopPropagation();
             var clause = $(this).closest(".clause");
@@ -487,13 +487,13 @@ $(document).ready(function() {
           },
           updateDisabled: makeEabMoveUpdateDisabledHandler(true)
         },
-        ".eab-reset": {
+        "#eab-reset": {
           click: function(e) {
             e.stopPropagation();
             $(this).closest(".clause").trigger("reset");
           }
         },
-        ".eab-delete": {
+        "#eab-delete": {
           click: function(e) {
             e.stopPropagation();
             $(this).closest(".clause").trigger("attemptRemove");
@@ -505,7 +505,7 @@ $(document).ready(function() {
             $(this).disabledState(! $(this).closest(".clause").clauseRemovable());
           }
         },
-        ".eab-done": {
+        "#eab-done": {
           click: function(e) {
             e.stopPropagation();
             $(this).closest(".clause").trigger("editInactive");
