@@ -193,12 +193,10 @@ $.fn.indexInParent = function() {
 
 //triggers updateId on all clauses of parent
 $.fn.triggerAllIdUpdate = function() {
-  return this.each(function() {
-    $(this)
+  return this
       .parent()
       .children(".clause")
       .trigger("updateId");
-  });
 };
 
 //returns the collection of clauses the nearest enclosing clause is part of
@@ -219,6 +217,15 @@ $.fn.disabledState = function(makeDisabled) {
   return this.each(function() {
     $(this)[makeDisabled ? "addClass" : "removeClass"]("disabled");
   });
+};
+
+//triggers several events in order
+$.fn.triggerAll = function(eventNames, params) {
+  //trigger all events with params
+  eventNames.split(/[ ,]+/).forEach(function(event) {
+    this.trigger(event, params);
+  }.bind(this));
+  return this;
 };
 
 //do things when the document has finished loading
@@ -409,8 +416,7 @@ $(document).ready(function() {
                 .clone(true, true)
                 .trigger("reset")
                 .insertBefore(this)
-                .trigger("editActive")
-                .trigger("updateId");
+                .triggerAll("editActive updateId");
             }
           }
         },
@@ -419,33 +425,33 @@ $(document).ready(function() {
             e.stopPropagation();
             var elem = $(this);
 
+            //get enclosing clause and make inactive to prevent cloning of eab
+            var clause = elem.closest(".clause").trigger("editInactive");
+
             //prepare sublause list
-            var newList = elem
-              .parent()
+            var newList = clause
               .append("<div></div>")
               .children()
               .last()
-              .addClass("clause-list clause-list-sub")
-              .append(elem
-                .parent(".clause")
-                .siblings(".add-clause-container")
-                .clone(true, true)
-              );
+              .addClass("clause-list clause-list-sub");
 
             //add new subclause by copying clause without phrase field
-            var strippedClause = elem
-              .parent(".clause")
+            var strippedClause = clause
               .clone(true, true)
               .trigger("reset");
             strippedClause
               .children(".row")
               .remove();
             strippedClause
-              .insertBefore(newList.find(".add-clause-container"))
-              .trigger("updateId").trigger("updateTreeDepth"); //why does it have to be this way?
+              .appendTo(newList)
+              .triggerAll("updateId updateTreeDepth editActive");
+          },
+          updateDisabled: function(e) {
+            e.stopPropagation();
 
-            //remove this button after subclause was added
-            elem.remove();
+            //check if we've reached the max depth of sub clauses for this type of clause
+            //(different for op or preamb)
+
           }
         },
         ".edit-mode-btn": {
