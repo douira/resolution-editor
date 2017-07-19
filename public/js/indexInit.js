@@ -13,10 +13,6 @@ var allowedSubclauseDepth = {
   preamb: 1
 };
 
-//how long to take for the eabs to fade in, fade out doesn't work at all yet
-//set to 0 to disable fading altogether
-var eabFadeInTime = 0;
-
 //makes a autofill settings object
 function makeAutofillSettingsPre(defaultSettings, data, settings) {
   //use default settings if no extra settings given
@@ -215,7 +211,7 @@ $.fn.clauseRemovable = function() {
   return this
     .parent()
     .children(".clause")
-    .length >= 2;
+    .length >= 2 || this.closest(".clause-list").is(".clause-list-sub");
 };
 
 //sets the disabled state for element by adding or removing the .disabled class
@@ -328,8 +324,13 @@ $(document).ready(function() {
           reset: function(e) {
             e.stopPropagation();
             var elem = $(this);
-            elem.find("textarea, input").trigger("reset");
+            elem.trigger("clear");
             elem.find(".clause-list").remove();
+          },
+          //clears field content
+          clear: function(e) {
+            e.stopPropagation();
+            $(this).find("textarea, input").trigger("reset");
           },
           editActive: function(e) {
             e.stopPropagation();
@@ -362,10 +363,8 @@ $(document).ready(function() {
 
             //hide edit action buttons
             var eab = elem.find("#eab-wrapper");
-            eab.fadeOut(eabFadeInTime, function() {
-              eab.insertAfter($("#eab-inactive-anchor"));
-              elem.find(".edit-mode-btn").show();
-            });
+            eab.hide().insertAfter($("#eab-inactive-anchor"));
+            elem.find(".edit-mode-btn").show();
           },
           updateId: function(e) {
             e.stopPropagation();
@@ -439,12 +438,15 @@ $(document).ready(function() {
             //get enclosing clause and make inactive to prevent cloning of eab
             var clause = elem.closest(".clause").trigger("editInactive");
 
-            //prepare sublause list
-            var newList = clause
-              .append("<div></div>")
-              .children()
-              .last()
-              .addClass("clause-list clause-list-sub");
+            //prepare sublause list, reuse already present one if found
+            var subList = clause.children(".clause-list");
+            if (! subList.length) {
+              subList = clause
+                .append("<div></div>")
+                .children()
+                .last()
+                .addClass("clause-list clause-list-sub");
+            }
 
             //add new subclause by copying clause without phrase field
             var strippedClause = clause
@@ -454,7 +456,7 @@ $(document).ready(function() {
               .children(".row")
               .remove();
             strippedClause
-              .appendTo(newList)
+              .appendTo(subList)
               .triggerAll("updateId updateTreeDepth editActive");
           },
           updateDisabled: function(e) {
@@ -508,10 +510,10 @@ $(document).ready(function() {
           },
           updateDisabled: makeEabMoveUpdateDisabledHandler(true)
         },
-        "#eab-reset": {
+        "#eab-clear": {
           click: function(e) {
             e.stopPropagation();
-            $(this).closest(".clause").trigger("reset");
+            $(this).closest(".clause").trigger("clear");
           }
         },
         "#eab-delete": {
