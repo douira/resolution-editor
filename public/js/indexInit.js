@@ -7,6 +7,12 @@ var autofillSettings = {
   minLength: 1
 };
 
+//number of subclauses allowed for op and preamb clauses
+var allowedSubclauseDepth = {
+  op: 2,
+  preamb: 1
+};
+
 //how long to take for the eabs to fade in, fade out doesn't work at all yet
 //set to 0 to disable fading altogether
 var eabFadeInTime = 0;
@@ -228,6 +234,11 @@ $.fn.triggerAll = function(eventNames, params) {
   return this;
 };
 
+//returns the number of ancestors that match the given selector this element has
+$.fn.amountAbove = function(selector) {
+  return this.parents(selector).length;
+};
+
 //do things when the document has finished loading
 $(document).ready(function() {
   //load external sponsor, phrase and forum name data
@@ -372,7 +383,7 @@ $(document).ready(function() {
           updateTreeDepth: function(e) {
             e.stopPropagation();
             //updates the tree depth of this clause and adds "Sub"s to the clause name
-            var subClauseDepth = $(this).parents(".clause-list-sub").length;
+            var subClauseDepth = $(this).amountAbove(".clause-list-sub");
             if (subClauseDepth) {
               $(this).find(".clause-prefix").text("Sub".repeat(subClauseDepth) + "-");
             }
@@ -451,7 +462,11 @@ $(document).ready(function() {
 
             //check if we've reached the max depth of sub clauses for this type of clause
             //(different for op or preamb)
-
+            var allowedDepth = allowedSubclauseDepth[
+              $(this).closest(".clause").attr("data-clause-type")
+            ];
+            var currentDepth = $(this).amountAbove(".clause-list-sub");
+            $(this).disabledState(currentDepth >= allowedDepth);
           }
         },
         ".edit-mode-btn": {
