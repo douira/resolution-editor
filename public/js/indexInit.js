@@ -1,6 +1,35 @@
 /*jshint asi: false, esnext: false, browser: true, jquery: true, indent: 2*/
 var dataPrefix = "resEd"; //prefix for data stored in elements
 
+//global autofill settings
+var autofillSettings = {
+  limit: 20,
+  minLength: 1
+};
+
+//how long to take for the eabs to fade in, fade out doesn't work at all yet
+//set to 0 to disable fading altogether
+var eabFadeInTime = 0;
+
+//makes a autofill settings object
+function makeAutofillSettingsPre(defaultSettings, data, settings) {
+  //use default settings if no extra settings given
+  if (typeof settings === "undefined") {
+    settings = defaultSettings;
+  }
+
+  //merge settings and data prop object
+  return $.extend({
+    data: data
+  }, settings);
+}
+
+//flag for keepng track of wether or not the editor can be used
+var canUseEditor = false; //false until data loaded
+
+//attach the default settings
+var makeAutofillSettings = makeAutofillSettingsPre.bind({}, autofillSettings);
+
 //transforms arrays containign a certain flag in an object and array json structure
 function transformMarkedArrays(structure, flag, propValue, depth) {
   //propValue is null if not given otherwise
@@ -93,63 +122,6 @@ function makeAlertMessage(type, title, message, buttonText) {
   modalElement.modal("open");
 }
 
-//resets sibling labels
-function resetSiblingLabels(field) {
-  //get the siblings of the field and reset them by removing the active class
-  $(field).siblings("label").removeClass("active");
-}
-
-//gets resolution-editor specific data from given dom element
-function getData(context) {
-  var gottenData = $(context).data(dataPrefix);
-
-  //make data if none present
-  if (typeof gottenData === "undefined") {
-    gottenData = {};
-    $(context).data(dataPrefix, gottenData);
-  }
-  return gottenData;
-}
-
-//detects and warns about an extension manipulating the content and events on our page
-function detectManipulator(elements) {
-  //stop if no elements given
-  if (! elements.length) {
-    return;
-  }
-
-  //detect grammarly
-  if (elements.filter("grammarly-ghost").length) {
-    //make disabling alert
-    makeAlertMessage("alert", "Attention!", "Please <b>disable</b> Grammarly spellchecking on this website because it may break the website visually, its internal workings or even obstruct its usage. It's advised that you save your progress before <b>reloading</b> the page after having disabled Grammarly or any other Browser extention that manipulates website content. Grammarly integration may become a feature some time in the future.", "Yes, I will do that now"); // jshint ignore:line
-
-    //set flag in case modal breaks
-    canUseEditor = false;
-  }
-}
-
-//function that returns the index of a given element in the parent element it's in
-function getIndexInParent(elem) {
-  elem = $(elem);
-  return elem
-    .parent()
-    .children()
-    .index(elem);
-}
-
-//triggers updateId on all clauses of parent
-function triggerAllIdUpdate(clause) {
-  $(clause)
-    .parent()
-    .children(".clause")
-    .trigger("updateId");
-}
-
-//returns the collection of clauses the nearest enclosing clause is part of
-function getEnclosingClauseCollection(elem) {
-  return $(elem).closest(".clause").parent().children(".clause");
-}
-
 //updates the disabling state of eab movement buttons, used as event handler
 function makeEabMoveUpdateDisabledHandler(isUpButton) {
   //return event handler function, type flag is preserved in closure
@@ -169,50 +141,85 @@ function makeEabMoveUpdateDisabledHandler(isUpButton) {
   };
 }
 
-//checks if clause can be removed
-function checkClauseRemovable(clause) {
-  return $(clause).parent().children(".clause").length >= 2;
-}
 
-//sets the disabled state for element by adding or removing the .disabled class
-function setDisabledState(elem, makeDisabled) {
-  $(elem)[makeDisabled ? "addClass" : "removeClass"]("disabled");
-}
+//register jquery plugins
+//resets sibling labels
+$.fn.resetSiblingLabels = function() {
+  return this.each(function() {
+    //get the siblings of the field and reset them by removing the active class
+    $(this).siblings("label").removeClass("active");
+  });
+};
 
-//for making jquery debugging easier:
+//gets resolution-editor specific data from given dom element
+$.fn.getData = function() {
+  var gottenData = this.data(dataPrefix);
+
+  //make data if none present
+  if (typeof gottenData === "undefined") {
+    gottenData = {};
+    this.data(dataPrefix, gottenData);
+  }
+  return gottenData;
+};
+
+//detects and warns about an extension manipulating the content and events on our page
+$.fn.detectManipulator = function() {
+  return this.each(function() {
+    //detect grammarly
+    if ($(this).filter("grammarly-ghost").length) {
+      //make disabling alert
+      makeAlertMessage("alert", "<i class='material-icons small'>error_outline</i> Attention!", "Please <b>disable</b> Grammarly spellchecking on this website because it may break the website visually, its internal workings or even obstruct its usage. It's advised that you save your progress before <b>reloading</b> the page after having disabled Grammarly or any other browser extention that manipulates website content. Grammarly integration may become a feature some time in the future.", "Yes, I will do that now"); // jshint ignore:line
+
+      //set flag in case modal breaks
+      canUseEditor = false;
+    }
+  });
+};
+
+//prints for making jquery debugging easier:
 $.fn.printThis = function() {
   console.log(this);
   return this;
 };
 
-//global autofill settings
-var autofillSettings = {
-  limit: 20,
-  minLength: 1
+//function that returns the index of a given element in the parent element it's in
+$.fn.indexInParent = function() {
+  return this
+    .parent()
+    .children()
+    .index(this);
 };
 
-//how long to take for the eabs to fade in, fade out doesn't work at all yet
-//set to 0 to disable fading altogether
-var eabFadeInTime = 0;
+//triggers updateId on all clauses of parent
+$.fn.triggerAllIdUpdate = function() {
+  return this.each(function() {
+    $(this)
+      .parent()
+      .children(".clause")
+      .trigger("updateId");
+  });
+};
 
-//makes a autofill settings object
-function makeAutofillSettingsPre(defaultSettings, data, settings) {
-  //use default settings if no extra settings given
-  if (typeof settings === "undefined") {
-    settings = defaultSettings;
-  }
+//returns the collection of clauses the nearest enclosing clause is part of
+/*$.fn.enclosingClauseCollection = function() {
+  return this.closest(".clause").parent().children(".clause");
+};*/
 
-  //merge settings and data prop object
-  return $.extend({
-    data: data
-  }, settings);
-}
+//checks if clause can be removed
+$.fn.clauseRemovable = function() {
+  return this
+    .parent()
+    .children(".clause")
+    .length >= 2;
+};
 
-//flag for keepng track of wether or not the editor can be used
-var canUseEditor = false; //false until data loaded
-
-//attach the default settings
-var makeAutofillSettings = makeAutofillSettingsPre.bind({}, autofillSettings);
+//sets the disabled state for element by adding or removing the .disabled class
+$.fn.disabledState = function(makeDisabled) {
+  return this.each(function() {
+    $(this)[makeDisabled ? "addClass" : "removeClass"]("disabled");
+  });
+};
 
 //do things when the document has finished loading
 $(document).ready(function() {
@@ -239,7 +246,7 @@ $(document).ready(function() {
             e.stopPropagation();
             //first convert plain html element to jQuery element because the materialize functions
             //only work on that
-            $(this).autocomplete(getData(this));
+            $(this).autocomplete($(this).getData());
           }
         },
         ".modal": {
@@ -254,8 +261,7 @@ $(document).ready(function() {
         "input": {
           reset: function(e) {
             e.stopPropagation();
-            $(this).val("");
-            resetSiblingLabels(this);
+            $(this).val("").resetSiblingLabels();
           }
         },
         "textarea": {
@@ -270,18 +276,19 @@ $(document).ready(function() {
           reset: function(e) {
             e.stopPropagation();
             var elem = $(this);
-            elem.val(""); //empty content
-            elem.removeAttr("style"); //restore size
-            resetSiblingLabels(this);
+            elem
+              .val("") //empty content
+              .removeAttr("style") //restore size
+              .resetSiblingLabels();
           },
           removeForeign: function(e) {
             e.stopPropagation();
             //removes other things than what we put there, like grammarly stuff
             //this may be removed at some point when we get the cloning to work properly
-            var otherElements = $(this).siblings().not("label, textarea");
-
-            //if any found, detect and remove
-            detectManipulator(otherElements);
+            $(this)
+              .siblings()
+              .not("label, textarea")
+              .detectManipulator();
 
             //cleanup textarea element
             $(this).removeAttr("data-gramm");
@@ -290,7 +297,7 @@ $(document).ready(function() {
         ".chips": {
           init: function(e) {
             e.stopPropagation();
-            $(this).material_chip(getData(this));
+            $(this).material_chip($(this).getData());
           },
           reset: function(e) {
             e.stopPropagation();
@@ -308,7 +315,7 @@ $(document).ready(function() {
           },
           editActive: function(e) {
             e.stopPropagation();
-            getData($(this)).editMode = true;
+            $(this).getData().editMode = true;
 
             //set to false for all other clauses
             $(".clause").not(this).trigger("editInactive");
@@ -321,10 +328,16 @@ $(document).ready(function() {
             editModeBtn
               .hide()
               .before($("#eab-wrapper").show()); //show edit action buttons
+
+            //update eab button disable
+            $(this)
+              .find("#eab-wrapper")
+              .children()
+              .trigger("updateDisabled");
           },
           editInactive: function(e) {
             e.stopPropagation();
-            getData($(this)).editMode = false;
+            $(this).getData().editMode = false;
 
             //show edit button to make switch to edit mode possible again
             var elem = $(this);
@@ -341,7 +354,7 @@ $(document).ready(function() {
             //set the displayed id of the clause
             $(this)
               .find(".clause-number")
-              .text(getIndexInParent(this) + 1);
+              .text($(this).indexInParent() + 1);
 
             //update disabled state of buttons
             $(this)
@@ -360,7 +373,7 @@ $(document).ready(function() {
           attemptRemove: function(e) {
             e.stopPropagation();
             //tries to remove this clause
-            if (checkClauseRemovable(this)) {
+            if ($(this).clauseRemovable()) {
               //inactivate to make eab go away
               $(this).trigger("editInactive");
 
@@ -385,16 +398,20 @@ $(document).ready(function() {
         ".add-clause-container": {
           click: function(e) {
             e.stopPropagation();
-            //add a new clause to the enclosing list by
-            //duplicating and resetting the first one of the current type
-            $(this).siblings(".clause")
-              .first()
-              .trigger("editInactive")
-              .clone(true, true)
-              .trigger("reset")
-              .insertBefore(this)
-              .trigger("editActive")
-              .trigger("updateId");
+
+            //only respond if button itself was clicked and not just the enclosing div
+            if ($(e.target).is("a")) {
+              //add a new clause to the enclosing list by
+              //duplicating and resetting the first one of the current type
+              $(this).siblings(".clause")
+                .first()
+                .trigger("editInactive")
+                .clone(true, true)
+                .trigger("reset")
+                .insertBefore(this)
+                .trigger("editActive")
+                .trigger("updateId");
+            }
           }
         },
         "#add-sub-btn": {
@@ -455,7 +472,7 @@ $(document).ready(function() {
             clause.next(".clause").after(clause);
 
             //update id of all clauses in section
-            triggerAllIdUpdate(clause);
+            clause.triggerAllIdUpdate();
           },
           updateDisabled: makeEabMoveUpdateDisabledHandler(false)
         },
@@ -466,7 +483,7 @@ $(document).ready(function() {
             clause.prev(".clause").before(clause);
 
             //update id of all clauses in section
-            triggerAllIdUpdate(clause);
+            clause.triggerAllIdUpdate();
           },
           updateDisabled: makeEabMoveUpdateDisabledHandler(true)
         },
@@ -485,7 +502,7 @@ $(document).ready(function() {
             e.stopPropagation();
 
             //check if enclosing clause can be removed
-            setDisabledState(this, ! checkClauseRemovable($(this).closest(".clause")));
+            $(this).disabledState(! $(this).closest(".clause").clauseRemovable());
           }
         },
         ".eab-done": {
