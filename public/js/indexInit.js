@@ -325,7 +325,10 @@ $(document).ready(function() {
           //clears field content
           clear: function(e) {
             e.stopPropagation();
-            $(this).find("textarea, input").trigger("reset");
+            $(this)
+              .find("textarea,input")
+              .not(".clause-list-sub textarea,input")
+              .trigger("reset");
           },
           editActive: function(e) {
             e.stopPropagation();
