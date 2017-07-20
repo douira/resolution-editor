@@ -11,7 +11,8 @@
  
  install after cloning the repo with `npm install` (I can try to help you to set this up if you run into problems unsolvable with google)
  
- Code style has to be adapted to the already used style and kept as consistent as possible:
+ Code style has to be adapted to the already used style and kept as consistent as possible.
+ Including but not limited to the following:
  - Indent everything with 2 spaces
  - Use JSHint with the given configuration file to validate your code before comitting (and remove all errors!)
  
