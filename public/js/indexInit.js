@@ -436,14 +436,20 @@ $(document).ready(function() {
             //get enclosing clause and make inactive to prevent cloning of eab
             var clause = elem.closest(".clause").trigger("editInactive");
 
-            //prepare sublause list, reuse already present one if found
+            //prepare sublause list, extend already present one if found
             var subList = clause.children(".clause-list");
             if (! subList.length) {
+              //get a clause list and attach to clause
               subList = clause
-                .append("<div></div>")
-                .children()
-                .last()
-                .addClass("clause-list clause-list-sub");
+                .closest(".clause-list")
+                .clone(true, true)
+                .addClass("clause-list-sub"); //make a sublcause list by adding sigifying class
+
+              //remove left over clauses from clone
+              subList.children().not(".add-clause-container").remove();
+
+              //add created list to clause
+              clause.append(subList);
             }
 
             //add new subclause by copying clause without phrase field
@@ -451,10 +457,10 @@ $(document).ready(function() {
               .clone(true, true)
               .trigger("reset");
             strippedClause
-              .children(".row")
+              .children(".phrase-input-wrapper") //.row
               .remove();
             strippedClause
-              .appendTo(subList)
+              .prependTo(subList)
               .triggerAll("updateId updateTreeDepth editActive");
           },
           updateDisabled: function(e) {
