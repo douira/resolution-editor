@@ -439,7 +439,7 @@ $(document).ready(function() {
                 .clone(true, true)
                 .trigger("reset")
                 .insertBefore(this)
-                .triggerAll("updateId editActive").printThis();
+                .triggerAll("updateId editActive");
             }
           }
         },
