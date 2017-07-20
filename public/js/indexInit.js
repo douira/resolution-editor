@@ -181,7 +181,7 @@ $.fn.detectManipulator = function() {
 
 //prints for making jquery debugging easier:
 $.fn.printThis = function() {
-  console.log(this);
+  console.log($(this));
   return this;
 };
 
@@ -200,11 +200,6 @@ $.fn.triggerAllIdUpdate = function() {
       .children(".clause")
       .trigger("updateId");
 };
-
-//returns the collection of clauses the nearest enclosing clause is part of
-/*$.fn.enclosingClauseCollection = function() {
-  return this.closest(".clause").parent().children(".clause");
-};*/
 
 //checks if clause can be removed
 $.fn.clauseRemovable = function() {
@@ -334,14 +329,12 @@ $(document).ready(function() {
           },
           editActive: function(e) {
             e.stopPropagation();
-            $(this).getData().editMode = true;
-
-            //set to false for all other clauses
+            //make all other clauses inactive
             $(".clause").not(this).trigger("editInactive");
 
-            //prepare for ui change
+            //find the edit mode button for this clause (not descendants!)
             var elem = $(this);
-            var editModeBtn = elem.find(".edit-mode-btn");
+            var editModeBtn = elem.find(".edit-mode-btn").first();
 
             //hide edit button
             editModeBtn
@@ -356,7 +349,6 @@ $(document).ready(function() {
           },
           editInactive: function(e) {
             e.stopPropagation();
-            $(this).getData().editMode = false;
 
             //show edit button to make switch to edit mode possible again
             var elem = $(this);
@@ -418,15 +410,18 @@ $(document).ready(function() {
 
             //only respond if button itself was clicked and not just the enclosing div
             if ($(e.target).is("a")) {
+              //inactivate all clauses
+              $(".clause").trigger("editInactive");
+
               //add a new clause to the enclosing list by
               //duplicating and resetting the first one of the current type
-              $(this).siblings(".clause")
+              $(this)
+                .siblings(".clause")
                 .first()
-                .trigger("editInactive")
                 .clone(true, true)
                 .trigger("reset")
                 .insertBefore(this)
-                .triggerAll("editActive updateId");
+                .triggerAll("updateId editActive").printThis();
             }
           }
         },
