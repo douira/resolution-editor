@@ -36,14 +36,14 @@ block content
         "The interface provides hints and is usable on any device. You can generate a formatted document, add a clause or reorder with the push of a button. We'll do all the heavy lifting in the background and you just have to worry about what you want to say.")
 
   .section#editor-main: .container
-    mixin meta-button(text, icon)
-      a.waves-effect.waves-light.btn.right.white-text(class=pri)
+    mixin meta-button(text, icon, tooltipText)
+      a.waves-effect.waves-light.btn.right.white-text(class=pri)&attributes(tooltip(tooltipText, "top"))
         +icon(icon, "left")
         =text
     #meta-buttons
-      +meta-button("load", "file_upload")
-      +meta-button("save", "file_download")
-      +meta-button("view pdf", "description")
+      +meta-button("load", "file_upload", "Loades a resolution from a file")
+      +meta-button("save", "file_download", "Downloads the resolution in a resusable format")
+      +meta-button("view pdf", "description", "Generates a formatted PDF document")
     //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
     .modal#alert-message-modal
       .modal-content
@@ -51,17 +51,17 @@ block content
         p.modal-content-body Text content
       .modal-footer
         a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
-    mixin floating-sm-btn(color, type, icon)
-      a.btn-floating(class=color id=type): +icon(icon)
+    mixin floating-sm-btn(color, type, icon, tooltipText)
+      a.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)
     #eab-inactive-anchor
     #eab-wrapper.right.hide-this
       //-eab stands for edit action button
-      +floating-sm-btn("blue", "eab-move-down", "arrow_downward")
-      +floating-sm-btn("blue", "eab-move-up", "arrow_upward")
-      +floating-sm-btn("indigo", "eab-add-sub", "format_indent_increase")
-      +floating-sm-btn("deep-orange", "eab-clear", resetIcon)
-      +floating-sm-btn("red", "eab-delete", "delete")
-      +floating-sm-btn("green", "eab-done", "done")
+      +floating-sm-btn("blue", "eab-move-down", "arrow_downward", "Moves this clause down one space")
+      +floating-sm-btn("blue", "eab-move-up", "arrow_upward", "Moves this clause up one space")
+      +floating-sm-btn("indigo", "eab-add-sub", "format_indent_increase", "Creates a subclause in this clause")
+      +floating-sm-btn("deep-orange", "eab-clear", resetIcon, "Resets the fields in this clause")
+      +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
+      +floating-sm-btn("green", "eab-done", "done", "Finish editing and inactivate edit mode")
     h3 Editor
     mixin content-card(cardId)
       .row
@@ -74,7 +74,7 @@ block content
           .clause(data-clause-type=clauseType)
             .divider
             h6.grey-text.text-darken-2.clause-title
-              a.edit-mode-btn.btn.right.white-text(class=pri)
+              a.edit-mode-btn.btn.right.white-text(class=pri)&attributes(tooltip("Activates editing of this clause", "left"))
                 +icon("mode_edit", "icon-sm-med")
               span.clause-prefix
               | Clause #
@@ -89,12 +89,12 @@ block content
               label(for="materialize-textarea") Clause Content
           .add-clause-container
             .divider
-            a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)
+            a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)&attributes(tooltip("Adds a new clause to the list", "right"))
               +icon("add_circle_outline", "left")
               | Add Clause
     +content-card("meta-data")
       form
-        .right.btn-floating.btn-large.waves-effect.waves-light.deep-orange.reset-button(for="meta-data")
+        .right.btn-floating.btn-large.waves-effect.waves-light.deep-orange.reset-button(for="meta-data")&attributes(tooltip("Resets these fields", "left"))
           +icon(resetIcon)
         h5 General Data
         .divider.reduced-width-divider
