@@ -209,6 +209,11 @@ $.fn.clauseRemovable = function() {
     .length >= 2 || this.closest(".clause-list").is(".clause-list-sub");
 };
 
+//checks if elemnt is a subclause
+$.fn.isSubClause = function() {
+  return this.closest(".clause-list").is(".clause-list-sub");
+};
+
 //sets the disabled state for element by adding or removing the .disabled class
 $.fn.disabledState = function(makeDisabled) {
   return this.each(function() {
@@ -349,6 +354,11 @@ $(document).ready(function() {
               .find("#eab-wrapper")
               .children()
               .trigger("updateDisabled");
+
+            //show add clause button if we're in a subclause (otherwise it's always visible)
+            if (elem.isSubClause()) {
+              elem.siblings(".add-clause-container").show();
+            }
           },
           editInactive: function(e) {
             e.stopPropagation();
@@ -360,6 +370,11 @@ $(document).ready(function() {
             var eab = elem.find("#eab-wrapper");
             eab.hide().insertAfter($("#eab-inactive-anchor"));
             elem.find(".edit-mode-btn").show();
+
+            //hide add clause button if we're a subclause
+            if (elem.isSubClause()) {
+              elem.siblings(".add-clause-container").hide();
+            }
           },
           updateId: function(e) {
             e.stopPropagation();
@@ -448,7 +463,7 @@ $(document).ready(function() {
               //remove left over clauses from clone
               subList.children().not(".add-clause-container").remove();
 
-              //add created list to clause
+              //add created list to clause, add clause button will be made visible by clause event
               clause.append(subList);
             }
 
@@ -457,7 +472,7 @@ $(document).ready(function() {
               .clone(true, true)
               .trigger("reset");
             strippedClause
-              .children(".phrase-input-wrapper") //.row
+              .children(".phrase-input-wrapper")
               .remove();
             strippedClause
               .prependTo(subList)
