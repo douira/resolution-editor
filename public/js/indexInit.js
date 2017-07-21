@@ -476,7 +476,10 @@ $(document).ready(function() {
               .remove();
             strippedClause
               .prependTo(subList)
-              .triggerAll("updateId updateTreeDepth editActive");
+              .triggerAll("updateTreeDepth editActive");
+
+            //update is of all clauses in list
+            subList.children(".clause").trigger("updateId");
           },
           updateDisabled: function(e) {
             e.stopPropagation();
