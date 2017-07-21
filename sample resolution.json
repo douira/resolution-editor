@@ -34,7 +34,8 @@
           "sub": [
             "preambulatory clauses to describe the problem of the topic and",
             "operative clauses to express solutions for it"
-          ]
+          ],
+          "contentExt": "You can also continue with the clause after a single block of subclauses! This can only be done once per clause and onyl if at least one subclause is present."
         },
         {
           "phrase": "Fully aware",

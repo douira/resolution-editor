@@ -1,4 +1,7 @@
-/*jshint asi: false, esnext: false, browser: true, jquery: true, indent: 2*/
+/*jshint esnext: false, browser: true, jquery: true*/
+/*global loadFilePick, makePdfDisplay, saveFileDownload: true*/
+//registers events and data, controls interaction behavior
+
 var dataPrefix = "resEd"; //prefix for data stored in elements
 
 //global autofill settings
@@ -298,8 +301,7 @@ $(document).ready(function() {
           },
           reset: function(e) {
             e.stopPropagation();
-            var elem = $(this);
-            elem
+            $(this)
               .val("") //empty content
               .removeAttr("style") //restore size
               .resetSiblingLabels();
@@ -592,6 +594,41 @@ $(document).ready(function() {
             $(this).closest(".clause").trigger("editInactive");
           }
         },
+
+        //file actions are defined in a seperate file
+        "#file-action-load": {
+          click: function(e) {
+            e.stopPropagation();
+
+            //prepare loading: reset to original state
+            $(".clause-list:not .clause-list-sub").children(".clause").trigger("attemptRemove");
+
+            //load file from computer file system
+            loadFilePick($("#editor-main"));
+          }
+        },
+        "#file-action-save": {
+          click: function(e) {
+            e.stopPropagation();
+
+            //finalize editing on all fields
+            $(".clause").trigger("editInactive");
+
+            //save file to be downloaded
+            saveFileDownload($("#editor-main"));
+          }
+        },
+        "#file-action-pdf": {
+          click: function(e) {
+            e.stopPropagation();
+
+            //finalize editing on all fields
+            $(".clause").trigger("editInactive");
+
+            //display pdf directly after generating
+            makePdfDisplay($("#editor-main"));
+          }
+        }
       },
 
       //data used to inititalize input fields/thingies and their other options
