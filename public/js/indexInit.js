@@ -562,9 +562,10 @@ $(document).ready(function() {
 
             //set disabled state according to wether or not a subclause can be added
             //also can't un-hide again (disabled if visible)
+            var clause = $(this).closest(".clause");
             $(this).disabledState(
-              ! $(this).canReceiveSubclause() ||
-              $(this).closest(".clause").children(".clause-content-ext:visible").length);
+              ! clause.find(".clause").length || //disable if doesn't already have subclause
+              clause.children(".clause-content-ext:visible").length); //disable if already there
           }
         },
         "#eab-clear": {
