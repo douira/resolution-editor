@@ -342,8 +342,8 @@ $(document).ready(function() {
 
             //clear fields
             $(this)
+              .children(".phrase-input-wrapper,.clause-content,.clause-content-ext")
               .find("textarea,input")
-              .not(".clause-list-sub textarea,input")
               .trigger("reset");
 
             //re-hide extended clause content
