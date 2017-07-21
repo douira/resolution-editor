@@ -230,6 +230,15 @@ $.fn.triggerAll = function(eventNames, params) {
   return this;
 };
 
+//checks if a subclause is allowed to be added to element
+$.fn.canReceiveSubclause = function() {
+  //check if we've reached the max depth of sub clauses for this type of clause
+  //(different for op or preamb)
+  return this.amountAbove(".clause-list-sub") < allowedSubclauseDepth[
+    this.closest(".clause").attr("data-clause-type")
+  ];
+};
+
 //returns the number of ancestors that match the given selector this element has
 $.fn.amountAbove = function(selector) {
   return this.parents(selector).length;
@@ -330,10 +339,21 @@ $(document).ready(function() {
           //clears field content
           clear: function(e) {
             e.stopPropagation();
+
+            //clear fields
             $(this)
               .find("textarea,input")
               .not(".clause-list-sub textarea,input")
               .trigger("reset");
+
+            //re-hide extended clause content
+            $(this).children(".clause-content-ext").hide();
+
+            //update add-ext disabled state of eab in this clause
+            $(this)
+              .find("#eab-add-ext")
+              .not(".clause-list-sub #eab-add-ext")
+              .trigger("updateDisabled");
           },
           editActive: function(e) {
             e.stopPropagation();
@@ -443,56 +463,6 @@ $(document).ready(function() {
             }
           }
         },
-        "#eab-add-sub": {
-          click: function(e) {
-            e.stopPropagation();
-            var elem = $(this);
-
-            //get enclosing clause and make inactive to prevent cloning of eab
-            var clause = elem.closest(".clause").trigger("editInactive");
-
-            //prepare sublause list, extend already present one if found
-            var subList = clause.children(".clause-list");
-            if (! subList.length) {
-              //get a clause list and attach to clause
-              subList = clause
-                .closest(".clause-list")
-                .clone(true, true)
-                .addClass("clause-list-sub"); //make a sublcause list by adding sigifying class
-
-              //remove left over clauses from clone
-              subList.children().not(".add-clause-container").remove();
-
-              //add created list to clause, add clause button will be made visible by clause event
-              clause.append(subList);
-            }
-
-            //add new subclause by copying clause without phrase field
-            var strippedClause = clause
-              .clone(true, true)
-              .trigger("reset");
-            strippedClause
-              .children(".phrase-input-wrapper")
-              .remove();
-            strippedClause
-              .prependTo(subList)
-              .triggerAll("updateTreeDepth editActive");
-
-            //update is of all clauses in list
-            subList.children(".clause").trigger("updateId");
-          },
-          updateDisabled: function(e) {
-            e.stopPropagation();
-
-            //check if we've reached the max depth of sub clauses for this type of clause
-            //(different for op or preamb)
-            var allowedDepth = allowedSubclauseDepth[
-              $(this).closest(".clause").attr("data-clause-type")
-            ];
-            var currentDepth = $(this).amountAbove(".clause-list-sub");
-            $(this).disabledState(currentDepth >= allowedDepth);
-          }
-        },
         ".edit-mode-btn": {
           click: function(e) {
             e.stopPropagation();
@@ -531,6 +501,71 @@ $(document).ready(function() {
             clause.triggerAllIdUpdate();
           },
           updateDisabled: makeEabMoveUpdateDisabledHandler(true)
+        },
+        "#eab-add-sub": {
+          click: function(e) {
+            e.stopPropagation();
+            var elem = $(this);
+
+            //get enclosing clause and make inactive to prevent cloning of eab
+            var clause = elem.closest(".clause").trigger("editInactive");
+
+            //prepare sublause list, extend already present one if found
+            var subList = clause.children(".clause-list");
+            if (! subList.length) {
+              //get a clause list and attach to clause
+              subList = clause
+                .closest(".clause-list")
+                .clone(true, true)
+                .addClass("clause-list-sub"); //make a sublcause list by adding sigifying class
+
+              //remove left over clauses from clone
+              subList.children().not(".add-clause-container").remove();
+
+              //add created list to clause, add clause button will be made visible by clause event
+              clause.children(".clause-list-anchor").after(subList);
+            }
+
+            //add new subclause by copying clause without phrase field
+            var strippedClause = clause
+              .clone(true, true)
+              .trigger("reset");
+            strippedClause
+              .children(".phrase-input-wrapper")
+              .remove();
+            strippedClause
+              .prependTo(subList)
+              .triggerAll("updateTreeDepth editActive");
+
+            //update is of all clauses in list
+            subList.children(".clause").trigger("updateId");
+          },
+          updateDisabled: function(e) {
+            e.stopPropagation();
+
+            //set disabled state according to wether or not a subclause can be added
+            $(this).disabledState(! $(this).canReceiveSubclause());
+          }
+        },
+        "#eab-add-ext": {
+          click: function(e) {
+            e.stopPropagation();
+
+            //un-hide extended clause content field
+            $(this).closest(".clause").children(".clause-content-ext").show();
+
+            //make disabled after action performed
+            $(this).disabledState(true);
+          },
+          updateDisabled: function(e) {
+            e.stopPropagation();
+
+            //set disabled state according to wether or not a subclause can be added
+            //also can't un-hide again (disabled if visible)
+            $(this).disabledState(
+              ! $(this).canReceiveSubclause() ||
+              $(this).closest(".clause").children(".clause-content-ext:visible").length);
+          }
         },
         "#eab-clear": {
           click: function(e) {
