@@ -17,23 +17,21 @@ block content
     br
     .row
       //-icon box mixin
-      mixin icon-box(iconName, title, text)
+      mixin icon-box(iconName, title)
         .col.s12.m4: .icon-block
           h2.center(class=pritext): +icon(iconName)
           h5.center= title
-          p.light= text
-      +icon-box(
-        "flash_on",
-        "Speeds Up Editing and Approval",
-        "Shorter waiting, approval and printing times. You won't have to look for the right Word setting or wait for the Formal Clearing Office to correct your formatting. Making new clauses and subclauses is as easy as ever.")
-      +icon-box(
-        "done",
-        "No Formatting Mistakes",
-        "With this editor you can focus on the content of your resolution. No more fiddling with badly behaving list constructs or looking for just the right amount of spacing: You're guaranteed to get a perfectly formatted document whenever you want.")
-      +icon-box(
-        "visibility",
-        "Easy to Use",
-        "The interface provides hints and is usable on any device. You can generate a formatted document, add a clause or reorder with the push of a button. We'll do all the heavy lifting in the background and you just have to worry about what you want to say.")
+          p.light
+            block
+      +icon-box("flash_on", "Speeds Up Editing and Approval")
+        | Shorter waiting, approval and printing times. You won't have to look for the right Word setting or wait for the Formal Clearing Office to correct your formatting. Making new clauses and subclauses is as easy as ever.
+      +icon-box("done_all", "No Formatting Mistakes")
+        | With this editor you can focus on the content of your resolution. No more fiddling with badly behaving list constructs or looking for just the right amount of spacing: You're guaranteed to get a perfectly formatted document whenever you want.
+      +icon-box("visibility", "Easy to Use")
+        | The interface provides hints and is usable on any device. You can generate a formatted document, add a clause or reorder with the push of a button. We'll do all the heavy lifting in the background and you just have to worry about what you want to say.
+        br
+        b Tip:
+        |  Hover over buttons to display a helpful tooltip!
 
   .section#editor-main: .container
     mixin meta-button(text, icon, tooltipText)
