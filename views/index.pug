@@ -57,6 +57,7 @@ block content
       +floating-sm-btn("blue", "eab-move-down", "arrow_downward", "Moves this clause down one space")
       +floating-sm-btn("blue", "eab-move-up", "arrow_upward", "Moves this clause up one space")
       +floating-sm-btn("indigo", "eab-add-sub", "format_indent_increase", "Creates a subclause in this clause")
+      +floating-sm-btn("cyan", "eab-add-ext", "playlist_add")
       +floating-sm-btn("deep-orange", "eab-clear", resetIcon, "Resets the fields in this clause")
       +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
       +floating-sm-btn("green", "eab-done", "done", "Finish editing and inactivate edit mode")
@@ -65,6 +66,10 @@ block content
       .row
         .col.s12.z-depth-2(id=cardId class!=attributes.class)
           block
+    mixin clause-content-field(type, placeholder)
+      .input-field(class=type)
+        textarea.materialize-textarea(class=type + "-text")
+        label(for="materialize-textarea")=placeholder
     mixin clause-card(cardId, clauseType, cardType)
       +content-card(cardId)
         h5=cardType + " Clauses"
@@ -82,9 +87,8 @@ block content
                 .input-field
                   input.autocomplete.phrase-input(type="text")
                   label(for=".phrase-input") Phrase
-            .input-field
-              textarea.materialize-textarea.clause-content-text
-              label(for="materialize-textarea") Clause Content
+            +clause-content-field("clause-list-anchor clause-content", "Clause Content")
+            +clause-content-field("clause-content-ext", "Continuation of Clause Content")
           .add-clause-container
             .divider
             a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)&attributes(tooltip("Adds a new clause to the list", "right"))
