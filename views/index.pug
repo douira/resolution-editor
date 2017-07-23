@@ -7,7 +7,7 @@ block content
   .container
     br
     br
-    h1.header.center(class=sectext) Resolution Editor
+    h1.header.center#editor-name-header(class=sectext) Resolution Editor
     .center: h5.header.light A
       em  simple
       |  way of creating and editing resolutions without having to have to deal with formatting.
@@ -34,19 +34,19 @@ block content
         |  Hover over buttons to display a helpful tooltip!
 
   .section#editor-main: .container
-    mixin meta-button(text, icon, tooltipText)
-      a.waves-effect.waves-light.btn.right.white-text(class=pri)&attributes(tooltip(tooltipText, "top"))
+    mixin meta-button(id, text, icon, tooltipText)
+      a.waves-effect.waves-light.btn.right.white-text(class=pri id=id)&attributes(tooltip(tooltipText, "top"))
         +icon(icon, "left")
         =text
     #meta-buttons
-      +meta-button("load", "file_upload", "Loades a resolution from a file")
-      +meta-button("save", "file_download", "Downloads the resolution in a resusable format")
-      +meta-button("view pdf", "description", "Generates a formatted PDF document")
+      +meta-button("file-action-load", "load", "file_upload", "Loades a resolution from a previously saved file")
+      +meta-button("file-action-save", "save", "file_download", "Downloads the resolution in a resusable format")
+      +meta-button("file-action-pdf", "view pdf", "description", "Generates a formatted PDF document")
     //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
     .modal#alert-message-modal
       .modal-content
         h4.modal-content-title Message
-        p.modal-content-body Text content
+        p.modal-content-body Text content placeholder!
       .modal-footer
         a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
     mixin floating-sm-btn(color, type, icon, tooltipText)
@@ -58,7 +58,7 @@ block content
       +floating-sm-btn("blue", "eab-move-up", "arrow_upward", "Moves this clause up one space")
       +floating-sm-btn("indigo", "eab-add-sub", "format_indent_increase", "Creates a subclause in this clause")
       +floating-sm-btn("cyan", "eab-add-ext", "playlist_add", "Adds a continuation text field under these subclauses")
-      +floating-sm-btn("deep-orange", "eab-clear", resetIcon, "Resets the fields in this clause")
+      +floating-sm-btn("deep-orange", "eab-clear", resetIcon, "Resets the fields in this clause and removes the content continuation field")
       +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
       +floating-sm-btn("green", "eab-done", "done", "Finish editing and inactivate edit mode")
     h3 Editor
@@ -122,4 +122,5 @@ block content
     +clause-card("preamb-clauses", "preamb", "Preambulatory")
     +clause-card("op-clauses", "op", "Operative")
 block scripts
+  script(src="js/dataInteraction.js")
   script(src="js/indexInit.js")

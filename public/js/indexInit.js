@@ -1,4 +1,7 @@
-/*jshint asi: false, esnext: false, browser: true, jquery: true, indent: 2*/
+/*jshint esnext: false, browser: true, jquery: true*/
+/*global loadFilePick, makePdfDisplay, downloadJson: true*/
+//registers events and data, controls interaction behavior
+
 var dataPrefix = "resEd"; //prefix for data stored in elements
 
 //global autofill settings
@@ -106,7 +109,7 @@ function registerEventsAndData(fieldTypes, initData) {
 }
 
 //creates an alert message
-function makeAlertMessage(type, title, message, buttonText) {
+function makeAlertMessage(icon, title, buttonText, callbackOrMessage) {
   //default button text
   if (typeof buttonText === "undefined") {
     buttonText = "OK";
@@ -116,9 +119,19 @@ function makeAlertMessage(type, title, message, buttonText) {
   var modalElement = $("#alert-message-modal");
 
   //add content to the modal
-  modalElement.find(".modal-content-title").html(title);
-  modalElement.find(".modal-content-body").html(message);
+  modalElement
+    .find(".modal-content-title")
+    .html("<i class='material-icons small'>" + icon + "</i> " + title);
   modalElement.find(".modal-dismiss-btn").html(buttonText);
+
+  //call callback for content if given
+  var contentBody = modalElement.find(".modal-content-body");
+  if (typeof callbackOrMessage === "string") {
+    contentBody.html(callbackOrMessage);
+  } else {
+    contentBody.empty();
+    callbackOrMessage(contentBody, modalElement);
+  }
 
   //open the modal for the user to see
   modalElement.modal("open");
@@ -171,7 +184,7 @@ $.fn.detectManipulator = function() {
     //detect grammarly
     if ($(this).filter("grammarly-ghost").length) {
       //make disabling alert
-      makeAlertMessage("alert", "<i class='material-icons small'>error_outline</i> Attention!", "Please <b>disable</b> Grammarly spellchecking on this website because it may break the website visually, its internal workings or even obstruct its usage. It's advised that you save your progress before <b>reloading</b> the page after having disabled Grammarly or any other browser extention that manipulates website content. Grammarly integration may become a feature some time in the future.", "Yes, I will do that now"); // jshint ignore:line
+      makeAlertMessage("error_outline", "Attention!", "Yes, I will do that now", "Please <b>disable</b> Grammarly spellchecking on this website because it may break the website visually, its internal workings or even obstruct its usage. It's advised that you save your progress before <b>reloading</b> the page after having disabled Grammarly or any other browser extention that manipulates website content. Grammarly integration may become a feature some time in the future."); // jshint ignore:line
 
       //set flag in case modal breaks
       canUseEditor = false;
@@ -298,8 +311,7 @@ $(document).ready(function() {
           },
           reset: function(e) {
             e.stopPropagation();
-            var elem = $(this);
-            elem
+            $(this)
               .val("") //empty content
               .removeAttr("style") //restore size
               .resetSiblingLabels();
@@ -342,8 +354,8 @@ $(document).ready(function() {
 
             //clear fields
             $(this)
+              .children(".phrase-input-wrapper,.clause-content,.clause-content-ext")
               .find("textarea,input")
-              .not(".clause-list-sub textarea,input")
               .trigger("reset");
 
             //re-hide extended clause content
@@ -426,6 +438,23 @@ $(document).ready(function() {
 
               //save parent
               var parent = $(this).parent();
+
+              //check if this clause is the last subclause in its list
+              if (parent.children(".clause").length === 1) {
+                //get enclosing clause
+                var clause = parent.closest(".clause");
+
+                //remove continuation content from parent and add onto normal clause content
+                var extField = clause
+                  .children(".clause-content-ext")
+                  .hide()
+                  .children("textarea");
+                var contentField = clause.children(".clause-content").children("textarea");
+                contentField.val(contentField.val().trim() + " " + extField.val().trim());
+
+                //clear ext field
+                extField.trigger("clear");
+              }
 
               //remove element
               $(this).remove();
@@ -562,9 +591,10 @@ $(document).ready(function() {
 
             //set disabled state according to wether or not a subclause can be added
             //also can't un-hide again (disabled if visible)
+            var clause = $(this).closest(".clause");
             $(this).disabledState(
-              ! $(this).canReceiveSubclause() ||
-              $(this).closest(".clause").children(".clause-content-ext:visible").length);
+              ! clause.find(".clause").length || //disable if doesn't already have subclause
+              clause.children(".clause-content-ext:visible").length); //disable if already there
           }
         },
         "#eab-clear": {
@@ -591,6 +621,41 @@ $(document).ready(function() {
             $(this).closest(".clause").trigger("editInactive");
           }
         },
+
+        //file actions are defined in a seperate file
+        "#file-action-load": {
+          click: function(e) {
+            e.stopPropagation();
+
+            //prepare loading: reset to original state
+            $(".clause-list:not .clause-list-sub").children(".clause").trigger("attemptRemove");
+
+            //load file from computer file system
+            loadFilePick($("#editor-main"));
+          }
+        },
+        "#file-action-save": {
+          click: function(e) {
+            e.stopPropagation();
+
+            //finalize editing on all fields
+            $(".clause").trigger("editInactive");
+
+            //download editor json
+            downloadJson($("#editor-main"));
+          }
+        },
+        "#file-action-pdf": {
+          click: function(e) {
+            e.stopPropagation();
+
+            //finalize editing on all fields
+            $(".clause").trigger("editInactive");
+
+            //display pdf directly after generating
+            makePdfDisplay($("#editor-main"));
+          }
+        }
       },
 
       //data used to inititalize input fields/thingies and their other options
