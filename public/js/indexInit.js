@@ -453,10 +453,10 @@ $(document).ready(function() {
                 contentField.val(contentField.val().trim() + " " + extField.val().trim());
 
                 //clear ext field
-                extField.trigger("clear");
+                extField.trigger("reset");
               }
 
-              //remove element
+              //remove this clause
               $(this).remove();
 
               //update ids of other clauses around it
