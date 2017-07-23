@@ -427,6 +427,23 @@ $(document).ready(function() {
               //save parent
               var parent = $(this).parent();
 
+              //check if this clause is the last subclause in its list
+              if (parent.children(".clause").length === 1) {
+                //get enclosing clause
+                var clause = parent.closest(".clause");
+
+                //remove continuation content from parent and add onto normal clause content
+                var extField = clause
+                  .children(".clause-content-ext")
+                  .hide()
+                  .children("textarea");
+                var contentField = clause.children(".clause-content").children("textarea");
+                contentField.val(contentField.val().trim() + " " + extField.val().trim());
+
+                //clear ext field
+                extField.trigger("clear");
+              }
+
               //remove element
               $(this).remove();
 
