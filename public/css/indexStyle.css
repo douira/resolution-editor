@@ -60,3 +60,7 @@
 #editor-name-header {
   word-wrap: break-word;
 }
+
+.hide-this {
+  display: none;
+}

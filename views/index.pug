@@ -52,7 +52,7 @@ block content
     mixin floating-sm-btn(color, type, icon, tooltipText)
       a.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)
     #eab-inactive-anchor
-    #eab-wrapper.right.hide
+    #eab-wrapper.right.hide-this
       //-eab stands for edit action button
       +floating-sm-btn("blue", "eab-move-down", "arrow_downward", "Moves this clause down one space")
       +floating-sm-btn("blue", "eab-move-up", "arrow_upward", "Moves this clause up one space")
