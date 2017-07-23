@@ -1,4 +1,5 @@
 /*jshint esnext: false, browser: true, jquery: true*/
+/*global makeAlertMessage: true */
 //file actions are defined in this file
 
 //loads a json into the editor
@@ -66,7 +67,7 @@ $.fn.clauseAsObject = function() {
     clauseData.sub = subclauses;
   }
 
-  //if content is the only attribute, coerce to string
+  //if content is the only attribute, coerce to single string
   if (Object.keys(clauseData).length === 1) {
     clauseData = clauseData.content;
   }
@@ -80,7 +81,7 @@ function getEditorJson(container) {
   //create root resolution object and gather data
   var res = {
     status: {
-      editied: Date.now,
+      editied: Date.now(),
       author: container.find("#author-name").val()
     },
     resolution: {
@@ -108,7 +109,32 @@ function getEditorJson(container) {
   return JSON.stringify(res, null, 2);
 }
 
+//generates and downloeads json representation of the editor content
+function downloadJson(container) {
+  saveFileDownload(getEditorJson(container));
+}
+
 //save file to be downloaded
-function saveFileDownload(container) {
-  console.log(getEditorJson(container));
+function saveFileDownload(str) {
+  //make element to download with and add data to download
+  var fileName = "resolution.json";
+  console.log(fileName, str);
+  makeAlertMessage("file_download", "Save resolution as file", "cancel", function(body, modal) {
+    //make download button with blob data
+    body.append("<br>");
+    $("<a/>")
+      .addClass("waves-effect waves-light btn white-text" +
+                $("#file-action-save").attr("class"))
+      .attr("download", fileName)
+      .text("Download Resolution: " + fileName)
+      .attr("href", URL.createObjectURL(new Blob([str], {type: "application/json"})))
+      .appendTo(body)
+      .on("click", function(e) {
+        e.stopPropagation();
+
+        //close modal after download
+        $(this).modal("close");
+      });
+    body.append("<br>");
+  });
 }

@@ -46,13 +46,13 @@ block content
     .modal#alert-message-modal
       .modal-content
         h4.modal-content-title Message
-        p.modal-content-body Text content
+        p.modal-content-body Text content placeholder!
       .modal-footer
         a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
     mixin floating-sm-btn(color, type, icon, tooltipText)
       a.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)
     #eab-inactive-anchor
-    #eab-wrapper.right.hide-this
+    #eab-wrapper.right.hide
       //-eab stands for edit action button
       +floating-sm-btn("blue", "eab-move-down", "arrow_downward", "Moves this clause down one space")
       +floating-sm-btn("blue", "eab-move-up", "arrow_upward", "Moves this clause up one space")
