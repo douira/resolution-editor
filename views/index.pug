@@ -17,83 +17,87 @@ block content
     br
     .row
       //-icon box mixin
-      mixin icon-box(iconName, title, text)
+      mixin icon-box(iconName, title)
         .col.s12.m4: .icon-block
           h2.center(class=pritext): +icon(iconName)
           h5.center= title
-          p.light= text
-      +icon-box(
-        "flash_on",
-        "Speeds Up Editing and Approval",
-        "Shorter waiting, approval and printing times. You won't have to look for the right Word setting or wait for the Formal Clearing Office to correct your formatting. Making new clauses and subclauses is as easy as ever.")
-      +icon-box(
-        "done",
-        "No Formatting Mistakes",
-        "With this editor you can focus on the content of your resolution. No more fiddling with badly behaving list constructs or looking for just the right amount of spacing: You're guaranteed to get a perfectly formatted document whenever you want.")
-      +icon-box(
-        "visibility",
-        "Easy to Use",
-        "The interface provides hints and is usable on any device. You can generate a formatted document, add a clause or reorder with the push of a button. We'll do all the heavy lifting in the background and you just have to worry about what you want to say.")
+          p.light
+            block
+      +icon-box("flash_on", "Speeds Up Editing and Approval")
+        | Shorter waiting, approval and printing times. You won't have to look for the right Word setting or wait for the Formal Clearing Office to correct your formatting. Making new clauses and subclauses is as easy as ever.
+      +icon-box("done_all", "No Formatting Mistakes")
+        | With this editor you can focus on the content of your resolution. No more fiddling with badly behaving list constructs or looking for just the right amount of spacing: You're guaranteed to get a perfectly formatted document whenever you want.
+      +icon-box("visibility", "Easy to Use")
+        | The interface provides hints and is usable on any device. You can generate a formatted document, add a clause or reorder with the push of a button. We'll do all the heavy lifting in the background and you just have to worry about what you want to say.
+        br
+        b Tip:
+        |  Hover over buttons to display a helpful tooltip!
 
   .section#editor-main: .container
-    mixin meta-button(text, icon)
-      a.waves-effect.waves-light.btn.right.white-text(class=pri)
+    mixin meta-button(id, text, icon, tooltipText)
+      a.waves-effect.waves-light.btn.right.white-text(class=pri id=id)&attributes(tooltip(tooltipText, "top"))
         +icon(icon, "left")
         =text
     #meta-buttons
-      +meta-button("load", "file_upload")
-      +meta-button("save", "file_download")
-      +meta-button("view pdf", "note")
+      +meta-button("file-action-load", "load", "file_upload", "Loades a resolution from a previously saved file")
+      +meta-button("file-action-save", "save", "file_download", "Downloads the resolution in a resusable format")
+      +meta-button("file-action-pdf", "view pdf", "description", "Generates a formatted PDF document")
     //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
     .modal#alert-message-modal
       .modal-content
         h4.modal-content-title Message
-        p.modal-content-body Text content
+        p.modal-content-body Text content placeholder!
       .modal-footer
-        a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves href="#!") OK
+        a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
+    mixin floating-sm-btn(color, type, icon, tooltipText)
+      a.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)
+    #eab-inactive-anchor
+    #eab-wrapper.right.hide
+      //-eab stands for edit action button
+      +floating-sm-btn("blue", "eab-move-down", "arrow_downward", "Moves this clause down one space")
+      +floating-sm-btn("blue", "eab-move-up", "arrow_upward", "Moves this clause up one space")
+      +floating-sm-btn("indigo", "eab-add-sub", "format_indent_increase", "Creates a subclause in this clause")
+      +floating-sm-btn("cyan", "eab-add-ext", "playlist_add")
+      +floating-sm-btn("deep-orange", "eab-clear", resetIcon, "Resets the fields in this clause and removes the content continuation field")
+      +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
+      +floating-sm-btn("green", "eab-done", "done", "Finish editing and inactivate edit mode")
     h3 Editor
     mixin content-card(cardId)
       .row
         .col.s12.z-depth-2(id=cardId class!=attributes.class)
           block
-    mixin floating-sm-btn(color, type, icon)
-      a.btn-floating(class=color + " " + type): +icon(icon)
-    mixin clause(clauseType)
-      .clause(clause-type=clauseType)
-        .divider.reduced-width-divider
-        h6.grey-text.text-darken-2 Clause #
-          span.clause-number 1
-        .absolute-fab-wrapper
-          .fixed-action-btn.horizontal.click-to-toggle.absolute-fab
-            a.btn-floating.btn-large.light-blue
-              +icon("mode_edit")
-            ul
-              li: +floating-sm-btn("blue", "fab-move-up", "keyboard_arrow_up")
-              li: +floating-sm-btn("blue", "fab-move-down", "keyboard_arrow_down")
-              li: +floating-sm-btn("orange", "fab-reset", "restore")
-              li: +floating-sm-btn("red", "fab-delete", "delete")
-        .row
-          .col.xl4.m6.s12
-            .input-field
-              input.autocomplete.phrase-input(type="text")
-              label(for=".phrase-input") Phrase
-        .input-field
-          //-+icon("arrow_forward", "prefix")
-          textarea.materialize-textarea.clause-content-text
-          label(for="materialize-textarea") Clause Content
-    mixin clause-card(cardId, clauseClass, cardType)
+    mixin clause-content-field(type, placeholder)
+      .input-field(class=type)
+        textarea.materialize-textarea(class=type + "-text")
+        label(for="materialize-textarea")=placeholder
+    mixin clause-card(cardId, clauseType, cardType)
       +content-card(cardId)
         h5=cardType + " Clauses"
         .clause-list
-          +clause(clauseClass)
-          .divider
-          a.btn.white-text.left.btn-mrg.add-clause-btn.lighten-1(class=pri)
-            +icon("add", "left")
-            | Add Clause
+          .clause(data-clause-type=clauseType)
+            .divider
+            h6.grey-text.text-darken-2.clause-title
+              a.edit-mode-btn.btn.right.white-text(class=pri)&attributes(tooltip("Activates editing of this clause", "left"))
+                +icon("mode_edit", "icon-sm-med")
+              span.clause-prefix
+              | Clause #
+              span.clause-number 1
+            .row.phrase-input-wrapper
+              .col.xl4.m6.s12
+                .input-field
+                  input.autocomplete.phrase-input(type="text")
+                  label(for=".phrase-input") Phrase
+            +clause-content-field("clause-list-anchor clause-content", "Clause Content")
+            +clause-content-field("clause-content-ext", "Continuation of Clause Content")
+          .add-clause-container
+            .divider
+            a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)&attributes(tooltip("Adds a new clause to the list", "right"))
+              +icon("add_circle_outline", "left")
+              | Add Clause
     +content-card("meta-data")
       form
-        .right.btn-floating.btn-large.waves-effect.waves-light.red.reset-button(for="meta-data")
-          +icon("delete")
+        .right.btn-floating.btn-large.waves-effect.waves-light.deep-orange.reset-button(for="meta-data")&attributes(tooltip("Resets these fields", "left"))
+          +icon(resetIcon)
         h5 General Data
         .divider.reduced-width-divider
         .input-field
@@ -118,4 +122,5 @@ block content
     +clause-card("preamb-clauses", "preamb", "Preambulatory")
     +clause-card("op-clauses", "op", "Operative")
 block scripts
+  script(src="js/dataInteraction.js")
   script(src="js/indexInit.js")

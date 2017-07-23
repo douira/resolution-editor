@@ -1,5 +1,6 @@
 //-setup primary and secondary colors and their text variants
 -
+  //colors
   const pri = "teal";
   const sec = "amber";
   const textSuffix = "-text";
@@ -8,6 +9,25 @@
   const sectext = sec + textSuffix;
   const priwaves = wavesPrefix + pri;
   const secwaves = wavesPrefix + sec;
+
+  //function that generates tooltip attribute data, use: &attributes(tooltip("blah", "left"))
+  function tooltip(msg, position) {
+  const obj = {
+      "class": "tooltipped",
+      "data-delay": 600,
+      "data-position": position
+    };
+
+    //add message if not 0
+    if (msg) {
+      obj["data-tooltip"] = msg;
+    }
+    console.log(obj);
+    return obj;
+  }
+
+  //-icons
+  const resetIcon = "clear";
 
 //-icon maker
 mixin icon(name, classes)
@@ -103,7 +123,7 @@ html(lang="en")
             .col.l3.s6
               h5.white-text Stack
               ul
-                li: a.white-text(href="https://material.io") Material Design
+                li: a.white-text(href="https://material.io") Material Design (+Icons)
                 li: a.white-text(href="http://materializecss.com") Materialize
                 li: a.white-text(href="https://jquery.com") jQuery
                 li: a.white-text(href="https://pugjs.org") Pug
