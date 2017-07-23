@@ -116,9 +116,8 @@ function downloadJson(container) {
 
 //save file to be downloaded
 function saveFileDownload(str) {
-  //make element to download with and add data to download
-  var fileName = "resolution.json";
-  console.log(fileName, str);
+  //make element in modal to download with and add data to download
+  var fileName = "resolution.rso";
   makeAlertMessage("file_download", "Save resolution as file", "cancel", function(body, modal) {
     //make download button with blob data
     body.append("<br>");
