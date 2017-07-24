@@ -1,5 +1,5 @@
 /*jshint esnext: false, browser: true, jquery: true*/
-/*global loadFilePick, makePdfDisplay, downloadJson: true*/
+/*global loadFilePick, generatePdf, downloadJson: true*/
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -653,7 +653,7 @@ $(document).ready(function() {
             $(".clause").trigger("editInactive");
 
             //display pdf directly after generating
-            makePdfDisplay($("#editor-main"));
+            generatePdf($("#editor-main"));
           }
         }
       },

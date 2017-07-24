@@ -3,8 +3,9 @@
 //file actions are defined in this file
 
 //loads a json into the editor
-function loadJson(obj) {
-
+function loadJson(json) {
+  //parse from json
+  var obj = JSON.parse(json);
 }
 
 //load file from computer file system
@@ -13,17 +14,25 @@ function loadFilePick(container) {
 }
 
 //sends the current json of to the server and calls back with the url to the generated pdf
-function generatePdf(container, callback) {
-  //get json for container
-  var json = getEditorJson(container);
-
+function generatePdf(container) {
   //send to server
-
-}
-
-//display pdf directly after generating
-function makePdfDisplay(container, callback) {
-
+  $.post("/generatepdf", getEditorJson(container), function(response) {
+    //error with response data "error"
+    if (response === "error") {
+      //display error and request creation of bug report
+      makeAlertMessage(
+        "error_outline", "Error generating PDF", "ok",
+        "The server encountered an unexpected error" +
+        " while trying to generate the requested PDF file." +
+        "Please file a <a href='https://github.com/douira/resolution-editor/issues/new" +
+        "?&labels[]=user%20bug%20report'>bug report</a> and describe this problem.");
+    } else {
+      //display link to generated pdf
+      makeAlertMessage(
+        "description", "Generated PDF file", "done",
+        "Click <b><a href='" + response + "'>here</a></b> to view your resolution as a PDF file.");
+    }
+  });
 }
 
 //gets a clause as an object
