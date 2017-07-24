@@ -5,6 +5,9 @@
 //string used to identify files saved by this website (mild protection for now)
 var magicIdentifier = "PG52QE1AM4LACMX9";
 
+//current version of the resolution format supported
+var supportedResFileFormats = [1];
+
 //displays a modal message for invalid json file at parse or apply stage
 function jsonReadErrorModal() {
   makeAlertMessage(
@@ -19,9 +22,10 @@ function jsonReadErrorModal() {
 //loads a json into the editor
 function loadJson(json, container) {
   //basic parse
+  var obj;
   try {
     //json parse
-    var obj = JSON.parse(json);
+    obj = JSON.parse(json);
 
     //check for magic string to prevent loading of other json files (unless tampered with)
     if (obj.magic !== magicIdentifier) {
@@ -31,6 +35,16 @@ function loadJson(json, container) {
     //notify and abort
     jsonReadErrorModal();
     return;
+  }
+
+  //check file version
+  if (supportedResFileFormats.indexOf(obj.version) === -1) {
+    makeAlertMessage(
+      "warning", "File format is outdated", "ok",
+      "The provided file could be read but is in an old and unsupported format." +
+      " Please file a <a href='https://github.com/douira/resolution-" +
+      "editor/issues/new?&labels[]=user%20bug%20report'>bug report</a> and describe this problem" +
+      " if you want to receive help with this issue.");
   }
 
   //parse object into editor
@@ -119,6 +133,7 @@ function getEditorJson(container) {
   //create root resolution object and gather data
   var res = {
     magic: magicIdentifier,
+    version: Math.max.apply(null, supportedResFileFormats), //use highest supported version
     status: {
       editied: Date.now(),
       author: container.find("#author-name").val()
