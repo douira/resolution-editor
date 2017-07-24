@@ -295,9 +295,34 @@ $(document).ready(function() {
           init: function() {
             //not using element specific data because this will be the same for all modals
             //(only the one modal atm)
-            $(this).modal({
-              dismissible: false
+            var modal = $(this);
+            modal.modal({
+              dismissible: false,
+              complete: function() {
+                modal.trigger("reset");
+              }
             });
+          },
+          reset: function(e) {
+            e.stopPropagation();
+            var elem = $(this);
+            elem.find("input,textarea").trigger("reset");
+            elem.find("#file-selector").hide();
+          }
+        },
+        "input[type='file']": {
+          reset: function(e) {
+            e.stopPropagation();
+            $(this).val("");
+          },
+          change: function() {
+            //load file
+            var reader = new FileReader();
+            var callback = $(this).getData().fileLoadCallback;
+            reader.onload = function(e) {
+              callback(e.target.result);
+            };
+            reader.readAsText(this.files[0]);
           }
         },
         "input": {

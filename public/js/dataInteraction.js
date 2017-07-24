@@ -52,8 +52,22 @@ function loadJson(json, container) {
 }
 
 //load file from computer file system
-function loadFilePick(container) {
-
+function loadFilePick(container, callback) {
+  //make alert message file select
+  makeAlertMessage(
+    "file_upload", "Open resolution file", "cancel", function(body, modal) {
+      body.text("Select a file to upload");
+      var fileSelector = modal.find("#file-selector");
+      fileSelector.show();
+      var fileInput = fileSelector.find(".file-input");
+      fileInput.getData().fileLoadCallback = function(text) {
+        //close and thereby reset for other modal action
+        modal.modal("close");
+        console.log(text);
+        //load text into editor
+        //loadJson(text, container);
+      };
+    });
 }
 
 //sends the current json of to the server and calls back with the url to the generated pdf
@@ -176,18 +190,21 @@ function saveFileDownload(str) {
     //make download button with blob data
     body.append("<br>");
     $("<a/>")
-      .addClass("waves-effect waves-light btn white-text" +
+      .addClass("waves-effect waves-light btn white-text center-align" +
                 $("#file-action-save").attr("class"))
       .attr("download", fileName)
       .text("Download Resolution: " + fileName)
       .attr("href", URL.createObjectURL(new Blob([str], {type: "application/json"})))
-      .appendTo(body)
+      .appendTo($("<div class='.clear-and-center'></div>").appendTo(body))
       .on("click", function(e) {
         e.stopPropagation();
 
         //close modal after download
         $(this).modal("close");
       });
-    body.append("<br>");
+    body.append(
+      "If the file download doesn't start, try again and then " +
+      "please file a <a href='https://github.com/douira/resolution-editor/issues/new" +
+      "?&labels[]=user%20bug%20report'>bug report</a> and describe this problem.");
   });
 }
