@@ -73,7 +73,7 @@ function loadFilePick(container, callback) {
 //sends the current json of to the server and calls back with the url to the generated pdf
 function generatePdf(container) {
   //send to server
-  $.post("/generatepdf", getEditorJson(container), function(response) {
+  $.post("/generatepdf", getEditorJson(container, false), function(response) {
     //error with response data "error"
     if (response === "error") {
       //display error and request creation of bug report
@@ -143,7 +143,7 @@ $.fn.clauseAsObject = function() {
 };
 
 //returns a json string of the object currently in the editor
-function getEditorJson(container) {
+function getEditorJson(container, nice) {
   //create root resolution object and gather data
   var res = {
     magic: magicIdentifier,
@@ -174,12 +174,12 @@ function getEditorJson(container) {
   }
 
   //return stringyfied
-  return JSON.stringify(res, null, 2);
+  return nice ? JSON.stringify(res, null, 2) : JSON.stringify(res);
 }
 
 //generates and downloeads json representation of the editor content
 function downloadJson(container) {
-  saveFileDownload(getEditorJson(container));
+  saveFileDownload(getEditorJson(container, true));
 }
 
 //save file to be downloaded
