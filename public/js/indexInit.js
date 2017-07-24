@@ -316,13 +316,19 @@ $(document).ready(function() {
             $(this).val("");
           },
           change: function() {
-            //load file
-            var reader = new FileReader();
-            var callback = $(this).getData().fileLoadCallback;
-            reader.onload = function(e) {
-              callback(e.target.result);
-            };
-            reader.readAsText(this.files[0]);
+            //get file
+            var file = this.files[0];
+
+            //stop if wrong extension
+            if (file.name.match(/^.*\.rso/)) {
+              //load file
+              var reader = new FileReader();
+              var callback = $(this).getData().fileLoadCallback;
+              reader.onload = function(e) {
+                callback(e.target.result);
+              };
+              reader.readAsText(file);
+            }
           }
         },
         "input": {

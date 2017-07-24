@@ -52,7 +52,7 @@ block content
             span Select file
             input.file-input(type="file")
           .file-path-wrapper
-            input.file-path.validate(type="text" placeholder="File Path")
+            input.file-path.validate(type="text" placeholder="File Path" pattern="^.*\.rso")
       .modal-footer
         a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
     mixin floating-sm-btn(color, type, icon, tooltipText)

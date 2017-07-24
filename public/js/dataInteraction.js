@@ -56,14 +56,14 @@ function loadFilePick(container, callback) {
   //make alert message file select
   makeAlertMessage(
     "file_upload", "Open resolution file", "cancel", function(body, modal) {
-      body.text("Select a file to upload");
+      body.text("Select a resolution file with the extension '.rso' to open:");
       var fileSelector = modal.find("#file-selector");
       fileSelector.show();
       var fileInput = fileSelector.find(".file-input");
       fileInput.getData().fileLoadCallback = function(text) {
         //close and thereby reset for other modal action
         modal.modal("close");
-        console.log(text);
+
         //load text into editor
         //loadJson(text, container);
       };
