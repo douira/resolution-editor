@@ -2,10 +2,39 @@
 /*global makeAlertMessage: true */
 //file actions are defined in this file
 
+//string used to identify files saved by this website (mild protection for now)
+var magicIdentifier = "PG52QE1AM4LACMX9";
+
+//displays a modal message for invalid json file at parse or apply stage
+function jsonReadErrorModal() {
+  makeAlertMessage(
+    "error_outline", "Error reading file", "ok",
+    "The provided file could not be read and processed." +
+    " This may be because the file you provided isn't in the format produced by this program or" +
+    " was corrupted in some way. Please file a <a href='https://github.com/douira/resolution-" +
+    "editor/issues/new?&labels[]=user%20bug%20report'>bug report</a> and describe this problem" +
+    " if you believe this error isn't your fault.");
+}
+
 //loads a json into the editor
-function loadJson(json) {
-  //parse from json
-  var obj = JSON.parse(json);
+function loadJson(json, container) {
+  //basic parse
+  try {
+    //json parse
+    var obj = JSON.parse(json);
+
+    //check for magic string to prevent loading of other json files (unless tampered with)
+    if (obj.magic !== magicIdentifier) {
+      throw new Error("json not a resolution");
+    }
+  } catch (e) {
+    //notify and abort
+    jsonReadErrorModal();
+    return;
+  }
+
+  //parse object into editor
+
 }
 
 //load file from computer file system
@@ -89,6 +118,7 @@ $.fn.clauseAsObject = function() {
 function getEditorJson(container) {
   //create root resolution object and gather data
   var res = {
+    magic: magicIdentifier,
     status: {
       editied: Date.now(),
       author: container.find("#author-name").val()
