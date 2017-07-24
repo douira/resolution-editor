@@ -75,19 +75,20 @@ function generatePdf(container) {
   //send to server
   $.post("/generatepdf", getEditorJson(container, false), function(response) {
     //error with response data "error"
-    if (response === "error") {
+    console.log(response);
+    if (response.endsWith(".pdf")) {
+      //display link to generated pdf
+      makeAlertMessage(
+        "description", "Generated PDF file", "done",
+        "Click <b><a href='" + response + "'>here</a></b> to view your resolution as a PDF file.");
+    } else {
       //display error and request creation of bug report
       makeAlertMessage(
         "error_outline", "Error generating PDF", "ok",
         "The server encountered an unexpected error" +
         " while trying to generate the requested PDF file." +
-        "Please file a <a href='https://github.com/douira/resolution-editor/issues/new" +
+        " Please file a <a href='https://github.com/douira/resolution-editor/issues/new" +
         "?&labels[]=user%20bug%20report'>bug report</a> and describe this problem.");
-    } else {
-      //display link to generated pdf
-      makeAlertMessage(
-        "description", "Generated PDF file", "done",
-        "Click <b><a href='" + response + "'>here</a></b> to view your resolution as a PDF file.");
     }
   });
 }
