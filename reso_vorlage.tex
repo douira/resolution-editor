@@ -1,0 +1,94 @@
+\documentclass[12pt, a4paper]{scrartcl}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{paralist}
+\usepackage{enumerate}
+\usepackage[shortlabels]{enumitem}
+\usepackage{soul}
+\usepackage{mfirstuc}
+\usepackage{xstring}
+ 
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0pt}
+
+\setlength\parindent{0pt}
+
+%Variables setup
+\newcommand{\forum}{The Security Council}				
+\newcommand{\issue}{Crisis in Syria} 			
+\newcommand{\sponsor}{United States of America}		
+
+%new fancy commands
+\newenvironment{preamb}[2]{  
+\vspace*{1em}
+\StrLeft{#1}{1}[\firstletter]%
+\StrBehind{#1}{\firstletter}[\rest]%
+\StrRight{#2}{1}[\lastletter]%
+\emph{\capitalisewords{\firstletter}\rest}
+#2%
+}{%
+\IfStrEq{\lastletter}{:}{}{,}% 
+ }
+
+\newenvironment{oc}[2]{\item %
+\StrLeft{#1}{1}[\firstletter]%
+\StrBehind{#1}{\firstletter}[\rest]%
+\StrRight{#2}{1}[\lastletter]%
+\underline{\capitalisewords{\firstletter}\rest} 
+#2%
+}
+{%
+\IfStrEq{\lastletter}{.}{}{;}%
+}
+
+\newenvironment{preambsubclause}{ \begin{itemize}[leftmargin=*,labelindent=2.5em,labelsep=2em] {} %
+\renewcommand\labelitemi{-}
+\vspace*{-.8em}%
+\setlength{\itemsep}{0pt}%
+\setlength{\parskip}{0pt}%
+\setlength{\parsep}{0pt}%
+}{
+	\end{itemize}
+}
+
+
+
+\begin{document}
+
+\begin{tabbing}
+	FORUM: \quad \quad  \quad \quad\=\forum \\
+	\\
+	QUESTION OF: \>\issue \\
+	\\
+	SPONSOR: \>\sponsor \\
+\end{tabbing}
+
+\MakeUppercase{\forum},
+\\\\
+
+\begin{preamb}{Noting with deep concern}{that there are some delegates who do not know how to properly write a resolution}\end{preamb}
+
+\begin{preamb}{Recognizing}{that most faults are only small, but important ones}
+\end{preamb}
+
+\begin{preamb}{Recalling}{the resolution is structured in:}
+\end{preamb}%
+\begin{preambsubclause}
+\item preambulatory clauses to describe the problem of the topic,
+\item operative clauses to express solutions for it,
+\end{preambsubclause}
+
+\begin{enumerate}[1., align = left, leftmargin =* , widest* = 8, labelindent=0cm, labelsep=1cm]
+
+\begin{oc}{further recommends}{the attention to the fact that every delegate has to use the tabulator key to set the same amount of space between the numbers of the operative phrases and the clauses, as well as to move subordinated phrases or words uniformly to the right}\end{oc}
+
+\begin{oc}{urges}{all nations to do so.}\end{oc}
+
+\end{enumerate}
+
+\end{document}
