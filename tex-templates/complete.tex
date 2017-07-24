@@ -10,7 +10,7 @@
 \usepackage{soul}
 \usepackage{mfirstuc}
 \usepackage{xstring}
- 
+
 \pagestyle{fancy}
 \fancyhf{}
 \rhead{Page \thepage\ of \pageref{LastPage}}
@@ -19,12 +19,12 @@
 \setlength\parindent{0pt}
 
 %Variables setup
-\newcommand{\forum}{The Security Council}				
-\newcommand{\issue}{Crisis in Syria} 			
-\newcommand{\sponsor}{United States of America}		
+\newcommand{\forum}{The Security Council}
+\newcommand{\issue}{Crisis in Syria}
+\newcommand{\sponsor}{United States of America}
 
 %new fancy commands
-\newenvironment{preamb}[2]{  
+\newenvironment{preamb}[2]{
 \vspace*{1em}
 \StrLeft{#1}{1}[\firstletter]%
 \StrBehind{#1}{\firstletter}[\rest]%
@@ -32,14 +32,14 @@
 \emph{\capitalisewords{\firstletter}\rest}
 #2%
 }{%
-\IfStrEq{\lastletter}{:}{}{,}% 
+\IfStrEq{\lastletter}{:}{}{,}%
  }
 
 \newenvironment{oc}[2]{\item %
 \StrLeft{#1}{1}[\firstletter]%
 \StrBehind{#1}{\firstletter}[\rest]%
 \StrRight{#2}{1}[\lastletter]%
-\underline{\capitalisewords{\firstletter}\rest} 
+\underline{\capitalisewords{\firstletter}\rest}
 #2%
 }
 {%

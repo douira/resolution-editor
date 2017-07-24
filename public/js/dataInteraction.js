@@ -75,7 +75,6 @@ function generatePdf(container) {
   //send to server
   $.post("/generatepdf", getEditorJson(container, false), function(response) {
     //error with response data "error"
-    console.log(response);
     if (response.endsWith(".pdf")) {
       //display link to generated pdf
       makeAlertMessage(

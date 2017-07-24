@@ -137,4 +137,10 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
-# End of https://www.gitignore.io/api/osx,git,node,linux,windows
+# End of https://www.gitignore.io/api/osx,git,node,linux,windows (truncated and de-duped)
+
+#rending output folder for extensions that render TeX
+render_out
+
+#settings file
+#.brackets.json
