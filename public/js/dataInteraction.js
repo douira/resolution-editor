@@ -73,13 +73,25 @@ function loadFilePick(container, callback) {
 //sends the current json of to the server and calls back with the url to the generated pdf
 function generatePdf(container) {
   //send to server
-  $.post("/generatepdf", getEditorJson(container, false), function(response) {
+  $.ajax({
+    url: "/generatepdf",
+    method: "POST",
+    data: getEditorContent(container, false),
+    contentType: "application/json; charset=UTF-8",
+    dataType: "text",
+    error: makeAlertMessage.bind(null,
+        "error_outline", "Error sending data to server", "ok",
+        "Could not communicate with server properly." +
+        " Please file a <a href='https://github.com/douira/resolution-editor/issues/new" +
+        "?&labels[]=user%20bug%20report'>bug report</a> and describe this problem.")
+  }).done(function(response) {
     //error with response data "error"
     if (response.endsWith(".pdf")) {
       //display link to generated pdf
       makeAlertMessage(
         "description", "Generated PDF file", "done",
-        "Click <b><a href='" + response + "'>here</a></b> to view your resolution as a PDF file.");
+        "Click <b><a href='" + response +
+        "'>here</a></b> to view your resolution as a PDF file.");
     } else {
       //display error and request creation of bug report
       makeAlertMessage(
@@ -100,7 +112,10 @@ $.fn.clauseAsObject = function() {
 
     //add all clauses
     this.children(".clause").each(function() {
-      clauses.push($(this).clauseAsObject());
+      var clauseObj = $(this).clauseAsObject();
+      if (clauseObj) {
+        clauses.push(clauseObj);
+      }
     });
 
     //return all clause objects
@@ -116,6 +131,11 @@ $.fn.clauseAsObject = function() {
   var clauseData = {
     content: this.children(".clause-content").find("textarea").val()
   };
+
+  //stop if no content
+  if (! clauseData.content) {
+    return false;
+  }
 
   //check for phrase field
   if (this.children(".phrase-input-wrapper").length) {
@@ -143,7 +163,7 @@ $.fn.clauseAsObject = function() {
 };
 
 //returns a json string of the object currently in the editor
-function getEditorJson(container, nice) {
+function getEditorContent(container, makeJson) {
   //create root resolution object and gather data
   var res = {
     magic: magicIdentifier,
@@ -170,16 +190,19 @@ function getEditorJson(container, nice) {
   //get co-sponsors and add if any present
   var cosponsorData = container.find("#co-spon").material_chip("data");
   if (cosponsorData.length) {
-    res.resolution.address.sponsor.co = cosponsorData;
+    //map to array of strings
+    res.resolution.address.sponsor.co = cosponsorData.map(function(obj) {
+      return obj.tag;
+    });
   }
 
   //return stringyfied
-  return nice ? JSON.stringify(res, null, 2) : JSON.stringify(res);
+  return makeJson ? JSON.stringify(res, null, 2) : JSON.stringify(res);
 }
 
 //generates and downloeads json representation of the editor content
 function downloadJson(container) {
-  saveFileDownload(getEditorJson(container, true));
+  saveFileDownload(getEditorContent(container, true));
 }
 
 //save file to be downloaded
