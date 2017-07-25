@@ -2,14 +2,15 @@
 const express = require("express");
 const router = module.exports = express.Router();
 const pandoc = require("node-pandoc");
-const latexGenerator = require("./lib/latex-generator");
+const latexGenerator = require("../lib/latex-generator");
 
 //setup leatex to html rendering
 const pandocArgs = "-o public/out.pdf";
 
 //converts json from client editor to rendered html
-function jsonToLatex(json) {
-  return latexGenerator(JSON.parse(json));
+function jsonToLatex(data) {
+  return latexGenerator(JSON.parse(data));
+
   /*return "\\begin{center}\n\\large Title of this document\n\\normalsize A. U. " +
     "Thor\n\\end{center}\n\\vspace{3\\baselineskip}\nHere starts the text.";*/
 }
