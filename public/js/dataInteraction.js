@@ -19,6 +19,11 @@ function jsonReadErrorModal() {
     " if you believe this error isn't your fault.");
 }
 
+//parses a given list of clauses into the given clause list element
+function parseClauseList(arr, elem) {
+
+}
+
 //loads a json into the editor
 function loadJson(json, container) {
   //basic parse
@@ -47,8 +52,31 @@ function loadJson(json, container) {
       " if you want to receive help with this issue.");
   }
 
-  //put author data into field
+  //prepare loading: reset editor to original state
+  container.find(".clause").trigger("attemptRemove");
+  container.find("input, textarea").trigger("reset");
 
+  //put author data into field
+  container.find("#author-name").val(obj.status.author).trigger("activateLabel");
+
+  //get resolution object
+  var res = obj.resolution;
+
+  //put data into general data fields
+  container.find("#question-of").val(res.address.questionOf).trigger("activateLabel");
+  container.find("#forum-name").val(res.address.forum).trigger("activateLabel");
+  container.find("#main-spon").val(res.address.sponsor.main).trigger("activateLabel");
+
+  //init chips with new data
+  var elem = container.find("#co-spon");
+  elem.getData().data = res.address.sponsor.co.map(function(str) {
+    return { tag: str };
+  });
+  elem.trigger("init");
+
+  //parse clauses
+  parseClauseList(res.clauses.preambulatory);
+  parseClauseList(res.clauses.operative);
 }
 
 //load file from computer file system

@@ -331,6 +331,12 @@ $(document).ready(function() {
             }
           }
         },
+        "input, textarea": {
+          activateLabel: function() {
+            //make associated labels active
+            $(this).siblings("label").addClass("active");
+          }
+        },
         "input": {
           reset: function(e) {
             e.stopPropagation();
@@ -370,6 +376,9 @@ $(document).ready(function() {
           init: function(e) {
             e.stopPropagation();
             $(this).material_chip($(this).getData());
+
+            //reset data object in init data, may have been changed as data load
+            $(this).getData().data = [];
           },
           reset: function(e) {
             e.stopPropagation();
@@ -663,10 +672,6 @@ $(document).ready(function() {
         "#file-action-load": {
           click: function(e) {
             e.stopPropagation();
-
-            //prepare loading: reset editor to original state
-            $(".clause").trigger("attemptRemove");
-            $("input, textarea").trigger("reset");
 
             //load file from computer file system
             loadFilePick($("#editor-main"));
