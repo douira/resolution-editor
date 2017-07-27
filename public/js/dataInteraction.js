@@ -37,8 +37,8 @@ function loadJson(json, container) {
     return;
   }
 
-  //check file version
-  if (supportedResFileFormats.indexOf(obj.version) === -1) {
+  //check file version, modal doesn't work yet, clashes with previous one
+  if (false && supportedResFileFormats.indexOf(obj.version) === -1) {
     makeAlertMessage(
       "warning", "File format is outdated", "ok",
       "The provided file could be read but is in an old and unsupported format." +
@@ -47,7 +47,7 @@ function loadJson(json, container) {
       " if you want to receive help with this issue.");
   }
 
-  //parse object into editor
+  //put author data into field
 
 }
 
@@ -65,7 +65,7 @@ function loadFilePick(container, callback) {
         modal.modal("close");
 
         //load text into editor
-        //loadJson(text, container);
+        loadJson(text, container);
       };
     });
 }
@@ -105,6 +105,7 @@ function generatePdf(container) {
 }
 
 //gets a clause as an object
+//IMPORTANT: if the outputted format changes, increment the version number by one!
 $.fn.clauseAsObject = function() {
   //return as array if given list
   if (this.is(".clause-list")) {

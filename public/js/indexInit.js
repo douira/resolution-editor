@@ -664,8 +664,9 @@ $(document).ready(function() {
           click: function(e) {
             e.stopPropagation();
 
-            //prepare loading: reset to original state
-            $(".clause-list:not .clause-list-sub").children(".clause").trigger("attemptRemove");
+            //prepare loading: reset editor to original state
+            $(".clause").trigger("attemptRemove");
+            $("input, textarea").trigger("reset");
 
             //load file from computer file system
             loadFilePick($("#editor-main"));
