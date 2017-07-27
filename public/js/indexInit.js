@@ -515,6 +515,43 @@ $(document).ready(function() {
               e.stopPropagation();
               $(this).trigger("editActive");
             }
+          },
+          fromLoadedData: function(e) {
+            e.stopPropagation();
+
+            //fill phrase and content with data
+            var elem = $(this);
+            var data = elem.getData().loadedData;
+            elem
+              .children(".phrase-input-wrapper")
+              .find("input")
+              .val(data.phrase)
+              .trigger("activateLabel");
+            elem.children(".clause-content").children("textarea").val(data.content);
+
+            //add subclause data if gievn
+            if (data.sub) {
+              //make subclause list, give data and trigger to continue
+
+
+              //also add ext data if given
+              if (data.contentExt) {
+                elem
+                  .children(".clause-content-ext")
+                  .show()
+                  .children("textarea")
+                  .val(data.contentExt);
+              }
+            }
+          }
+        },
+        ".clause-list": {
+          fromLoadedData: function(e) {
+            e.stopPropagation();
+            var elem = $(this);
+
+            //make needed number of clauses, give them their data and trigger to continue
+
           }
         },
         ".add-clause-container": {

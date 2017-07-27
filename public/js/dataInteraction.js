@@ -21,7 +21,10 @@ function jsonReadErrorModal() {
 
 //parses a given list of clauses into the given clause list element
 function parseClauseList(arr, elem) {
-
+  //give list of clause objects to clause list
+  //and have it load the into clauses and lists recursivle
+  elem.getData().loadedData = arr;
+  elem.trigger("fromLoadedData");
 }
 
 //loads a json into the editor
