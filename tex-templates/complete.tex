@@ -39,7 +39,7 @@
 \StrLeft{#1}{1}[\firstletter]%
 \StrBehind{#1}{\firstletter}[\rest]%
 \StrRight{#2}{1}[\lastletter]%
-\underline{\capitalisewords{\firstletter}\rest}
+\underline{\smash{\capitalisewords{\firstletter}\rest}}
 #2%
 }
 {%
