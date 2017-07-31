@@ -8,15 +8,20 @@ var magicIdentifier = "PG52QE1AM4LACMX9";
 //current version of the resolution format supported
 var supportedResFileFormats = [1];
 
+//returns a bug report tag string
+function bugReportLink(errorCode) {
+  return "<a href='https://github.com/douira/resolution-editor/issues/new?" +
+    "&labels[]=user%20bug%20report&title=Bug Report: " + errorCode + "'>bug report</a>";
+}
+
 //displays a modal message for invalid json file at parse or apply stage
-function jsonReadErrorModal() {
+function jsonReadErrorModal(errorCode) {
   makeAlertMessage(
     "error_outline", "Error reading file", "ok",
     "The provided file could not be read and processed." +
     " This may be because the file you provided isn't in the format produced by this program or" +
-    " was corrupted in some way. Please file a <a href='https://github.com/douira/resolution-" +
-    "editor/issues/new?&labels[]=user%20bug%20report'>bug report</a> and describe this problem" +
-    " if you believe this error isn't your fault.");
+    " was corrupted in some way. Please file a " + bugReportLink(errorCode) +
+    " and describe this problem if you believe this error isn't your fault.", errorCode);
 }
 
 //parses a given list of clauses into the given clause list element
@@ -25,6 +30,11 @@ function parseClauseList(arr, elem) {
   //and have it load the into clauses and lists recursivle
   elem.getData().loadedData = arr;
   elem.trigger("fromLoadedData");
+}
+
+//checks that a saved or loaded editor object has all the required data
+function validateEditorData(obj) {
+
 }
 
 //loads a json into the editor
@@ -37,22 +47,21 @@ function loadJson(json, container) {
 
     //check for magic string to prevent loading of other json files (unless tampered with)
     if (obj.magic !== magicIdentifier) {
-      throw new Error("json not a resolution");
+      jsonReadErrorModal("magic_wrong");
     }
   } catch (e) {
     //notify and abort
-    jsonReadErrorModal();
+    jsonReadErrorModal("parse_fail");
     return;
   }
 
   //check file version, modal doesn't work yet, clashes with previous one
-  if (false && supportedResFileFormats.indexOf(obj.version) === -1) {
+  if (supportedResFileFormats.indexOf(obj.version) === -1) {
     makeAlertMessage(
       "warning", "File format is outdated", "ok",
       "The provided file could be read but is in an old and unsupported format." +
-      " Please file a <a href='https://github.com/douira/resolution-" +
-      "editor/issues/new?&labels[]=user%20bug%20report'>bug report</a> and describe this problem" +
-      " if you want to receive help with this issue.");
+      " Please file a " + bugReportLink("old_format") + " and describe this problem." +
+      " if you wish to receive help concerning this issue.", "old_format");
   }
 
   //prepare loading: reset editor to original state
@@ -115,8 +124,7 @@ function generatePdf(container) {
     error: makeAlertMessage.bind(null,
         "error_outline", "Error sending data to server", "ok",
         "Could not communicate with server properly." +
-        " Please file a <a href='https://github.com/douira/resolution-editor/issues/new" +
-        "?&labels[]=user%20bug%20report'>bug report</a> and describe this problem.")
+        " Please file a " + bugReportLink("pdf_ajax") + " and describe this problem.", "pdf_ajax")
   }).done(function(response) {
     //error with response data "error"
     if (response.endsWith(".pdf")) {
@@ -131,8 +139,7 @@ function generatePdf(container) {
         "error_outline", "Error generating PDF", "ok",
         "The server encountered an unexpected error" +
         " while trying to generate the requested PDF file." +
-        " Please file a <a href='https://github.com/douira/resolution-editor/issues/new" +
-        "?&labels[]=user%20bug%20report'>bug report</a> and describe this problem.");
+        " Please file a " + bugReportLink("pdf_gen") + " and describe this problem.", "pdf_gen");
     }
   });
 }
@@ -260,8 +267,7 @@ function saveFileDownload(str) {
         $(this).modal("close");
       });
     body.append(
-      "If the file download doesn't start, try again and then " +
-      "please file a <a href='https://github.com/douira/resolution-editor/issues/new" +
-      "?&labels[]=user%20bug%20report'>bug report</a> and describe this problem.");
+      "If the file download doesn't start, try again and if it still doesn't work " +
+      "please file a " + bugReportLink("download_not_starting") + " and describe this problem.");
   });
 }

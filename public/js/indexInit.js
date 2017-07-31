@@ -109,7 +109,7 @@ function registerEventsAndData(fieldTypes, initData) {
 }
 
 //creates an alert message
-function makeAlertMessage(icon, title, buttonText, callbackOrMessage) {
+function makeAlertMessage(icon, title, buttonText, callbackOrMessage, errorCode) {
   //default button text
   if (typeof buttonText === "undefined") {
     buttonText = "OK";
@@ -123,6 +123,13 @@ function makeAlertMessage(icon, title, buttonText, callbackOrMessage) {
     .find(".modal-content-title")
     .html("<i class='material-icons small'>" + icon + "</i> " + title);
   modalElement.find(".modal-dismiss-btn").html(buttonText);
+
+  //set error code if given
+  var hasErrorCode = typeof errorCode !== "undefined";
+  modalElement
+    .find(".error-code")
+    .text(hasErrorCode ? "error #" + errorCode : "")
+    [hasErrorCode ? "show" : "hide"]();
 
   //call callback for content if given
   var contentBody = modalElement.find(".modal-content-body");
