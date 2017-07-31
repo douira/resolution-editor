@@ -78,8 +78,10 @@ function loadJson(json, container) {
   elem.trigger("init");
 
   //parse clauses
-  parseClauseList(res.clauses.preambulatory);
-  parseClauseList(res.clauses.operative);
+  parseClauseList(res.clauses.preambulatory,
+                  container.find("#preamb-clauses").children(".clause-list"));
+  parseClauseList(res.clauses.operative,
+                  container.find("#op-clauses").children(".clause-list"));
 }
 
 //load file from computer file system

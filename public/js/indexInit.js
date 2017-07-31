@@ -263,6 +263,102 @@ $.fn.amountAbove = function(selector) {
   return this.parents(selector).length;
 };
 
+//adds a subclause for given clause (and makes list if necessary),
+//expects inactivation to have been performed if activationStateChanges is falsy
+//(and won't activate created first subclause either)
+$.fn.addSubClause = function(activationStateChanges) {
+  //stop if we're not in a clause
+  if (! this.is(".clause")) {
+    return this;
+  }
+
+  //inactivate if doing state changes
+  if (activationStateChanges) {
+    this.trigger("editInactive");
+  }
+
+  //prepare sublause list, extend already present one if found
+  var subList = this.children(".clause-list");
+  if (! subList.length) {
+    //get a clause list and attach to clause
+    subList = this
+      .closest(".clause-list")
+      .clone(true, true)
+      .addClass("clause-list-sub"); //make a sublcause list by adding sigifying class
+
+    //remove left over clauses from clone
+    subList.children().not(".add-clause-container").remove();
+
+    //add created list to clause, add clause button will be made visible by clause event
+    this.children(".clause-list-anchor").after(subList);
+  }
+
+  //add new subclause by copying clause without phrase field
+  var strippedClause = this
+    .clone(true, true)
+    .trigger("reset");
+  strippedClause
+    .children(".phrase-input-wrapper")
+    .remove();
+  strippedClause
+    .prependTo(subList)
+    .trigger("updateTreeDepth");
+
+  //only activate if enabled (load mode needs no activation state changes)
+  if (activationStateChanges) {
+    strippedClause.trigger("editActive");
+  }
+
+  //update is of all clauses in list
+  subList.children(".clause").trigger("updateId");
+
+  //return this for chaining
+  return this;
+};
+
+//adds a clause to the clause list the button was clicked in, see addSubClause for state flag
+$.fn.addClause = function(amount, activationStateChanges) {
+  //if not a add clause button container, try to find it
+  var addClauseContainer = this;
+  if (! this.is(".add-clause-container")) {
+    if (this.is(".clause-list")) {
+      addClauseContainer = this.children(".add-clause-container");
+    } else {
+      return this;
+    }
+  }
+
+  //inactivate all clauses if state changes enabled
+  if (activationStateChanges) {
+    $(".clause").trigger("editInactive");
+  }
+
+  //last clause added to the list
+  var addedClause;
+
+  //for number of clauses to be added
+  for (let i = 0; i < amount; i ++) {
+    //add a new clause to the enclosing list by
+    //duplicating and resetting the first one of the current type
+    addedClause = addClauseContainer
+      .siblings(".clause")
+      .first()
+      .clone(true, true)
+      .trigger("reset")
+      .insertBefore(addClauseContainer)
+      .trigger("updateId");
+  }
+
+  //make last added clause active if enabled
+  if (activationStateChanges) {
+    addedClause.trigger("editActive");
+  }
+
+  //return this for chaining
+  return this;
+};
+
+
 //do things when the document has finished loading
 $(document).ready(function() {
   //load external sponsor, phrase and forum name data
@@ -519,28 +615,50 @@ $(document).ready(function() {
           fromLoadedData: function(e) {
             e.stopPropagation();
 
-            //fill phrase and content with data
+            //fill with data
             var elem = $(this);
             var data = elem.getData().loadedData;
-            elem
-              .children(".phrase-input-wrapper")
-              .find("input")
-              .val(data.phrase)
-              .trigger("activateLabel");
-            elem.children(".clause-content").children("textarea").val(data.content);
 
-            //add subclause data if gievn
-            if (data.sub) {
-              //make subclause list, give data and trigger to continue
+            //if data is only a string, fill content only
+            if (typeof data === "string") {
+              //fill content field
+              elem
+                .children(".clause-content")
+                .children("textarea")
+                .val(data)
+                .trigger("activateLabel");
+            } else {
+              //fill phrase field
+              elem
+                .children(".phrase-input-wrapper")
+                .find("input")
+                .val(data.phrase)
+                .trigger("activateLabel");
 
+              //fill content field
+              elem
+                .children(".clause-content")
+                .children("textarea")
+                .val(data.content)
+                .trigger("activateLabel");
 
-              //also add ext data if given
-              if (data.contentExt) {
-                elem
-                  .children(".clause-content-ext")
-                  .show()
-                  .children("textarea")
-                  .val(data.contentExt);
+              //add subclause data if given
+              if (data.sub) {
+                //make subclause list, give data and trigger to continue
+                elem.addSubClause(false);
+                var subclauseList = elem.find(".clause-list-sub");
+                subclauseList.getData().loadedData = data.sub;
+                subclauseList.trigger("fromLoadedData");
+
+                //also add ext data if given
+                if (data.contentExt) {
+                  elem
+                    .children(".clause-content-ext")
+                    .show()
+                    .children("textarea")
+                    .val(data.contentExt)
+                    .trigger("activateLabel");
+                }
               }
             }
           }
@@ -550,8 +668,15 @@ $(document).ready(function() {
             e.stopPropagation();
             var elem = $(this);
 
-            //make needed number of clauses, give them their data and trigger to continue
+            //make needed number of clauses
+            var data = $(this).getData().loadedData;
+            elem.addClause(data.length - 1, false); //one less, we already have one there by default
 
+            //give them their data and trigger to continue
+            elem.children(".clause").each(function(index) {
+              $(this).getData().loadedData = data[index];
+              $(this).trigger("fromLoadedData");
+            });
           }
         },
         ".add-clause-container": {
@@ -560,18 +685,8 @@ $(document).ready(function() {
 
             //only respond if button itself was clicked and not just the enclosing div
             if ($(e.target).is("a")) {
-              //inactivate all clauses
-              $(".clause").trigger("editInactive");
-
-              //add a new clause to the enclosing list by
-              //duplicating and resetting the first one of the current type
-              $(this)
-                .siblings(".clause")
-                .first()
-                .clone(true, true)
-                .trigger("reset")
-                .insertBefore(this)
-                .triggerAll("updateId editActive");
+              //add clause in enclosing list
+              $(this).addClause(1, true);
             }
           }
         },
@@ -619,38 +734,8 @@ $(document).ready(function() {
             e.stopPropagation();
             var elem = $(this);
 
-            //get enclosing clause and make inactive to prevent cloning of eab
-            var clause = elem.closest(".clause").trigger("editInactive");
-
-            //prepare sublause list, extend already present one if found
-            var subList = clause.children(".clause-list");
-            if (! subList.length) {
-              //get a clause list and attach to clause
-              subList = clause
-                .closest(".clause-list")
-                .clone(true, true)
-                .addClass("clause-list-sub"); //make a sublcause list by adding sigifying class
-
-              //remove left over clauses from clone
-              subList.children().not(".add-clause-container").remove();
-
-              //add created list to clause, add clause button will be made visible by clause event
-              clause.children(".clause-list-anchor").after(subList);
-            }
-
-            //add new subclause by copying clause without phrase field
-            var strippedClause = clause
-              .clone(true, true)
-              .trigger("reset");
-            strippedClause
-              .children(".phrase-input-wrapper")
-              .remove();
-            strippedClause
-              .prependTo(subList)
-              .triggerAll("updateTreeDepth editActive");
-
-            //update is of all clauses in list
-            subList.children(".clause").trigger("updateId");
+            //get enclosing clause and make inactive to prevent cloning of eab and add subclause
+            elem.closest(".clause").addSubClause(true);
           },
           updateDisabled: function(e) {
             e.stopPropagation();
