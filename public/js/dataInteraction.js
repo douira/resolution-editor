@@ -1,5 +1,5 @@
 /*jshint esnext: false, browser: true, jquery: true*/
-/*global makeAlertMessage: true */
+/*global makeAlertMessage, resolutionFileFormat, validateObjectStructure: true */
 //file actions are defined in this file
 
 //string used to identify files saved by this website (mild protection for now)
@@ -34,7 +34,7 @@ function parseClauseList(arr, elem) {
 
 //checks that a saved or loaded editor object has all the required data
 function validateEditorData(obj) {
-
+  return validateObjectStructure(obj, resolutionFileFormat);
 }
 
 //loads a json into the editor
@@ -44,24 +44,30 @@ function loadJson(json, container) {
   try {
     //json parse
     obj = JSON.parse(json);
-
-    //check for magic string to prevent loading of other json files (unless tampered with)
-    if (obj.magic !== magicIdentifier) {
-      jsonReadErrorModal("magic_wrong");
-    }
   } catch (e) {
     //notify and abort
     jsonReadErrorModal("parse_fail");
     return;
   }
 
+  //check for magic string to prevent loading of other json files (unless tampered with)
+  if (obj.magic !== magicIdentifier) {
+    jsonReadErrorModal("magic_wrong");
+  }
+
   //check file version, modal doesn't work yet, clashes with previous one
-  if (supportedResFileFormats.indexOf(obj.version) === -1) {
+  if (obj.version && supportedResFileFormats.indexOf(obj.version) === -1) {
     makeAlertMessage(
       "warning", "File format is outdated", "ok",
       "The provided file could be read but is in an old and unsupported format." +
       " Please file a " + bugReportLink("old_format") + " and describe this problem." +
       " if you wish to receive help concerning this issue.", "old_format");
+  }
+
+  //check that the loaded data is valid
+  if (! validateEditorData(obj)) {
+    //make error message
+    jsonReadErrorModal("missing_fields");
   }
 
   //prepare loading: reset editor to original state
