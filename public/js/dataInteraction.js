@@ -1,9 +1,6 @@
 /*jshint esnext: false, browser: true, jquery: true*/
-/*global makeAlertMessage, resolutionFileFormat, validateObjectStructure: true */
+/*global makeAlertMessage, resolutionFileFormat, validateObjectStructure, magicIdentifier: true */
 //file actions are defined in this file
-
-//string used to identify files saved by this website (mild protection for now)
-var magicIdentifier = "PG52QE1AM4LACMX9";
 
 //current version of the resolution format supported
 var supportedResFileFormats = [1];
@@ -16,6 +13,7 @@ function bugReportLink(errorCode) {
 
 //displays a modal message for invalid json file at parse or apply stage
 function jsonReadErrorModal(errorCode) {
+  console.log("error", errorCode);
   makeAlertMessage(
     "error_outline", "Error reading file", "ok",
     "The provided file could not be read and processed." +
@@ -53,6 +51,7 @@ function loadJson(json, container) {
   //check for magic string to prevent loading of other json files (unless tampered with)
   if (obj.magic !== magicIdentifier) {
     jsonReadErrorModal("magic_wrong");
+    return;
   }
 
   //check file version, modal doesn't work yet, clashes with previous one
@@ -68,6 +67,7 @@ function loadJson(json, container) {
   if (! validateEditorData(obj)) {
     //make error message
     jsonReadErrorModal("missing_fields");
+    return;
   }
 
   //prepare loading: reset editor to original state

@@ -2,77 +2,69 @@
   "magic": "PG52QE1AM4LACMX9",
   "version": 1,
   "status": {
-    "editied": 1501154294363,
-    "author": "llkj"
+    "edited": 1501154294363,
+    "author": "author uuuuu"
   },
   "resolution": {
     "address": {
-      "questionOf": "lkjlkj",
-      "forum": "dsgsgrww",
+      "questionOf": "question uuuuu",
+      "forum": "forum uuuuu",
       "sponsor": {
-        "main": "lkjhlj",
+        "main": "mainsponsor uuuuu",
         "co": [
-          "jklkjh",
-          "jkl",
-          "jkhl",
-          "lkj",
-          "ljk",
-          "lkjh",
-          "lj"
+          "co1",
+          "co2",
+          "co3"
         ]
       }
     },
     "clauses": {
       "preambulatory": [
         {
-          "content": "kjhkjh",
-          "phrase": "kjkh",
+          "content": "preamb1 content",
+          "phrase": "preamb1 phrase",
           "sub": [
-            "kjhkhjgk"
+            "preamb1 sub1"
           ]
         },
         {
-          "content": "uziuzoiiul",
-          "phrase": "iouoiuoz"
+          "content": "preamb2 content",
+          "phrase": "preamb2 phrase"
         }
       ],
       "operative": [
         {
-          "content": "kjhkjkh",
-          "phrase": "jhkjh",
-          "contentExt": "kjhkjhg",
+          "content": "op1 content",
+          "phrase": "op1 phrase",
+          "contentExt": "op1 extcontent",
           "sub": [
-            "jkhkhjg",
+            "op1 sub1",
             {
-              "content": "jkhkhjkjhhkjgh",
+              "content": "op1 sub2 content",
               "sub": [
-                "gfhgfdhgfd"
+                "op1 sub2 sub1"
               ]
             },
             {
-              "content": "jhgkjh",
-              "contentExt": "hgfhgfhgfd",
+              "content": "op1 sub3 content",
+              "contentExt": "op1 sub3 extcontent",
               "sub": [
-                "jkhkjhgk",
-                "jhgkjhkjhgh"
+                "op1 sub3 sub1",
+                "op1 sub3 sub2"
               ]
             }
           ]
         },
         {
-          "content": "hgjkjhgkjh",
-          "phrase": "jhkjhg",
+          "content": "op2 content",
+          "phrase": "op2 phrase",
           "sub": [
-            "jhgkjhg"
+            "op2 sub1"
           ]
         },
         {
-          "content": "jkhkgkjh",
-          "phrase": "jhkjhg"
-        },
-        {
-          "content": "jhgkjhgkjhg",
-          "phrase": "kjhgkjhg"
+          "content": "op3 content",
+          "phrase": "op3 phrase"
         }
       ]
     }

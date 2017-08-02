@@ -1,5 +1,13 @@
 /*jshint esnext: false, browser: false, jquery: false*/
-/*global magicIdentifier: true*/
+
+//string used to identify files saved by this website (mild protection for now)
+var magicIdentifier = "PG52QE1AM4LACMX9";
+
+//debugging logger
+/*function log(val) {
+  console.log(val);
+  return log;
+}*/
 
 //validates an object (parsed json for example) with given format spec
 //the format of the format is implied to be correct
@@ -75,7 +83,7 @@ function validateObjectStructure(obj, format) {
         return field.hasOwnProperty("requiredType") &&
 
           //check for missing required fields
-          (field.required ? ! field.present : true) &&
+          (field.required ? field.present : true) &&
 
           //check for mismatching values (for primitives comparable with ===)
           (! field.hasOwnProperty("requiredValue") ||
@@ -85,8 +93,9 @@ function validateObjectStructure(obj, format) {
           (! field.hasOwnProperty("requiresField") ||
             fields.some(function(f) { return f.name === field.requiresField; })) &&
 
-          //check for valid types with content
-          typeValidators[field.requiredType](field.presentValue, field.content);
+          //check for valid types with content if present
+          (! field.present ||
+            typeValidators[field.requiredType](field.presentValue, field.content));
       });
     },
 
@@ -96,12 +105,15 @@ function validateObjectStructure(obj, format) {
       return (val instanceof Array) &&
 
         //minimum and maxmimum length is correct
-        val.length >= format.minLength && val.length <= format.maxLength &&
+        (! format.hasOwnProperty("minLength") || val.length >= format.minLength) &&
+        (! format.hasOwnProperty("maxLength") || val.length <= format.maxLength) &&
 
         //only allowed types are used
         val.every(function(entry) {
           //valid as any of the allowed types (can't have content descriptor like object type)
-          return val.contentTypes.some(function(type) { typeValidators[type](entry); });
+          return format.contentTypes.some(function(type) {
+            return typeValidators[type](entry);
+          });
         });
     }
   };
@@ -114,10 +126,21 @@ function validateObjectStructure(obj, format) {
   }
 
   //add other types
-  for (const typeName in format.types) {
+  for (var typeName in format.types) {
     //register function that validates object with this format specifier
     typeValidators[typeName] = makeObjectFormatValidator(format.types[typeName]);
   }
+
+  //transform with intermediary function, uncomment for debugging (don't delete this)
+  /*function makeTransformedValidator(validator, name) {
+    return function(val, format) {
+      var result = validator(val, format);
+      return result;
+    };
+  }
+  for (var name in typeValidators) {
+    typeValidators[name] = makeTransformedValidator(typeValidators[name], name);
+  }*/
 
   //return validation result of root object node
   return typeValidators.object(obj, format.structure);
