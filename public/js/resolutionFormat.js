@@ -17,9 +17,92 @@ function validateObjectStructure(obj, format) {
       return typeof val === "boolean";
     },
 
-    //object validation does all the work concerning attributes
+    //object validation does all the work concerning object fields
     object: function(val, format) {
+      //stop if not of type object
+      if (typeof val !== "object") {
+        return false;
+      }
 
+      //get present fields and their values
+      var fields = Object.keys(val);
+      fields = fields.map(function(key) {
+        return {
+          name: key,
+          presentValue: val[key],
+          present: true
+        };
+      });
+
+      //add or expand with required and optional fields or values
+      format.forEach(function(fieldSpec) {
+        //try find matching element from present object
+        var field = fields.find(function(presentField) {
+          return presentField.name === fieldSpec.name;
+        });
+
+        //check if a present field was found
+        if (! field) {
+          //make new field with name
+          field = {
+            name: fieldSpec.name,
+            present: false
+          };
+
+          //add created field to list
+          fields.push(field);
+        }
+
+        //expand field entry
+        field.content = fieldSpec.content;
+        field.requiredType = fieldSpec.type;
+        field.required = fieldSpec.required;
+
+        //add value propertly if present in spec
+        if (fieldSpec.hasOwnProperty("value")) {
+          field.requiredValue = fieldSpec.value;
+        }
+
+        //add requiresField propertly if present in spec
+        if (fieldSpec.hasOwnProperty("requiresField")) {
+          field.requiresField = fieldSpec.requiresField;
+        }
+      });
+
+      //check all fields to be ok
+      return fields.every(function(field) {
+        //check for fields that are present but not in the spec (requiredType must be a property)
+        return field.hasOwnProperty("requiredType") &&
+
+          //check for missing required fields
+          (field.required ? ! field.present : true) &&
+
+          //check for mismatching values (for primitives comparable with ===)
+          (! field.hasOwnProperty("requiredValue") ||
+            field.requiredValue === field.presentValue) &&
+
+          //required fields are present
+          (! field.hasOwnProperty("requiresField") ||
+            fields.some(function(f) { return f.name === field.requiresField; })) &&
+
+          //check for valid types with content
+          typeValidators[field.requiredType](field.presentValue, field.content);
+      });
+    },
+
+    //array validation validates types of all indexes and length
+    array: function(val, format) {
+      //is of type array
+      return (val instanceof Array) &&
+
+        //minimum and maxmimum length is correct
+        val.length >= format.minLength && val.length <= format.maxLength &&
+
+        //only allowed types are used
+        val.every(function(entry) {
+          //valid as any of the allowed types (can't have content descriptor like object type)
+          return val.contentTypes.some(function(type) { typeValidators[type](entry); });
+        });
     }
   };
 
@@ -59,8 +142,10 @@ var resolutionFileFormat = {
         name: "sub",
         type: "array",
         required: false,
-        minLength: 1,
-        contentTypes: ["string", "phraselessClause"]
+        content: {
+          minLength: 1,
+          contentTypes: ["string", "phraselessClause"]
+        }
       },
       {
         name: "contentExt",
@@ -79,8 +164,10 @@ var resolutionFileFormat = {
         name: "sub",
         type: "array",
         required: false,
-        minLength: 1,
-        contentTypes: ["string", "phraselessClause"]
+        content: {
+          minLength: 1,
+          contentTypes: ["string", "phraselessClause"]
+        }
       },
       {
         name: "contentExt",
@@ -153,8 +240,10 @@ var resolutionFileFormat = {
                   name: "co",
                   type: "array",
                   required: true,
-                  minLength: 1,
-                  contentTypes: ["string"]
+                  content: {
+                    minLength: 1,
+                    contentTypes: ["string"]
+                  }
                 }
               ]
             }
@@ -169,15 +258,19 @@ var resolutionFileFormat = {
               name: "preambulatory",
               type: "array",
               required: true,
-              minLength: 1,
-              contentTypes: ["phraseClause"]
+              content: {
+                minLength: 1,
+                contentTypes: ["phraseClause"]
+              }
             },
             {
               name: "operative",
               type: "array",
               required: true,
-              minLength: 1,
-              contentTypes: ["phraseClause"]
+              content: {
+                minLength: 1,
+                contentTypes: ["phraseClause"]
+              }
             }
           ]
         }
