@@ -633,7 +633,8 @@ $(document).ready(function() {
                 .children(".clause-content")
                 .children("textarea")
                 .val(data)
-                .trigger("activateLabel");
+                //trigger keyup to make textarea update its size
+                .triggerAll("activateLabel keyup");
             } else {
               //fill phrase field
               elem
@@ -647,7 +648,7 @@ $(document).ready(function() {
                 .children(".clause-content")
                 .children("textarea")
                 .val(data.content)
-                .trigger("activateLabel");
+                .triggerAll("activateLabel keyup");
 
               //add subclause data if given
               if (data.sub) {
@@ -664,7 +665,7 @@ $(document).ready(function() {
                     .show()
                     .children("textarea")
                     .val(data.contentExt)
-                    .trigger("activateLabel");
+                    .triggerAll("activateLabel keyup");
                 }
               }
             }

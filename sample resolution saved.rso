@@ -3,14 +3,14 @@
   "version": 1,
   "status": {
     "edited": 1501154294363,
-    "author": "author uuuuu"
+    "author": "author content"
   },
   "resolution": {
     "address": {
-      "questionOf": "question uuuuu",
-      "forum": "forum uuuuu",
+      "questionOf": "question content",
+      "forum": "forum content",
       "sponsor": {
-        "main": "mainsponsor uuuuu",
+        "main": "mainsponsor content",
         "co": [
           "co1",
           "co2",
