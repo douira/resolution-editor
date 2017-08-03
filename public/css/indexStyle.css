@@ -2,10 +2,6 @@
   margin: 10px;
 }
 
-#co_spon {
-  margin-top: 20px;
-}
-
 .reduced-width-divider {
   margin-right: 70px;
 }
@@ -63,4 +59,8 @@
 
 .hide-this {
   display: none;
+}
+
+#main-spon {
+  margin-bottom: 45px;
 }
