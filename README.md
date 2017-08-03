@@ -19,5 +19,6 @@
  Here are some screenshots if you don't want to/can't get the repo to run on your machine: (from 26 Jun 2017)
  
  ![Images of the Website: header and general data](http://i.imgur.com/3ZbJGfb.png)
- ![Images of the Website: clauses with sublcauses and eab](http://i.imgur.com/M42TeR7.png)
+ ![Images of the Website: preamb clauses](http://i.imgur.com/0OSc8g1.png)
+ ![Images of the Website: op clauses with sublcauses and eab](http://i.imgur.com/http://imgur.com/ah6KhDi.png)
  ![Images of the Website: footer](http://i.imgur.com/mAjybQL.png)
