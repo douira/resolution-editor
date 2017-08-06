@@ -119,7 +119,7 @@ function checkAlertDisplay() {
     if (! (modal.hasClass("open") || modal.hasClass("velocity-animating"))) {
       //get next alert message from queue and display
       var modalData = alertQueue.shift();
-      console.log(modalData);
+
       //get the modal element
       var modalElement = $("#alert-message-modal");
 
