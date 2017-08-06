@@ -108,6 +108,48 @@ function registerEventsAndData(fieldTypes, initData) {
   }
 }
 
+//queue of alert message we want to display
+const alertQueue = [];
+
+//checks if we can display an alert now or starts processing the queue
+function checkAlertDisplay() {
+  //only if any items in queue and still animating
+  if (alertQueue.length) {
+    var modal = $("#alert-message-modal");
+    if (! (modal.hasClass("open") || modal.hasClass("velocity-animating"))) {
+      //get next alert message from queue and display
+      var modalData = alertQueue.shift();
+      console.log(modalData);
+      //get the modal element
+      var modalElement = $("#alert-message-modal");
+
+      //add content to the modal
+      modalElement
+        .find(".modal-content-title")
+        .html("<i class='material-icons small'>" + modalData.icon + "</i> " + modalData.title);
+      modalElement.find(".modal-dismiss-btn").html(modalData.buttonText);
+
+      //set error code if given
+      modalElement
+        .find(".error-code")
+        .text(modalData.hasErrorCode ? "error #" + modalData.errorCode : "")
+        [modalData.hasErrorCode ? "show" : "hide"]();
+
+      //call callback for content if given
+      var contentBody = modalElement.find(".modal-content-body");
+      if (typeof modalData.callbackOrMessage === "string") {
+        contentBody.html(modalData.callbackOrMessage);
+      } else {
+        contentBody.empty();
+        modalData.callbackOrMessage(contentBody, modalElement);
+      }
+
+      //open the modal for the user to see
+      modalElement.modal("open");
+    }
+  }
+}
+
 //creates an alert message
 function makeAlertMessage(icon, title, buttonText, callbackOrMessage, errorCode) {
   //default button text
@@ -115,33 +157,18 @@ function makeAlertMessage(icon, title, buttonText, callbackOrMessage, errorCode)
     buttonText = "OK";
   }
 
-  //get the modal element
-  var modalElement = $("#alert-message-modal");
+  //add alert message object to queue
+  alertQueue.push({
+    icon: icon,
+    title: title,
+    buttonText: buttonText,
+    callbackOrMessage: callbackOrMessage,
+    hasErrorCode: typeof errorCode !== "undefined",
+    errorCode: errorCode
+  });
 
-  //add content to the modal
-  modalElement
-    .find(".modal-content-title")
-    .html("<i class='material-icons small'>" + icon + "</i> " + title);
-  modalElement.find(".modal-dismiss-btn").html(buttonText);
-
-  //set error code if given
-  var hasErrorCode = typeof errorCode !== "undefined";
-  modalElement
-    .find(".error-code")
-    .text(hasErrorCode ? "error #" + errorCode : "")
-    [hasErrorCode ? "show" : "hide"]();
-
-  //call callback for content if given
-  var contentBody = modalElement.find(".modal-content-body");
-  if (typeof callbackOrMessage === "string") {
-    contentBody.html(callbackOrMessage);
-  } else {
-    contentBody.empty();
-    callbackOrMessage(contentBody, modalElement);
-  }
-
-  //open the modal for the user to see
-  modalElement.modal("open");
+  //check immediately
+  checkAlertDisplay();
 }
 
 //updates the disabling state of eab movement buttons, used as event handler
@@ -403,6 +430,9 @@ $(document).ready(function() {
               dismissible: false,
               complete: function() {
                 modal.trigger("reset");
+
+                //display next alert if there is one
+                checkAlertDisplay();
               }
             });
           },
