@@ -1,5 +1,10 @@
 /*jshint esnext: false, browser: true, jquery: true*/
-/*global makeAlertMessage, resolutionFileFormat, validateObjectStructure, magicIdentifier: true */
+/*global
+  makeAlertMessage,
+  resolutionFileFormat,
+  validateObjectStructure,
+  magicIdentifier,
+  allowedSubclauseDepth: true */
 //file actions are defined in this file
 
 //current version of the resolution format supported
@@ -30,9 +35,40 @@ function parseClauseList(arr, elem) {
   elem.trigger("fromLoadedData");
 }
 
+//returns the maximum subclause depth found in given clause list (top list is non-sub)
+function getMaxSubclauseDepth(clauseList, depthOffset) {
+  //start at 0 if not given
+  if (typeof depthOffset === "undefined") {
+    depthOffset = 0;
+  } else {
+    //increment with deeper level
+    depthOffset ++;
+  }
+
+  //maximum depth for all clauses in list
+  return Math.max.apply(null, clauseList.map(function(clause) {
+    //check if has subclauses
+    if (clause.hasOwnProperty("sub")) {
+      //recurse
+      return getMaxSubclauseDepth(clause.sub, depthOffset);
+    } else {
+      return depthOffset;
+    }
+  }));
+}
+
 //checks that a saved or loaded editor object has all the required data
 function validateEditorData(obj) {
-  return validateObjectStructure(obj, resolutionFileFormat);
+  //validate object structure
+  var isValidStructure = validateObjectStructure(obj, resolutionFileFormat);
+
+  //check maximum subclause tree depth
+  if (isValidStructure) {
+    var clauses = obj.resolution.clauses;
+    return getMaxSubclauseDepth(clauses.preambulatory) <= allowedSubclauseDepth.preamb &&
+           getMaxSubclauseDepth(clauses.operative) <= allowedSubclauseDepth.op;
+  }
+  return false;
 }
 
 //loads a json into the editor
@@ -66,7 +102,7 @@ function loadJson(json, container) {
   //check that the loaded data is valid
   if (! validateEditorData(obj)) {
     //make error message
-    jsonReadErrorModal("missing_fields");
+    jsonReadErrorModal("structure_invalid");
     return;
   }
 

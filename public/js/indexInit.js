@@ -10,10 +10,10 @@ var autofillSettings = {
   minLength: 1
 };
 
-//number of subclauses allowed for op and preamb clauses
+//number of subclauses allowed for op and preamb clauses with 0 being no subclauses allowed
 var allowedSubclauseDepth = {
-  op: 2,
-  preamb: 1
+  preamb: 1,
+  op: 2
 };
 
 //makes a autofill settings object
