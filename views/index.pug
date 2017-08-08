@@ -39,14 +39,21 @@ block content
         +icon(icon, "left")
         =text
     #meta-buttons
-      +meta-button("file-action-load", "load", "file_upload", "Loades a resolution from a previously saved file")
+      +meta-button("file-action-load", "open", "file_upload", "Loades a resolution from a previously saved file")
       +meta-button("file-action-save", "save", "file_download", "Downloads the resolution in a resusable format")
       +meta-button("file-action-pdf", "view pdf", "description", "Generates a formatted PDF document")
     //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
     .modal#alert-message-modal
       .modal-content
         h4.modal-content-title Message
+        span.error-code.grey-text
         p.modal-content-body Text content placeholder!
+        .file-field.input-field#file-selector.hide-this
+          .btn
+            span Select file
+            input.file-input(type="file")
+          .file-path-wrapper
+            input.file-path.validate(type="text" placeholder="File Path" pattern="^.*\.rso")
       .modal-footer
         a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
     mixin floating-sm-btn(color, type, icon, tooltipText)
@@ -122,5 +129,6 @@ block content
     +clause-card("preamb-clauses", "preamb", "Preambulatory")
     +clause-card("op-clauses", "op", "Operative")
 block scripts
+  script(src="js/resolutionFormat.js")
   script(src="js/dataInteraction.js")
   script(src="js/indexInit.js")

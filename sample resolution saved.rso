@@ -1,0 +1,72 @@
+{
+  "magic": "PG52QE1AM4LACMX9",
+  "version": 1,
+  "status": {
+    "edited": 1501154294363,
+    "author": "author content"
+  },
+  "resolution": {
+    "address": {
+      "questionOf": "question content",
+      "forum": "forum content",
+      "sponsor": {
+        "main": "mainsponsor content",
+        "co": [
+          "co1",
+          "co2",
+          "co3"
+        ]
+      }
+    },
+    "clauses": {
+      "preambulatory": [
+        {
+          "content": "preamb1 content",
+          "phrase": "preamb1 phrase",
+          "sub": [
+            "preamb1 sub1"
+          ]
+        },
+        {
+          "content": "preamb2 content",
+          "phrase": "preamb2 phrase"
+        }
+      ],
+      "operative": [
+        {
+          "content": "op1 content",
+          "phrase": "op1 phrase",
+          "contentExt": "op1 extcontent",
+          "sub": [
+            "op1 sub1",
+            {
+              "content": "op1 sub2 content",
+              "sub": [
+                "op1 sub2 sub1"
+              ]
+            },
+            {
+              "content": "op1 sub3 content",
+              "contentExt": "op1 sub3 extcontent",
+              "sub": [
+                "op1 sub3 sub1",
+                "op1 sub3 sub2"
+              ]
+            }
+          ]
+        },
+        {
+          "content": "op2 content",
+          "phrase": "op2 phrase",
+          "sub": [
+            "op2 sub1"
+          ]
+        },
+        {
+          "content": "op3 content",
+          "phrase": "op3 phrase"
+        }
+      ]
+    }
+  }
+}

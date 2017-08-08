@@ -1,5 +1,5 @@
 /*jshint esnext: false, browser: true, jquery: true*/
-/*global loadFilePick, makePdfDisplay, downloadJson: true*/
+/*global loadFilePick, generatePdf, downloadJson: true*/
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -10,10 +10,10 @@ var autofillSettings = {
   minLength: 1
 };
 
-//number of subclauses allowed for op and preamb clauses
+//number of subclauses allowed for op and preamb clauses with 0 being no subclauses allowed
 var allowedSubclauseDepth = {
-  op: 2,
-  preamb: 1
+  preamb: 1,
+  op: 2
 };
 
 //makes a autofill settings object
@@ -108,33 +108,67 @@ function registerEventsAndData(fieldTypes, initData) {
   }
 }
 
+//queue of alert message we want to display
+var alertQueue = [];
+
+//checks if we can display an alert now or starts processing the queue
+function checkAlertDisplay() {
+  //only if any items in queue and still animating
+  if (alertQueue.length) {
+    var modal = $("#alert-message-modal");
+    if (! (modal.hasClass("open") || modal.hasClass("velocity-animating"))) {
+      //get next alert message from queue and display
+      var modalData = alertQueue.shift();
+
+      //get the modal element
+      var modalElement = $("#alert-message-modal");
+
+      //add content to the modal
+      modalElement
+        .find(".modal-content-title")
+        .html("<i class='material-icons small'>" + modalData.icon + "</i> " + modalData.title);
+      modalElement.find(".modal-dismiss-btn").html(modalData.buttonText);
+
+      //set error code if given
+      modalElement
+        .find(".error-code")
+        .text(modalData.hasErrorCode ? "error #" + modalData.errorCode : "")
+        [modalData.hasErrorCode ? "show" : "hide"]();
+
+      //call callback for content if given
+      var contentBody = modalElement.find(".modal-content-body");
+      if (typeof modalData.callbackOrMessage === "string") {
+        contentBody.html(modalData.callbackOrMessage);
+      } else {
+        contentBody.empty();
+        modalData.callbackOrMessage(contentBody, modalElement);
+      }
+
+      //open the modal for the user to see
+      modalElement.modal("open");
+    }
+  }
+}
+
 //creates an alert message
-function makeAlertMessage(icon, title, buttonText, callbackOrMessage) {
+function makeAlertMessage(icon, title, buttonText, callbackOrMessage, errorCode) {
   //default button text
   if (typeof buttonText === "undefined") {
     buttonText = "OK";
   }
 
-  //get the modal element
-  var modalElement = $("#alert-message-modal");
+  //add alert message object to queue
+  alertQueue.push({
+    icon: icon,
+    title: title,
+    buttonText: buttonText,
+    callbackOrMessage: callbackOrMessage,
+    hasErrorCode: typeof errorCode !== "undefined",
+    errorCode: errorCode
+  });
 
-  //add content to the modal
-  modalElement
-    .find(".modal-content-title")
-    .html("<i class='material-icons small'>" + icon + "</i> " + title);
-  modalElement.find(".modal-dismiss-btn").html(buttonText);
-
-  //call callback for content if given
-  var contentBody = modalElement.find(".modal-content-body");
-  if (typeof callbackOrMessage === "string") {
-    contentBody.html(callbackOrMessage);
-  } else {
-    contentBody.empty();
-    callbackOrMessage(contentBody, modalElement);
-  }
-
-  //open the modal for the user to see
-  modalElement.modal("open");
+  //check immediately
+  checkAlertDisplay();
 }
 
 //updates the disabling state of eab movement buttons, used as event handler
@@ -184,7 +218,13 @@ $.fn.detectManipulator = function() {
     //detect grammarly
     if ($(this).filter("grammarly-ghost").length) {
       //make disabling alert
-      makeAlertMessage("error_outline", "Attention!", "Yes, I will do that now", "Please <b>disable</b> Grammarly spellchecking on this website because it may break the website visually, its internal workings or even obstruct its usage. It's advised that you save your progress before <b>reloading</b> the page after having disabled Grammarly or any other browser extention that manipulates website content. Grammarly integration may become a feature some time in the future."); // jshint ignore:line
+      makeAlertMessage(
+        "error_outline", "Attention!", "Yes, I will do that now",
+        "Please <b>disable</b> Grammarly spellchecking on this website because it may break the" +
+        " website visually, its internal workings or even obstruct its usage. It's advised that " +
+        "you save your progress before <b>reloading</b> the page after having disabled Grammarly" +
+        "or any other browser extention that manipulates website content. Grammarly integration" +
+        " may become a feature some time in the future.");
 
       //set flag in case modal breaks
       canUseEditor = false;
@@ -257,6 +297,102 @@ $.fn.amountAbove = function(selector) {
   return this.parents(selector).length;
 };
 
+//adds a subclause for given clause (and makes list if necessary),
+//expects inactivation to have been performed if activationStateChanges is falsy
+//(and won't activate created first subclause either)
+$.fn.addSubClause = function(activationStateChanges) {
+  //stop if we're not in a clause
+  if (! this.is(".clause")) {
+    return this;
+  }
+
+  //inactivate if doing state changes
+  if (activationStateChanges) {
+    this.trigger("editInactive");
+  }
+
+  //prepare sublause list, extend already present one if found
+  var subList = this.children(".clause-list");
+  if (! subList.length) {
+    //get a clause list and attach to clause
+    subList = this
+      .closest(".clause-list")
+      .clone(true, true)
+      .addClass("clause-list-sub"); //make a sublcause list by adding sigifying class
+
+    //remove left over clauses from clone
+    subList.children().not(".add-clause-container").remove();
+
+    //add created list to clause, add clause button will be made visible by clause event
+    this.children(".clause-list-anchor").after(subList);
+  }
+
+  //add new subclause by copying clause without phrase field
+  var strippedClause = this
+    .clone(true, true)
+    .trigger("reset");
+  strippedClause
+    .children(".phrase-input-wrapper")
+    .remove();
+  strippedClause
+    .prependTo(subList)
+    .trigger("updateTreeDepth");
+
+  //only activate if enabled (load mode needs no activation state changes)
+  if (activationStateChanges) {
+    strippedClause.trigger("editActive");
+  }
+
+  //update is of all clauses in list
+  subList.children(".clause").trigger("updateId");
+
+  //return this for chaining
+  return this;
+};
+
+//adds a clause to the clause list the button was clicked in, see addSubClause for state flag
+$.fn.addClause = function(amount, activationStateChanges) {
+  //if not a add clause button container, try to find it
+  var addClauseContainer = this;
+  if (! this.is(".add-clause-container")) {
+    if (this.is(".clause-list")) {
+      addClauseContainer = this.children(".add-clause-container");
+    } else {
+      return this;
+    }
+  }
+
+  //inactivate all clauses if state changes enabled
+  if (activationStateChanges) {
+    $(".clause").trigger("editInactive");
+  }
+
+  //last clause added to the list
+  var addedClause;
+
+  //for number of clauses to be added
+  for (var i = 0; i < amount; i ++) {
+    //add a new clause to the enclosing list by
+    //duplicating and resetting the first one of the current type
+    addedClause = addClauseContainer
+      .siblings(".clause")
+      .first()
+      .clone(true, true)
+      .trigger("reset")
+      .insertBefore(addClauseContainer)
+      .trigger("updateId");
+  }
+
+  //make last added clause active if enabled
+  if (activationStateChanges) {
+    addedClause.trigger("editActive");
+  }
+
+  //return this for chaining
+  return this;
+};
+
+
 //do things when the document has finished loading
 $(document).ready(function() {
   //load external sponsor, phrase and forum name data
@@ -289,9 +425,49 @@ $(document).ready(function() {
           init: function() {
             //not using element specific data because this will be the same for all modals
             //(only the one modal atm)
-            $(this).modal({
-              dismissible: false
+            var modal = $(this);
+            modal.modal({
+              dismissible: false,
+              complete: function() {
+                modal.trigger("reset");
+
+                //display next alert if there is one
+                checkAlertDisplay();
+              }
             });
+          },
+          reset: function(e) {
+            e.stopPropagation();
+            var elem = $(this);
+            elem.find("input,textarea").trigger("reset");
+            elem.find("#file-selector").hide();
+          }
+        },
+        "input[type='file']": {
+          reset: function(e) {
+            e.stopPropagation();
+            $(this).val("");
+          },
+          change: function() {
+            //get file
+            var file = this.files[0];
+
+            //stop if wrong extension
+            if (file.name.match(/^.*\.rso/)) {
+              //load file
+              var reader = new FileReader();
+              var callback = $(this).getData().fileLoadCallback;
+              reader.onload = function(e) {
+                callback(e.target.result);
+              };
+              reader.readAsText(file);
+            }
+          }
+        },
+        "input, textarea": {
+          activateLabel: function() {
+            //make associated labels active
+            $(this).siblings("label").addClass("active");
           }
         },
         "input": {
@@ -333,6 +509,9 @@ $(document).ready(function() {
           init: function(e) {
             e.stopPropagation();
             $(this).material_chip($(this).getData());
+
+            //reset data object in init data, may have been changed as data load
+            $(this).getData().data = [];
           },
           reset: function(e) {
             e.stopPropagation();
@@ -469,6 +648,73 @@ $(document).ready(function() {
               e.stopPropagation();
               $(this).trigger("editActive");
             }
+          },
+          fromLoadedData: function(e) {
+            e.stopPropagation();
+
+            //fill with data
+            var elem = $(this);
+            var data = elem.getData().loadedData;
+
+            //if data is only a string, fill content only
+            if (typeof data === "string") {
+              //fill content field
+              elem
+                .children(".clause-content")
+                .children("textarea")
+                .val(data)
+                //trigger keyup to make textarea update its size
+                .triggerAll("activateLabel keyup");
+            } else {
+              //fill phrase field
+              elem
+                .children(".phrase-input-wrapper")
+                .find("input")
+                .val(data.phrase)
+                .trigger("activateLabel");
+
+              //fill content field
+              elem
+                .children(".clause-content")
+                .children("textarea")
+                .val(data.content)
+                .triggerAll("activateLabel keyup");
+
+              //add subclause data if given
+              if (data.sub) {
+                //make subclause list, give data and trigger to continue
+                elem.addSubClause(false);
+                var subclauseList = elem.find(".clause-list-sub");
+                subclauseList.getData().loadedData = data.sub;
+                subclauseList.trigger("fromLoadedData");
+
+                //also add ext data if given
+                if (data.contentExt) {
+                  elem
+                    .children(".clause-content-ext")
+                    .show()
+                    .children("textarea")
+                    .val(data.contentExt)
+                    .triggerAll("activateLabel keyup");
+                }
+              }
+            }
+          }
+        },
+        ".clause-list": {
+          fromLoadedData: function(e) {
+            e.stopPropagation();
+            var elem = $(this);
+
+            //make needed number of clauses
+            var data = $(this).getData().loadedData;
+            elem.addClause(data.length - 1, false); //one less, we already have one there by default
+
+            //give them their data and trigger to continue
+            elem.children(".clause").each(function(index) {
+              $(this).getData().loadedData = data[index];
+              $(this).trigger("fromLoadedData");
+            });
           }
         },
         ".add-clause-container": {
@@ -477,18 +723,8 @@ $(document).ready(function() {
 
             //only respond if button itself was clicked and not just the enclosing div
             if ($(e.target).is("a")) {
-              //inactivate all clauses
-              $(".clause").trigger("editInactive");
-
-              //add a new clause to the enclosing list by
-              //duplicating and resetting the first one of the current type
-              $(this)
-                .siblings(".clause")
-                .first()
-                .clone(true, true)
-                .trigger("reset")
-                .insertBefore(this)
-                .triggerAll("updateId editActive");
+              //add clause in enclosing list
+              $(this).addClause(1, true);
             }
           }
         },
@@ -536,38 +772,8 @@ $(document).ready(function() {
             e.stopPropagation();
             var elem = $(this);
 
-            //get enclosing clause and make inactive to prevent cloning of eab
-            var clause = elem.closest(".clause").trigger("editInactive");
-
-            //prepare sublause list, extend already present one if found
-            var subList = clause.children(".clause-list");
-            if (! subList.length) {
-              //get a clause list and attach to clause
-              subList = clause
-                .closest(".clause-list")
-                .clone(true, true)
-                .addClass("clause-list-sub"); //make a sublcause list by adding sigifying class
-
-              //remove left over clauses from clone
-              subList.children().not(".add-clause-container").remove();
-
-              //add created list to clause, add clause button will be made visible by clause event
-              clause.children(".clause-list-anchor").after(subList);
-            }
-
-            //add new subclause by copying clause without phrase field
-            var strippedClause = clause
-              .clone(true, true)
-              .trigger("reset");
-            strippedClause
-              .children(".phrase-input-wrapper")
-              .remove();
-            strippedClause
-              .prependTo(subList)
-              .triggerAll("updateTreeDepth editActive");
-
-            //update is of all clauses in list
-            subList.children(".clause").trigger("updateId");
+            //get enclosing clause and make inactive to prevent cloning of eab and add subclause
+            elem.closest(".clause").addSubClause(true);
           },
           updateDisabled: function(e) {
             e.stopPropagation();
@@ -627,9 +833,6 @@ $(document).ready(function() {
           click: function(e) {
             e.stopPropagation();
 
-            //prepare loading: reset to original state
-            $(".clause-list:not .clause-list-sub").children(".clause").trigger("attemptRemove");
-
             //load file from computer file system
             loadFilePick($("#editor-main"));
           }
@@ -653,7 +856,7 @@ $(document).ready(function() {
             $(".clause").trigger("editInactive");
 
             //display pdf directly after generating
-            makePdfDisplay($("#editor-main"));
+            generatePdf($("#editor-main"));
           }
         }
       },

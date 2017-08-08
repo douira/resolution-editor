@@ -1,32 +1,193 @@
 /*jshint esnext: false, browser: true, jquery: true*/
-/*global makeAlertMessage: true */
+/*global
+  makeAlertMessage,
+  resolutionFileFormat,
+  validateObjectStructure,
+  magicIdentifier,
+  allowedSubclauseDepth: true */
 //file actions are defined in this file
 
-//loads a json into the editor
-function loadJson(obj) {
+//current version of the resolution format supported
+var supportedResFileFormats = [1];
 
+//returns a bug report tag string
+function bugReportLink(errorCode) {
+  return "<a href='https://github.com/douira/resolution-editor/issues/new?" +
+    "&labels[]=user%20bug%20report&title=Bug Report: " + errorCode + "'>bug report</a>";
+}
+
+//displays a modal message for invalid json file at parse or apply stage
+function jsonReadErrorModal(errorCode) {
+  console.log("error", errorCode);
+  makeAlertMessage(
+    "error_outline", "Error reading file", "ok",
+    "The provided file could not be read and processed." +
+    " This may be because the file you provided isn't in the format produced by this program or" +
+    " was corrupted in some way. Please file a " + bugReportLink(errorCode) +
+    " and describe this problem if you believe this error isn't your fault.", errorCode);
+}
+
+//parses a given list of clauses into the given clause list element
+function parseClauseList(arr, elem) {
+  //give list of clause objects to clause list
+  //and have it load the into clauses and lists recursivle
+  elem.getData().loadedData = arr;
+  elem.trigger("fromLoadedData");
+}
+
+//returns the maximum subclause depth found in given clause list (top list is non-sub)
+function getMaxSubclauseDepth(clauseList, depthOffset) {
+  //start at 0 if not given
+  if (typeof depthOffset === "undefined") {
+    depthOffset = 0;
+  } else {
+    //increment with deeper level
+    depthOffset ++;
+  }
+
+  //maximum depth for all clauses in list
+  return Math.max.apply(null, clauseList.map(function(clause) {
+    //check if has subclauses
+    if (clause.hasOwnProperty("sub")) {
+      //recurse
+      return getMaxSubclauseDepth(clause.sub, depthOffset);
+    } else {
+      return depthOffset;
+    }
+  }));
+}
+
+//checks that a saved or loaded editor object has all the required data
+function validateEditorData(obj) {
+  //validate object structure
+  var isValidStructure = validateObjectStructure(obj, resolutionFileFormat);
+
+  //check maximum subclause tree depth
+  if (isValidStructure) {
+    var clauses = obj.resolution.clauses;
+    return getMaxSubclauseDepth(clauses.preambulatory) <= allowedSubclauseDepth.preamb &&
+           getMaxSubclauseDepth(clauses.operative) <= allowedSubclauseDepth.op;
+  }
+  return false;
+}
+
+//loads a json into the editor
+function loadJson(json, container) {
+  //basic parse
+  var obj;
+  try {
+    //json parse
+    obj = JSON.parse(json);
+  } catch (e) {
+    //notify and abort
+    jsonReadErrorModal("parse_fail");
+    return;
+  }
+
+  //check for magic string to prevent loading of other json files (unless tampered with)
+  if (obj.magic !== magicIdentifier) {
+    jsonReadErrorModal("magic_wrong");
+    return;
+  }
+
+  //check file version, modal doesn't work yet, clashes with previous one
+  if (obj.version && supportedResFileFormats.indexOf(obj.version) === -1) {
+    makeAlertMessage(
+      "warning", "File format is outdated", "ok",
+      "The provided file could be read but is in an old and unsupported format." +
+      " Please file a " + bugReportLink("old_format") + " and describe this problem." +
+      " if you wish to receive help concerning this issue.", "old_format");
+  }
+
+  //check that the loaded data is valid
+  if (! validateEditorData(obj)) {
+    //make error message
+    jsonReadErrorModal("structure_invalid");
+    return;
+  }
+
+  //prepare loading: reset editor to original state
+  container.find(".clause").trigger("attemptRemove");
+  container.find("input, textarea").trigger("reset");
+
+  //put author data into field
+  container.find("#author-name").val(obj.status.author).trigger("activateLabel");
+
+  //get resolution object
+  var res = obj.resolution;
+
+  //put data into general data fields
+  container.find("#question-of").val(res.address.questionOf).trigger("activateLabel");
+  container.find("#forum-name").val(res.address.forum).trigger("activateLabel");
+  container.find("#main-spon").val(res.address.sponsor.main).trigger("activateLabel");
+
+  //init chips with new data
+  var elem = container.find("#co-spon");
+  elem.getData().data = res.address.sponsor.co.map(function(str) {
+    return { tag: str };
+  });
+  elem.trigger("init");
+
+  //parse clauses
+  parseClauseList(res.clauses.preambulatory,
+                  container.find("#preamb-clauses").children(".clause-list"));
+  parseClauseList(res.clauses.operative,
+                  container.find("#op-clauses").children(".clause-list"));
 }
 
 //load file from computer file system
-function loadFilePick(container) {
+function loadFilePick(container, callback) {
+  //make alert message file select
+  makeAlertMessage(
+    "file_upload", "Open resolution file", "cancel", function(body, modal) {
+      body.text("Select a resolution file with the extension '.rso' to open:");
+      var fileSelector = modal.find("#file-selector");
+      fileSelector.show();
+      var fileInput = fileSelector.find(".file-input");
+      fileInput.getData().fileLoadCallback = function(text) {
+        //close and thereby reset for other modal action
+        modal.modal("close");
 
+        //load text into editor
+        loadJson(text, container);
+      };
+    });
 }
 
 //sends the current json of to the server and calls back with the url to the generated pdf
-function generatePdf(container, callback) {
-  //get json for container
-  var json = getEditorJson(container);
-
+function generatePdf(container) {
   //send to server
-
-}
-
-//display pdf directly after generating
-function makePdfDisplay(container, callback) {
-
+  $.ajax({
+    url: "/generatepdf",
+    method: "POST",
+    data: getEditorContent(container, false),
+    contentType: "application/json; charset=UTF-8",
+    dataType: "text",
+    error: makeAlertMessage.bind(null,
+        "error_outline", "Error sending data to server", "ok",
+        "Could not communicate with server properly." +
+        " Please file a " + bugReportLink("pdf_ajax") + " and describe this problem.", "pdf_ajax")
+  }).done(function(response) {
+    //error with response data "error"
+    if (response.endsWith(".pdf")) {
+      //display link to generated pdf
+      makeAlertMessage(
+        "description", "Generated PDF file", "done",
+        "Click <b><a href='" + response +
+        "'>here</a></b> to view your resolution as a PDF file.");
+    } else {
+      //display error and request creation of bug report
+      makeAlertMessage(
+        "error_outline", "Error generating PDF", "ok",
+        "The server encountered an unexpected error" +
+        " while trying to generate the requested PDF file." +
+        " Please file a " + bugReportLink("pdf_gen") + " and describe this problem.", "pdf_gen");
+    }
+  });
 }
 
 //gets a clause as an object
+//IMPORTANT: if the outputted format changes, increment the version number by one!
 $.fn.clauseAsObject = function() {
   //return as array if given list
   if (this.is(".clause-list")) {
@@ -34,7 +195,10 @@ $.fn.clauseAsObject = function() {
 
     //add all clauses
     this.children(".clause").each(function() {
-      clauses.push($(this).clauseAsObject());
+      var clauseObj = $(this).clauseAsObject();
+      if (clauseObj) {
+        clauses.push(clauseObj);
+      }
     });
 
     //return all clause objects
@@ -50,6 +214,11 @@ $.fn.clauseAsObject = function() {
   var clauseData = {
     content: this.children(".clause-content").find("textarea").val()
   };
+
+  //stop if no content
+  if (! clauseData.content) {
+    return false;
+  }
 
   //check for phrase field
   if (this.children(".phrase-input-wrapper").length) {
@@ -77,9 +246,11 @@ $.fn.clauseAsObject = function() {
 };
 
 //returns a json string of the object currently in the editor
-function getEditorJson(container) {
+function getEditorContent(container, makeJson) {
   //create root resolution object and gather data
   var res = {
+    magic: magicIdentifier,
+    version: Math.max.apply(null, supportedResFileFormats), //use highest supported version
     status: {
       editied: Date.now(),
       author: container.find("#author-name").val()
@@ -102,39 +273,43 @@ function getEditorJson(container) {
   //get co-sponsors and add if any present
   var cosponsorData = container.find("#co-spon").material_chip("data");
   if (cosponsorData.length) {
-    res.resolution.address.sponsor.co = cosponsorData;
+    //map to array of strings
+    res.resolution.address.sponsor.co = cosponsorData.map(function(obj) {
+      return obj.tag;
+    });
   }
 
   //return stringyfied
-  return JSON.stringify(res, null, 2);
+  return makeJson ? JSON.stringify(res, null, 2) : JSON.stringify(res);
 }
 
 //generates and downloeads json representation of the editor content
 function downloadJson(container) {
-  saveFileDownload(getEditorJson(container));
+  saveFileDownload(getEditorContent(container, true));
 }
 
 //save file to be downloaded
 function saveFileDownload(str) {
-  //make element to download with and add data to download
-  var fileName = "resolution.json";
-  console.log(fileName, str);
+  //make element in modal to download with and add data to download
+  var fileName = "resolution.rso";
   makeAlertMessage("file_download", "Save resolution as file", "cancel", function(body, modal) {
     //make download button with blob data
     body.append("<br>");
     $("<a/>")
-      .addClass("waves-effect waves-light btn white-text" +
+      .addClass("waves-effect waves-light btn white-text center-align" +
                 $("#file-action-save").attr("class"))
       .attr("download", fileName)
       .text("Download Resolution: " + fileName)
       .attr("href", URL.createObjectURL(new Blob([str], {type: "application/json"})))
-      .appendTo(body)
+      .appendTo($("<div class='.clear-and-center'></div>").appendTo(body))
       .on("click", function(e) {
         e.stopPropagation();
 
         //close modal after download
         $(this).modal("close");
       });
-    body.append("<br>");
+    body.append(
+      "If the file download doesn't start, try again and if it still doesn't work " +
+      "please file a " + bugReportLink("download_not_starting") + " and describe this problem.");
   });
 }

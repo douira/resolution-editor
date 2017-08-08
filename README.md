@@ -11,6 +11,8 @@
  
  install after cloning the repo with `npm install` (I can try to help you to set this up if you run into problems unsolvable with google)
  
+ You will also have to install the LaTeX rendering library and pandoc in order to run the pdf rendering part of the server.
+ 
  Code style has to be adapted to the already used style and kept as consistent as possible.
  Including but not limited to the following:
  - Indent everything with 2 spaces
