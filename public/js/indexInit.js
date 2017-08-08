@@ -109,7 +109,7 @@ function registerEventsAndData(fieldTypes, initData) {
 }
 
 //queue of alert message we want to display
-const alertQueue = [];
+var alertQueue = [];
 
 //checks if we can display an alert now or starts processing the queue
 function checkAlertDisplay() {
@@ -371,7 +371,7 @@ $.fn.addClause = function(amount, activationStateChanges) {
   var addedClause;
 
   //for number of clauses to be added
-  for (let i = 0; i < amount; i ++) {
+  for (var i = 0; i < amount; i ++) {
     //add a new clause to the enclosing list by
     //duplicating and resetting the first one of the current type
     addedClause = addClauseContainer
