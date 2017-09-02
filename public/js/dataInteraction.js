@@ -257,7 +257,7 @@ function getEditorContent(container, makeJson) {
     },
     resolution: {
       address: {
-        forum: container.find("#form-name").val(),
+        forum: container.find("#forum-name").val(),
         questionOf: container.find("#question-of").val(),
         sponsor: {
           main: container.find("#main-spon").val()
