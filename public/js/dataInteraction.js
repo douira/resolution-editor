@@ -12,8 +12,29 @@ var supportedResFileFormats = [1];
 
 //returns a bug report tag string
 function bugReportLink(errorCode) {
-  return "<a href='https://github.com/douira/resolution-editor/issues/new?" +
-    "&labels[]=user%20bug%20report&title=Bug Report: " + errorCode + "'>bug report</a>";
+  const bodyContent = encodeURIComponent(
+    `Please try to provide as much information as possible.
+Operating System:
+
+Device Type (handheld, desktop etc.):
+
+Browser + Version:
+
+Browser Extensions that can modify website content:
+
+What you were doing when the bug occured and beforehand:
+
+Were you able to reporduce the bug?
+
+Did the bug occur several times or in a recognisable pattern?
+
+Any other relevant infornation:
+`);
+
+  //calling it probelm report because it may be user error
+  return "<a href='https://github.com/douira/resolution-editor/issues/new" +
+    "?&labels[]=user%20problem%20report" +
+    `&title=Problem Report: ${errorCode}&body=${bodyContent}'>problem report</a>`;
 }
 
 //displays a modal message for invalid json file at parse or apply stage
