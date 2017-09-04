@@ -7,8 +7,12 @@
   allowedSubclauseDepth: true */
 //file actions are defined in this file
 
+/*File format version history: (incremented when compatability changes or large differences)
+1: start
+2: typo fix (from editied to edited)
+*/
 //current version of the resolution format supported
-var supportedResFileFormats = [1];
+var supportedResFileFormats = [2];
 
 //returns a bug report tag string
 function bugReportLink(errorCode) {
@@ -252,7 +256,7 @@ function getEditorContent(container, makeJson) {
     magic: magicIdentifier,
     version: Math.max.apply(null, supportedResFileFormats), //use highest supported version
     status: {
-      editied: Date.now(),
+      edited: Date.now(),
       author: container.find("#author-name").val()
     },
     resolution: {

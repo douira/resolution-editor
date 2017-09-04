@@ -135,6 +135,7 @@ function validateObjectStructure(obj, format) {
   /*function makeTransformedValidator(validator, name) {
     return function(val, format) {
       var result = validator(val, format);
+      console.log(result, val, format);
       return result;
     };
   }
