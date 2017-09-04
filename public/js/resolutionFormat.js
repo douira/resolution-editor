@@ -147,8 +147,11 @@ function validateObjectStructure(obj, format) {
   return typeValidators.object(obj, format.structure);
 }
 
-//pattern of the resolution format - VERSION 1
-//increment the version number if you make significant changes
+//pattern of the resolution format - VERSION 2
+/*File format version history: (incremented when compatability changes or with large differences)
+1: start
+2: typo fix (from editied to edited)
+*/
 var resolutionFileFormat = {
   types: {
     phraseClause: [

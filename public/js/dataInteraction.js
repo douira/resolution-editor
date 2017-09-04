@@ -7,10 +7,6 @@
   allowedSubclauseDepth: true */
 //file actions are defined in this file
 
-/*File format version history: (incremented when compatability changes or large differences)
-1: start
-2: typo fix (from editied to edited)
-*/
 //current version of the resolution format supported
 var supportedResFileFormats = [2];
 
