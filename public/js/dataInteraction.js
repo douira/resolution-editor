@@ -4,6 +4,7 @@
   resolutionFileFormat,
   validateObjectStructure,
   magicIdentifier,
+  checkRequiredFields,
   allowedSubclauseDepth: true */
 //file actions are defined in this file
 
@@ -25,6 +26,24 @@ function jsonReadErrorModal(errorCode) {
     " This may be because the file you provided isn't in the format produced by this program or" +
     " was corrupted in some way. Please file a " + bugReportLink(errorCode) +
     " and describe this problem if you believe this error isn't your fault.", errorCode);
+}
+
+//validates fields with user feedback, returns false if there is a bad field
+function validateFields() {
+  //actually check the fields
+  var fieldsOk = checkRequiredFields();
+
+  //make error message if necessary
+  if (! fieldsOk) {
+    makeAlertMessage(
+      "warning", "Some field(s) invalid", "ok",
+      "There are fields with missing or invalid values. " +
+      "Phrase fields must conatein one of the suggested values only. " +
+      "<br>The fields are marked red.");
+  }
+
+  //return value again
+  return fieldsOk;
 }
 
 //parses a given list of clauses into the given clause list element
@@ -156,6 +175,12 @@ function loadFilePick(container, callback) {
 
 //sends the current json of to the server and calls back with the url to the generated pdf
 function generatePdf(container) {
+  //validate
+  if (! validateFields()) {
+    //stop because not ok with missing data
+    return;
+  }
+
   //send to server
   $.ajax({
     url: "/generatepdf",
@@ -285,6 +310,13 @@ function getEditorContent(container, makeJson) {
 
 //generates and downloeads json representation of the editor content
 function downloadJson(container) {
+  //validate
+  if (! validateFields()) {
+    //stop because not ok with missing data
+    return;
+  }
+
+  //make a file download with the editor content
   saveFileDownload(getEditorContent(container, true));
 }
 
