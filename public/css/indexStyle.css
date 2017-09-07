@@ -64,3 +64,8 @@
 #main-spon {
   margin-bottom: 45px;
 }
+
+.red-underline {
+  text-decoration: underline;
+  text-decoration-color: red;
+}

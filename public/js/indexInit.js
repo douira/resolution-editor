@@ -16,6 +16,9 @@ var allowedSubclauseDepth = {
   op: 2
 };
 
+//keeps track of any invalid fields that are marked as such
+var badFieldPresent = true;
+
 //makes a autofill settings object
 function makeAutofillSettingsPre(defaultSettings, data, settings) {
   //use default settings if no extra settings given
@@ -199,6 +202,17 @@ function makeEabMoveUpdateDisabledHandler(isUpButton) {
   };
 }
 
+//checks if required fields have values, return true for all fields ok
+function checkRequiredFields() {
+  //reset flag
+  badFieldPresent = false;
+
+  //call check on all required elements
+  $(".required").trigger("checkRequired");
+
+  //return for usa of result
+  return ! badFieldPresent;
+}
 
 //register jquery plugins
 //resets sibling labels
@@ -229,11 +243,11 @@ $.fn.detectManipulator = function() {
       //make disabling alert
       makeAlertMessage(
         "error_outline", "Attention!", "Yes, I will do that now",
-        "Please <b>disable</b> Grammarly spellchecking on this website because it may break the" +
-        " website visually, its internal workings or even obstruct its usage. It's advised that " +
+        "Please <b>disable Grammarly</b> spellchecking on this website because it may break the " +
+        "website visually, its internal workings or even obstruct its usage. It's advised that " +
         "you save your progress before <b>reloading</b> the page after having disabled Grammarly" +
-        "or any other browser extention that manipulates website content. Grammarly integration" +
-        " may become a feature some time in the future.");
+        "or any other browser extention that manipulates website content. Grammarly integration " +
+        "may become a feature some time in the future.");
 
       //set flag in case modal breaks
       canUseEditor = false;
@@ -414,6 +428,14 @@ $(document).ready(function() {
                  "(The editor won't work until you reload the page and the data is downloaded)");
   })
   .done(function(data) {
+    //mapping between autofill data and input field selectors
+    var autofillDataMapping = {
+      "#forum-name": data.forums.slice(),
+      "#main-spon,#co-spon": data.sponsors.slice(),
+      "#preamb-clauses .phrase-input": data.phrases.preamb.slice(),
+      "#op-clauses .phrase-input": data.phrases.op.slice(),
+    };
+    
     //get forum abbreviation mapping data
     var forumAbbreviations = data.forums.slice();
     forumAbbreviations.shift();
@@ -463,6 +485,47 @@ $(document).ready(function() {
             elem.find("#file-selector").hide();
           }
         },
+        "input.required, textarea.required": {
+          checkRequired: function(e) {
+            e.stopPropagation();
+            console.log("checked");
+            var elem = $(this);
+
+            //get value of required field
+            var value = elem.val().trim();
+
+            //keep track if value invalid
+            var valueBad = false;
+
+            //check for presence of value
+            valueBad = ! (value && value.length);
+
+            //check for presence in autofill data mapping and require value to be in data if so
+            if (! valueBad) {
+              //get the data we have to match to
+              var matchDataSelector = Object.keys(autofillDataMapping).find(function(selector) {
+                //check if element matches this selector
+                return elem.is(selector);
+              });
+
+              //only if there actually is a selector for this element in the data mappings
+              if (matchDataSelector) {
+                valueBad = valueBad || ! autofillDataMapping[matchDataSelector].includes(value);
+              }
+            }
+
+            //change validation state accordingly
+            elem[valueBad ? "addClass" : "removeClass"]("invalid");
+
+            //apply to global flag
+            badFieldPresent = badFieldPresent || valueBad;
+          },
+          change: function(e) {
+            e.stopPropagation();
+            //check again on changed value
+            $(this).trigger("checkRequired");
+          }
+        },
         "input[type='file']": {
           reset: function(e) {
             e.stopPropagation();
@@ -485,9 +548,15 @@ $(document).ready(function() {
           }
         },
         "input, textarea": {
-          activateLabel: function() {
+          activateLabel: function(e) {
+            e.stopPropagation();
             //make associated labels active
             $(this).siblings("label").addClass("active");
+          },
+          reset: function(e) {
+            e.stopPropagation();
+            //reset invalid labels
+            $(this).removeClass("invalid");
           }
         },
         "input#forum-name": {
