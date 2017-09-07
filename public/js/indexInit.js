@@ -430,7 +430,7 @@ $(document).ready(function() {
   .done(function(data) {
     //mapping between autofill data and input field selectors
     var autofillDataMapping = {
-      "#forum-name": data.forums.slice(),
+      "#forum-name": data.forums.map(function(pair) { return pair[0]; }), //only full name ok
       "#main-spon,#co-spon": data.sponsors.slice(),
       "#preamb-clauses .phrase-input": data.phrases.preamb.slice(),
       "#op-clauses .phrase-input": data.phrases.op.slice(),
