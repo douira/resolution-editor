@@ -6,8 +6,8 @@ var dataPrefix = "resEd"; //prefix for data stored in elements
 
 //global autofill settings
 var autofillSettings = {
-  limit: 20,
-  minLength: 1
+  limit: 10,
+  minLength: 2
 };
 
 //number of subclauses allowed for op and preamb clauses with 0 being no subclauses allowed
@@ -61,7 +61,16 @@ function transformMarkedArrays(structure, flag, propValue, depth) {
           //convert to prop object
           var obj = {};
           structure.forEach(function(str) {
-            obj[str] = propValue;
+            //if is array
+            if (str instanceof Array) {
+              //add all of array
+              str.forEach(function(s) {
+                obj[s] = propValue;
+              });
+            } else {
+              //normal prop add
+              obj[str] = propValue;
+            }
           });
           structure = obj;
         } else {
@@ -405,6 +414,17 @@ $(document).ready(function() {
                  "(The editor won't work until you reload the page and the data is downloaded)");
   })
   .done(function(data) {
+    //get forum abbreviation mapping data
+    var forumAbbreviations = data.forums.slice();
+    forumAbbreviations.shift();
+
+    //convert to mapping object
+    var forumAbbrevMapping = {};
+    forumAbbreviations.forEach(function(nameSet) {
+      //attach mapping
+      forumAbbrevMapping[nameSet[1]] = nameSet[0];
+    });
+
     //transform into correct data structure when gotten data
     autofillData = transformMarkedArrays(data, "_convert", null);
 
@@ -468,6 +488,18 @@ $(document).ready(function() {
           activateLabel: function() {
             //make associated labels active
             $(this).siblings("label").addClass("active");
+          }
+        },
+        "input#forum-name": {
+          change: function(e) {
+            e.stopPropagation();
+
+            //replace if has abbreviation extension
+            var elem = $(this);
+            var unabbreviated = forumAbbrevMapping[elem.val().trim()];
+            if (unabbreviated) {
+              elem.val(unabbreviated);
+            }
           }
         },
         "input": {
