@@ -321,7 +321,7 @@ function getEditorContent(container, makeJson) {
   if (cosponsorData.length) {
     //map to array of strings
     res.resolution.address.sponsor.co = cosponsorData.map(function(obj) {
-      return obj.tag;
+      return obj.tag.trim();
     });
   }
 

@@ -488,7 +488,6 @@ $(document).ready(function() {
         "input.required, textarea.required": {
           checkRequired: function(e) {
             e.stopPropagation();
-            console.log("checked");
             var elem = $(this);
 
             //get value of required field
@@ -618,6 +617,47 @@ $(document).ready(function() {
             e.stopPropagation();
             $(this).val("");
             $(this).trigger("init");
+          }
+        },
+        ".chips.required": {
+          checkRequired: function(e) {
+            e.stopPropagation();
+            var elem = $(this);
+
+            //get value of field
+            var value = elem.material_chips("data");
+
+            //keep track if value invalid
+            var valueBad = false;
+
+            //check for presence of values
+            valueBad = ! (value && value.length);
+
+            //check that all entries are ok sponsors in autofill data
+            if (! valueBad) {
+              //get the data selector we have to match to
+              var matchDataSelector = Object.keys(autofillDataMapping).find(function(selector) {
+                //check if element matches this selector
+                return elem.is(selector);
+              });
+
+              //only if there actually is a selector for this element in the data mappings
+              if (matchDataSelector) {
+                var matchData = autofillDataMapping[matchDataSelector];
+
+                //check all chips values for being included
+                valueBad = valueBad || ! value.every(function(item) {
+                  //must be included in data
+                  return matchData.includes(item.tag.trim());
+                });
+              }
+            }
+
+            //change validation state accordingly
+            elem[valueBad ? "addClass" : "removeClass"]("invalid");
+
+            //apply to global flag
+            badFieldPresent = badFieldPresent || valueBad;
           }
         },
         ".clause": {
