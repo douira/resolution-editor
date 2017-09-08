@@ -151,6 +151,7 @@ function validateObjectStructure(obj, format) {
 /*File format version history: (incremented when compatability changes or with large differences)
 1: start
 2: typo fix (from editied to edited)
+3: typo fix (from form to forum)
 */
 var resolutionFileFormat = {
   types: {

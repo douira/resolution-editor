@@ -625,7 +625,7 @@ $(document).ready(function() {
             var elem = $(this);
 
             //get value of field
-            var value = elem.material_chips("data");
+            var value = elem.material_chip("data");
 
             //keep track if value invalid
             var valueBad = false;
@@ -654,10 +654,16 @@ $(document).ready(function() {
             }
 
             //change validation state accordingly
-            elem[valueBad ? "addClass" : "removeClass"]("invalid");
+            //elem[valueBad ? "addClass" : "removeClass"]("red-text");
 
             //apply to global flag
             badFieldPresent = badFieldPresent || valueBad;
+          },
+          focusout: function(e) {
+            e.stopPropagation();
+
+            //check again on changed value
+            $(this).trigger("checkRequired");
           }
         },
         ".clause": {
