@@ -1,5 +1,5 @@
 /*jshint esnext: false, browser: true, jquery: true*/
-/*global loadFilePick, generatePdf, downloadJson: true*/
+/*global loadFilePick, generatePdf, downloadJson, bugReportLink: true*/
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -424,8 +424,12 @@ $(document).ready(function() {
   .fail(function(data, status, error) {
     //log the error we have with getting the data
     console.error(status, error);
-    window.alert("Failed to get auto-complete data! Check the console for more info." +
-                 "(The editor won't work until you reload the page and the data is downloaded)");
+    makeAlertMessage(
+      "error_outline", "Error loading necessary data!", "ok",
+      "Failed to download data! Check the console for more info." +
+      " Please file a " + bugReportLink("data_load_fail") + " and describe this problem." +
+      "(The editor won't work until you reload the page and the data is downloaded)",
+      "data_load_fail");
   })
   .done(function(data) {
     //mapping between autofill data and input field selectors
