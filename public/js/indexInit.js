@@ -570,7 +570,11 @@ $(document).ready(function() {
             var elem = $(this);
             var unabbreviated = forumAbbrevMapping[elem.val().trim()];
             if (unabbreviated) {
+              //replace with non-abbreviated version
               elem.val(unabbreviated);
+
+              //make field check for validity now
+              elem.trigger("checkRequired");
             }
           }
         },
