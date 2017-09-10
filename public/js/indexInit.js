@@ -616,7 +616,7 @@ $(document).ready(function() {
         ".chips": {
           init: function(e) {
             e.stopPropagation();
-            $(this).material_chip($(this).getData());
+            $(this).material_chip();//$(this).getData());
 
             //reset data object in init data, may have been changed as data load
             $(this).getData().data = [];
@@ -1020,9 +1020,9 @@ $(document).ready(function() {
       {
         "#forum-name": makeAutofillSettings(autofillData.forums),
         "#co-spon": {
-          autocompleteOptions: makeAutofillSettings(autofillData.sponsors),
+          autocompleteOptions: makeAutofillSettings(autofillData.sponsors)/*,
           secondaryPlaceholder: "Co-Sponors",
-          placeholder: "Co-Sponors"
+          placeholder: "Co-Sponors"*/
         },
         "#main-spon": makeAutofillSettings(autofillData.sponsors),
         "#preamb-clauses .phrase-input": makeAutofillSettings(autofillData.phrases.preamb),
