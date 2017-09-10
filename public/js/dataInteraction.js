@@ -9,7 +9,7 @@
 //file actions are defined in this file
 
 //current version of the resolution format supported
-var supportedResFileFormats = [2];
+var supportedResFileFormats = [3];
 
 //returns a bug report tag string
 function bugReportLink(errorCode) {
@@ -303,7 +303,7 @@ function getEditorContent(container, makeJson) {
     },
     resolution: {
       address: {
-        forum: container.find("#form-name").val(),
+        forum: container.find("#forum-name").val(),
         questionOf: container.find("#question-of").val(),
         sponsor: {
           main: container.find("#main-spon").val()
@@ -321,7 +321,7 @@ function getEditorContent(container, makeJson) {
   if (cosponsorData.length) {
     //map to array of strings
     res.resolution.address.sponsor.co = cosponsorData.map(function(obj) {
-      return obj.tag;
+      return obj.tag.trim();
     });
   }
 

@@ -1,5 +1,5 @@
 /*jshint esnext: false, browser: true, jquery: true*/
-/*global loadFilePick, generatePdf, downloadJson: true*/
+/*global loadFilePick, generatePdf, downloadJson, bugReportLink: true*/
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -424,8 +424,12 @@ $(document).ready(function() {
   .fail(function(data, status, error) {
     //log the error we have with getting the data
     console.error(status, error);
-    window.alert("Failed to get auto-complete data! Check the console for more info." +
-                 "(The editor won't work until you reload the page and the data is downloaded)");
+    makeAlertMessage(
+      "error_outline", "Error loading necessary data!", "ok",
+      "Failed to download data! Check the console for more info." +
+      " Please file a " + bugReportLink("data_load_fail") + " and describe this problem." +
+      "(The editor won't work until you reload the page and the data is downloaded)",
+      "data_load_fail");
   })
   .done(function(data) {
     //mapping between autofill data and input field selectors
@@ -444,7 +448,7 @@ $(document).ready(function() {
     var forumAbbrevMapping = {};
     forumAbbreviations.forEach(function(nameSet) {
       //attach mapping
-      forumAbbrevMapping[nameSet[1]] = nameSet[0];
+      forumAbbrevMapping[nameSet[1].trim().toLowerCase()] = nameSet[0];
     });
 
     //transform into correct data structure when gotten data
@@ -488,7 +492,6 @@ $(document).ready(function() {
         "input.required, textarea.required": {
           checkRequired: function(e) {
             e.stopPropagation();
-            console.log("checked");
             var elem = $(this);
 
             //get value of required field
@@ -565,9 +568,13 @@ $(document).ready(function() {
 
             //replace if has abbreviation extension
             var elem = $(this);
-            var unabbreviated = forumAbbrevMapping[elem.val().trim()];
+            var unabbreviated = forumAbbrevMapping[elem.val().trim().toLowerCase()];
             if (unabbreviated) {
+              //replace with non-abbreviated version
               elem.val(unabbreviated);
+
+              //make field check for validity now
+              elem.trigger("checkRequired");
             }
           }
         },
@@ -618,6 +625,53 @@ $(document).ready(function() {
             e.stopPropagation();
             $(this).val("");
             $(this).trigger("init");
+          }
+        },
+        ".chips.required": {
+          checkRequired: function(e) {
+            e.stopPropagation();
+            var elem = $(this);
+
+            //get value of field
+            var value = elem.material_chip("data");
+
+            //keep track if value invalid
+            var valueBad = false;
+
+            //check for presence of values
+            valueBad = ! (value && value.length);
+
+            //check that all entries are ok sponsors in autofill data
+            if (! valueBad) {
+              //get the data selector we have to match to
+              var matchDataSelector = Object.keys(autofillDataMapping).find(function(selector) {
+                //check if element matches this selector
+                return elem.is(selector);
+              });
+
+              //only if there actually is a selector for this element in the data mappings
+              if (matchDataSelector) {
+                var matchData = autofillDataMapping[matchDataSelector];
+
+                //check all chips values for being included
+                valueBad = valueBad || ! value.every(function(item) {
+                  //must be included in data
+                  return matchData.includes(item.tag.trim());
+                });
+              }
+            }
+
+            //change validation state accordingly
+            //elem[valueBad ? "addClass" : "removeClass"]("red-text");
+
+            //apply to global flag
+            badFieldPresent = badFieldPresent || valueBad;
+          },
+          focusout: function(e) {
+            e.stopPropagation();
+
+            //check again on changed value
+            $(this).trigger("checkRequired");
           }
         },
         ".clause": {
