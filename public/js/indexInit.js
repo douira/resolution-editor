@@ -448,7 +448,7 @@ $(document).ready(function() {
     var forumAbbrevMapping = {};
     forumAbbreviations.forEach(function(nameSet) {
       //attach mapping
-      forumAbbrevMapping[nameSet[1]] = nameSet[0];
+      forumAbbrevMapping[nameSet[1].trim().toLowerCase()] = nameSet[0];
     });
 
     //transform into correct data structure when gotten data
@@ -568,7 +568,7 @@ $(document).ready(function() {
 
             //replace if has abbreviation extension
             var elem = $(this);
-            var unabbreviated = forumAbbrevMapping[elem.val().trim()];
+            var unabbreviated = forumAbbrevMapping[elem.val().trim().toLowerCase()];
             if (unabbreviated) {
               //replace with non-abbreviated version
               elem.val(unabbreviated);
