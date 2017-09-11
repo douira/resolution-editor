@@ -616,10 +616,11 @@ $(document).ready(function() {
         ".chips": {
           init: function(e) {
             e.stopPropagation();
-            $(this).material_chip();//$(this).getData());
+            var elem = $(this);
+            elem.material_chip(elem.getData());
 
             //reset data object in init data, may have been changed as data load
-            $(this).getData().data = [];
+            elem.getData().data = [];
           },
           reset: function(e) {
             e.stopPropagation();
