@@ -668,7 +668,7 @@ $(document).ready(function() {
                 });
               }
             }
-            console.log(valueBad);
+
             //apply to global flag
             badFieldPresent = badFieldPresent || valueBad;
           },
