@@ -360,7 +360,7 @@ function saveFileDownload(str) {
         e.stopPropagation();
 
         //close modal after download
-        $(this).modal("close");
+        $(this).parents(".modal").modal("close");
       });
     body.append(
       "If the file download doesn't start, try again and if it still doesn't work " +
