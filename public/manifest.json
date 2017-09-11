@@ -46,5 +46,6 @@
   "theme_color": "#009688",
   "background_color": "#009688",
   "display": "minimal-ui",
-  "short_name": "ResoEditor"
+  "short_name": "ResoEditor",
+  "lang": "en-US"
 }
