@@ -67,7 +67,7 @@
     "Zimbabwe"
   ],
   "phrases": {
-    "preamb": [
+    "op": [
       "_convert",
       "Accepts",
       "Affirms",
@@ -110,7 +110,7 @@
       "Trusts",
       "Urges"
     ],
-    "op": [
+    "preamb": [
       "_convert",
       "Contemplating",
       "Convinced",
