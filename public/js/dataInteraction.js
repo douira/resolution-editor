@@ -234,6 +234,7 @@ function generatePdf(container) {
 
 //gets a clause as an object
 //IMPORTANT: if the outputted format changes, increment the version number by one!
+//(see resolutionFormat.js)
 $.fn.clauseAsObject = function() {
   //return as array if given list
   if (this.is(".clause-list")) {
