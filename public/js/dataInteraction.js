@@ -29,7 +29,7 @@ Were you able to reporduce the bug?
 
 Did the bug occur several times or in a recognisable pattern?
 
-Any other relevant infornation:
+Any other relevant information:
 `);
 
   //calling it probelm report because it may be user error
