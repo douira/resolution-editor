@@ -6,5 +6,11 @@
   "jquery": false,
   "indent": 2,
   "maxlen": 100,
-  "devel": true
+  "devel": true,
+  "freeze": true,
+  "futurehostile": true,
+  "eqeqeq": true,
+  "curly": true,
+  "bitwise": true,
+  "latedef": "nofunc"
 }
