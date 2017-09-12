@@ -1,7 +1,5 @@
 # resolution-editor
- guides the creation of a correctly formatted resolution document
- 
- created in need of a better way of formatting and distributing resolutions for MUNOL
+ This editor guides the creation of a correctly formatted resolution document. It was created in need of a better way of formatting and distributing resolutions for MUNOL.
  
  feel free to make a pull request if you have something you'd like to contribute to this project
  
