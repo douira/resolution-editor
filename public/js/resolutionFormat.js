@@ -1,4 +1,4 @@
-/*jshint esnext: false, browser: false, jquery: false*/
+/*jshint esversion: 5, browser: false, jquery: false */
 
 //string used to identify files saved by this website (mild protection for now)
 var magicIdentifier = "PG52QE1AM4LACMX9";

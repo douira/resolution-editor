@@ -1,4 +1,4 @@
-/*jshint esnext: false, browser: true, jquery: true*/
+/*jshint esversion: 5, browser: true, jquery: true */
 /*global
   makeAlertMessage,
   resolutionFileFormat,
@@ -13,29 +13,21 @@ var supportedResFileFormats = [3];
 
 //returns a bug report tag string
 function bugReportLink(errorCode) {
-  const bodyContent = encodeURIComponent(
-    `Please try to provide as much information as possible.
-Operating System:
-
-Device Type (handheld, desktop etc.):
-
-Browser + Version:
-
-Browser Extensions that can modify website content:
-
-What you were doing when the bug occured and beforehand:
-
-Were you able to reporduce the bug?
-
-Did the bug occur several times or in a recognisable pattern?
-
-Any other relevant infornation:
-`);
+  var bodyContent = encodeURIComponent(
+    "Please try to provide as much information as possible.\n\n" +
+    "Operating System:\n\n" +
+    "Device Type (handheld, desktop etc.):\n\n" +
+    "Browser + Version:\n\n" +
+    "Browser Extensions that can modify website content:\n\n" +
+    "What you were doing when the bug occured and beforehand:\n\n" +
+    "Were you able to reporduce the bug?\n\n" +
+    "Did the bug occur several times or in a recognisable pattern?\n\n" +
+    "Any other relevant infornation:\n\n");
 
   //calling it probelm report because it may be user error
   return "<a href='https://github.com/douira/resolution-editor/issues/new" +
     "?&labels[]=user%20problem%20report" +
-    `&title=Problem Report: ${errorCode}&body=${bodyContent}'>problem report</a>`;
+    "&title=Problem Report: " + errorCode + "&body=" + bodyContent + "'>problem report</a>";
 }
 
 //displays a modal message for invalid json file at parse or apply stage
