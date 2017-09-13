@@ -1,3 +1,4 @@
+![https://david-dm.org/douira/resolution-editor.svg](https://david-dm.org/douira/resolution-editor.svg)
 # resolution-editor
  guides the creation of a correctly formatted resolution document
  
