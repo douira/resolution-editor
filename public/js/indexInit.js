@@ -1,5 +1,5 @@
-/*jshint esnext: false, browser: true, jquery: true*/
-/*global loadFilePick, generatePdf, downloadJson, bugReportLink: true*/
+/*jshint esversion: 5, browser: true, jquery: true */
+/*global loadFilePick, generatePdf, downloadJson, bugReportLink: true */
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
