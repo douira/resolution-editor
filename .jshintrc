@@ -1,9 +1,16 @@
 {
   "asi": false,
-  "esnext": true,
-  "browser": true,
-  "node": true,
-  "jquery": true,
+  "esversion": 5,
+  "browser": false,
+  "node": false,
+  "jquery": false,
   "indent": 2,
-  "maxlen": 100
+  "maxlen": 100,
+  "devel": true,
+  "freeze": true,
+  "futurehostile": true,
+  "eqeqeq": true,
+  "curly": true,
+  "bitwise": true,
+  "latedef": "nofunc"
 }
