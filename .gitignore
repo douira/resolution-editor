@@ -142,5 +142,8 @@ $RECYCLE.BIN/
 #rending output folder for extensions that render TeX
 render_out
 
+#temporarily generated out pdf file
+public/out.pdf
+
 #settings file
 #.brackets.json
