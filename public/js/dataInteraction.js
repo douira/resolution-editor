@@ -129,6 +129,7 @@ function loadJson(json, container) {
       "The provided file could be read but is in an old and unsupported format." +
       " Please file a " + bugReportLink("old_format") + " and describe this problem." +
       " if you wish to receive help concerning this issue.", "old_format");
+    return;
   }
 
   //check that the loaded data is valid
