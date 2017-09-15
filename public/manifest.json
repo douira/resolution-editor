@@ -1,5 +1,5 @@
 {
- "name": "App",
+ "name": "Resolution Editor",
  "icons": [
   {
    "src": "/favicon/android-icon-36x36.png",
@@ -36,6 +36,16 @@
    "sizes": "192x192",
    "type": "image/png",
    "density": "4.0"
+  },
+  {
+   "src": "/favicon/favicon-512x512.png",
+   "sizes": "512x512",
+   "type": "image/png"
   }
- ]
+ ],
+  "theme_color": "#009688",
+  "background_color": "#009688",
+  "display": "minimal-ui",
+  "short_name": "ResoEditor",
+  "lang": "en-US"
 }
