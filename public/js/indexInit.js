@@ -616,10 +616,11 @@ $(document).ready(function() {
         ".chips": {
           init: function(e) {
             e.stopPropagation();
-            $(this).material_chip();//$(this).getData());
+            var elem = $(this);
+            elem.material_chip(elem.getData());
 
             //reset data object in init data, may have been changed as data load
-            $(this).getData().data = [];
+            elem.getData().data = [];
           },
           reset: function(e) {
             e.stopPropagation();
@@ -654,15 +655,19 @@ $(document).ready(function() {
                 var matchData = autofillDataMapping[matchDataSelector];
 
                 //check all chips values for being included
-                valueBad = valueBad || ! value.every(function(item) {
+                valueBad = valueBad || ! value.every(function(item, index) {
                   //must be included in data
-                  return matchData.includes(item.tag.trim());
+                  var isOk = matchData.includes(item.tag.trim());
+
+                  //color-mark tag object
+                  elem.children(".chip:eq(" + index + ")")
+                    [isOk ? "removeClass" : "addClass"]("red white-text");
+
+                  //return for validation of whole array
+                  return isOk;
                 });
               }
             }
-
-            //change validation state accordingly
-            //elem[valueBad ? "addClass" : "removeClass"]("red-text");
 
             //apply to global flag
             badFieldPresent = badFieldPresent || valueBad;
@@ -1020,9 +1025,7 @@ $(document).ready(function() {
       {
         "#forum-name": makeAutofillSettings(autofillData.forums),
         "#co-spon": {
-          autocompleteOptions: makeAutofillSettings(autofillData.sponsors)/*,
-          secondaryPlaceholder: "Co-Sponors",
-          placeholder: "Co-Sponors"*/
+          autocompleteOptions: makeAutofillSettings(autofillData.sponsors)
         },
         "#main-spon": makeAutofillSettings(autofillData.sponsors),
         "#preamb-clauses .phrase-input": makeAutofillSettings(autofillData.phrases.preamb),

@@ -20,9 +20,9 @@ function bugReportLink(errorCode) {
     "Browser + Version:\n\n" +
     "Browser Extensions that can modify website content:\n\n" +
     "What you were doing when the bug occured and beforehand:\n\n" +
-    "Were you able to reporduce the bug?\n\n" +
+    "Were you able to reproduce the bug?\n\n" +
     "Did the bug occur several times or in a recognisable pattern?\n\n" +
-    "Any other relevant infornation:\n\n");
+    "Any other relevant information:\n\n");
 
   //calling it probelm report because it may be user error
   return "<a href='https://github.com/douira/resolution-editor/issues/new" +
@@ -226,6 +226,7 @@ function generatePdf(container) {
 
 //gets a clause as an object
 //IMPORTANT: if the outputted format changes, increment the version number by one!
+//(see resolutionFormat.js)
 $.fn.clauseAsObject = function() {
   //return as array if given list
   if (this.is(".clause-list")) {
@@ -351,7 +352,7 @@ function saveFileDownload(str) {
         e.stopPropagation();
 
         //close modal after download
-        $(this).modal("close");
+        $(this).parents(".modal").modal("close");
       });
     body.append(
       "If the file download doesn't start, try again and if it still doesn't work " +
