@@ -415,6 +415,570 @@ $.fn.addClause = function(amount, activationStateChanges) {
   return this;
 };
 
+function getEventHandlers(loadedData) {
+  return {
+    ".autocomplete": {
+      init: function(e) {
+        e.stopPropagation();
+        $(this).autocomplete($(this).getData());
+      }
+    },
+    ".modal": {
+      init: function() {
+        //not using element specific data because this will be the same for all modals
+        //(only the one modal atm)
+        var modal = $(this);
+        modal.modal({
+          dismissible: false,
+          complete: function() {
+            modal.trigger("reset");
+
+            //display next alert if there is one
+            checkAlertDisplay();
+          }
+        });
+      },
+      reset: function(e) {
+        e.stopPropagation();
+        var elem = $(this);
+        elem.find("input,textarea").trigger("reset");
+        elem.find("#file-selector").hide();
+      }
+    },
+    "input.required, textarea.required": {
+      checkRequired: function(e) {
+        e.stopPropagation();
+        var elem = $(this);
+
+        //get value of required field
+        var value = elem.val().trim();
+
+        //keep track if value invalid
+        var valueBad = false;
+
+        //check for presence of value
+        valueBad = ! (value && value.length);
+
+        //check for presence in autofill data mapping and require value to be in data if so
+        if (! valueBad) {
+          //get the data we have to match to
+          var matchDataSelector = Object.keys(loadedData.autofillDataMapping)
+          .find(function(selector) {
+            //check if element matches this selector
+            return elem.is(selector);
+          });
+
+          //only if there actually is a selector for this element in the data mappings
+          if (matchDataSelector) {
+            valueBad = valueBad || ! loadedData
+              .autofillDataMapping[matchDataSelector].includes(value);
+          }
+        }
+
+        //change validation state accordingly
+        elem[valueBad ? "addClass" : "removeClass"]("invalid");
+
+        //apply to global flag
+        badFieldPresent = badFieldPresent || valueBad;
+      },
+      change: function(e) {
+        e.stopPropagation();
+        //check again on changed value
+        $(this).trigger("checkRequired");
+      }
+    },
+    "input[type='file']": {
+      reset: function(e) {
+        e.stopPropagation();
+        $(this).val("");
+      },
+      change: function() {
+        //get file
+        var file = this.files[0];
+
+        //stop if wrong extension
+        if (file.name.match(/^.*\.rso/)) {
+          //load file
+          var reader = new FileReader();
+          var callback = $(this).getData().fileLoadCallback;
+          reader.onload = function(e) {
+            callback(e.target.result);
+          };
+          reader.readAsText(file);
+        }
+      }
+    },
+    "input, textarea": {
+      activateLabel: function(e) {
+        e.stopPropagation();
+        //make associated labels active
+        $(this).siblings("label").addClass("active");
+      },
+      reset: function(e) {
+        e.stopPropagation();
+        //reset invalid labels
+        $(this).removeClass("invalid");
+      }
+    },
+    "input#forum-name": {
+      change: function(e) {
+        e.stopPropagation();
+
+        //replace if has abbreviation extension
+        var elem = $(this);
+        var unabbreviated = loadedData.forumAbbrevMapping[elem.val().trim().toLowerCase()];
+        if (unabbreviated) {
+          //replace with non-abbreviated version
+          elem.val(unabbreviated);
+
+          //make field check for validity now
+          elem.trigger("checkRequired");
+        }
+      }
+    },
+    "input": {
+      reset: function(e) {
+        e.stopPropagation();
+        $(this).val("").resetSiblingLabels();
+      }
+    },
+    "textarea": {
+      click: function() {
+        var triggerOn = $(this);
+
+        //set on timeout to trigger after extension has finished doing things
+        window.setTimeout(function() {
+          triggerOn.trigger("removeForeign");
+        }, 200);
+      },
+      reset: function(e) {
+        e.stopPropagation();
+        $(this)
+          .val("") //empty content
+          .removeAttr("style") //restore size
+          .resetSiblingLabels();
+      },
+      removeForeign: function(e) {
+        e.stopPropagation();
+        //removes other things than what we put there, like grammarly stuff
+        //this may be removed at some point when we get the cloning to work properly
+        $(this)
+          .siblings()
+          .not("label, textarea")
+          .detectManipulator();
+
+        //cleanup textarea element
+        $(this).removeAttr("data-gramm");
+      }
+    },
+    ".chips": {
+      init: function(e) {
+        e.stopPropagation();
+        var elem = $(this);
+        elem.material_chip(elem.getData());
+
+        //reset data object in init data, may have been changed as data load
+        elem.getData().data = [];
+      },
+      reset: function(e) {
+        e.stopPropagation();
+        $(this).val("");
+        $(this).trigger("init");
+      }
+    },
+    ".chips.required": {
+      checkRequired: function(e) {
+        e.stopPropagation();
+        var elem = $(this);
+
+        //get value of field
+        var value = elem.material_chip("data");
+
+        //keep track if value invalid
+        var valueBad = false;
+
+        //check for presence of values
+        valueBad = ! (value && value.length);
+
+        //check that all entries are ok sponsors in autofill data
+        if (! valueBad) {
+          //get the data selector we have to match to
+          var matchDataSelector = Object.keys(loadedData.autofillDataMapping)
+          .find(function(selector) {
+            //check if element matches this selector
+            return elem.is(selector);
+          });
+
+          //only if there actually is a selector for this element in the data mappings
+          if (matchDataSelector) {
+            var matchData = loadedData.autofillDataMapping[matchDataSelector];
+
+            //check all chips values for being included
+            valueBad = valueBad || ! value.every(function(item, index) {
+              //must be included in data
+              var isOk = matchData.includes(item.tag.trim());
+
+              //color-mark tag object
+              elem.children(".chip:eq(" + index + ")")
+                [isOk ? "removeClass" : "addClass"]("red white-text");
+
+              //return for validation of whole array
+              return isOk;
+            });
+          }
+        }
+
+        //apply to global flag
+        badFieldPresent = badFieldPresent || valueBad;
+      },
+      focusout: function(e) {
+        e.stopPropagation();
+
+        //check again on changed value
+        $(this).trigger("checkRequired");
+      }
+    },
+    ".clause": {
+      //resets this clause after cloning
+      reset: function(e) {
+        e.stopPropagation();
+        var elem = $(this);
+        elem.trigger("clear");
+        elem.find(".clause-list").remove();
+      },
+      //clears field content
+      clear: function(e) {
+        e.stopPropagation();
+
+        //clear fields
+        $(this)
+          .children(".phrase-input-wrapper,.clause-content,.clause-content-ext")
+          .find("textarea,input")
+          .trigger("reset");
+
+        //re-hide extended clause content
+        $(this).children(".clause-content-ext").hide();
+
+        //update add-ext disabled state of eab in this clause
+        $(this)
+          .find("#eab-add-ext")
+          .not(".clause-list-sub #eab-add-ext")
+          .trigger("updateDisabled");
+      },
+      editActive: function(e) {
+        e.stopPropagation();
+        //make all other clauses inactive
+        $(".clause").not(this).trigger("editInactive");
+
+        //find the edit mode button for this clause (not descendants!)
+        var elem = $(this);
+        var editModeBtn = elem.find(".edit-mode-btn").first();
+
+        //hide edit button
+        editModeBtn
+          .hide()
+          .before($("#eab-wrapper").show()); //show edit action buttons
+
+        //update eab button disable
+        $(this)
+          .find("#eab-wrapper")
+          .children()
+          .trigger("updateDisabled");
+
+        //show add clause button if we're in a subclause (otherwise it's always visible)
+        if (elem.isSubClause()) {
+          elem.siblings(".add-clause-container").show();
+        }
+      },
+      editInactive: function(e) {
+        e.stopPropagation();
+
+        //show edit button to make switch to edit mode possible again
+        var elem = $(this);
+
+        //hide edit action buttons
+        var eab = elem.find("#eab-wrapper");
+        eab.hide().insertAfter($("#eab-inactive-anchor"));
+        elem.find(".edit-mode-btn").show();
+
+        //hide add clause button if we're a subclause
+        if (elem.isSubClause()) {
+          elem.siblings(".add-clause-container").hide();
+        }
+      },
+      updateId: function(e) {
+        e.stopPropagation();
+        //set the displayed id of the clause
+        $(this)
+          .find(".clause-number")
+          .text($(this).indexInParent() + 1);
+
+        //update disabled state of buttons
+        $(this)
+          .find("#eab-wrapper")
+          .children()
+          .trigger("updateDisabled");
+      },
+      updateTreeDepth: function(e) {
+        e.stopPropagation();
+        //updates the tree depth of this clause and adds "Sub"s to the clause name
+        var subClauseDepth = $(this).amountAbove(".clause-list-sub");
+        if (subClauseDepth) {
+          $(this).find(".clause-prefix").text("Sub".repeat(subClauseDepth) + "-");
+        }
+      },
+      attemptRemove: function(e) {
+        e.stopPropagation();
+        //tries to remove this clause
+        if ($(this).clauseRemovable()) {
+          //inactivate to make eab go away
+          $(this).trigger("editInactive");
+
+          //save parent
+          var parent = $(this).parent();
+
+          //check if this clause is the last subclause in its list
+          if (parent.children(".clause").length === 1) {
+            //get enclosing clause
+            var clause = parent.closest(".clause");
+
+            //remove continuation content from parent and add onto normal clause content
+            var extField = clause
+              .children(".clause-content-ext")
+              .hide()
+              .children("textarea");
+            var contentField = clause.children(".clause-content").children("textarea");
+            contentField.val(contentField.val().trim() + " " + extField.val().trim());
+
+            //clear ext field
+            extField.trigger("reset");
+          }
+
+          //remove this clause
+          $(this).remove();
+
+          //update ids of other clauses around it
+          parent.children(".clause").trigger("updateId");
+        }
+      },
+      click: function(e) {
+        //only activate if came from input fields
+        if ($(e.target).is("input, textarea")) {
+          e.stopPropagation();
+          $(this).trigger("editActive");
+        }
+      },
+      fromLoadedData: function(e) {
+        e.stopPropagation();
+
+        //fill with data
+        var elem = $(this);
+        var data = elem.getData().loadedData;
+
+        //if data is only a string, fill content only
+        if (typeof data === "string") {
+          //fill content field
+          elem
+            .children(".clause-content")
+            .children("textarea")
+            .val(data)
+            //trigger keyup to make textarea update its size
+            .triggerAll("activateLabel keyup");
+        } else {
+          //fill phrase field
+          elem
+            .children(".phrase-input-wrapper")
+            .find("input")
+            .val(data.phrase)
+            .trigger("activateLabel");
+
+          //fill content field
+          elem
+            .children(".clause-content")
+            .children("textarea")
+            .val(data.content)
+            .triggerAll("activateLabel keyup");
+
+          //add subclause data if given
+          if (data.sub) {
+            //make subclause list, give data and trigger to continue
+            elem.addSubClause(false);
+            var subclauseList = elem.find(".clause-list-sub");
+            subclauseList.getData().loadedData = data.sub;
+            subclauseList.trigger("fromLoadedData");
+
+            //also add ext data if given
+            if (data.contentExt) {
+              elem
+                .children(".clause-content-ext")
+                .show()
+                .children("textarea")
+                .val(data.contentExt)
+                .triggerAll("activateLabel keyup");
+            }
+          }
+        }
+      }
+    },
+    ".clause-list": {
+      fromLoadedData: function(e) {
+        e.stopPropagation();
+        var elem = $(this);
+
+        //make needed number of clauses
+        var data = $(this).getData().loadedData;
+        elem.addClause(data.length - 1, false); //one less, we already have one there by default
+
+        //give them their data and trigger to continue
+        elem.children(".clause").each(function(index) {
+          $(this).getData().loadedData = data[index];
+          $(this).trigger("fromLoadedData");
+        });
+      }
+    },
+    ".add-clause-container": {
+      click: function(e) {
+        e.stopPropagation();
+
+        //only respond if button itself was clicked and not just the enclosing div
+        if ($(e.target).is("a")) {
+          //add clause in enclosing list
+          $(this).addClause(1, true);
+        }
+      }
+    },
+    ".edit-mode-btn": {
+      click: function(e) {
+        e.stopPropagation();
+
+        //get current clause we are in
+        var thisClause = $(this).closest(".clause");
+
+        //set edit mode for this clause to true
+        thisClause.trigger("editActive");
+
+        //update disabled state of movement buttons
+        thisClause
+          .find("#eab-wrapper")
+          .children()
+          .trigger("updateDisabled");
+      }
+    },
+    "#eab-move-down": {
+      click: function(e) {
+        e.stopPropagation();
+        var clause = $(this).closest(".clause");
+        clause.next(".clause").after(clause);
+
+        //update id of all clauses in section
+        clause.triggerAllIdUpdate();
+      },
+      updateDisabled: makeEabMoveUpdateDisabledHandler(false)
+    },
+    "#eab-move-up": {
+      click: function(e) {
+        e.stopPropagation();
+        var clause = $(this).closest(".clause");
+        clause.prev(".clause").before(clause);
+
+        //update id of all clauses in section
+        clause.triggerAllIdUpdate();
+      },
+      updateDisabled: makeEabMoveUpdateDisabledHandler(true)
+    },
+    "#eab-add-sub": {
+      click: function(e) {
+        e.stopPropagation();
+        var elem = $(this);
+
+        //get enclosing clause and make inactive to prevent cloning of eab and add subclause
+        elem.closest(".clause").addSubClause(true);
+      },
+      updateDisabled: function(e) {
+        e.stopPropagation();
+
+        //set disabled state according to wether or not a subclause can be added
+        $(this).disabledState(! $(this).canReceiveSubclause());
+      }
+    },
+    "#eab-add-ext": {
+      click: function(e) {
+        e.stopPropagation();
+
+        //un-hide extended clause content field
+        $(this).closest(".clause").children(".clause-content-ext").show();
+
+        //make disabled after action performed
+        $(this).disabledState(true);
+      },
+      updateDisabled: function(e) {
+        e.stopPropagation();
+
+        //set disabled state according to wether or not a subclause can be added
+        //also can't un-hide again (disabled if visible)
+        var clause = $(this).closest(".clause");
+        $(this).disabledState(
+          ! clause.find(".clause").length || //disable if doesn't already have subclause
+          clause.children(".clause-content-ext:visible").length); //disable if already there
+      }
+    },
+    "#eab-clear": {
+      click: function(e) {
+        e.stopPropagation();
+        $(this).closest(".clause").trigger("clear");
+      }
+    },
+    "#eab-delete": {
+      click: function(e) {
+        e.stopPropagation();
+        $(this).closest(".clause").trigger("attemptRemove");
+      },
+      updateDisabled: function(e) {
+        e.stopPropagation();
+
+        //check if enclosing clause can be removed
+        $(this).disabledState(! $(this).closest(".clause").clauseRemovable());
+      }
+    },
+    "#eab-done": {
+      click: function(e) {
+        e.stopPropagation();
+        $(this).closest(".clause").trigger("editInactive");
+      }
+    },
+    "#file-action-load": {
+      //file actions are defined in a seperate file
+      click: function(e) {
+        e.stopPropagation();
+
+        //load file from computer file system
+        loadFilePick($("#editor-main"));
+      }
+    },
+    "#file-action-save": {
+      click: function(e) {
+        e.stopPropagation();
+
+        //finalize editing on all fields
+        $(".clause").trigger("editInactive");
+
+        //download editor json
+        downloadJson($("#editor-main"));
+      }
+    },
+    "#file-action-pdf": {
+      click: function(e) {
+        e.stopPropagation();
+
+        //finalize editing on all fields
+        $(".clause").trigger("editInactive");
+
+        //display pdf directly after generating
+        generatePdf($("#editor-main"));
+      }
+    }
+  };
+}
 
 //do things when the document has finished loading
 $(document).ready(function() {
@@ -440,15 +1004,18 @@ $(document).ready(function() {
       "#op-clauses .phrase-input": data.phrases.op.slice(),
     };
     
+    //data object to pass to scope of event handlers
+    var loadedData = {};
+
     //get forum abbreviation mapping data
-    var forumAbbreviations = data.forums.slice();
-    forumAbbreviations.shift();
+    loadedData.forumAbbreviations = data.forums.slice();
+    loadedData.forumAbbreviations.shift();
 
     //convert to mapping object
-    var forumAbbrevMapping = {};
-    forumAbbreviations.forEach(function(nameSet) {
+    loadedData.forumAbbrevMapping = {};
+    loadedData.forumAbbreviations.forEach(function(nameSet) {
       //attach mapping
-      forumAbbrevMapping[nameSet[1].trim().toLowerCase()] = nameSet[0];
+      loadedData.forumAbbrevMapping[nameSet[1].trim().toLowerCase()] = nameSet[0];
     });
 
     //transform into correct data structure when gotten data
@@ -458,566 +1025,7 @@ $(document).ready(function() {
     //all reset events and some others must use stopPropagation!
     registerEventsAndData(
       //types of fields to attach events and data to
-      {
-        ".autocomplete": {
-          init: function(e) {
-            e.stopPropagation();
-            $(this).autocomplete($(this).getData());
-          }
-        },
-        ".modal": {
-          init: function() {
-            //not using element specific data because this will be the same for all modals
-            //(only the one modal atm)
-            var modal = $(this);
-            modal.modal({
-              dismissible: false,
-              complete: function() {
-                modal.trigger("reset");
-
-                //display next alert if there is one
-                checkAlertDisplay();
-              }
-            });
-          },
-          reset: function(e) {
-            e.stopPropagation();
-            var elem = $(this);
-            elem.find("input,textarea").trigger("reset");
-            elem.find("#file-selector").hide();
-          }
-        },
-        "input.required, textarea.required": {
-          checkRequired: function(e) {
-            e.stopPropagation();
-            var elem = $(this);
-
-            //get value of required field
-            var value = elem.val().trim();
-
-            //keep track if value invalid
-            var valueBad = false;
-
-            //check for presence of value
-            valueBad = ! (value && value.length);
-
-            //check for presence in autofill data mapping and require value to be in data if so
-            if (! valueBad) {
-              //get the data we have to match to
-              var matchDataSelector = Object.keys(autofillDataMapping).find(function(selector) {
-                //check if element matches this selector
-                return elem.is(selector);
-              });
-
-              //only if there actually is a selector for this element in the data mappings
-              if (matchDataSelector) {
-                valueBad = valueBad || ! autofillDataMapping[matchDataSelector].includes(value);
-              }
-            }
-
-            //change validation state accordingly
-            elem[valueBad ? "addClass" : "removeClass"]("invalid");
-
-            //apply to global flag
-            badFieldPresent = badFieldPresent || valueBad;
-          },
-          change: function(e) {
-            e.stopPropagation();
-            //check again on changed value
-            $(this).trigger("checkRequired");
-          }
-        },
-        "input[type='file']": {
-          reset: function(e) {
-            e.stopPropagation();
-            $(this).val("");
-          },
-          change: function() {
-            //get file
-            var file = this.files[0];
-
-            //stop if wrong extension
-            if (file.name.match(/^.*\.rso/)) {
-              //load file
-              var reader = new FileReader();
-              var callback = $(this).getData().fileLoadCallback;
-              reader.onload = function(e) {
-                callback(e.target.result);
-              };
-              reader.readAsText(file);
-            }
-          }
-        },
-        "input, textarea": {
-          activateLabel: function(e) {
-            e.stopPropagation();
-            //make associated labels active
-            $(this).siblings("label").addClass("active");
-          },
-          reset: function(e) {
-            e.stopPropagation();
-            //reset invalid labels
-            $(this).removeClass("invalid");
-          }
-        },
-        "input#forum-name": {
-          change: function(e) {
-            e.stopPropagation();
-
-            //replace if has abbreviation extension
-            var elem = $(this);
-            var unabbreviated = forumAbbrevMapping[elem.val().trim().toLowerCase()];
-            if (unabbreviated) {
-              //replace with non-abbreviated version
-              elem.val(unabbreviated);
-
-              //make field check for validity now
-              elem.trigger("checkRequired");
-            }
-          }
-        },
-        "input": {
-          reset: function(e) {
-            e.stopPropagation();
-            $(this).val("").resetSiblingLabels();
-          }
-        },
-        "textarea": {
-          click: function() {
-            var triggerOn = $(this);
-
-            //set on timeout to trigger after extension has finished doing things
-            window.setTimeout(function() {
-              triggerOn.trigger("removeForeign");
-            }, 200);
-          },
-          reset: function(e) {
-            e.stopPropagation();
-            $(this)
-              .val("") //empty content
-              .removeAttr("style") //restore size
-              .resetSiblingLabels();
-          },
-          removeForeign: function(e) {
-            e.stopPropagation();
-            //removes other things than what we put there, like grammarly stuff
-            //this may be removed at some point when we get the cloning to work properly
-            $(this)
-              .siblings()
-              .not("label, textarea")
-              .detectManipulator();
-
-            //cleanup textarea element
-            $(this).removeAttr("data-gramm");
-          }
-        },
-        ".chips": {
-          init: function(e) {
-            e.stopPropagation();
-            var elem = $(this);
-            elem.material_chip(elem.getData());
-
-            //reset data object in init data, may have been changed as data load
-            elem.getData().data = [];
-          },
-          reset: function(e) {
-            e.stopPropagation();
-            $(this).val("");
-            $(this).trigger("init");
-          }
-        },
-        ".chips.required": {
-          checkRequired: function(e) {
-            e.stopPropagation();
-            var elem = $(this);
-
-            //get value of field
-            var value = elem.material_chip("data");
-
-            //keep track if value invalid
-            var valueBad = false;
-
-            //check for presence of values
-            valueBad = ! (value && value.length);
-
-            //check that all entries are ok sponsors in autofill data
-            if (! valueBad) {
-              //get the data selector we have to match to
-              var matchDataSelector = Object.keys(autofillDataMapping).find(function(selector) {
-                //check if element matches this selector
-                return elem.is(selector);
-              });
-
-              //only if there actually is a selector for this element in the data mappings
-              if (matchDataSelector) {
-                var matchData = autofillDataMapping[matchDataSelector];
-
-                //check all chips values for being included
-                valueBad = valueBad || ! value.every(function(item, index) {
-                  //must be included in data
-                  var isOk = matchData.includes(item.tag.trim());
-
-                  //color-mark tag object
-                  elem.children(".chip:eq(" + index + ")")
-                    [isOk ? "removeClass" : "addClass"]("red white-text");
-
-                  //return for validation of whole array
-                  return isOk;
-                });
-              }
-            }
-
-            //apply to global flag
-            badFieldPresent = badFieldPresent || valueBad;
-          },
-          focusout: function(e) {
-            e.stopPropagation();
-
-            //check again on changed value
-            $(this).trigger("checkRequired");
-          }
-        },
-        ".clause": {
-          //resets this clause after cloning
-          reset: function(e) {
-            e.stopPropagation();
-            var elem = $(this);
-            elem.trigger("clear");
-            elem.find(".clause-list").remove();
-          },
-          //clears field content
-          clear: function(e) {
-            e.stopPropagation();
-
-            //clear fields
-            $(this)
-              .children(".phrase-input-wrapper,.clause-content,.clause-content-ext")
-              .find("textarea,input")
-              .trigger("reset");
-
-            //re-hide extended clause content
-            $(this).children(".clause-content-ext").hide();
-
-            //update add-ext disabled state of eab in this clause
-            $(this)
-              .find("#eab-add-ext")
-              .not(".clause-list-sub #eab-add-ext")
-              .trigger("updateDisabled");
-          },
-          editActive: function(e) {
-            e.stopPropagation();
-            //make all other clauses inactive
-            $(".clause").not(this).trigger("editInactive");
-
-            //find the edit mode button for this clause (not descendants!)
-            var elem = $(this);
-            var editModeBtn = elem.find(".edit-mode-btn").first();
-
-            //hide edit button
-            editModeBtn
-              .hide()
-              .before($("#eab-wrapper").show()); //show edit action buttons
-
-            //update eab button disable
-            $(this)
-              .find("#eab-wrapper")
-              .children()
-              .trigger("updateDisabled");
-
-            //show add clause button if we're in a subclause (otherwise it's always visible)
-            if (elem.isSubClause()) {
-              elem.siblings(".add-clause-container").show();
-            }
-          },
-          editInactive: function(e) {
-            e.stopPropagation();
-
-            //show edit button to make switch to edit mode possible again
-            var elem = $(this);
-
-            //hide edit action buttons
-            var eab = elem.find("#eab-wrapper");
-            eab.hide().insertAfter($("#eab-inactive-anchor"));
-            elem.find(".edit-mode-btn").show();
-
-            //hide add clause button if we're a subclause
-            if (elem.isSubClause()) {
-              elem.siblings(".add-clause-container").hide();
-            }
-          },
-          updateId: function(e) {
-            e.stopPropagation();
-            //set the displayed id of the clause
-            $(this)
-              .find(".clause-number")
-              .text($(this).indexInParent() + 1);
-
-            //update disabled state of buttons
-            $(this)
-              .find("#eab-wrapper")
-              .children()
-              .trigger("updateDisabled");
-          },
-          updateTreeDepth: function(e) {
-            e.stopPropagation();
-            //updates the tree depth of this clause and adds "Sub"s to the clause name
-            var subClauseDepth = $(this).amountAbove(".clause-list-sub");
-            if (subClauseDepth) {
-              $(this).find(".clause-prefix").text("Sub".repeat(subClauseDepth) + "-");
-            }
-          },
-          attemptRemove: function(e) {
-            e.stopPropagation();
-            //tries to remove this clause
-            if ($(this).clauseRemovable()) {
-              //inactivate to make eab go away
-              $(this).trigger("editInactive");
-
-              //save parent
-              var parent = $(this).parent();
-
-              //check if this clause is the last subclause in its list
-              if (parent.children(".clause").length === 1) {
-                //get enclosing clause
-                var clause = parent.closest(".clause");
-
-                //remove continuation content from parent and add onto normal clause content
-                var extField = clause
-                  .children(".clause-content-ext")
-                  .hide()
-                  .children("textarea");
-                var contentField = clause.children(".clause-content").children("textarea");
-                contentField.val(contentField.val().trim() + " " + extField.val().trim());
-
-                //clear ext field
-                extField.trigger("reset");
-              }
-
-              //remove this clause
-              $(this).remove();
-
-              //update ids of other clauses around it
-              parent.children(".clause").trigger("updateId");
-            }
-          },
-          click: function(e) {
-            //only activate if came from input fields
-            if ($(e.target).is("input, textarea")) {
-              e.stopPropagation();
-              $(this).trigger("editActive");
-            }
-          },
-          fromLoadedData: function(e) {
-            e.stopPropagation();
-
-            //fill with data
-            var elem = $(this);
-            var data = elem.getData().loadedData;
-
-            //if data is only a string, fill content only
-            if (typeof data === "string") {
-              //fill content field
-              elem
-                .children(".clause-content")
-                .children("textarea")
-                .val(data)
-                //trigger keyup to make textarea update its size
-                .triggerAll("activateLabel keyup");
-            } else {
-              //fill phrase field
-              elem
-                .children(".phrase-input-wrapper")
-                .find("input")
-                .val(data.phrase)
-                .trigger("activateLabel");
-
-              //fill content field
-              elem
-                .children(".clause-content")
-                .children("textarea")
-                .val(data.content)
-                .triggerAll("activateLabel keyup");
-
-              //add subclause data if given
-              if (data.sub) {
-                //make subclause list, give data and trigger to continue
-                elem.addSubClause(false);
-                var subclauseList = elem.find(".clause-list-sub");
-                subclauseList.getData().loadedData = data.sub;
-                subclauseList.trigger("fromLoadedData");
-
-                //also add ext data if given
-                if (data.contentExt) {
-                  elem
-                    .children(".clause-content-ext")
-                    .show()
-                    .children("textarea")
-                    .val(data.contentExt)
-                    .triggerAll("activateLabel keyup");
-                }
-              }
-            }
-          }
-        },
-        ".clause-list": {
-          fromLoadedData: function(e) {
-            e.stopPropagation();
-            var elem = $(this);
-
-            //make needed number of clauses
-            var data = $(this).getData().loadedData;
-            elem.addClause(data.length - 1, false); //one less, we already have one there by default
-
-            //give them their data and trigger to continue
-            elem.children(".clause").each(function(index) {
-              $(this).getData().loadedData = data[index];
-              $(this).trigger("fromLoadedData");
-            });
-          }
-        },
-        ".add-clause-container": {
-          click: function(e) {
-            e.stopPropagation();
-
-            //only respond if button itself was clicked and not just the enclosing div
-            if ($(e.target).is("a")) {
-              //add clause in enclosing list
-              $(this).addClause(1, true);
-            }
-          }
-        },
-        ".edit-mode-btn": {
-          click: function(e) {
-            e.stopPropagation();
-
-            //get current clause we are in
-            var thisClause = $(this).closest(".clause");
-
-            //set edit mode for this clause to true
-            thisClause.trigger("editActive");
-
-            //update disabled state of movement buttons
-            thisClause
-              .find("#eab-wrapper")
-              .children()
-              .trigger("updateDisabled");
-          }
-        },
-        "#eab-move-down": {
-          click: function(e) {
-            e.stopPropagation();
-            var clause = $(this).closest(".clause");
-            clause.next(".clause").after(clause);
-
-            //update id of all clauses in section
-            clause.triggerAllIdUpdate();
-          },
-          updateDisabled: makeEabMoveUpdateDisabledHandler(false)
-        },
-        "#eab-move-up": {
-          click: function(e) {
-            e.stopPropagation();
-            var clause = $(this).closest(".clause");
-            clause.prev(".clause").before(clause);
-
-            //update id of all clauses in section
-            clause.triggerAllIdUpdate();
-          },
-          updateDisabled: makeEabMoveUpdateDisabledHandler(true)
-        },
-        "#eab-add-sub": {
-          click: function(e) {
-            e.stopPropagation();
-            var elem = $(this);
-
-            //get enclosing clause and make inactive to prevent cloning of eab and add subclause
-            elem.closest(".clause").addSubClause(true);
-          },
-          updateDisabled: function(e) {
-            e.stopPropagation();
-
-            //set disabled state according to wether or not a subclause can be added
-            $(this).disabledState(! $(this).canReceiveSubclause());
-          }
-        },
-        "#eab-add-ext": {
-          click: function(e) {
-            e.stopPropagation();
-
-            //un-hide extended clause content field
-            $(this).closest(".clause").children(".clause-content-ext").show();
-
-            //make disabled after action performed
-            $(this).disabledState(true);
-          },
-          updateDisabled: function(e) {
-            e.stopPropagation();
-
-            //set disabled state according to wether or not a subclause can be added
-            //also can't un-hide again (disabled if visible)
-            var clause = $(this).closest(".clause");
-            $(this).disabledState(
-              ! clause.find(".clause").length || //disable if doesn't already have subclause
-              clause.children(".clause-content-ext:visible").length); //disable if already there
-          }
-        },
-        "#eab-clear": {
-          click: function(e) {
-            e.stopPropagation();
-            $(this).closest(".clause").trigger("clear");
-          }
-        },
-        "#eab-delete": {
-          click: function(e) {
-            e.stopPropagation();
-            $(this).closest(".clause").trigger("attemptRemove");
-          },
-          updateDisabled: function(e) {
-            e.stopPropagation();
-
-            //check if enclosing clause can be removed
-            $(this).disabledState(! $(this).closest(".clause").clauseRemovable());
-          }
-        },
-        "#eab-done": {
-          click: function(e) {
-            e.stopPropagation();
-            $(this).closest(".clause").trigger("editInactive");
-          }
-        },
-
-        //file actions are defined in a seperate file
-        "#file-action-load": {
-          click: function(e) {
-            e.stopPropagation();
-
-            //load file from computer file system
-            loadFilePick($("#editor-main"));
-          }
-        },
-        "#file-action-save": {
-          click: function(e) {
-            e.stopPropagation();
-
-            //finalize editing on all fields
-            $(".clause").trigger("editInactive");
-
-            //download editor json
-            downloadJson($("#editor-main"));
-          }
-        },
-        "#file-action-pdf": {
-          click: function(e) {
-            e.stopPropagation();
-
-            //finalize editing on all fields
-            $(".clause").trigger("editInactive");
-
-            //display pdf directly after generating
-            generatePdf($("#editor-main"));
-          }
-        }
-      },
+      getEventHandlers(loadedData),
 
       //data used to inititalize input fields/thingies and their other options
       {
