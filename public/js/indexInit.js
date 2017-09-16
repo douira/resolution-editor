@@ -96,15 +96,6 @@ function transformMarkedArrays(structure, flag, propValue, depth) {
   return structure;
 }
 
-//registers event handler and init data
-function registerData(initData) {
-  //for all init data attach the data to the element
-  for (var dataSelector in initData) {
-    //attach data to all elements that match
-    $(dataSelector).data(dataPrefix, initData[dataSelector]);
-  }
-}
-
 //queue of alert message we want to display
 var alertQueue = [];
 
@@ -984,20 +975,22 @@ $(document).ready(function() {
     //transform into correct data structure when gotten data
     autofillData = transformMarkedArrays(data, "_convert", null);
 
-    //call with to register events and init data
-    //all reset events and some others must use stopPropagation!
-    registerData(
-      //data used to inititalize input fields/thingies and their other options
-      {
-        "#forum-name": makeAutofillSettings(autofillData.forums),
-        "#co-spon": {
-          autocompleteOptions: makeAutofillSettings(autofillData.sponsors)
-        },
-        "#main-spon": makeAutofillSettings(autofillData.sponsors),
-        "#preamb-clauses .phrase-input": makeAutofillSettings(autofillData.phrases.preamb),
-        "#op-clauses .phrase-input": makeAutofillSettings(autofillData.phrases.op),
-      }
-    );
+    //data used to inititalize input fields/thingies and their other options
+    var initData = {
+      "#forum-name": makeAutofillSettings(autofillData.forums),
+      "#co-spon": {
+        autocompleteOptions: makeAutofillSettings(autofillData.sponsors)
+      },
+      "#main-spon": makeAutofillSettings(autofillData.sponsors),
+      "#preamb-clauses .phrase-input": makeAutofillSettings(autofillData.phrases.preamb),
+      "#op-clauses .phrase-input": makeAutofillSettings(autofillData.phrases.op),
+    };
+
+    //for all init data attach the data to the element
+    for (var dataSelector in initData) {
+      //attach data to all elements that match
+      $(dataSelector).data(dataPrefix, initData[dataSelector]);
+    }
 
     //trigger all init events
     $("#editor-main").find("*").trigger("init");
