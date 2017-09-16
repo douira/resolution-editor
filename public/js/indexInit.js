@@ -611,6 +611,12 @@ function getEventHandlers(loadedData) {
     var elem = $(this);
     elem.trigger("clear");
     elem.find(".clause-list").remove();
+
+    //reset phrase field with re-init
+    elem
+      .children(".phrase-input-wrapper")
+      .find(".phrase-input")
+      .trigger("init");
   })
   .on("clear", function(e) {
     //clears field content
