@@ -462,8 +462,6 @@ $(document).ready(function() {
         ".autocomplete": {
           init: function(e) {
             e.stopPropagation();
-            //first convert plain html element to jQuery element because the materialize functions
-            //only work on that
             $(this).autocomplete($(this).getData());
           }
         },
