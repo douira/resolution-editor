@@ -416,6 +416,7 @@ $.fn.addClause = function(amount, activationStateChanges) {
 };
 
 function getEventHandlers(loadedData) {
+  console.log(loadedData);
   return {
     ".autocomplete": {
       init: function(e) {
@@ -463,10 +464,10 @@ function getEventHandlers(loadedData) {
         if (! valueBad) {
           //get the data we have to match to
           var matchDataSelector = Object.keys(loadedData.autofillDataMapping)
-          .find(function(selector) {
-            //check if element matches this selector
-            return elem.is(selector);
-          });
+            .find(function(selector) {
+              //check if element matches this selector
+              return elem.is(selector);
+            });
 
           //only if there actually is a selector for this element in the data mappings
           if (matchDataSelector) {
@@ -604,10 +605,10 @@ function getEventHandlers(loadedData) {
         if (! valueBad) {
           //get the data selector we have to match to
           var matchDataSelector = Object.keys(loadedData.autofillDataMapping)
-          .find(function(selector) {
-            //check if element matches this selector
-            return elem.is(selector);
-          });
+            .find(function(selector) {
+              //check if element matches this selector
+              return elem.is(selector);
+            });
 
           //only if there actually is a selector for this element in the data mappings
           if (matchDataSelector) {
@@ -996,16 +997,16 @@ $(document).ready(function() {
       "data_load_fail");
   })
   .done(function(data) {
+    //data object to pass to scope of event handlers
+    var loadedData = {};
+
     //mapping between autofill data and input field selectors
-    var autofillDataMapping = {
+    loadedData.autofillDataMapping = {
       "#forum-name": data.forums.map(function(pair) { return pair[0]; }), //only full name ok
       "#main-spon,#co-spon": data.sponsors.slice(),
       "#preamb-clauses .phrase-input": data.phrases.preamb.slice(),
       "#op-clauses .phrase-input": data.phrases.op.slice(),
     };
-    
-    //data object to pass to scope of event handlers
-    var loadedData = {};
 
     //get forum abbreviation mapping data
     loadedData.forumAbbreviations = data.forums.slice();
