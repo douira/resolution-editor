@@ -245,7 +245,7 @@ $.fn.detectManipulator = function() {
         "error_outline", "Attention!", "Yes, I will do that now",
         "Please <b>disable Grammarly</b> spellchecking on this website because it may break the " +
         "website visually, its internal workings or even obstruct its usage. It's advised that " +
-        "you save your progress before <b>reloading</b> the page after having disabled Grammarly" +
+        "you save your progress before <b>reloading</b> the page after having disabled Grammarly " +
         "or any other browser extention that manipulates website content. Grammarly integration " +
         "may become a feature some time in the future.");
 
