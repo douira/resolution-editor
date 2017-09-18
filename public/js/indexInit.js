@@ -393,6 +393,11 @@ $.fn.addClause = function(amount, activationStateChanges) {
 
 //returns an object containing all event handlers we want to register
 function getEventHandlers(loadedData) {
+  $("body")
+  .on("touchstart", function() {
+    //register touch event and remove tooltips for touch-devices
+    $(".tooltipped").tooltip("remove");
+  });
   $(".autocomplete")
   .on("init", function(e) {
     e.stopPropagation();
@@ -936,6 +941,7 @@ function getEventHandlers(loadedData) {
     generatePdf($("#editor-main"));
   });
 }
+
 
 //do things when the document has finished loading
 $(document).ready(function() {
