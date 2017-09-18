@@ -415,6 +415,11 @@ $.fn.addClause = function(amount, activationStateChanges) {
   return this;
 };
 
+//register touch event and remove tooltips for touch-devices
+$("body").on("touchstart", function() {
+  $(".tooltipped").tooltip("remove");
+  $(this).addClass("blue");
+});
 
 //do things when the document has finished loading
 $(document).ready(function() {
