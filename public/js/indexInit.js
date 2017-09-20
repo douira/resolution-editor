@@ -572,6 +572,10 @@ function getEventHandlers(loadedData) {
     //check for presence of values
     valueBad = ! (value && value.length);
 
+    //color label according to status
+    elem.siblings("label")
+      [valueBad ? "addClass" : "removeClass"]("red-text");
+
     //check that all entries are ok sponsors in autofill data
     if (! valueBad) {
       //get the data selector we have to match to
