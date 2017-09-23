@@ -35,6 +35,30 @@ router.post("/save", function(req, res, next) {
   //authorize user access of to this resolution with its token
   //...
 
+  //put resolution into database, token field must be present
+  db.collection("resolutions").insertOne(req.body);
+});
+
+//GET load resolution
+router.post("/load/:token", function(req, res, next) {
+  //check if token present
+  let token;
+  if (req.params.token && req.params.token.length) {
+    token = req.params.token;
+  } else {
+    res.send("error: no token");
+  }
+
+  //authorize user access of to this resolution with its token
+  //...
+
   //put resolution into database
-  db.collection("resolutons").insertOne(req.body);
+  db.collection("resolutions")
+    .find({ token: token })
+    .toArray((err, docs) => {
+      //we imply only result one because we're searching with a unique index
+      const resolution = docs[0];
+      resolution.token = token;
+      res.send(resolution);
+    });
 });
