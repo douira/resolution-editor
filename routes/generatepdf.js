@@ -29,7 +29,7 @@ router.post("/", function(req, res, next) {
       throw pandocErr;
     }
 
-    //send rendered html
+    //send link to rendered pdf
     res.send("out.pdf");
   });
 });
