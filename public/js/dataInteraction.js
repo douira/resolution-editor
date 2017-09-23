@@ -196,7 +196,7 @@ function generatePdf(container) {
 
   //send to server
   $.ajax({
-    url: "/generatepdf",
+    url: "/resolution/renderpdf",
     method: "POST",
     data: getEditorContent(container, false),
     contentType: "application/json; charset=UTF-8",

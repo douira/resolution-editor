@@ -3,6 +3,7 @@ const express = require("express");
 const router = module.exports = express.Router();
 const pandoc = require("node-pandoc");
 const latexGenerator = require("../lib/latex-generator");
+const db = require("../lib/database");
 
 const inspect = ((spect) => {
   return (obj) => console.log(spect(obj, {
@@ -15,15 +16,10 @@ const inspect = ((spect) => {
 //setup leatex to html rendering
 const pandocArgs = "-o public/out.pdf --template=public/template.latex";
 
-//converts json from client editor to rendered html
-function jsonToLatex(data) {
-  return latexGenerator(data);
-}
-
-/* POST generate pdf. */
-router.post("/", function(req, res, next) {
+//POST generate pdf
+router.post("/renderpdf", function(req, res, next) {
   inspect(req.body);
-  pandoc(jsonToLatex(req.body), pandocArgs, (pandocErr, pandocResult) => {
+  pandoc(latexGenerator(req.body), pandocArgs, (pandocErr, pandocResult) => {
     //throw error if occured
     if (pandocErr) {
       throw pandocErr;
@@ -32,4 +28,13 @@ router.post("/", function(req, res, next) {
     //send rendered html
     res.send("out.pdf");
   });
+});
+
+//POST save resolution
+router.post("/save", function(req, res, next) {
+  //authorize user access of to this resolution with its token
+  //...
+
+  //put resolution into database
+  db.collection("resolutons").insertOne(req.body);
 });
