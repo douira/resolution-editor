@@ -4,6 +4,7 @@ const router = module.exports = express.Router();
 const pandoc = require("node-pandoc");
 const latexGenerator = require("../lib/latex-generator");
 const db = require("../lib/database");
+const resolutionFormat = require("../public/js/resolutionFormat");
 
 const inspect = ((spect) => {
   return (obj) => console.log(spect(obj, {
@@ -13,52 +14,94 @@ const inspect = ((spect) => {
   }));
 })(require("util").inspect);
 
-//setup leatex to html rendering
-const pandocArgs = "-o public/out.pdf --template=public/template.latex";
+//premake collections
+const resolutions = db.collection("resolutions");
 
-//POST generate pdf
-router.post("/renderpdf", function(req, res, next) {
-  inspect(req.body);
-  pandoc(latexGenerator(req.body), pandocArgs, (pandocErr, pandocResult) => {
-    //throw error if occured
-    if (pandocErr) {
-      throw pandocErr;
-    }
+//sends an error and logs it
+function issueError(status, res, msg) {
+  msg = "error: " + msg;
+  console.error(msg);
+  res.status(status).send(msg);
+}
 
-    //send rendered html
-    res.send("out.pdf");
-  });
-});
-
-//POST save resolution
-router.post("/save", function(req, res, next) {
-  //authorize user access of to this resolution with its token
-  //...
-
-  //put resolution into database, token field must be present
-  db.collection("resolutions").insertOne(req.body);
-});
-
-//GET load resolution
-router.post("/load/:token", function(req, res, next) {
+//deals with token in URL and calls callback if token present in db
+function checkToken(req, res, callback) {
   //check if token present
-  let token;
-  if (req.params.token && req.params.token.length) {
+  let token = req.params.token;
+  /*if (req.params.token && req.params.token.length) {
     token = req.params.token;
   } else {
     res.send("error: no token");
+  }*/
+
+  //allow save of resolution with token if already present
+  resolutions.findOne({ token: token }).toArray((err, documents) => {
+    if (documents.length) {
+      //call callback with gotten document
+      callback(token, documents[0]);
+    } else {
+      issueError(400, "token wrong");
+    }
+  });
+}
+
+//deals with resolutions in req.body and checks them against the format
+function checkBodyRes(req, res, callback) {
+  //needs to be present
+  if (req.body && typeof req.body === "object") {
+    if (resolutionFormat.check(req.body)) {
+      callback(req.body);
+    } else {
+      issueError(400, "format invalid");
+    }
+  } else {
+    issueError(400, "nothing sent");
   }
+}
 
-  //authorize user access of to this resolution with its token
-  //...
+//makes the argument string for file for the pandoc cli interface to put the file into
+function makePandocArgs(token) {
+  return "-o public/" + token + "/out.pdf --template=public/template.latex";
+}
 
-  //put resolution into database
-  db.collection("resolutions")
-    .find({ token: token })
-    .toArray((err, docs) => {
-      //we imply only result one because we're searching with a unique index
-      const resolution = docs[0];
-      resolution.token = token;
-      res.send(resolution);
+//POST (responds with link, no view) render pdf
+router.post("/renderpdf/:token", function(req, res) {
+  //check for token and save new resolution content
+  checkToken((token, doc) => {
+    //inspect(doc.content);
+    //render gotten resolution to pdf
+    pandoc(latexGenerator(doc.content), makePandocArgs(token), (pandocErr, pandocResult) => {
+      //throw error if occured
+      if (pandocErr) {
+        throw pandocErr;
+      }
+
+      //send rendered html
+      res.send("out.pdf");
     });
+  });
+});
+
+//POST (no view) save resolution
+router.post("/save/:token", function(req, res) {
+  //require resolution content to be present and valid
+  checkBodyRes(req, res, (resolution) => {
+    //check for token and save new resolution content
+    checkToken((token) => {
+      //save new document
+      resolutions.updateOne(
+        { token: token },
+        { $set: { content: resolution } }
+      ).then(() => res.send("ok"), () => issueError(500, "can't save"));
+    });
+  });
+});
+
+//POST show editor and thereby load
+router.post("/load/:token", function(req, res) {
+  //check for token and save new resolution content
+  checkToken((token, doc) => {
+    //send resolution to client, remove database wrapper
+    res.send(doc.content);
+  });
 });
