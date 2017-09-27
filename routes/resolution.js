@@ -5,6 +5,7 @@ const pandoc = require("node-pandoc");
 const latexGenerator = require("../lib/latex-generator");
 const db = require("../lib/database");
 const resolutionFormat = require("../public/js/resolutionFormat");
+const tokenProcessor = require("../lib/token");
 
 const inspect = ((spect) => {
   return (obj) => console.log(spect(obj, {
@@ -82,6 +83,12 @@ router.post("/renderpdf/:token", function(req, res) {
   });
 });
 
+//GET (no view, processor) redirects to editor page with new registered token
+router.get("/new", function(req, res) {
+  //make new token
+
+});
+
 //POST (no view) save resolution
 router.post("/save/:token", function(req, res) {
   //require resolution content to be present and valid
@@ -97,7 +104,7 @@ router.post("/save/:token", function(req, res) {
   });
 });
 
-//POST show editor and thereby load
+//POST (no view) show editor and thereby load
 router.post("/load/:token", function(req, res) {
   //check for token and save new resolution content
   checkToken((token, doc) => {
