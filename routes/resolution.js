@@ -3,7 +3,7 @@ const express = require("express");
 const router = module.exports = express.Router();
 const pandoc = require("node-pandoc");
 const latexGenerator = require("../lib/latex-generator");
-const db = require("../lib/database");
+const databaseInterface = require("../lib/database");
 const resolutionFormat = require("../public/js/resolutionFormat");
 const tokenProcessor = require("../lib/token");
 
@@ -15,8 +15,13 @@ const inspect = ((spect) => {
   }));
 })(require("util").inspect);
 
-//premake collections
-const resolutions = db.collection("resolutions");
+//register callback to get collections on load
+let resolutions;
+let db;
+databaseInterface.onload = (loadedDb) => {
+  resolutions = loadedDb.collection("resolutions");
+  db = loadedDb;
+};
 
 //sends an error and logs it
 function issueError(status, res, msg) {
