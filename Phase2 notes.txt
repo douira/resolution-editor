@@ -2,10 +2,13 @@ Token is generated for each resolution
   example: @H3TA79NK
   8 digits long
   capital letters and numbers but without easy to confuse characters
-Sessions not necessary:
+  Sessions not necessary
   access resolutions with …/resolution/:token and then use POST to enter special access code
+  last three chars in code are used to check if the code is a ok code (hash of the rest of the code)
+  @ for tokens and ! for access codes
 
 Resolution Workflow:
+0. Opened new resolution, not saved yet (only assigned token, may be deleted again)
 1. Delegate writing: (Delegate access)
   Delegate finishes writing by entering chair approval code
 2. AP correcting: (AP access)
@@ -14,7 +17,7 @@ Resolution Workflow:
 3. FC correcting: (FC access)
   can access with code for FC and name of correcting person (?)
   finishes by clicking button on their view “approve and print for debate”
-4. Waiting to print (from now on Chair access and viewing capabilities)
+4. Waiting to print (from now only Chair access)
   to next stage with printing process
 5. Waiting to debate and finished printing
   start debate by entering token and chair code and “start debate”
@@ -22,3 +25,9 @@ Resolution Workflow:
   end debate and finalise by clicking “end debate”
 7. Finished (char can do whatever they want with it now)
 (resolution booklet stages after this)
+
+Access code types:
+<none>: Delegate needs no access code
+AP: Approval Panel
+FC: Formal Clearung
+CH: Chairs have "master" access

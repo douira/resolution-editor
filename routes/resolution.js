@@ -16,10 +16,10 @@ const inspect = ((spect) => {
 })(require("util").inspect);
 
 //register callback to get collections on load
-let resolutions;
-let db;
+let resolutions, access, db;
 databaseInterface.onload = (loadedDb) => {
   resolutions = loadedDb.collection("resolutions");
+  access = loadedDb.collection("access");
   db = loadedDb;
 };
 
@@ -32,23 +32,45 @@ function issueError(status, res, msg) {
 
 //deals with token in URL and calls callback if token present in db
 function checkToken(req, res, callback) {
-  //check if token present
-  let token = req.params.token;
-  /*if (req.params.token && req.params.token.length) {
-    token = req.params.token;
-  } else {
-    res.send("error: no token");
-  }*/
+  //get token from params
+  const token = req.params.token;
 
-  //allow save of resolution with token if already present
-  resolutions.findOne({ token: token }).toArray((err, documents) => {
-    if (documents.length) {
-      //call callback with gotten document
-      callback(token, documents[0]);
-    } else {
-      issueError(400, "token wrong");
-    }
-  });
+  //must be "token" type and be valid
+  if (token.length && token[0] === "@" && tokenProcessor.check(token)) {
+    //load corresponding resolution
+    resolutions.findOne({ token: token }).toArray((err, documents) => {
+      if (documents.length) {
+        //call callback with gotten document
+        callback(token, documents[0]);
+      } else {
+        issueError(400, "token wrong");
+      }
+    });
+  } else {
+    issueError(400, "token invalid");
+  }
+}
+
+//deals with access code in POST and checks permissions
+function checkCode(req, res, callback) {
+  //get code from params
+  const code = req.body.code;
+
+  //must be "code" type and be valid
+  if (code.length && code[0] === "!" && tokenProcessor.check(code)) {
+    //load corresponding access entry
+    access.findOne({ code: code }).toArray((err, documents) => {
+      //code found
+      if (documents.length) {
+        //call callback with gotten code doc
+        callback(documents[0]);
+      } else {
+        issueError(400, "code wrong");
+      }
+    });
+  } else {
+    issueError(400, "code invalid");
+  }
 }
 
 //deals with resolutions in req.body and checks them against the format
@@ -74,7 +96,6 @@ function makePandocArgs(token) {
 router.post("/renderpdf/:token", function(req, res) {
   //check for token and save new resolution content
   checkToken((token, doc) => {
-    //inspect(doc.content);
     //render gotten resolution to pdf
     pandoc(latexGenerator(doc.content), makePandocArgs(token), (pandocErr, pandocResult) => {
       //throw error if occured
