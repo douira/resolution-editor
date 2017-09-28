@@ -15,7 +15,8 @@
     "morgan": "~1.8.1",
     "node-pandoc": "^0.3.0",
     "pug": "^2.0.0-rc.4",
-    "serve-favicon": "^2.4.4"
+    "serve-favicon": "^2.4.4",
+    "xxhashjs": "^0.2.1"
   },
   "description": "guides the creation of a correctly formatted resolution document",
   "main": "app.js",
