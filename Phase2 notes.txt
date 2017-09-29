@@ -27,7 +27,7 @@ Resolution Workflow:
 (resolution booklet stages after this)
 
 Access code types:
-<none>: Delegate needs no access code
+DE: Delegate needs no access code, but is used internally
 AP: Approval Panel
 FC: Formal Clearung
 CH: Chairs have "master" access

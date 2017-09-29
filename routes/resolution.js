@@ -73,6 +73,19 @@ function checkCode(req, res, callback) {
   }
 }
 
+//checks if given permission code doc allows access to given resolution doc
+function checkPermissionMatch(resolution, permission) {
+  //check permission and stage matching conditions
+  return
+    //chair accesses always
+    permission.level === "CH" ||
+    //allow if at active editing state and has delegate permission
+    resolution.stage <= 1 && permission.level === "DE" ||
+    //allow AP or FC if at their respective stages
+    resolution.stage === 2 && permission.level === "AP" ||
+    resolution.stage === 3 && permission.level === "FC";
+}
+
 //deals with resolutions in req.body and checks them against the format
 function checkBodyRes(req, res, callback) {
   //needs to be present
