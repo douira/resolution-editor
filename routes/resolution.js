@@ -110,8 +110,12 @@ function checkPermissionMatch(resolution, permission) {
 function checkBodyRes(req, res, callback) {
   //needs to be present
   if (req.body && typeof req.body === "object") {
-    if (resolutionFormat.check(req.body)) {
-      callback(req.body);
+    //get resolution from post content
+    const resolution = req.body.content;
+
+    //must match format
+    if (resolutionFormat.check(resolution)) {
+      callback(resolution);
     } else {
       issueError(res, 400, "format invalid");
     }
@@ -119,6 +123,28 @@ function checkBodyRes(req, res, callback) {
     issueError(res, 400, "nothing sent");
   }
 }
+
+//does full auth procedure (token, POSTed code and permission match)
+function fullAuth(req, res, callback) {
+  //check for token and save new resolution content
+  checkToken(req, res, (token, resolutionDoc) => {
+    //check sent code
+    checkCode(req, res, (codeDoc) => {
+      //do permission auth
+      if (checkPermissionMatch(resolutionDoc, codeDoc)) {
+        //call callback with everythign gathered
+        callback(token, resolutionDoc, codeDoc);
+      } else {
+        issueError(res, 400, "not authorized");
+      }
+    });
+  });
+}
+
+//GET to /resolution displays front page without promo
+router.get("/", function(req, res) {
+
+});
 
 //POST (responds with link, no view) render pdf
 router.post("/renderpdf/:token", function(req, res) {
@@ -181,15 +207,15 @@ router.get("/new", function(req, res) {
 //POST (no view) save resolution
 router.post("/save/:token", function(req, res) {
   //require resolution content to be present and valid
-  checkBodyRes(req, res, (resolution) => {
-    //check for token and save new resolution content
-    checkToken(req, res, (token) => {
+  checkBodyRes(req, res, (resolutionSent) => {
+    //authorize
+    fullAuth(res, req, (token, resolutionDoc, codeDoc) => {
       //save new document
       resolutions.updateOne(
         { token: token },
         {
           $set: {
-            content: resolution,
+            content: resolutionSent,
             changed: Date.now()
           }
         }
@@ -198,7 +224,7 @@ router.post("/save/:token", function(req, res) {
   });
 });
 
-//GET (editor view) redirected to here to send back editor with set token
+//GET (editor view) redirected to here to send editor with set token
 router.get("/editor/:token", function(req, res) {
   //check for token
   checkToken(req, res, (token) => {
@@ -209,9 +235,9 @@ router.get("/editor/:token", function(req, res) {
 
 //POST (no view) (request from editor after being started with set token) send resolution data
 router.post("/load/:token", function(req, res) {
-  //check for token and save new resolution content
-  checkToken(req, res, (token, doc) => {
+  //authorize
+  fullAuth(res, req, (token, resolutionDoc, codeDoc) => {
     //send resolution to client, remove database wrapper
-    res.send(doc.content);
+    res.send(resolutionDoc.content);
   });
 });

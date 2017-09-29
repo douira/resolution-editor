@@ -23,7 +23,7 @@ Resolution Workflow:
   start debate by entering token and chair code and “start debate”
 6. In Debate (live view possible now)
   end debate and finalise by clicking “end debate”
-7. Finished (char can do whatever they want with it now)
+7. Finished (chair can do whatever they want with it now)
 (resolution booklet stages after this)
 
 Access code types:
