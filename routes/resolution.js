@@ -60,14 +60,15 @@ function checkToken(req, res, modifyResolution, callback) {
     (doModify ? //modify as well if flag set
      resolutions.findOne({ token: token }) :
      resolutions.findOneAndModify({ token: token }, modifyResolution, { returnOriginal: false })
-    ).toArray((err, documents) => {
-      if (documents.length) {
+    ).then((document) => {
+      console.log(document);
+      if (document.token) {
         //call callback with gotten document
-        callback(token, documents[0]);
+        callback(token, document);
       } else {
         issueError(res, 400, "token wrong");
       }
-    });
+    }).catch(issueError.bind(null, res, 500, "token db read error"));
   } else {
     issueError(res, 400, "token invalid");
   }
@@ -81,15 +82,15 @@ function checkCode(req, res, callback) {
   //must be "code" type and be valid
   if (code.length && code[0] === "!" && tokenProcessor.check(code)) {
     //load corresponding access entry
-    access.findOne({ code: code }).toArray((err, documents) => {
+    access.findOne({ code: code }).then((document) => {
       //code found
-      if (documents.length) {
+      if (document.code) {
         //call callback with gotten code doc
-        callback(documents[0]);
+        callback(document);
       } else {
         issueError(res, 400, "code wrong");
       }
-    });
+    }).catch(issueError.bind(null, res, 500, "code db read error"));
   } else {
     issueError(res, 400, "code invalid");
   }
@@ -146,8 +147,8 @@ router.get("/", function(req, res) {
   res.render("index", { promo: false });
 });
 
-//POST (responds with link, no view) render pdf
-router.post("/renderpdf/:token", function(req, res) {
+//GET (responds with url, no view) render pdf
+router.get("/renderpdf/:token", function(req, res) {
   //check for token and save new resolution content
   checkToken(req, res, {
     //add current time to render history log
@@ -200,7 +201,7 @@ router.get("/new", function(req, res) {
     stage: 0 //current workflow stage (see phase 2 notes)
   }).then(() => {
     //redirect to editor page (because URL is right then)
-    res.redirect("/editor/" + token);
+    res.redirect("editor/" + token);
   });
 });
 

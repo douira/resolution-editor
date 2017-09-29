@@ -1,7 +1,7 @@
 extends layout
 
 block styles
-  link(href="css/editorStyle.css" type="text/css" rel="stylesheet")
+  link(href="/css/editorStyle.css" type="text/css" rel="stylesheet")
 
 block content
   .section#editor-main: .container
@@ -39,6 +39,7 @@ block content
       +floating-sm-btn("deep-orange", "eab-clear", resetIcon, "Resets the fields in this clause and removes the content continuation field")
       +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
       +floating-sm-btn("green", "eab-done", "done", "Finish editing and deactivate edit mode")
+    #token-preset.hide-this=token
     h3 Editor
     mixin content-card(cardId)
       .row
@@ -101,6 +102,6 @@ block content
     +clause-card("preamb-clauses", "preamb", "Preambulatory")
     +clause-card("op-clauses", "op", "Operative")
 block scripts
-  script(src="js/resolutionFormat.js")
-  script(src="js/dataInteraction.js")
-  script(src="js/editorInit.js")
+  script(src="/js/resolutionFormat.js")
+  script(src="/js/dataInteraction.js")
+  script(src="/js/editorInit.js")
