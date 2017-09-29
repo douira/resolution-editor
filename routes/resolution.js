@@ -143,7 +143,7 @@ function fullAuth(req, res, callback) {
 
 //GET (view) to /resolution displays front page without promo
 router.get("/", function(req, res) {
-  res.render(index, { promo: false });
+  res.render("index", { promo: false });
 });
 
 //POST (responds with link, no view) render pdf
