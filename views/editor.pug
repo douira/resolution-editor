@@ -40,6 +40,8 @@ block content
       +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
       +floating-sm-btn("green", "eab-done", "done", "Finish editing and deactivate edit mode")
     #token-preset.hide-this=token
+    if code
+      #code-preset.hide-this=code
     h3 Editor
     mixin content-card(cardId)
       .row

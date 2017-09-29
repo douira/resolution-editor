@@ -234,6 +234,17 @@ router.get("/editor/:token", function(req, res) {
   });
 });
 
+//POST (editor or resolution meta info=no permission)
+//eiter renders editor with token and code set or reolution meta info
+router.post("/editor/:token", function(req, res) {
+  //authorize
+  fullAuth(res, req, (token, resolutionDoc, codeDoc) => {
+    //send rendered editor page with token and code set
+    res.render("editor", { token: token, code: codeDoc.code });
+  });
+});
+
+
 //POST (no view) (request from editor after being started with set token) send resolution data
 router.post("/load/:token", function(req, res) {
   //authorize
