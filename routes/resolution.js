@@ -31,14 +31,26 @@ function issueError(status, res, msg) {
 }
 
 //deals with token in URL and calls callback if token present in db
-function checkToken(req, res, callback) {
+function checkToken(req, res, modifyResolution, callback) {
+  //if only three args, callback is in modifyResolution
+  let doModify = false;
+  if (arguments.length === 3) {
+    callback = modifyResolution;
+
+    //set flag to use findOneAndModify instead
+    doModify = true;
+  }
+
   //get token from params
   const token = req.params.token;
 
   //must be "token" type and be valid
   if (token.length && token[0] === "@" && tokenProcessor.check(token)) {
     //load corresponding resolution
-    resolutions.findOne({ token: token }).toArray((err, documents) => {
+    (doModify ? //modify as well if flag set
+     resolutions.findOne({ token: token }) :
+     resolutions.findOneAndModify({ token: token }, modifyResolution, { returnOriginal: false })
+    ).toArray((err, documents) => {
       if (documents.length) {
         //call callback with gotten document
         callback(token, documents[0]);
@@ -76,9 +88,7 @@ function checkCode(req, res, callback) {
 //checks if given permission code doc allows access to given resolution doc
 function checkPermissionMatch(resolution, permission) {
   //check permission and stage matching conditions
-  return
-    //chair accesses always
-    permission.level === "CH" ||
+  return permission.level === "CH" || //chair access always ok
     //allow if at active editing state and has delegate permission
     resolution.stage <= 1 && permission.level === "DE" ||
     //allow AP or FC if at their respective stages
@@ -108,7 +118,7 @@ function makePandocArgs(token) {
 //POST (responds with link, no view) render pdf
 router.post("/renderpdf/:token", function(req, res) {
   //check for token and save new resolution content
-  checkToken((token, doc) => {
+  checkToken(req, res, (token, doc) => {
     //render gotten resolution to pdf
     pandoc(latexGenerator(doc.content), makePandocArgs(token), (pandocErr, pandocResult) => {
       //throw error if occured
@@ -125,7 +135,23 @@ router.post("/renderpdf/:token", function(req, res) {
 //GET (no view, processor) redirects to editor page with new registered token
 router.get("/new", function(req, res) {
   //make new token
+  const token = tokenProcessor.makeToken();
 
+  //get now
+  const timeNow = Date.now();
+
+  //put new resolution into database
+  resolutions.insertOne({
+    token: token, //identifier
+    created: timeNow, //time of creation
+    changed: timeNow, //last tiem it was changed
+    stageHistory: [ timeNow ], //index is resolution stage, time when reached that stage
+    renderHistory: [], //logs pdf render events
+    stage: 0 //current workflow stage (see phase 2 notes)
+  }).then(() => {
+    //redirect to editor page (because URL is right then)
+    res.redirect("/editor/" + token);
+  });
 });
 
 //POST (no view) save resolution
@@ -133,20 +159,32 @@ router.post("/save/:token", function(req, res) {
   //require resolution content to be present and valid
   checkBodyRes(req, res, (resolution) => {
     //check for token and save new resolution content
-    checkToken((token) => {
+    checkToken(req, res, (token) => {
       //save new document
       resolutions.updateOne(
         { token: token },
-        { $set: { content: resolution } }
+        {
+          $set: { content: resolution },
+          $currentDate: { changed: true }
+        }
       ).then(() => res.send("ok"), () => issueError(500, "can't save"));
     });
   });
 });
 
-//POST (no view) show editor and thereby load
+//GET (editor view) redirected to here to send back editor with set token
+router.get("/editor/:token", function(req, res) {
+  //check for token
+  checkToken(req, res, (token) => {
+    //send rendered editor page with token set
+    res.render("editor", { token: token });
+  });
+});
+
+//POST (no view) (request from editor after being started with set token) send resolution data
 router.post("/load/:token", function(req, res) {
   //check for token and save new resolution content
-  checkToken((token, doc) => {
+  checkToken(req, res, (token, doc) => {
     //send resolution to client, remove database wrapper
     res.send(doc.content);
   });
