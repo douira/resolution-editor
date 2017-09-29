@@ -24,9 +24,19 @@ databaseInterface.onload = (loadedDb) => {
 };
 
 //sends an error and logs it
-function issueError(res, status, msg) {
+function issueError(res, status, msg, errorItself) {
+  //prepend error text
   msg = "error: " + msg;
+
+  //log message to console
   console.error(msg);
+
+  //also log error if there was one
+  if (errorItself) {
+    console.error(errorItself);
+  }
+
+  //send given message and status
   res.status(status).send(msg);
 }
 
@@ -110,11 +120,6 @@ function checkBodyRes(req, res, callback) {
   }
 }
 
-//makes the argument string for file for the pandoc cli interface to put the file into
-function makePandocArgs(token) {
-  return "-o public/" + token + "/out.pdf --template=public/template.latex";
-}
-
 //POST (responds with link, no view) render pdf
 router.post("/renderpdf/:token", function(req, res) {
   //check for token and save new resolution content
@@ -128,16 +133,26 @@ router.post("/renderpdf/:token", function(req, res) {
       return;
     }
 
-    //render gotten resolution to pdf
-    pandoc(latexGenerator(doc.content), makePandocArgs(token), (pandocErr, pandocResult) => {
-      //throw error if occured
-      if (pandocErr) {
-        throw pandocErr;
-      }
+    //don't render if hasn't been saved again since last render
+    if (doc.changed < doc.renderHistory[doc.renderHistory.length - 1]) {
+      //just send url and stop
+      res.send("/rendered/" + token + ".pdf");
+      return;
+    }
 
-      //send rendered html
-      res.send("out.pdf");
-    });
+    //render gotten resolution to pdf
+    pandoc(
+      latexGenerator(doc.content),
+      "-o public/rendered/" + token + ".pdf --template=public/template.latex",
+      (pandocErr, pandocResult) => {
+        //hint error if occured
+        if (pandocErr) {
+          issueError(res, 500, "render problem", pandocErr);
+        } else {
+          //send url to rendered pdf
+          res.send("/rendered/" + token + ".pdf");
+        }
+      });
   });
 });
 
@@ -153,7 +168,7 @@ router.get("/new", function(req, res) {
   resolutions.insertOne({
     token: token, //identifier
     created: timeNow, //time of creation
-    changed: timeNow, //last tiem it was changed
+    changed: timeNow, //last tieme it was changed = saved
     stageHistory: [ timeNow ], //index is resolution stage, time when reached that stage
     renderHistory: [], //logs pdf render events
     stage: 0 //current workflow stage (see phase 2 notes)
