@@ -43,12 +43,12 @@ block content
       row
         .input-field.col.xl4.m6.s12
           //confirmation_number
-          i.material-icons.prefix my_location
+          +icon("my_location", "prefix")
           input#token-input(type="text" placeholder="@ 12345EFGH")
           label(for="token-input") Enter resolution token
       row
         .input-field.col.xl4.m6.s12
-          i.material-icons.prefix supervisor_account
+          +icon("supervisor_account", "prefix")
           input#code-input(type="text" placeholder="! ABCD5678")
           label(for="code-input") (optional) Enter access code
       row

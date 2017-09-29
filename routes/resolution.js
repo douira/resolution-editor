@@ -61,8 +61,8 @@ function checkToken(req, res, modifyResolution, callback) {
      resolutions.findOne({ token: token }) :
      resolutions.findOneAndModify({ token: token }, modifyResolution, { returnOriginal: false })
     ).then((document) => {
-      console.log(document);
-      if (document.token) {
+      //check for existance
+      if (document) {
         //call callback with gotten document
         callback(token, document);
       } else {
@@ -84,7 +84,7 @@ function checkCode(req, res, callback) {
     //load corresponding access entry
     access.findOne({ code: code }).then((document) => {
       //code found
-      if (document.code) {
+      if (document) {
         //call callback with gotten code doc
         callback(document);
       } else {
@@ -142,6 +142,25 @@ function fullAuth(req, res, callback) {
   });
 }
 
+//generates a token/code and queries the database to see if it's already present (recursive)
+function attemptNewThing(res, isToken, finalCallback) {
+  //make new token
+  const thing = tokenProcessor[isToken ? "makeToken" : "makeCode"]();
+
+  //check if it exists
+  (isToken ? resolutions.findOne({ token: thing }) :
+   access.findOne({ code: thing })).then((document) => {
+    //check if it exists
+    if (document) {
+      //try again randomly
+      attemptNewThing(res, isToken, finalCallback);
+    } else {
+      //doesn't exist yet, call callback with found thing
+      finalCallback(thing);
+    }
+  }).catch(issueError.bind(null, res, 500, "code db read error"));
+}
+
 //GET (view) to /resolution displays front page without promo
 router.get("/", function(req, res) {
   res.render("index", { promo: false });
@@ -185,23 +204,23 @@ router.get("/renderpdf/:token", function(req, res) {
 
 //GET (no view, processor) redirects to editor page with new registered token
 router.get("/new", function(req, res) {
-  //make new token
-  const token = tokenProcessor.makeToken();
+  //make a new unique token, true flag for being a token
+  attemptNewThing(res, true, (token) => {
+    //get now (consistent)
+    const timeNow = Date.now();
 
-  //get now
-  const timeNow = Date.now();
-
-  //put new resolution into database
-  resolutions.insertOne({
-    token: token, //identifier
-    created: timeNow, //time of creation
-    changed: timeNow, //last tieme it was changed = saved
-    stageHistory: [ timeNow ], //index is resolution stage, time when reached that stage
-    renderHistory: [], //logs pdf render events
-    stage: 0 //current workflow stage (see phase 2 notes)
-  }).then(() => {
-    //redirect to editor page (because URL is right then)
-    res.redirect("editor/" + token);
+    //put new resolution into database
+    resolutions.insertOne({
+      token: token, //identifier
+      created: timeNow, //time of creation
+      changed: timeNow, //last tieme it was changed = saved
+      stageHistory: [ timeNow ], //index is resolution stage, time when reached that stage
+      renderHistory: [], //logs pdf render events
+      stage: 0 //current workflow stage (see phase 2 notes)
+    }).then(() => {
+      //redirect to editor page (because URL is right then)
+      res.redirect("editor/" + token);
+    });
   });
 });
 
