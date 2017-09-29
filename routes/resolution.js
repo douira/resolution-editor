@@ -24,7 +24,7 @@ databaseInterface.onload = (loadedDb) => {
 };
 
 //sends an error and logs it
-function issueError(status, res, msg) {
+function issueError(res, status, msg) {
   msg = "error: " + msg;
   console.error(msg);
   res.status(status).send(msg);
@@ -55,11 +55,11 @@ function checkToken(req, res, modifyResolution, callback) {
         //call callback with gotten document
         callback(token, documents[0]);
       } else {
-        issueError(400, "token wrong");
+        issueError(res, 400, "token wrong");
       }
     });
   } else {
-    issueError(400, "token invalid");
+    issueError(res, 400, "token invalid");
   }
 }
 
@@ -77,11 +77,11 @@ function checkCode(req, res, callback) {
         //call callback with gotten code doc
         callback(documents[0]);
       } else {
-        issueError(400, "code wrong");
+        issueError(res, 400, "code wrong");
       }
     });
   } else {
-    issueError(400, "code invalid");
+    issueError(res, 400, "code invalid");
   }
 }
 
@@ -103,10 +103,10 @@ function checkBodyRes(req, res, callback) {
     if (resolutionFormat.check(req.body)) {
       callback(req.body);
     } else {
-      issueError(400, "format invalid");
+      issueError(res, 400, "format invalid");
     }
   } else {
-    issueError(400, "nothing sent");
+    issueError(res, 400, "nothing sent");
   }
 }
 
@@ -118,7 +118,16 @@ function makePandocArgs(token) {
 //POST (responds with link, no view) render pdf
 router.post("/renderpdf/:token", function(req, res) {
   //check for token and save new resolution content
-  checkToken(req, res, (token, doc) => {
+  checkToken(req, res, {
+    //add current time to render history log
+    $push: { renderHistory: Date.now() }
+  }, (token, doc) => {
+    //don't render if nothing saved yet
+    if (! doc.stage) {
+      issueError(res, 400, "nothing saved (stage 0)");
+      return;
+    }
+
     //render gotten resolution to pdf
     pandoc(latexGenerator(doc.content), makePandocArgs(token), (pandocErr, pandocResult) => {
       //throw error if occured
@@ -164,10 +173,12 @@ router.post("/save/:token", function(req, res) {
       resolutions.updateOne(
         { token: token },
         {
-          $set: { content: resolution },
-          $currentDate: { changed: true }
+          $set: {
+            content: resolution,
+            changed: Date.now()
+          }
         }
-      ).then(() => res.send("ok"), () => issueError(500, "can't save"));
+      ).then(() => res.send("ok"), () => issueError(res, 500, "can't save"));
     });
   });
 });
