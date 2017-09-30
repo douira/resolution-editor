@@ -1,15 +1,16 @@
 /*jshint esversion: 5, browser: true, jquery: true */
 /*global
   makeAlertMessage,
-  resolutionFileFormat,
-  validateObjectStructure,
-  magicIdentifier,
   checkRequiredFields,
+  module,
   allowedSubclauseDepth: true */
 //file actions are defined in this file
 
 //current version of the resolution format supported
 var supportedResFileFormats = [3];
+
+//get resolutionFormat from module exported
+var resolutionFormat = module.exports.resolutionFormat;
 
 //returns a bug report tag string
 function bugReportLink(errorCode) {
@@ -92,7 +93,7 @@ function getMaxSubclauseDepth(clauseList, depthOffset) {
 //checks that a saved or loaded editor object has all the required data
 function validateEditorData(obj) {
   //validate object structure
-  var isValidStructure = validateObjectStructure(obj, resolutionFileFormat);
+  var isValidStructure = resolutionFormat.check(obj);
 
   //check maximum subclause tree depth
   if (isValidStructure) {
@@ -117,7 +118,7 @@ function loadJson(json, container) {
   }
 
   //check for magic string to prevent loading of other json files (unless tampered with)
-  if (obj.magic !== magicIdentifier) {
+  if (obj.magic !== resolutionFormat.magicIdentifier) {
     jsonReadErrorModal("magic_wrong");
     return;
   }
@@ -288,7 +289,7 @@ $.fn.clauseAsObject = function() {
 function getEditorContent(container, makeJson) {
   //create root resolution object and gather data
   var res = {
-    magic: magicIdentifier,
+    magic: resolutionFormat.magicIdentifier,
     version: Math.max.apply(null, supportedResFileFormats), //use highest supported version
     status: {
       edited: Date.now(),

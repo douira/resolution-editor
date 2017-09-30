@@ -263,7 +263,6 @@ router.post("/editor/:token", function(req, res) {
   });
 });
 
-
 //POST (no view) (request from editor after being started with set token) send resolution data
 router.post("/load/:token", function(req, res) {
   //authorize
