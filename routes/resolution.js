@@ -271,3 +271,20 @@ router.post("/load/:token", function(req, res) {
     res.send(resolutionDoc.content);
   });
 });
+
+//GET (no view, validation response) checks if sent token or code is valid (for form display)
+router.get("/checkinput/:thing", function(req, res) {
+  //respond with token/code ok or not
+  if (req.params.thing[0] === "@") {
+    checkToken(req, res, () => {
+      res.send("ok token");
+    });
+  } else if (req.params.thing[0] === "!") {
+    checkCode(req, res, () => {
+      res.send("ok code");
+    });
+  } else {
+    //bad, strange thing sent
+    issueError(400, "sent content unreadable");
+  }
+});

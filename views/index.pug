@@ -6,9 +6,9 @@ block styles
 block content
   .container
     br
-    br
     //-promo
     if promo
+      br
       h1.header.center#editor-name-header(class=sectext) Resolution Editor
       .center: h5.header.light A
         em  simple
@@ -39,7 +39,7 @@ block content
     //-input of token and code
     h4.center Open, Edit or View an existing resolution
     br
-    .row: .col.s12
+    .row: .col.s12#resolution-input
       row
         .input-field.col.xl4.m6.s12
           //confirmation_number
@@ -53,7 +53,7 @@ block content
           label(for="code-input") (optional) Enter access code
       row
         .light.col.xl4.s12 Talk to your chair if you've forgotten your resolution token. If you've forgotten your access code or have any other problems accessing the editor, please contact IT-Management.
-    .center: a.btn-large.waves-effect.waves-light(href="/" class=pri) Submit
+    .center: a.btn-large.waves-effect.waves-light#submit-btn(href="#" class=pri) Submit
     br
 block scripts
   script(src="/js/indexInit.js")
