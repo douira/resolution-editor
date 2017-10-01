@@ -5,14 +5,23 @@ block styles
 
 block content
   .section#editor-main: .container
+    if code
+      #code-preset.hide-this=code
+    h3 Resolution Editor
     mixin meta-button(id, text, icon, tooltipText)
-      a.waves-effect.waves-light.btn.right.white-text(class=pri id=id)&attributes(tooltip(tooltipText, "top"))
+      a.collection-item.waves-effect.waves-light(class=pritext id=id)&attributes(tooltip(tooltipText, "top"))
         +icon(icon, "left")
         =text
-    #meta-buttons
-      +meta-button("file-action-load", "open", "file_upload", "Loades a resolution from a previously saved file")
-      +meta-button("file-action-save", "save", "file_download", "Downloads the resolution in a resusable format")
-      +meta-button("file-action-pdf", "view pdf", "description", "Generates a formatted PDF document")
+    .collection.with-header#meta-buttons
+      .collection-header
+        h5.light
+          +icon("my_location", "mediumsmall left text-darken-3 " + sectext)
+          | Your Token:
+          span#token-preset.lighten-3(class=sec)=token
+        p Please write this token down, because it will be used to identify your resolution when you want continue working on it later. Talk to your chair if you've forgotten your resolution token.
+      +meta-button("file-action-load", "Open", "file_upload", "Loades a resolution from a previously saved file")
+      +meta-button("file-action-save", "Save", "file_download", "Downloads the resolution in a resusable format")
+      +meta-button("file-action-pdf", "View PDF", "description", "Generates a formatted PDF document")
     //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
     .modal#alert-message-modal
       .modal-content
@@ -39,10 +48,6 @@ block content
       +floating-sm-btn("deep-orange", "eab-clear", resetIcon, "Resets the fields in this clause and removes the content continuation field")
       +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
       +floating-sm-btn("green", "eab-done", "done", "Finish editing and deactivate edit mode")
-    #token-preset.hide-this=token
-    if code
-      #code-preset.hide-this=code
-    h3 Editor
     mixin content-card(cardId)
       .row
         .col.s12.z-depth-2(id=cardId class!=attributes.class)
@@ -76,7 +81,7 @@ block content
               +icon("add_circle_outline", "left")
               | Add Clause
     +content-card("meta-data")
-      form
+      .meta-input-wrapper
         .right.btn-floating.btn-large.waves-effect.waves-light.deep-orange.reset-button(for="meta-data")&attributes(tooltip("Resets these fields", "left"))
           +icon(resetIcon)
         h5 General Data

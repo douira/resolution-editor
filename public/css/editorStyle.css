@@ -57,3 +57,11 @@
   text-decoration: underline;
   text-decoration-color: red;
 }
+
+.mediumsmall {
+  font-size: 3rem;
+}
+
+#token-preset {
+  font-family: monospace;
+}
