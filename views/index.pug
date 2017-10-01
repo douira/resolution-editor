@@ -42,15 +42,15 @@ block content
     .row: .col.s12#resolution-input
       row
         .input-field.col.xl4.m6.s12
-          //confirmation_number
           +icon("my_location", "prefix")
           input#token-input(type="text" placeholder="@ 12345EFGH")
           label(for="token-input") Enter resolution token
       row
-        .input-field.col.xl4.m6.s12
-          +icon("supervisor_account", "prefix")
-          input#code-input(type="text" placeholder="! ABCD5678")
-          label(for="code-input") (optional) Enter access code
+        form(method="POST" action="/")#code-form
+          .input-field.col.xl4.m6.s12
+            +icon("supervisor_account", "prefix")
+            input#code-input(name="code" type="text" placeholder="! ABCD5678")
+            label(for="code-input") (optional) Enter access code
       row
         .light.col.xl4.s12 Talk to your chair if you've forgotten your resolution token. If you've forgotten your access code or have any other problems accessing the editor, please contact IT-Management.
     .center: a.btn-large.waves-effect.waves-light#submit-btn(href="#" class=pri) Submit

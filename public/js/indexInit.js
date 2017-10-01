@@ -27,7 +27,7 @@ $.fn.setInputValidState = function(isValid, id) {
 };
 
 //token and code input validation
-$("#resolution-input input").on("keyup", function() {
+$("#resolution-input input").on("keyup", function(e) {
   var elem = $(this);
 
   //get value of current input field and remove any whitespace
@@ -40,20 +40,39 @@ $("#resolution-input input").on("keyup", function() {
 
   //proceed checking only if there is anything filled in
   if (value.length) {
-    //must be 8 plus prefix = 9 long
-    if (value.length === 9) {
-      //query server for validation
+    //must be 8 plus prefix = 9 long and first char must be @ or !
+    if (value.length === 9 && (value[0] === "@" || value[0] === "!")) {
+      //correct prefix to @ or ! according to field type
+      value = (isTokenField ? "@" : "!") + value.substring(1);
+      elem.val(value);
 
+      //make non displaying but invalid because we're waiting for a response
+      elem.removeClass("valid invalid");
+      validationStates[fieldId] = false;
+
+      //query server for validation
+      $.get("/resolution/checkinput/" + value, function(responseData) {
+        //set to ok or not
+        elem.setInputValidState(responseData.substring(0, 2) === "ok", fieldId);
+      })
+      .fail(function() {
+        //not ok
+        elem.setInputValidState(false, fieldId);
+      })
+      .always(function() {
+        //update again, (we're in a future callback)
+        updateButtonState();
+      });
     } else {
       //flag as invalid, is too short
-      elem.setInputValidState(true, fieldId);
+      elem.setInputValidState(false, fieldId);
     }
   } else {
     //ok being empty if in code field, because it's optional
     if (isTokenField) {
       elem.setInputValidState(false, fieldId);
     } else {
-      validationStates[fieldId] = true;
+      validationStates[fieldId] = 2; //2 means ok and empty
 
       //remove any other valid or invalid classes because the field doesn't matter
       elem.removeClass("valid invalid");
@@ -63,8 +82,9 @@ $("#resolution-input input").on("keyup", function() {
   //update button state with current validation state
   updateButtonState();
 });
+
 //submit button click
-$("#submit-btn").on("click", function() {
+$("#submit-btn").on("click", function(e) {
   //check if still valid
   updateButtonState();
 
@@ -72,7 +92,23 @@ $("#submit-btn").on("click", function() {
   if (allOk) {
     //send combined get and post request with token and code (if there is a code)
     //use only get request if no code given
+    if (validationStates[1] === 2) { //only token
 
+    } else { //token and code
+      var form = $("#code-form");
+
+      //populate action url
+      form.attr("action", "/resolution/" + $("#token-input").val());
+
+      //submit form to send request and follow
+      form.submit();
+
+      //stop normal link following behavior
+      e.preventDefault();
+    }
+  } else {
+    //don't do anything
+    e.preventDefault();
   }
 });
 

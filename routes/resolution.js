@@ -52,7 +52,7 @@ function checkToken(req, res, modifyResolution, callback) {
   }
 
   //get token from params
-  const token = req.params.token;
+  const token = req.params.token || req.params.thing;
 
   //must be "token" type and be valid
   if (token.length && token[0] === "@" && tokenProcessor.check(token)) {
@@ -77,7 +77,7 @@ function checkToken(req, res, modifyResolution, callback) {
 //deals with access code in POST and checks permissions
 function checkCode(req, res, callback) {
   //get code from params
-  const code = req.body.code;
+  const code = req.body.code || req.params.thing;
 
   //must be "code" type and be valid
   if (code.length && code[0] === "!" && tokenProcessor.check(code)) {
@@ -245,6 +245,7 @@ router.post("/save/:token", function(req, res) {
 });
 
 //GET (editor view) redirected to here to send editor with set token
+//(also only displays meta info if code neccessary)
 router.get("/editor/:token", function(req, res) {
   //check for token
   checkToken(req, res, (token) => {
@@ -254,7 +255,7 @@ router.get("/editor/:token", function(req, res) {
 });
 
 //POST (editor or resolution meta info=no permission)
-//eiter renders editor with token and code set or reolution meta info
+//either renders editor with token and code set or resolution meta info
 router.post("/editor/:token", function(req, res) {
   //authorize
   fullAuth(res, req, (token, resolutionDoc, codeDoc) => {
