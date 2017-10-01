@@ -17,6 +17,7 @@ block content
         h5.light
           +icon("my_location", "mediumsmall left text-darken-3 " + sectext)
           | Your Token:
+          =" " //-git removes spaces at end of lines so this is necessary
           span#token-preset.lighten-3(class=sec)=token
         p Please write this token down, because it will be used to identify your resolution when you want continue working on it later. Talk to your chair if you've forgotten your resolution token.
       +meta-button("file-action-load", "Open", "file_upload", "Loades a resolution from a previously saved file")
