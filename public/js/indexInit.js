@@ -2,7 +2,7 @@
 //deals with UI for input of token and access codes
 
 //array of booleans that keep track of field validation states
-var validationStates = [false, false];
+var validationStates = [false, 2];
 
 //true if all fields are valid
 var allOk = false;
@@ -52,6 +52,7 @@ $("#resolution-input input").on("keyup", function(e) {
 
       //query server for validation
       $.get("/resolution/checkinput/" + value, function(responseData) {
+        console.log(responseData, validationStates);
         //set to ok or not
         elem.setInputValidState(responseData.substring(0, 2) === "ok", fieldId);
       })
@@ -90,15 +91,19 @@ $("#submit-btn").on("click", function(e) {
 
   //do click action if everything valid
   if (allOk) {
+    //make url path
+    var url = "/resolution/editor/" + $("#token-input").val();
+
     //send combined get and post request with token and code (if there is a code)
     //use only get request if no code given
     if (validationStates[1] === 2) { //only token
-
+      //change href and allow link click follow
+      $(this).attr("href", url);
     } else { //token and code
       var form = $("#code-form");
 
       //populate action url
-      form.attr("action", "/resolution/" + $("#token-input").val());
+      form.attr("action", url);
 
       //submit form to send request and follow
       form.submit();
@@ -107,7 +112,7 @@ $("#submit-btn").on("click", function(e) {
       e.preventDefault();
     }
   } else {
-    //don't do anything
+    //don't do anything if not ok and still pressed
     e.preventDefault();
   }
 })
