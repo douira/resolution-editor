@@ -13,7 +13,7 @@ function updateButtonState() {
   allOk = validationStates.every(function(s) { return s; });
 
   //apply to button state
-  $("#submit-btn")[allOk ? "addClass" : "removeClass"]("disabled");
+  $("#submit-btn")[allOk ? "removeClass" : "addClass"]("disabled");
 }
 
 //adds or removes the invalid flag
@@ -110,5 +110,9 @@ $("#submit-btn").on("click", function(e) {
     //don't do anything
     e.preventDefault();
   }
+})
+//hover over button updates it's state
+.on("mouseover", function() {
+  updateButtonState();
 });
 

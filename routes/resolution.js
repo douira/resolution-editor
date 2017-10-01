@@ -245,7 +245,7 @@ router.post("/save/:token", function(req, res) {
 });
 
 //GET (editor view) redirected to here to send editor with set token
-//(also only displays meta info if code neccessary)
+//(also only displays meta info if code necessary)
 router.get("/editor/:token", function(req, res) {
   //check for token
   checkToken(req, res, (token) => {
