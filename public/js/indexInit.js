@@ -27,7 +27,7 @@ $.fn.setInputValidState = function(isValid, id) {
 };
 
 //token and code input validation
-$("#resolution-input input").on("keyup", function(e) {
+$("#resolution-input input").on("keyup checkValidation", function(e) {
   var elem = $(this);
 
   //get value of current input field and remove any whitespace
@@ -118,6 +118,7 @@ $("#submit-btn").on("click", function(e) {
 })
 //hover over button updates it's state
 .on("mouseover", function() {
-  updateButtonState();
+  //call validation again
+  $("#resolution-input input").trigger("checkValidation");
 });
 

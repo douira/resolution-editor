@@ -45,11 +45,7 @@
   margin-bottom: 10px;
 }
 
-.clause-content-ext {
-  display: none;
-}
-
-.hide-this {
+.hide-this, .clause-content-ext {
   display: none;
 }
 

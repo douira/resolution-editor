@@ -83,10 +83,9 @@ html(lang="en")
       .container
         -
           const navElements = [
-            ["Editor", "/"],
+            ["Editor", "resolution"],
             ["About", "about"],
-            ["Help", "help"],
-            ["FooBar", "foobar"]
+            ["Help", "help"]
           ];
         mixin navList(arr, useWave)
           each element in navElements
@@ -112,7 +111,7 @@ html(lang="en")
             .col.l6.s12
               h5.white-text Created originally for MUNOL
               p.grey-text.text-lighten-4 Created in need of a better way of formatting and distributing resolutions for MUNOL.
-            .col.l3.s6
+            .col.xl2.l3.m4.s6
               h5.white-text Contact
               ul
                 li: a.white-text(href="https://github.com/douira/resolution-editor") Repository
@@ -120,7 +119,7 @@ html(lang="en")
                 li: a.white-text(href="https://github.com/douira/resolution-editor/pulls") Contribute
                 li: a.white-text(href="http://munol.org") MUNOL
                 li: a.white-text(href="http://app.munol.org") MUNOL-App
-            .col.l3.s6
+            .col.xl3.l3.m4.s6
               h5.white-text Stack
               ul
                 li: a.white-text(href="https://material.io") Material Design (+Icons)
