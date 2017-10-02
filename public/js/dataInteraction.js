@@ -1,9 +1,9 @@
 /*jshint esversion: 5, browser: true, jquery: true */
-/*global
-  makeAlertMessage,
+/* global makeAlertMessage,
   checkRequiredFields,
   module,
-  allowedSubclauseDepth: true */
+  changesSaved:true,
+  allowedSubclauseDepth */
 //file actions are defined in this file
 
 //current version of the resolution format supported
@@ -36,7 +36,7 @@ function jsonReadErrorModal(errorCode) {
   console.log("error", errorCode);
   makeAlertMessage(
     "error_outline", "Error reading file", "ok",
-    "The provided file could not be read and processed." +
+    "The provided data could not be read and processed." +
     " This may be because the file you provided isn't in the format produced by this program or" +
     " was corrupted in some way. Please file a " + bugReportLink(errorCode) +
     " and describe this problem if you believe this error isn't your fault.", errorCode);
@@ -183,6 +183,9 @@ function loadFilePick(container, callback) {
 
         //load text into editor
         loadJson(text, container);
+
+        //changes loaded from file are saved, even though fields might trigger a changed event
+        changesSaved = true;
       };
     });
 }
@@ -347,13 +350,16 @@ function saveFileDownload(str) {
                 $("#file-action-save").attr("class"))
       .attr("download", fileName)
       .text("Download Resolution: " + fileName)
-      .attr("href", URL.createObjectURL(new Blob([str], {type: "application/json"})))
+      .attr("href", URL.createObjectURL(new Blob([str], { type: "application/json" })))
       .appendTo($("<div class='.clear-and-center'></div>").appendTo(body))
       .on("click", function(e) {
         e.stopPropagation();
 
         //close modal after download
         $(this).parents(".modal").modal("close");
+
+        //register save and make all saved
+        changesSaved = true;
       });
     body.append(
       "If the file download doesn't start, try again and if it still doesn't work " +

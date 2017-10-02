@@ -32,8 +32,8 @@ function makeAutofillSettingsPre(defaultSettings, data, settings) {
   }, settings);
 }
 
-//flag for keepng track of wether or not the editor can be used
-var canUseEditor = false; //false until data loaded
+//set to true when there are unsaved changes that the user has to be alerted about
+var changesSaved = true;
 
 //attach the default settings
 var makeAutofillSettings = makeAutofillSettingsPre.bind({}, autofillSettings);
@@ -224,9 +224,6 @@ $.fn.detectManipulator = function() {
         "you save your progress before <b>reloading</b> the page after having disabled Grammarly" +
         "or any other browser extention that manipulates website content. Grammarly integration " +
         "may become a feature some time in the future.");
-
-      //set flag in case modal breaks
-      canUseEditor = false;
     }
   });
 };
@@ -393,6 +390,17 @@ $.fn.addClause = function(amount, activationStateChanges) {
 
 //returns an object containing all event handlers we want to register
 function getEventHandlers(loadedData) {
+  $(window)
+  .on("beforeunload", function(e) {
+    //stop close if flag set
+    if (! changesSaved) {
+      e.preventDefault();
+
+      //try to send a message to the user, the default from the browser is fine too though
+      return "You have unsaved changes that will be lost if you proceed!" +
+        "Press the 'Save' button to save your resolution.";
+    }
+  });
   $("body")
   .on("touchstart", function() {
     //register touch event and remove tooltips for touch-devices
@@ -495,6 +503,10 @@ function getEventHandlers(loadedData) {
     e.stopPropagation();
     //reset invalid labels
     $(this).removeClass("invalid");
+  })
+  .on("change paste", function() {
+    //register changed content and set flag for user alert
+    changesSaved = false;
   });
   $("input#forum-name")
   .on("change", function(e) {
@@ -916,7 +928,7 @@ function getEventHandlers(loadedData) {
     e.stopPropagation();
     $(this).closest(".clause").trigger("editInactive");
   });
-  $("#file-action-load")
+  $("#legacy-action-load")
   .on("click", function(e) {
     //file actions are defined in a seperate file
     e.stopPropagation();
@@ -924,7 +936,7 @@ function getEventHandlers(loadedData) {
     //load file from computer file system
     loadFilePick($("#editor-main"));
   });
-  $("#file-action-save")
+  $("#legacy-action-save")
   .on("click", function(e) {
     e.stopPropagation();
 
@@ -1018,8 +1030,5 @@ $(document).ready(function() {
         .find("*")
         .trigger("reset");
     });
-
-    //set flag on completion of setup
-    canUseEditor = true;
   });
 });
