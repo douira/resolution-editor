@@ -858,6 +858,15 @@ function getEventHandlers(loadedData) {
       .children()
       .trigger("updateDisabled");
   });
+  $(".reset-button")
+  .on("click", function(e) {
+    e.stopPropagation();
+
+    //trigger reset for all contained elements
+    $("#" + $(this).attr("for"))
+      .find("*")
+      .trigger("reset");
+  });
   $("#eab-move-down")
   .on("click", function(e) {
     e.stopPropagation();
@@ -1057,13 +1066,5 @@ $(document).ready(function() {
 
     //trigger all init events
     $("#editor-main").find("*").trigger("init");
-
-    //register reset buttons
-    $(".reset-button").click(function(event) {
-      //trigger reset for all contained elements
-      $("#" + event.currentTarget.getAttribute("for"))
-        .find("*")
-        .trigger("reset");
-    });
   });
 });
