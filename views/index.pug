@@ -10,7 +10,7 @@ block content
     h1.header.center#editor-name-header(class=sectext) Resolution Editor
     .center: h5.header.light A
       em  simple
-      |  way of creating and editing resolutions without having to have to deal with formatting.
+      |  way of creating and editing resolutions without having to deal with formatting.
     br
     .center: a.btn-large.waves-effect.waves-light(href="#editor-main" class=sec) Start Writing
     br
@@ -24,7 +24,7 @@ block content
           p.light.promo-text
             block
       +icon-box("flash_on", "Speeds Up Editing and Approval")
-        | Shorter waiting, approval and printing times. You won't have to look for the right Word setting or wait for the Formal Clearing Office to correct your formatting. Making new clauses and subclauses is as easy as ever.
+        | Shorter waiting, approval and printing times. You won't have to look for the right Word setting or wait for the Formal Clearing Office to correct your formatting. Making new clauses and subclauses is easier than ever.
       +icon-box("done_all", "No Formatting Mistakes")
         | With this editor you can focus on the content of your resolution. No more fiddling with badly behaving list constructs or looking for just the right amount of spacing: You're guaranteed to get a perfectly formatted document whenever you want.
       +icon-box("visibility", "Easy to Use")
@@ -39,8 +39,8 @@ block content
         +icon(icon, "left")
         =text
     #meta-buttons
-      +meta-button("file-action-load", "open", "file_upload", "Loades a resolution from a previously saved file")
-      +meta-button("file-action-save", "save", "file_download", "Downloads the resolution in a resusable format")
+      +meta-button("file-action-load", "open", "file_upload", "Loads a resolution from a previously saved file")
+      +meta-button("file-action-save", "save", "file_download", "Downloads the resolution in a reusable format")
       +meta-button("file-action-pdf", "view pdf", "description", "Generates a formatted PDF document")
     //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
     .modal#alert-message-modal
@@ -67,7 +67,7 @@ block content
       +floating-sm-btn("cyan", "eab-add-ext", "playlist_add", "Adds a continuation text field under these subclauses")
       +floating-sm-btn("deep-orange", "eab-clear", resetIcon, "Resets the fields in this clause and removes the content continuation field")
       +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
-      +floating-sm-btn("green", "eab-done", "done", "Finish editing and deactivate edit mode")
+      +floating-sm-btn("green", "eab-done", "done", "Finishes editing and deactivates edit mode")
     h3 Editor
     mixin content-card(cardId)
       .row
