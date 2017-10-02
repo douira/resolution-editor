@@ -21,9 +21,10 @@ block content
           =" "
           span#token-preset.lighten-3(class=sec)=token
         p Please write this token down, because it will be used to identify your resolution when you want continue working on it later. Talk to your chair if you've forgotten your resolution token. (Looking at your browser's history can be helpful too.)
-      +meta-button("legacy-action-load", "Open from file (old)", "file_upload", "Loades a resolution from a previously saved file")
-      +meta-button("legacy-action-save", "Save to file (old)", "file_download", "Downloads the resolution in a resusable format")
-      +meta-button("file-action-pdf", "View PDF", "description", "Generates a formatted PDF document")
+      +meta-button("action-save", "Save", "backup", "Saves the resolution to the server")
+      +meta-button("action-pdf", "View PDF", "description", "Generates a formatted PDF document")
+      +meta-button("legacy-action-save", "Save to file (deprecated)", "file_download", "Downloads the resolution in a resusable format")
+      +meta-button("legacy-action-load", "Open from file (deprecated)", "file_upload", "Loades a resolution from a previously saved file")
     //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
     .modal#alert-message-modal
       .modal-content

@@ -3,6 +3,9 @@
   checkRequiredFields,
   module,
   changesSaved:true,
+  resolutionToken,
+  resolutionCode,
+  Materialize,
   allowedSubclauseDepth */
 //file actions are defined in this file
 
@@ -184,8 +187,7 @@ function loadFilePick(container, callback) {
         //load text into editor
         loadJson(text, container);
 
-        //changes loaded from file are saved, even though fields might trigger a changed event
-        changesSaved = true;
+        //changes loaded from file are not "really" server saved
       };
     });
 }
@@ -193,38 +195,27 @@ function loadFilePick(container, callback) {
 //sends the current json of to the server and calls back with the url to the generated pdf
 function generatePdf(container) {
   //validate
-  if (! validateFields()) {
+  /*if (! validateFields()) {
     //stop because not ok with missing data
     return;
-  }
+  }*/
 
   //send to server
-  $.ajax({
-    url: "/resolution/renderpdf",
-    method: "POST",
-    data: getEditorContent(container, false),
-    contentType: "application/json; charset=UTF-8",
-    dataType: "text",
-    error: makeAlertMessage.bind(null,
-        "error_outline", "Error sending data to server", "ok",
-        "Could not communicate with server properly." +
-        " Please file a " + bugReportLink("pdf_ajax") + " and describe this problem.", "pdf_ajax")
-  }).done(function(response) {
-    //error with response data "error"
-    if (response.endsWith(".pdf")) {
-      //display link to generated pdf
-      makeAlertMessage(
-        "description", "Generated PDF file", "done",
-        "Click <b><a href='" + response +
-        "'>here</a></b> to view your resolution as a PDF file.");
-    } else {
-      //display error and request creation of bug report
-      makeAlertMessage(
-        "error_outline", "Error generating PDF", "ok",
-        "The server encountered an unexpected error" +
-        " while trying to generate the requested PDF file." +
-        " Please file a " + bugReportLink("pdf_gen") + " and describe this problem.", "pdf_gen");
-    }
+  $.get("/resolution/renderpdf/" + resolutionToken)
+  .done(function(response) {
+    //display link to generated pdf
+    makeAlertMessage(
+      "description", "Generated PDF file", "done",
+      "Click <b><a href='" + response +
+      "'>here</a></b> to view your resolution as a PDF file.");
+  })
+  .fail(function() {
+    //display error and request creation of bug report
+    makeAlertMessage(
+      "error_outline", "Error generating PDF", "ok",
+      "The server encountered an unexpected error" +
+      " while trying to generate the requested PDF file." +
+      " Please file a " + bugReportLink("pdf_gen") + " and describe this problem.", "pdf_gen");
   });
 }
 
@@ -255,7 +246,7 @@ $.fn.clauseAsObject = function() {
 
   //make object with content
   var clauseData = {
-    content: this.children(".clause-content").find("textarea").val()
+    content: this.children(".clause-content").find("textarea").val().trim()
   };
 
   //stop if no content
@@ -265,12 +256,12 @@ $.fn.clauseAsObject = function() {
 
   //check for phrase field
   if (this.children(".phrase-input-wrapper").length) {
-    clauseData.phrase = this.children(".phrase-input-wrapper").find("input").val();
+    clauseData.phrase = this.children(".phrase-input-wrapper").find("input").val().trim();
   }
 
   //check for visible extended clause content
   if (this.children(".clause-content-ext:visible").length) {
-    clauseData.contentExt = this.children(".clause-content-ext").find("textarea").val();
+    clauseData.contentExt = this.children(".clause-content-ext").find("textarea").val().trim();
   }
 
   //get subclauses and add if not empty
@@ -289,21 +280,21 @@ $.fn.clauseAsObject = function() {
 };
 
 //returns a json string of the object currently in the editor
-function getEditorContent(container, makeJson) {
+function getEditorContent(container, makeJsonNice) {
   //create root resolution object and gather data
   var res = {
     magic: resolutionFormat.magicIdentifier,
     version: Math.max.apply(null, supportedResFileFormats), //use highest supported version
     status: {
       edited: Date.now(),
-      author: container.find("#author-name").val()
+      author: container.find("#author-name").val().trim()
     },
     resolution: {
       address: {
-        forum: container.find("#forum-name").val(),
-        questionOf: container.find("#question-of").val(),
+        forum: container.find("#forum-name").val().trim(),
+        questionOf: container.find("#question-of").val().trim(),
         sponsor: {
-          main: container.find("#main-spon").val()
+          main: container.find("#main-spon").val().trim()
         }
       },
       clauses: {
@@ -323,7 +314,54 @@ function getEditorContent(container, makeJson) {
   }
 
   //return stringyfied
-  return makeJson ? JSON.stringify(res, null, 2) : JSON.stringify(res);
+  return makeJsonNice ? JSON.stringify(res, null, 2) : JSON.stringify(res);
+}
+
+//saves the resolution from given container to the server
+function serverSave(container, callback, displayToast) {
+  //display if not specified
+  if (typeof displayToast === "undefined") {
+    displayToast = true;
+  }
+
+  //validate fields
+  if (! validateFields()) {
+    //stop because not ok with missing data
+    return;
+  }
+
+  //make data object
+  var data = {
+    content: getEditorContent(container, false)
+  };
+
+  //add code to data if given
+  if (resolutionCode) {
+    data.code = resolutionCode;
+  }
+
+  //send post request
+  $.post("/resolution/save/" + resolutionToken, data, "text")
+  .done(function() {
+    //make save ok toast if enabled
+    if (displayToast) {
+      Materialize.toast("Successfully saved", 3000);
+    }
+
+    //mark as saved
+    changesSaved = true;
+
+    //call callback on completion
+    if (callback) {
+      callback();
+    }
+  })
+  .fail(function() {
+    //there was a problem
+    makeAlertMessage("error_outline", "Error saving resolution", "ok",
+        "The server encountered an error or denied the requst to save the resolution." +
+        " Please file a " + bugReportLink("res_save") + " and describe this problem.", "res_save");
+  });
 }
 
 //generates and downloeads json representation of the editor content
@@ -346,8 +384,7 @@ function saveFileDownload(str) {
     //make download button with blob data
     body.append("<br>");
     $("<a/>")
-      .addClass("waves-effect waves-light btn white-text center-align" +
-                $("#file-action-save").attr("class"))
+      .addClass("waves-effect waves-light btn white-text center-align")
       .attr("download", fileName)
       .text("Download Resolution: " + fileName)
       .attr("href", URL.createObjectURL(new Blob([str], { type: "application/json" })))
@@ -358,8 +395,7 @@ function saveFileDownload(str) {
         //close modal after download
         $(this).parents(".modal").modal("close");
 
-        //register save and make all saved
-        changesSaved = true;
+        //changes saved to file are not "really" server saved
       });
     body.append(
       "If the file download doesn't start, try again and if it still doesn't work " +

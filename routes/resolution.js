@@ -4,7 +4,7 @@ const router = module.exports = express.Router();
 const pandoc = require("node-pandoc");
 const latexGenerator = require("../lib/latex-generator");
 const databaseInterface = require("../lib/database");
-const resolutionFormat = require("../public/js/resolutionFormat");
+const resolutionFormat = require("../public/js/resolutionFormat").resolutionFormat;
 const tokenProcessor = require("../lib/token");
 
 const inspect = ((spect) => {
@@ -22,6 +22,9 @@ databaseInterface.onload = (loadedDb) => {
   access = loadedDb.collection("access");
   db = loadedDb;
 };
+
+//delegate no privilege access code doc
+const delegateCodeDoc = { level: "DE" };
 
 //sends an error and logs it
 function issueError(res, status, msg, errorItself) {
@@ -59,7 +62,7 @@ function checkToken(req, res, modifyResolution, callback) {
     //load corresponding resolution
     (doModify ? //modify as well if flag set
      resolutions.findOne({ token: token }) :
-     resolutions.findOneAndModify({ token: token }, modifyResolution, { returnOriginal: false })
+     resolutions.findOneAndUpdate({ token: token }, modifyResolution, { returnOriginal: false })
     ).then((document) => {
       //check for existance
       if (document) {
@@ -112,7 +115,15 @@ function checkBodyRes(req, res, callback) {
   //needs to be present
   if (req.body && typeof req.body === "object") {
     //get resolution from post content
-    const resolution = req.body.content;
+    let resolution = req.body.content;
+
+    //attempt parse
+    try {
+      resolution = JSON.parse(resolution);
+    } catch (e) {
+      issueError(res, 400, "parse error");
+      return;
+    }
 
     //must match format
     if (resolutionFormat.check(resolution)) {
@@ -125,20 +136,31 @@ function checkBodyRes(req, res, callback) {
   }
 }
 
+//does auth with code, gets resolution doc given and does code and permission check
+function authWithCode(res, resolutionDoc, codeDoc, callback) {
+  //do permission auth
+  if (checkPermissionMatch(resolutionDoc, codeDoc)) {
+    //call callback with everythign gathered
+    callback(resolutionDoc.token, resolutionDoc, codeDoc);
+  } else {
+    issueError(res, 400, "not authorized");
+  }
+}
+
 //does full auth procedure (token, POSTed code and permission match)
 function fullAuth(req, res, callback) {
   //check for token and save new resolution content
   checkToken(req, res, (token, resolutionDoc) => {
-    //check sent code
-    checkCode(req, res, (codeDoc) => {
-      //do permission auth
-      if (checkPermissionMatch(resolutionDoc, codeDoc)) {
-        //call callback with everythign gathered
-        callback(token, resolutionDoc, codeDoc);
-      } else {
-        issueError(res, 400, "not authorized");
-      }
-    });
+    //check if a code was sent
+    if (req.body.code && req.body.code.length) {
+      //check sent code
+      checkCode(req, res, (codeDoc) => {
+        authWithCode(res, resolutionDoc, codeDoc, callback);
+      });
+    } else {
+      //use "DE" delegate level code doc
+      authWithCode(res, resolutionDoc, delegateCodeDoc, callback);
+    }
   });
 }
 
@@ -228,8 +250,8 @@ router.get("/new", function(req, res) {
 router.post("/save/:token", function(req, res) {
   //require resolution content to be present and valid
   checkBodyRes(req, res, (resolutionSent) => {
-    //authorize
-    fullAuth(res, req, (token, resolutionDoc, codeDoc) => {
+    //authorize, doesn't do code auth if node code necessary
+    fullAuth(req, res, (token, resolutionDoc, codeDoc) => {
       //save new document
       resolutions.updateOne(
         { token: token },

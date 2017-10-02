@@ -1,5 +1,5 @@
 /*jshint esversion: 5, browser: true, jquery: true */
-/*global loadFilePick, generatePdf, downloadJson, bugReportLink: true */
+/*global loadFilePick, generatePdf, downloadJson, bugReportLink, serverSave: true */
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -33,7 +33,11 @@ function makeAutofillSettingsPre(defaultSettings, data, settings) {
 }
 
 //set to true when there are unsaved changes that the user has to be alerted about
-var changesSaved = true;
+var changesSaved = false;
+var noChangesMade = true;
+
+//token and access code for this resolution, used for saving
+var resolutionToken, resolutionCode;
 
 //attach the default settings
 var makeAutofillSettings = makeAutofillSettingsPre.bind({}, autofillSettings);
@@ -393,7 +397,7 @@ function getEventHandlers(loadedData) {
   $(window)
   .on("beforeunload", function(e) {
     //stop close if flag set
-    if (! changesSaved) {
+    if (! (changesSaved || noChangesMade)) {
       e.preventDefault();
 
       //try to send a message to the user, the default from the browser is fine too though
@@ -507,6 +511,7 @@ function getEventHandlers(loadedData) {
   .on("change paste", function() {
     //register changed content and set flag for user alert
     changesSaved = false;
+    noChangesMade = false;
   });
   $("input#forum-name")
   .on("change", function(e) {
@@ -946,21 +951,51 @@ function getEventHandlers(loadedData) {
     //download editor json
     downloadJson($("#editor-main"));
   });
-  $("#file-action-pdf")
+  $("#action-save")
   .on("click", function(e) {
     e.stopPropagation();
 
     //finalize editing on all fields
     $(".clause").trigger("editInactive");
 
-    //display pdf directly after generating
-    generatePdf($("#editor-main"));
+    //save json to server first
+    serverSave($("#editor-main"));
+  });
+  $("#action-pdf")
+  .on("click", function(e) {
+    e.stopPropagation();
+
+    //finalize editing on all fields
+    $(".clause").trigger("editInactive");
+
+    //save first if anything changed
+    if (changesSaved) {
+      //no saving necessary
+      generatePdf($("#editor-main"));
+    } else {
+      //save json to server first
+      serverSave($("#editor-main"), function() {
+        //display pdf directly after generating
+        generatePdf($("#editor-main"));
+      });
+    }
   });
 }
 
 
 //do things when the document has finished loading
 $(document).ready(function() {
+  //get token and, if present, code from document
+  resolutionToken = $("#token-preset").text();
+  var codeElement = $("#code-preset");
+  if (codeElement) {
+    //get code
+    resolutionCode = codeElement.text();
+
+    //remove element
+    codeElement.remove();
+  }
+
   //load external sponsor, phrase and forum name data
   var autofillData;
   $.getJSON("/autofillData.json")
