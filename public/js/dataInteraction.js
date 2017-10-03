@@ -258,7 +258,7 @@ function generatePdf(container) {
     makeAlertMessage(
       "description", "Generated PDF file", "done",
       "Click <b><a href='" + response +
-      "'>here</a></b> to view your resolution as a PDF file.");
+      "' target='_blank'>here</a></b> to view your resolution as a PDF file.");
   })
   .fail(function() {
     //display error and request creation of bug report
