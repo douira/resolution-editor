@@ -21,6 +21,17 @@ block content
           =" "
           span#token-preset.lighten-3(class=sec)=token
         p Please write this token down, because it will be used to identify your resolution when you want continue working on it later. Talk to your chair if you've forgotten your resolution token. (Looking at your browser's history can be helpful too.)
+      .collection-header
+        h5.light
+          +icon("info_outline", "mediumsmall left text-darken-3 light-blue-text")
+          | Meta-Information
+        //last save, last view, stage history and status, last render, creation date, number of resolution nodes
+        ul.collection
+          li.collection-item Created: #{meta.created}
+          li.collection-item Last Change: #{meta.changed}
+          li.collection-item Last Render: #{meta.lastRender}
+          li.collection-item Words: #{meta.wordCount}
+          li.collection-item Content Nodes: #{meta.nodeCount}
       +meta-button("action-save", "Save", "backup", "Saves the resolution to the server", pritext)
       +meta-button("action-pdf", "View PDF", "description", "Generates a formatted PDF document", pritext)
       +meta-button("legacy-action-save", "Save to file (deprecated)", "file_download", "Downloads the resolution in a resusable format", "grey-text")
@@ -53,7 +64,7 @@ block content
       +floating-sm-btn("green", "eab-done", "done", "Finish editing and deactivate edit mode")
     mixin content-card(cardId)
       .row
-        .col.s12.z-depth-2(id=cardId class!=attributes.class)
+        .col.s12(id=cardId class!=attributes.class)
           block
     mixin clause-content-field(type, placeholder, addClasses)
       .input-field(class=type)

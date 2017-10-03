@@ -6,14 +6,9 @@ const latexGenerator = require("../lib/latex-generator");
 const databaseInterface = require("../lib/database");
 const resolutionFormat = require("../public/js/resolutionFormat").resolutionFormat;
 const tokenProcessor = require("../lib/token");
+const resUtil = require("../lib/resUtil");
 
-const inspect = ((spect) => {
-  return (obj) => console.log(spect(obj, {
-    colors: true,
-    depth: null,
-    breakLength: 0
-  }));
-})(require("util").inspect);
+const issueError = resUtil.issueError;
 
 //register callback to get collections on load
 let resolutions, access, db;
@@ -25,23 +20,6 @@ databaseInterface.onload = (loadedDb) => {
 
 //delegate no privilege access code doc
 const delegateCodeDoc = { level: "DE" };
-
-//sends an error and logs it
-function issueError(res, status, msg, errorItself) {
-  //prepend error text
-  msg = "error: " + msg;
-
-  //log message to console
-  console.error(msg);
-
-  //also log error if there was one
-  if (errorItself) {
-    console.error(errorItself);
-  }
-
-  //send given message and status
-  res.status(status).send(msg);
-}
 
 //deals with token in URL and calls callback if token present in db
 function checkToken(req, res, modifyResolution, callback) {
@@ -99,17 +77,6 @@ function checkCode(req, res, callback) {
   }
 }
 
-//checks if given permission code doc allows access to given resolution doc
-function checkPermissionMatch(resolution, permission) {
-  //check permission and stage matching conditions
-  return permission.level === "CH" || //chair access always ok
-    //allow if at active editing state and has delegate permission
-    resolution.stage <= 1 && permission.level === "DE" ||
-    //allow AP or FC if at their respective stages
-    resolution.stage === 2 && permission.level === "AP" ||
-    resolution.stage === 3 && permission.level === "FC";
-}
-
 //deals with resolutions in req.body and checks them against the format
 function checkBodyRes(req, res, callback) {
   //needs to be present
@@ -139,7 +106,7 @@ function checkBodyRes(req, res, callback) {
 //does auth with code, gets resolution doc given and does code and permission check
 function authWithCode(res, resolutionDoc, codeDoc, callback) {
   //do permission auth
-  if (checkPermissionMatch(resolutionDoc, codeDoc)) {
+  if (resUtil.checkPermissionMatch(resolutionDoc, codeDoc)) {
     //call callback with everythign gathered
     callback(resolutionDoc.token, resolutionDoc, codeDoc);
   } else {
@@ -287,9 +254,9 @@ router.post("/save/:token", function(req, res) {
 //(also only displays meta info if code necessary)
 router.get("/editor/:token", function(req, res) {
   //check for token and code (check that none is needed)
-  fullAuth(req, res, (token) => {
+  fullAuth(req, res, (token, resDoc) => {
     //send rendered editor page with token set
-    res.render("editor", { token: token });
+    res.render("editor", { token: token, meta: resUtil.getMetaInfo(resDoc) });
   });
 });
 
@@ -297,9 +264,9 @@ router.get("/editor/:token", function(req, res) {
 //either renders editor with token and code set or resolution meta info
 router.post("/editor/:token", function(req, res) {
   //authorize
-  fullAuth(req, res, (token, resolutionDoc, codeDoc) => {
+  fullAuth(req, res, (token, resDoc, codeDoc) => {
     //send rendered editor page with token and code set
-    res.render("editor", { token: token, code: codeDoc.code });
+    res.render("editor", { token: token, code: codeDoc.code, meta: resUtil.getMetaInfo(resDoc) });
   });
 });
 
