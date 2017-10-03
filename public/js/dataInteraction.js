@@ -108,16 +108,21 @@ function validateEditorData(obj) {
 }
 
 //loads a json into the editor
-function loadJson(json, container) {
-  //basic parse
+function loadJson(json, container, callbackOnSuccess) {
+  //basic parse if necessary
   var obj;
-  try {
-    //json parse
-    obj = JSON.parse(json);
-  } catch (e) {
-    //notify and abort
-    jsonReadErrorModal("parse_fail");
-    return;
+  if (typeof json === "string") {
+    try {
+      //json parse
+      obj = JSON.parse(json);
+    } catch (e) {
+      //notify and abort
+      jsonReadErrorModal("parse_fail");
+      return;
+    }
+  } else {
+    //already parsed into object
+    obj = json;
   }
 
   //check for magic string to prevent loading of other json files (unless tampered with)
@@ -169,6 +174,11 @@ function loadJson(json, container) {
                   container.find("#preamb-clauses").children(".clause-list"));
   parseClauseList(res.clauses.operative,
                   container.find("#op-clauses").children(".clause-list"));
+
+  //call success callback
+  if (typeof callbackOnSuccess === "function") {
+    callbackOnSuccess();
+  }
 }
 
 //load file from computer file system
@@ -188,8 +198,49 @@ function loadFilePick(container, callback) {
         loadJson(text, container);
 
         //changes loaded from file are not "really" server saved
+        //(and flag isn't reset because of this)
       };
     });
+}
+
+//loads resolution from server
+function serverLoad(token, displayToast, container, callback) {
+  //make settings object
+  var ajaxSettings = {
+    url: "/resolution/load/" + resolutionToken,
+    type: resolutionCode ? "POST" : "GET"
+  };
+
+  //add post data if we have a code to send
+  if (resolutionCode) {
+    ajaxSettings.data = { code: resolutionCode };
+  }
+
+  //do ajax with settings
+  $.ajax(ajaxSettings)
+  .done(function(response) {
+    //attempt to load json into editor
+    loadJson(response, container, function() {
+        //display toast
+      if (displayToast) {
+        Materialize.toast("Successfully loaded", 3000);
+      }
+
+      //call callback if there is one
+      if (typeof callback === "function") {
+        callback();
+      }
+
+      //set flag
+      changesSaved = true;
+    });
+  })
+  .fail(function() {
+    //there was a problem
+    makeAlertMessage("error_outline", "Error loading resolution", "ok",
+        "The server encountered an error or denied the requst to load the resolution." +
+        " Please file a " + bugReportLink("res_load") + " and describe this problem.", "res_load");
+  });
 }
 
 //sends the current json of to the server and calls back with the url to the generated pdf
@@ -352,7 +403,7 @@ function serverSave(container, callback, displayToast) {
     changesSaved = true;
 
     //call callback on completion
-    if (callback) {
+    if (typeof callback === "function") {
       callback();
     }
   })

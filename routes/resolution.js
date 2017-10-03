@@ -152,7 +152,7 @@ function fullAuth(req, res, callback) {
   //check for token and save new resolution content
   checkToken(req, res, (token, resolutionDoc) => {
     //check if a code was sent
-    if (req.body.code && req.body.code.length) {
+    if (req.body && req.body.code && req.body.code.length) {
       //check sent code
       checkCode(req, res, (codeDoc) => {
         authWithCode(res, resolutionDoc, codeDoc, callback);
@@ -269,8 +269,8 @@ router.post("/save/:token", function(req, res) {
 //GET (editor view) redirected to here to send editor with set token
 //(also only displays meta info if code necessary)
 router.get("/editor/:token", function(req, res) {
-  //check for token
-  checkToken(req, res, (token) => {
+  //check for token and code (check that none is needed)
+  fullAuth(req, res, (token) => {
     //send rendered editor page with token set
     res.render("editor", { token: token });
   });
@@ -280,7 +280,7 @@ router.get("/editor/:token", function(req, res) {
 //either renders editor with token and code set or resolution meta info
 router.post("/editor/:token", function(req, res) {
   //authorize
-  fullAuth(res, req, (token, resolutionDoc, codeDoc) => {
+  fullAuth(req, res, (token, resolutionDoc, codeDoc) => {
     //send rendered editor page with token and code set
     res.render("editor", { token: token, code: codeDoc.code });
   });
@@ -289,7 +289,17 @@ router.post("/editor/:token", function(req, res) {
 //POST (no view) (request from editor after being started with set token) send resolution data
 router.post("/load/:token", function(req, res) {
   //authorize
-  fullAuth(res, req, (token, resolutionDoc, codeDoc) => {
+  fullAuth(req, res, (token, resolutionDoc, codeDoc) => {
+    //send resolution to client, remove database wrapper
+    res.send(resolutionDoc.content);
+  });
+});
+
+//GET (no view) (request from editor after being started with set token) send resolution data
+//same as above just with node special code
+router.get("/load/:token", function(req, res) {
+  //authorize, absence of code is detected in fullAuth
+  fullAuth(req, res, (token, resolutionDoc, codeDoc) => {
     //send resolution to client, remove database wrapper
     res.send(resolutionDoc.content);
   });

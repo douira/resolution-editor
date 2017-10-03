@@ -1,5 +1,12 @@
 /*jshint esversion: 5, browser: true, jquery: true */
-/*global loadFilePick, generatePdf, downloadJson, bugReportLink, serverSave: true */
+/*global
+  loadFilePick,
+  generatePdf,
+  downloadJson,
+  bugReportLink,
+  serverSave,
+  Materialize,
+  serverLoad: true */
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -967,8 +974,13 @@ function getEventHandlers(loadedData) {
     //finalize editing on all fields
     $(".clause").trigger("editInactive");
 
-    //save json to server first
-    serverSave($("#editor-main"));
+    //don't save if everything already saved
+    if (changesSaved) {
+      Materialize.toast("Already saved", 3000);
+    } else {
+      //save json to server first
+      serverSave($("#editor-main"));
+    }
   });
   $("#action-pdf")
   .on("click", function(e) {
@@ -1066,5 +1078,8 @@ $(document).ready(function() {
 
     //trigger all init events
     $("#editor-main").find("*").trigger("init");
+
+    //initiate loading of resolution from server with preset token
+    serverLoad(resolutionToken, true, $("#editor-main"));
   });
 });
