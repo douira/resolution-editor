@@ -145,5 +145,7 @@ render_out
 #settings file
 #.brackets.json
 
-#database with all it's ever changing files
-data/
+#database and render cache with all it's ever changing files
+data
+public/rendered
+

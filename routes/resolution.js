@@ -46,12 +46,12 @@ function issueError(res, status, msg, errorItself) {
 //deals with token in URL and calls callback if token present in db
 function checkToken(req, res, modifyResolution, callback) {
   //if only three args, callback is in modifyResolution
-  let doModify = false;
+  let doModify = true;
   if (arguments.length === 3) {
     callback = modifyResolution;
 
-    //set flag to use findOneAndModify instead
-    doModify = true;
+    //set flag to use findOneAndUpdate instead
+    doModify = false;
   }
 
   //get token from params
@@ -61,13 +61,13 @@ function checkToken(req, res, modifyResolution, callback) {
   if (token.length && token[0] === "@" && tokenProcessor.check(token)) {
     //load corresponding resolution
     (doModify ? //modify as well if flag set
-     resolutions.findOne({ token: token }) :
-     resolutions.findOneAndUpdate({ token: token }, modifyResolution, { returnOriginal: false })
+      resolutions.findOneAndUpdate({ token: token }, modifyResolution, { returnOriginal: true }) :
+      resolutions.findOne({ token: token })
     ).then((document) => {
       //check for existance
       if (document) {
         //call callback with gotten document
-        callback(token, document);
+        callback(token, doModify ? document.value : document);
       } else {
         issueError(res, 400, "token wrong");
       }
@@ -193,34 +193,42 @@ router.get("/renderpdf/:token", function(req, res) {
   //check for token and save new resolution content
   checkToken(req, res, {
     //add current time to render history log
-    $push: { renderHistory: Date.now() }
-  }, (token, doc) => {
+    $set: { lastRender: Date.now() }
+  }, (token, document) => {
     //don't render if nothing saved yet
-    if (! doc.stage) {
+    if (! document.stage) {
       issueError(res, 400, "nothing saved (stage 0)");
       return;
     }
 
+    //url to pdf
+    var pdfUrl = "/resolution/rendered/" + token + ".pdf";
+
     //don't render if hasn't been saved again since last render
-    if (doc.changed < doc.renderHistory[doc.renderHistory.length - 1]) {
+    if (document.changed < document.lastRender) {
       //just send url and stop
-      res.send("/rendered/" + token + ".pdf");
+      res.send(pdfUrl);
       return;
     }
 
     //render gotten resolution to pdf
-    pandoc(
-      latexGenerator(doc.content),
-      "-o public/rendered/" + token + ".pdf --template=public/template.latex",
-      (pandocErr, pandocResult) => {
-        //hint error if occured
-        if (pandocErr) {
-          issueError(res, 500, "render problem", pandocErr);
-        } else {
-          //send url to rendered pdf
-          res.send("/rendered/" + token + ".pdf");
-        }
-      });
+    try {
+      pandoc(
+        latexGenerator(document.content),
+        "-o public/rendered/" + token + ".pdf --template=public/template.latex",
+        (pandocErr, pandocResult) => {
+          //hint error if occured
+          if (pandocErr) {
+            issueError(res, 500, "render problem pandoc result", pandocErr);
+          } else {
+            //send url to rendered pdf
+            res.send(pdfUrl);
+          }
+        });
+    } catch (e) {
+      //catch any pandoc or rendering errors we can
+      issueError(res, 500, "render problem pandoc");
+    }
   });
 });
 
@@ -237,7 +245,7 @@ router.get("/new", function(req, res) {
       created: timeNow, //time of creation
       changed: timeNow, //last tieme it was changed = saved
       stageHistory: [ timeNow ], //index is resolution stage, time when reached that stage
-      renderHistory: [], //logs pdf render events
+      lastRender: 0, //logs pdf render events
       stage: 0 //current workflow stage (see phase 2 notes)
     }).then(() => {
       //redirect to editor page (because URL is right then)
@@ -257,11 +265,20 @@ router.post("/save/:token", function(req, res) {
         { token: token },
         {
           $set: {
-            content: resolutionSent,
-            changed: Date.now()
+            content: resolutionSent, //update resolution content
+            changed: Date.now() //update changedate
+          },
+          $max: {
+            stage: 1 //first saved stage at least
+          },
+          $min: {
+            "stageHistory.1": Date.now() //set first save time (don't change if this is older)
           }
         }
-      ).then(() => res.send("ok"), () => issueError(res, 500, "can't save"));
+      ).then(() => {
+        console.log("saved");
+        res.send("ok");
+      }, () => issueError(res, 500, "can't save"));
     });
   });
 });
