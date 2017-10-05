@@ -10,7 +10,7 @@
 //file actions are defined in this file
 
 //current version of the resolution format supported
-var supportedResFileFormats = [3];
+var supportedResFileFormats = [4];
 
 //get resolutionFormat from module exported
 var resolutionFormat = module.exports.resolutionFormat;
@@ -152,7 +152,7 @@ function loadJson(json, container, callbackOnSuccess) {
   container.find("input, textarea").trigger("reset");
 
   //put author data into field
-  container.find("#author-name").val(obj.status.author).trigger("activateLabel");
+  container.find("#author-name").val(obj.author).trigger("activateLabel");
 
   //get resolution object
   var res = obj.resolution;
@@ -205,6 +205,11 @@ function loadFilePick(container, callback) {
 
 //loads resolution from server
 function serverLoad(token, displayToast, container, callback) {
+  //stop if we're still in stage 0 and there isn't anything to load
+  if ($("#resolution-stage").text() === "0") {
+    return;
+  }
+
   //make settings object
   var ajaxSettings = {
     url: "/resolution/load/" + resolutionToken,
@@ -336,10 +341,7 @@ function getEditorContent(container, makeJsonNice) {
   var res = {
     magic: resolutionFormat.magicIdentifier,
     version: Math.max.apply(null, supportedResFileFormats), //use highest supported version
-    status: {
-      edited: Date.now(),
-      author: container.find("#author-name").val().trim()
-    },
+    author: container.find("#author-name").val().trim(),
     resolution: {
       address: {
         forum: container.find("#forum-name").val().trim(),

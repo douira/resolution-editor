@@ -81,21 +81,9 @@ var resolutionFileFormat = {
       required: true
     },
     {
-      name: "status",
-      type: "object",
-      required: true,
-      content: [
-        {
-          name: "edited",
-          type: "number",
-          required: true
-        },
-        {
-          name: "author",
-          type: "string",
-          required: true
-        }
-      ]
+      name: "author",
+      type: "string",
+      required: true
     },
     {
       name: "resolution",
