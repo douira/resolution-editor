@@ -61,3 +61,7 @@
 #token-preset {
   font-family: monospace;
 }
+
+.justify {
+  text-align: justify;
+}

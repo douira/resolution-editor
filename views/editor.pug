@@ -15,14 +15,14 @@ block content
       //-git removes spaces at end of lines so this is necessary
       =" "
       span#token-preset.lighten-3(class=sec)=token
-    p Please write this token down, because it will be used to identify your resolution when you want continue working on it later. Talk to your chair if you've forgotten your resolution token. (Looking at your browser's history can be helpful too.)
+    p.justify Please write this token down, because it will be used to identify your resolution when you want continue working on it later. Talk to your chair if you've forgotten your resolution token. (Looking at your browser's history can be helpful too.)
     mixin status-info(index, title, description)
       h5.light
         +icon("assignment", "mediumsmall left text-lighten-1 light-green-text")
         | Status:
         =" " + title
         b.text-lighten-1.grey-text=" #" + index
-      p=description
+      p.justify=description
     case meta.stage
       when 0
         +status-info(0, "Initial Creation", "This resolution has not been opened with the resolution token yet. The token will be released back into the system after a while if the resolution is closed without saving.")
@@ -44,7 +44,7 @@ block content
         +status-info("?", "Unknown", "Could not determine the status of this resolution. There seens to have been an error in the system. Please report this immediately as it may negatively affect the whole resolution workflow.")
     h5.light Important Note
       +icon("announcement", "mediumsmall left red-text")
-    p Please be aware of the fact that #[b opening the same resolution on multiple devices can have adverse effects on the integrity of the resolution] because the changes aren't updated on other devices until the page is reloaded.
+    p.justify Please be aware of the fact that #[b opening the same resolution on multiple devices can have adverse effects on the integrity of the resolution] because the changes aren't updated on other devices until the page is reloaded and all local changes are thereby deleted.
     h5.light Meta-Information
     //todo: stage history
     mixin collapsible-item(title, icon)
