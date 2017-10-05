@@ -8,6 +8,7 @@ const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 
 const index = require("./routes/index");
+const help = require("./routes/help");
 const resolution = require("./routes/resolution");
 
 //start database connection
@@ -31,6 +32,7 @@ app.use("/resolution", express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", index);
+app.use("/help", help);
 app.use("/resolution", resolution);
 
 //catch 404 and forward to error handler

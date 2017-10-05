@@ -1,0 +1,17 @@
+extends layout
+
+//- doesn't do anything at the moment
+  block styles
+    link(href="/css/helpStyle.css" type="text/css" rel="stylesheet")
+
+block content
+  .container
+    include stages
+    h4.center: +icon("help", "large text-darken-1 " + sectext)
+    h3.center Help Page
+    .divider
+    h4: +stage-info-icon
+    h4 List of Resolution Workflow Stages
+    - var i = 0;
+    while i <= 8
+      +stage-info-index(i++, false)

@@ -4,6 +4,6 @@ const router = module.exports = express.Router();
 
 //GET help page
 router.get("/", function(req, res, next) {
-  //render page with token for resolution
-  res.render("index", { promo: true });
+  //render help page
+  res.render("help");
 });

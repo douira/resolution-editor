@@ -1,39 +1,10 @@
-#meta-buttons a {
-  margin: 10px;
-}
-
 .reduced-width-divider {
   margin-right: 70px;
 }
 
-.mrg-b {
-  margin-bottom: 20px;
-}
-
-.mrg-l {
-  margin-left: 20px;
-}
-
-.mrg-t {
-  margin-bottom: 20px;
-}
-
-.mrg {
+.add-clause-btn {
   margin-bottom: 20px;
   margin-top: 20px;
-}
-
-.nmrg-t {
-  margin-top: 0px;
-}
-
-.nmrg-0-b {
-  margin-bottom: 0px;
-}
-
-.nmrg-0 {
-  margin-bottom: 0px;
-  margin-top: 0px;
 }
 
 .clause-list-sub-mrg, .clause-list-sub {
@@ -45,7 +16,7 @@
   margin-bottom: 10px;
 }
 
-.hide-this, .clause-content-ext {
+.clause-content-ext {
   display: none;
 }
 
@@ -54,14 +25,6 @@
   text-decoration-color: red;
 }
 
-.mediumsmall {
-  font-size: 3rem;
-}
-
 #token-preset {
   font-family: monospace;
-}
-
-.justify {
-  text-align: justify;
 }
