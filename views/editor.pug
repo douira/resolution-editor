@@ -58,6 +58,7 @@ block content
           =text
       +meta-button("action-save", "Save", "backup", "Saves the resolution to the server", pritext)
       +meta-button("action-pdf", "View PDF", "description", "Generates a formatted PDF document", pritext)
+      +meta-button("action-plaintext", "View Plaintext (fallback)", "receipt", "Generates a plain text version of the resolution: Only use in case of problems", "grey-text")
       +meta-button("legacy-action-save", "Save to file (deprecated)", "file_download", "Downloads the resolution in a resusable format", "grey-text")
       +meta-button("legacy-action-load", "Open from file (deprecated)", "file_upload", "Loades a resolution from a previously saved file", "grey-text")
     //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
@@ -101,7 +102,7 @@ block content
           .clause(data-clause-type=clauseType)
             .divider
             h6.grey-text.text-darken-2.clause-title
-              a.edit-mode-btn.btn.right.white-text(class=pri)&attributes(tooltip("Activates editing of this clause", "left"))
+              a.edit-mode-btn.btn.right.white-text.lighten-1(class=pri)&attributes(tooltip("Activates editing of this clause", "left"))
                 +icon("mode_edit", "icon-sm-med")
               span.clause-prefix
               | Clause #

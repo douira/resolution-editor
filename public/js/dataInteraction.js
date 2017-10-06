@@ -249,13 +249,7 @@ function serverLoad(token, displayToast, container, callback) {
 }
 
 //sends the current json of to the server and calls back with the url to the generated pdf
-function generatePdf(container) {
-  //validate
-  /*if (! validateFields()) {
-    //stop because not ok with missing data
-    return;
-  }*/
-
+function generatePdf() {
   //send to server
   $.get("/resolution/renderpdf/" + resolutionToken)
   .done(function(response) {
@@ -273,6 +267,15 @@ function generatePdf(container) {
       " while trying to generate the requested PDF file." +
       " Please file a " + bugReportLink("pdf_gen") + " and describe this problem.", "pdf_gen");
   });
+}
+
+//directs the user to the plaintext view
+function generatePlaintext(container) {
+  //make message
+  makeAlertMessage(
+    "description", "Generated Plaintext", "done",
+    "Click <b><a href='/resolution/renderplain/" + resolutionToken +
+    "' target='_blank'>here</a></b> to view your resolution as a plain text file.");
 }
 
 //gets a clause as an object

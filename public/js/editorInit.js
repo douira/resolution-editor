@@ -6,7 +6,8 @@
   bugReportLink,
   serverSave,
   Materialize,
-  serverLoad: true */
+  generatePlaintext,
+  serverLoad */
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -992,12 +993,31 @@ function getEventHandlers(loadedData) {
     //save first if anything changed
     if (changesSaved) {
       //no saving necessary
-      generatePdf($("#editor-main"));
+      generatePdf();
     } else {
       //save json to server first
       serverSave($("#editor-main"), function() {
         //display pdf directly after generating
-        generatePdf($("#editor-main"));
+        generatePdf();
+      });
+    }
+  });
+  $("#action-plaintext")
+  .on("click", function(e) {
+    e.stopPropagation();
+
+    //finalize editing on all fields
+    $(".clause").trigger("editInactive");
+
+    //save first if anything changed
+    if (changesSaved) {
+      //no saving necessary
+      generatePlaintext();
+    } else {
+      //save json to server first
+      serverSave($("#editor-main"), function() {
+        //display pdf directly after generating
+        generatePlaintext();
       });
     }
   });

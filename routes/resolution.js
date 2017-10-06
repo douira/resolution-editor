@@ -199,6 +199,24 @@ router.get("/renderpdf/:token", function(req, res) {
   });
 });
 
+//GET (responds with url, no view) render plaintext, not really render but similar
+router.get("/renderplain/:token", function(req, res) {
+  //check for token and save new resolution content
+  checkToken(req, res, (token, document) => {
+    //don't render if nothing saved yet
+    if (! document.stage) {
+      issueError(res, 400, "nothing saved (stage 0)");
+      return;
+    }
+
+    //respond with plaintext form of resolution
+    res.render("plainview", {
+      data: resUtil.renderPlaintext(document),
+      token: token
+    });
+  });
+});
+
 //GET (no view, processor) redirects to editor page with new registered token
 router.get("/new", function(req, res) {
   //make a new unique token, true flag for being a token
