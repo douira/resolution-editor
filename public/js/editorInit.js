@@ -343,8 +343,11 @@ $.fn.addSubClause = function(activationStateChanges) {
     .children(".phrase-input-wrapper")
     .remove();
   strippedClause
-    .prependTo(subList)
+    .appendTo(subList)
     .trigger("updateTreeDepth");
+
+  //move button to bottom of list
+  subList.children(".add-clause-container").appendTo(subList);
 
   //only activate if enabled (load mode needs no activation state changes)
   if (activationStateChanges) {
