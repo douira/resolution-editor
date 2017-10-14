@@ -618,22 +618,28 @@ function getEventHandlers(loadedData) {
         var matchData = loadedData.autofillDataMapping[matchDataSelector];
 
         //check all chips values for being included
-        valueBad = valueBad || ! value.every(function(item, index) {
-          //must be included in data
-          var isOk = matchData.includes(item.tag.trim());
+        valueBad = ! value.reduce(function(allOk, item, index) {
+          //must be included in data and not equal the main sponsor
+          var value = item.tag.trim();
+          var isOk = matchData.includes(value) && $("#main-spon").val().trim() !== value;
 
           //color-mark tag object
           elem.children(".chip:eq(" + index + ")")
             [isOk ? "removeClass" : "addClass"]("red white-text");
 
           //return for validation of whole array
-          return isOk;
-        });
+          return allOk && isOk;
+        }, true) || valueBad;
       }
     }
 
     //apply to global flag
     badFieldPresent = badFieldPresent || valueBad;
+  })
+  .on("chip.add chip.delete", function(e) {
+    //change action
+    changesSaved = false;
+    noChangesMade = false;
   })
   .on("focusout", function(e) {
     e.stopPropagation();
