@@ -23,7 +23,9 @@
 \newcommand{\issue}{Crisis in Syria}
 \newcommand{\sponsor}{United States of America}
 
-%new fancy commands
+%%%new fancy commands %%%
+%PREAMB
+
 \newenvironment{preamb}[2]{
 \vspace*{1em}
 \StrLeft{#1}{1}[\firstletter]%
@@ -35,6 +37,7 @@
 \IfStrEq{\lastletter}{:}{}{,}%
  }
 
+%OC
 \newenvironment{oc}[2]{\item %
 \StrLeft{#1}{1}[\firstletter]%
 \StrBehind{#1}{\firstletter}[\rest]%
@@ -43,9 +46,10 @@
 #2%
 }
 {%
-\IfStrEq{\lastletter}{.}{}{;}%
+\IfStrEqCase{\lastletter}{{:}{}{.}{}}[;]%
 }
 
+%PREAMB SUBCLAUSE
 \newenvironment{preambsubclause}{ \begin{itemize}[leftmargin=*,labelindent=2.5em,labelsep=2em] {} %
 \renewcommand\labelitemi{-}
 \vspace*{-.8em}%
@@ -56,6 +60,18 @@
 	\end{itemize}
 }
 
+
+%OC SUBCLAUSE
+\newenvironment{ocsubclause}{ \begin {enumerate} [a),nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm]{} %
+}{
+	\end{enumerate}
+}
+
+%OC SUBSUBCLAUSE
+\newenvironment{ocsubsubclause}{ \begin {enumerate} [i.,nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm]{} %
+}{
+	\end{enumerate}
+}
 
 \begin{document}
 
@@ -86,7 +102,22 @@
 
 \begin{oc}{further recommends}{the attention to the fact that every delegate has to use the tabulator key to set the same amount of space between the numbers of the operative phrases and the clauses, as well as to move subordinated phrases or words uniformly to the right}\end{oc}
 
-\begin{oc}{urges}{all nations to do so.}\end{oc}
+\begin{oc}{urges}{all nations to do so by:}\end{oc}
+
+\begin{ocsubclause}
+	\item reading this document,
+	\item using the cool new resolution editor in browsers like:
+
+	\begin{ocsubsubclause}
+		\item Firefox,
+		\item Chrome,
+		\item Safari,
+		\item numerous mobile browsers,
+	\end{ocsubsubclause}
+
+	\item participating at MUNOL;
+\end{ocsubclause}
+
 
 \end{enumerate}
 
