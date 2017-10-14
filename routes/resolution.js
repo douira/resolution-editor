@@ -261,7 +261,6 @@ router.post("/save/:token", function(req, res) {
           }
         }
       ).then(() => {
-        console.log("saved");
         res.send("ok");
       }, () => issueError(res, 500, "can't save"));
     });

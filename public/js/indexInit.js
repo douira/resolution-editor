@@ -52,7 +52,6 @@ $("#resolution-input input").on("keyup checkValidation", function(e) {
 
       //query server for validation
       $.get("/resolution/checkinput/" + value, function(responseData) {
-        console.log(responseData, validationStates);
         //set to ok or not
         elem.setInputValidState(responseData.substring(0, 2) === "ok", fieldId);
       })
