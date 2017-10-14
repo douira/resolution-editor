@@ -1,7 +1,7 @@
 mixin stage-info-icon
   +icon("assignment", "mediumsmall left text-lighten-1 light-green-text")
 mixin status-info(index, decorated, title, description)
-  h5.light
+  h5.light(id="rstage" + index)
     if decorated
       +stage-info-icon
       | Status:

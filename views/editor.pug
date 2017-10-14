@@ -11,7 +11,7 @@ block content
     h3 Resolution Editor
     .divider
     h5.light
-      +icon("my_location", "mediumsmall left text-darken-3 " + sectext)
+      +icon("my_location", "mediumsmall left text-darken-3 amber-text")
       | Your Token:
       //-git removes spaces at end of lines so this is necessary
       =" "
@@ -31,6 +31,7 @@ block content
           =title
         .collapsible-body
           block
+    p This information is updated every time the page is reloaded.
     ul.collapsible(data-collapsible="expandable")
       mixin item-table
         table: tbody

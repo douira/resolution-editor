@@ -1023,7 +1023,6 @@ function getEventHandlers(loadedData) {
   });
 }
 
-
 //do things when the document has finished loading
 $(document).ready(function() {
   //get token and, if present, code from document
