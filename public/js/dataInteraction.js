@@ -129,6 +129,7 @@ function loadJson(json, container) {
       "The provided file could be read but is in an old and unsupported format." +
       " Please file a " + bugReportLink("old_format") + " and describe this problem." +
       " if you wish to receive help concerning this issue.", "old_format");
+    return;
   }
 
   //check that the loaded data is valid
@@ -212,7 +213,7 @@ function generatePdf(container) {
       makeAlertMessage(
         "description", "Generated PDF file", "done",
         "Click <b><a href='" + response +
-        "'>here</a></b> to view your resolution as a PDF file.");
+        "' target='_blank'>here</a></b> to view your resolution as a PDF file.");
     } else {
       //display error and request creation of bug report
       makeAlertMessage(

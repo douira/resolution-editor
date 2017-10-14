@@ -13,7 +13,7 @@ const inspect = ((spect) => {
 })(require("util").inspect);
 
 //setup leatex to html rendering
-const pandocArgs = "-o public/out.pdf --template=public/template.latex";
+const pandocArgs = "-o public/out.pdf --template=tex-templates/template.latex";
 
 //converts json from client editor to rendered html
 function jsonToLatex(data) {
@@ -29,7 +29,7 @@ router.post("/", function(req, res, next) {
       throw pandocErr;
     }
 
-    //send rendered html
+    //send link to rendered pdf
     res.send("out.pdf");
   });
 });
