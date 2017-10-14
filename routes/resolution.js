@@ -289,7 +289,7 @@ function getEditorViewParams(doLoad, resDoc, token, codeDoc) {
     fullAuth(req, res,
       (token, resDoc, codeDoc) =>
         //send rendered editor page with token set
-        res.render("editor", getEditorViewParams(false, resDoc, token, codeDoc)),
+        res.render("editor", getEditorViewParams(true, resDoc, token, codeDoc)),
       (token, resDoc) =>
         //send edtor page but with "no access" notice
         res.render("editor", getEditorViewParams(false, resDoc, token))

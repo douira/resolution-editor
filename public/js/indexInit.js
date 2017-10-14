@@ -30,8 +30,8 @@ $.fn.setInputValidState = function(isValid, id) {
 $("#resolution-input input").on("keyup checkValidation", function(e) {
   var elem = $(this);
 
-  //get value of current input field and remove any whitespace
-  var value = elem.val().replace(/\s/g, "");
+  //get value of current input field and remove any whitespace, make capitalized
+  var value = elem.val().replace(/\s/g, "").toUpperCase();
   elem.val(value);
 
   //check if it's the token or the code field
