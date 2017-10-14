@@ -50,7 +50,14 @@ block content
           +t-item("Last Change:", meta.changed)
           +t-item("Last Render:", meta.lastRender)
       +collapsible-item("Stage History", "history")
-
+        +item-table
+          - var i = 0;
+          while i < meta.stageHistory.length
+            tr
+              td=stageData[i].title
+                b.text-lighten-1.grey-text  #
+                  =i
+              td=meta.stageHistory[i++]
       +collapsible-item("Structure Analysis", "filter_list")
         +item-table
           +t-item("Words:", meta.wordCount)
