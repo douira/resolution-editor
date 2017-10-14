@@ -104,29 +104,32 @@ function checkBodyRes(req, res, callback) {
 }
 
 //does auth with code, gets resolution doc given and does code and permission check
-function authWithCode(res, resolutionDoc, codeDoc, callback) {
+function authWithCode(res, resolutionDoc, codeDoc, callback, permissionMissmatch) {
   //do permission auth
   if (resUtil.checkPermissionMatch(resolutionDoc, codeDoc)) {
     //call callback with everythign gathered
     callback(resolutionDoc.token, resolutionDoc, codeDoc);
+  } else if (typeof permissionMissmatch === "function") {
+    //call alternative callback if given
+    permissionMissmatch(resolutionDoc.token, resolutionDoc);
   } else {
     issueError(res, 400, "not authorized");
   }
 }
 
 //does full auth procedure (token, POSTed code and permission match)
-function fullAuth(req, res, callback) {
+function fullAuth(req, res, callback, permissionMissmatch) {
   //check for token and save new resolution content
   checkToken(req, res, (token, resolutionDoc) => {
     //check if a code was sent
     if (req.body && req.body.code && req.body.code.length) {
       //check sent code
       checkCode(req, res, (codeDoc) => {
-        authWithCode(res, resolutionDoc, codeDoc, callback);
+        authWithCode(res, resolutionDoc, codeDoc, callback, permissionMissmatch);
       });
     } else {
       //use "DE" delegate level code doc
-      authWithCode(res, resolutionDoc, delegateCodeDoc, callback);
+      authWithCode(res, resolutionDoc, delegateCodeDoc, callback, permissionMissmatch);
     }
   });
 }
@@ -267,23 +270,30 @@ router.post("/save/:token", function(req, res) {
   });
 });
 
-//GET (editor view) redirected to here to send editor with set token
-//(also only displays meta info if code necessary)
-router.get("/editor/:token", function(req, res) {
-  //check for token and code (check that none is needed)
-  fullAuth(req, res, (token, resDoc) => {
-    //send rendered editor page with token set
-    res.render("editor", { token: token, meta: resUtil.getMetaInfo(resDoc) });
-  });
-});
+//return the render param object for the editor view
+function getEditorViewParams(doLoad, resDoc, token, codeDoc) {
+  //send rendered editor page with token set
+  return {
+    token: token,
+    meta: resUtil.getMetaInfo(resDoc),
+    doLoad: doLoad,
+    code: typeof codeDoc === "undefined" ? null : codeDoc.code
+  };
+}
 
-//POST (editor or resolution meta info=no permission)
-//either renders editor with token and code set or resolution meta info
-router.post("/editor/:token", function(req, res) {
-  //authorize
-  fullAuth(req, res, (token, resDoc, codeDoc) => {
-    //send rendered editor page with token and code set
-    res.render("editor", { token: token, code: codeDoc.code, meta: resUtil.getMetaInfo(resDoc) });
+//POST/GET (editor view) redirected to here to send editor with set token
+//(also only displays meta info if code necessary but not given or invalid)
+["get", "post"].forEach((method) => {
+  router[method]("/editor/:token", function(req, res) {
+    //check for token and code (check that none is needed)
+    fullAuth(req, res,
+      (token, resDoc, codeDoc) =>
+        //send rendered editor page with token set
+        res.render("editor", getEditorViewParams(false, resDoc, token, codeDoc)),
+      (token, resDoc) =>
+        //send edtor page but with "no access" notice
+        res.render("editor", getEditorViewParams(false, resDoc, token))
+    );
   });
 });
 

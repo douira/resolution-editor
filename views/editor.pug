@@ -12,16 +12,20 @@ block content
     .divider
     h5.light
       +icon("my_location", "mediumsmall left text-darken-3 amber-text")
-      | Your Token:
+      if doLoad
+        | Your Token:
+      else
+        | Token:
       //-git removes spaces at end of lines so this is necessary
       =" "
       span#token-preset.lighten-3(class=sec)=token
     p.justify Please write this token down, because it will be used to identify your resolution when you want continue working on it later. Talk to your chair if you've forgotten your resolution token. (Looking at your browser's history can be helpful too.)
     include stages
     +stage-info-index(meta.stage, true)
-    h5.light Important Note
-      +icon("announcement", "mediumsmall left red-text")
-    p.justify Please be aware of the fact that #[b opening the same resolution on multiple devices can have adverse effects on the integrity of the resolution] because the changes aren't updated on other devices until the page is reloaded and all local changes are thereby deleted.
+    if doLoad
+      h5.light Important Note
+        +icon("announcement", "mediumsmall left red-text")
+      p.justify Please be aware of the fact that #[b opening the same resolution on multiple devices can have adverse effects on the integrity of the resolution] because the changes aren't updated on other devices until the page is reloaded and all local changes are thereby deleted.
     h5.light Meta-Information
     //todo: stage history
     mixin collapsible-item(title, icon)
@@ -57,11 +61,13 @@ block content
         a.collection-item.waves-effect.waves-light(class=classes id=id)&attributes(tooltip(tooltipText, "top"))
           +icon(icon, "left")
           =text
-      +meta-button("action-save", "Save", "backup", "Saves the resolution to the server", pritext)
+      if doLoad
+        +meta-button("action-save", "Save", "backup", "Saves the resolution to the server", pritext)
       +meta-button("action-pdf", "View PDF", "description", "Generates a formatted PDF document", pritext)
       +meta-button("action-plaintext", "View Plaintext (fallback)", "receipt", "Generates a plain text version of the resolution: Only use in case of problems", "grey-text")
-      +meta-button("legacy-action-save", "Save to file (deprecated)", "file_download", "Downloads the resolution in a resusable format", "grey-text")
-      +meta-button("legacy-action-load", "Open from file (deprecated)", "file_upload", "Loades a resolution from a previously saved file", "grey-text")
+      if doLoad
+        +meta-button("legacy-action-save", "Save to file (deprecated)", "file_download", "Downloads the resolution in a resusable format", "grey-text")
+        +meta-button("legacy-action-load", "Open from file (deprecated)", "file_upload", "Loades a resolution from a previously saved file", "grey-text")
     //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
     .modal#alert-message-modal
       .modal-content
@@ -76,78 +82,82 @@ block content
             input.file-path.validate(type="text" placeholder="File Path" pattern="^.*\.rso")
       .modal-footer
         a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
-    mixin floating-sm-btn(color, type, icon, tooltipText)
-      a.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)
-    #eab-inactive-anchor
-    #eab-wrapper.right.hide-this
-      //-eab stands for edit action button
-      +floating-sm-btn("blue", "eab-move-down", "arrow_downward", "Moves this clause down one space")
-      +floating-sm-btn("blue", "eab-move-up", "arrow_upward", "Moves this clause up one space")
-      +floating-sm-btn("indigo", "eab-add-sub", "format_indent_increase", "Creates a subclause in this clause")
-      +floating-sm-btn("cyan", "eab-add-ext", "playlist_add", "Adds a continuation text field under these subclauses")
-      +floating-sm-btn("deep-orange", "eab-clear", resetIcon, "Resets the fields in this clause and removes the content continuation field")
-      +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
-      +floating-sm-btn("green", "eab-done", "done", "Finish editing and deactivate edit mode")
-    mixin content-card(cardId)
-      .row
-        .col.s12(id=cardId class!=attributes.class)
-          block
-    mixin clause-content-field(type, placeholder, addClasses)
-      .input-field(class=type)
-        textarea.materialize-textarea(class=addClasses + " " + type + "-text")
-        label(for="materialize-textarea")=placeholder
-    mixin clause-card(cardId, clauseType, cardType)
-      +content-card(cardId)
-        h5=cardType + " Clauses"
-        .clause-list
-          .clause(data-clause-type=clauseType)
-            .divider
-            h6.grey-text.text-darken-2.clause-title
-              a.edit-mode-btn.btn.right.white-text.lighten-1(class=pri)&attributes(tooltip("Activates editing of this clause", "left"))
-                +icon("mode_edit", "icon-sm-med")
-              span.clause-prefix
-              | Clause #
-              span.clause-number 1
-            .row.phrase-input-wrapper
-              .col.xl4.m6.s12
-                .input-field
-                  input.autocomplete.required.phrase-input(type="text")
-                  label(for=".phrase-input") Phrase
-            +clause-content-field("clause-list-anchor clause-content", "Clause Content", "required")
-            +clause-content-field("clause-content-ext", "Continuation of Clause Content")
-          .add-clause-container
-            .divider
-            a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)&attributes(tooltip("Adds a new clause to the list", "right"))
-              +icon("add_circle_outline", "left")
-              | Add Clause
-    +content-card("meta-data")
-      .meta-input-wrapper
-        .right.btn-floating.btn-large.waves-effect.waves-light.deep-orange.reset-button(for="meta-data")&attributes(tooltip("Resets these fields", "left"))
-          +icon(resetIcon)
-        h5 General Data
-        .divider.reduced-width-divider
-        .input-field
-          input.required#author-name(type="text")
-          label(for="author-name") Document Author
-        .divider
+    if doLoad
+      mixin floating-sm-btn(color, type, icon, tooltipText)
+        a.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)
+      #eab-inactive-anchor
+      #eab-wrapper.right.hide-this
+        //-eab stands for edit action button
+        +floating-sm-btn("blue", "eab-move-down", "arrow_downward", "Moves this clause down one space")
+        +floating-sm-btn("blue", "eab-move-up", "arrow_upward", "Moves this clause up one space")
+        +floating-sm-btn("indigo", "eab-add-sub", "format_indent_increase", "Creates a subclause in this clause")
+        +floating-sm-btn("cyan", "eab-add-ext", "playlist_add", "Adds a continuation text field under these subclauses")
+        +floating-sm-btn("deep-orange", "eab-clear", resetIcon, "Resets the fields in this clause and removes the content continuation field")
+        +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
+        +floating-sm-btn("green", "eab-done", "done", "Finish editing and deactivate edit mode")
+      mixin content-card(cardId)
         .row
-          .col.xl4.m6.s12
-            .input-field
-              input.autocomplete.required#forum-name(type="text")
-              label(for="forum-name") Forum
-          .col.xl4.m6.s12
-            .input-field
-              input.required#question-of(type="text")
-              label(for="question-of") Question of
-          .col.xl4.s12
-            .input-field
-              input.autocomplete.required#main-spon(type="text")
-              label(for="main-spon") Main Sponsor
-          .col.s12
-            label(for="co-spon") Co-Sponsors
-            .chips.required#co-spon
-    +clause-card("preamb-clauses", "preamb", "Preambulatory")
-    +clause-card("op-clauses", "op", "Operative")
+          .col.s12(id=cardId class!=attributes.class)
+            block
+      mixin clause-content-field(type, placeholder, addClasses)
+        .input-field(class=type)
+          textarea.materialize-textarea(class=addClasses + " " + type + "-text")
+          label(for="materialize-textarea")=placeholder
+      mixin clause-card(cardId, clauseType, cardType)
+        +content-card(cardId)
+          h5=cardType + " Clauses"
+          .clause-list
+            .clause(data-clause-type=clauseType)
+              .divider
+              h6.grey-text.text-darken-2.clause-title
+                a.edit-mode-btn.btn.right.white-text.lighten-1(class=pri)&attributes(tooltip("Activates editing of this clause", "left"))
+                  +icon("mode_edit", "icon-sm-med")
+                span.clause-prefix
+                | Clause #
+                span.clause-number 1
+              .row.phrase-input-wrapper
+                .col.xl4.m6.s12
+                  .input-field
+                    input.autocomplete.required.phrase-input(type="text")
+                    label(for=".phrase-input") Phrase
+              +clause-content-field("clause-list-anchor clause-content", "Clause Content", "required")
+              +clause-content-field("clause-content-ext", "Continuation of Clause Content")
+            .add-clause-container
+              .divider
+              a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)&attributes(tooltip("Adds a new clause to the list", "right"))
+                +icon("add_circle_outline", "left")
+                | Add Clause
+      +content-card("meta-data")
+        .meta-input-wrapper
+          .right.btn-floating.btn-large.waves-effect.waves-light.deep-orange.reset-button(for="meta-data")&attributes(tooltip("Resets these fields", "left"))
+            +icon(resetIcon)
+          h5 General Data
+          .divider.reduced-width-divider
+          .input-field
+            input.required#author-name(type="text")
+            label(for="author-name") Document Author
+          .divider
+          .row
+            .col.xl4.m6.s12
+              .input-field
+                input.autocomplete.required#forum-name(type="text")
+                label(for="forum-name") Forum
+            .col.xl4.m6.s12
+              .input-field
+                input.required#question-of(type="text")
+                label(for="question-of") Question of
+            .col.xl4.s12
+              .input-field
+                input.autocomplete.required#main-spon(type="text")
+                label(for="main-spon") Main Sponsor
+            .col.s12
+              label(for="co-spon") Co-Sponsors
+              .chips.required#co-spon
+      +clause-card("preamb-clauses", "preamb", "Preambulatory")
+      +clause-card("op-clauses", "op", "Operative")
+    else
+      h4.center: +icon("highlight_off", "medium grey-text text-darken-2")
+      p.center#read-only-mode Editing access to this resolution is restricted beyond your access level. You can still view meta information and read-only versions of it though.
 block scripts
   script(src="/js/resolutionFormat.js")
   script(src="/js/dataInteraction.js")

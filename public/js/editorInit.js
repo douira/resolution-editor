@@ -403,28 +403,12 @@ $.fn.addClause = function(amount, activationStateChanges) {
   return this;
 };
 
-//returns an object containing all event handlers we want to register
-function getEventHandlers(loadedData) {
-  $(window)
-  .on("beforeunload", function(e) {
-    //stop close if flag set
-    if (! (changesSaved || noChangesMade)) {
-      e.preventDefault();
-
-      //try to send a message to the user, the default from the browser is fine too though
-      return "You have unsaved changes that will be lost if you proceed!" +
-        "Press the 'Save' button to save your resolution.";
-    }
-  });
+//registers event handlers that are essential for the general function of the page
+function registerEssentialEventHandlers(doLoad) {
   $("body")
   .on("touchstart", function() {
     //register touch event and remove tooltips for touch-devices
     $(".tooltipped").tooltip("remove");
-  });
-  $(".autocomplete")
-  .on("init", function(e) {
-    e.stopPropagation();
-    $(this).autocomplete($(this).getData());
   });
   $(".modal")
   .on("init", function() {
@@ -444,8 +428,68 @@ function getEventHandlers(loadedData) {
   .on("reset", function(e) {
     e.stopPropagation();
     var elem = $(this);
-    elem.find("input,textarea").trigger("reset");
-    elem.find("#file-selector").hide();
+    if (doLoad) {
+      elem.find("input,textarea").trigger("reset");
+      elem.find("#file-selector").hide();
+    }
+  });
+  $("#action-pdf")
+  .on("click", function(e) {
+    e.stopPropagation();
+
+    //finalize editing on all fields
+    $(".clause").trigger("editInactive");
+
+    //save first if anything changed
+    if (changesSaved) {
+      //no saving necessary
+      generatePdf();
+    } else {
+      //save json to server first
+      serverSave($("#editor-main"), function() {
+        //display pdf directly after generating
+        generatePdf();
+      });
+    }
+  });
+  $("#action-plaintext")
+  .on("click", function(e) {
+    e.stopPropagation();
+
+    //finalize editing on all fields
+    $(".clause").trigger("editInactive");
+
+    //save first if anything changed
+    if (changesSaved) {
+      //no saving necessary
+      generatePlaintext();
+    } else {
+      //save json to server first
+      serverSave($("#editor-main"), function() {
+        //display pdf directly after generating
+        generatePlaintext();
+      });
+    }
+  });
+}
+
+//registers event handlers necessary for the editor
+function registerEventHandlers(loadedData) {
+  $(window)
+  .on("beforeunload", function(e) {
+    //stop close if flag set
+    if (! (changesSaved || noChangesMade)) {
+      e.preventDefault();
+
+      //try to send a message to the user, the default from the browser is fine too though
+      return "You have unsaved changes that will be lost if you proceed!" +
+        "Press the 'Save' button to save your resolution.";
+    }
+  });
+  $(".autocomplete")
+  .on("init", function(e) {
+    e.stopPropagation();
+    $(this).autocomplete($(this).getData());
   });
   $("input.required, textarea.required")
   .on("checkRequired", function(e) {
@@ -992,44 +1036,6 @@ function getEventHandlers(loadedData) {
       serverSave($("#editor-main"));
     }
   });
-  $("#action-pdf")
-  .on("click", function(e) {
-    e.stopPropagation();
-
-    //finalize editing on all fields
-    $(".clause").trigger("editInactive");
-
-    //save first if anything changed
-    if (changesSaved) {
-      //no saving necessary
-      generatePdf();
-    } else {
-      //save json to server first
-      serverSave($("#editor-main"), function() {
-        //display pdf directly after generating
-        generatePdf();
-      });
-    }
-  });
-  $("#action-plaintext")
-  .on("click", function(e) {
-    e.stopPropagation();
-
-    //finalize editing on all fields
-    $(".clause").trigger("editInactive");
-
-    //save first if anything changed
-    if (changesSaved) {
-      //no saving necessary
-      generatePlaintext();
-    } else {
-      //save json to server first
-      serverSave($("#editor-main"), function() {
-        //display pdf directly after generating
-        generatePlaintext();
-      });
-    }
-  });
 }
 
 //do things when the document has finished loading
@@ -1045,69 +1051,83 @@ $(document).ready(function() {
     codeElement.remove();
   }
 
-  //load external sponsor, phrase and forum name data
-  var autofillData;
-  $.getJSON("/autofillData.json")
-  .fail(function(data, status, error) {
-    //log the error we have with getting the data
-    console.error(status, error);
-    makeAlertMessage(
-      "error_outline", "Error loading necessary data!", "ok",
-      "Failed to download data! Check the console for more info." +
-      " Please file a " + bugReportLink("data_load_fail") + " and describe this problem." +
-      "(The editor won't work until you reload the page and the data is downloaded)",
-      "data_load_fail");
-  })
-  .done(function(data) {
-    //data object to pass to scope of event handlers
-    var loadedData = {};
+  //check if we are in read-only/no load mode
+  if ($("#read-only-mode").length) {
+    //set save status flags for no load mode
+    changesSaved = true;
+    noChangesMade = true;
 
-    //mapping between autofill data and input field selectors
-    loadedData.autofillDataMapping = {
-      "#forum-name": data.forums.map(function(pair) { return pair[0]; }), //only full name ok
-      "#main-spon,#co-spon": data.sponsors.slice(),
-      "#preamb-clauses .phrase-input": data.phrases.preamb.slice(),
-      "#op-clauses .phrase-input": data.phrases.op.slice(),
-    };
-
-    //get forum abbreviation mapping data
-    loadedData.forumAbbreviations = data.forums.slice();
-    loadedData.forumAbbreviations.shift();
-
-    //convert to mapping object
-    loadedData.forumAbbrevMapping = {};
-    loadedData.forumAbbreviations.forEach(function(nameSet) {
-      //attach mapping
-      loadedData.forumAbbrevMapping[nameSet[1].trim().toLowerCase()] = nameSet[0];
-    });
-
-    //register all event handlers
-    getEventHandlers(loadedData);
-
-    //transform into correct data structure when gotten data
-    autofillData = transformMarkedArrays(data, "_convert", null);
-
-    //data used to inititalize input fields/thingies and their other options
-    var initData = {
-      "#forum-name": makeAutofillSettings(autofillData.forums),
-      "#co-spon": {
-        autocompleteOptions: makeAutofillSettings(autofillData.sponsors)
-      },
-      "#main-spon": makeAutofillSettings(autofillData.sponsors),
-      "#preamb-clauses .phrase-input": makeAutofillSettings(autofillData.phrases.preamb),
-      "#op-clauses .phrase-input": makeAutofillSettings(autofillData.phrases.op),
-    };
-
-    //for all init data attach the data to the element
-    for (var dataSelector in initData) {
-      //attach data to all elements that match
-      $(dataSelector).data(dataPrefix, initData[dataSelector]);
-    }
+    //only register essential event handler, not associated with editor directly
+    registerEssentialEventHandlers(false);
 
     //trigger all init events
     $("#editor-main").find("*").trigger("init");
+  } else { //proceed normally
+    //load external sponsor, phrase and forum name data
+    var autofillData;
+    $.getJSON("/autofillData.json")
+    .fail(function(data, status, error) {
+      //log the error we have with getting the data
+      console.error(status, error);
+      makeAlertMessage(
+        "error_outline", "Error loading necessary data!", "ok",
+        "Failed to download data! Check the console for more info." +
+        " Please file a " + bugReportLink("data_load_fail") + " and describe this problem." +
+        "(The editor won't work until you reload the page and the data is downloaded)",
+        "data_load_fail");
+    })
+    .done(function(data) {
+      //data object to pass to scope of event handlers
+      var loadedData = {};
 
-    //initiate loading of resolution from server with preset token
-    serverLoad(resolutionToken, true, $("#editor-main"));
-  });
+      //mapping between autofill data and input field selectors
+      loadedData.autofillDataMapping = {
+        "#forum-name": data.forums.map(function(pair) { return pair[0]; }), //only full name ok
+        "#main-spon,#co-spon": data.sponsors.slice(),
+        "#preamb-clauses .phrase-input": data.phrases.preamb.slice(),
+        "#op-clauses .phrase-input": data.phrases.op.slice(),
+      };
+
+      //get forum abbreviation mapping data
+      loadedData.forumAbbreviations = data.forums.slice();
+      loadedData.forumAbbreviations.shift();
+
+      //convert to mapping object
+      loadedData.forumAbbrevMapping = {};
+      loadedData.forumAbbreviations.forEach(function(nameSet) {
+        //attach mapping
+        loadedData.forumAbbrevMapping[nameSet[1].trim().toLowerCase()] = nameSet[0];
+      });
+
+      //register all event handlers
+      registerEssentialEventHandlers(true);
+      registerEventHandlers(loadedData);
+
+      //transform into correct data structure when gotten data
+      autofillData = transformMarkedArrays(data, "_convert", null);
+
+      //data used to inititalize input fields/thingies and their other options
+      var initData = {
+        "#forum-name": makeAutofillSettings(autofillData.forums),
+        "#co-spon": {
+          autocompleteOptions: makeAutofillSettings(autofillData.sponsors)
+        },
+        "#main-spon": makeAutofillSettings(autofillData.sponsors),
+        "#preamb-clauses .phrase-input": makeAutofillSettings(autofillData.phrases.preamb),
+        "#op-clauses .phrase-input": makeAutofillSettings(autofillData.phrases.op),
+      };
+
+      //for all init data attach the data to the element
+      for (var dataSelector in initData) {
+        //attach data to all elements that match
+        $(dataSelector).data(dataPrefix, initData[dataSelector]);
+      }
+
+      //trigger all init events
+      $("#editor-main").find("*").trigger("init");
+
+      //initiate loading of resolution from server with preset token
+      serverLoad(resolutionToken, true, $("#editor-main"));
+    });
+  }
 });
