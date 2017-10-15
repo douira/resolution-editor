@@ -2,31 +2,38 @@
   var stageData = [
     {
       title: "Initial Creation",
-      description: "This resolution has not been opened with the resolution token yet. The token will be released back into the system after a while if the resolution isn't saved for longer than 24 hours."
+      description: "This resolution has not been opened with the resolution token yet. The token will be released back into the system after a while if the resolution isn't saved for longer than 24 hours.",
+      advance: "Saving the resolution"
     },
     {
       title: "Delegate Writing",
-      description: "This resolution is being worked on by the delegate and has been opened with the resolution token. The reolution token is now bound to this saved resolution. The Delegate has to have their chair enter their access code to approve the written resolution by the chair."
+      description: "This resolution is being worked on by the delegate and has been opened with the resolution token. The reolution token is now bound to this saved resolution. The Delegate has to have their chair enter their access code to approve the written resolution by the chair.",
+      advance: "Entering a Chair access code to approve by the Chair"
     },
     {
       title: "Approval Panel Correcting",
-      description: "The Approval Panel is correcting this resolution. Only Chairs, who always have access, and the Approval Panel can edit this resolution. After having entered the Approval Panel access code to open the editor, a button is pressed after checking spelling and grammar to approve and advance this resolution to the next step."
+      description: "The Approval Panel is correcting this resolution. Only Chairs, who always have access, and the Approval Panel can edit this resolution. After having entered the Approval Panel access code to open the editor, a button is pressed after checking spelling and grammar to approve and advance this resolution to the next step.",
+      advance: "Entering an AP access code to approve by the Approval Panel"
     },
     {
       title: "Formal Clearing Viewing",
-      description: "The Formal Clearing Office is looking at this resolution and determining its fulfilment of the formal constraints. The Formal Clearing approves the resolution following the same scheme as the Approval Panel; a button is pressed by the Formal Clearing to approve and advance the resolution."
+      description: "The Formal Clearing Office is looking at this resolution and determining its fulfilment of the formal constraints. The Formal Clearing approves the resolution following the same scheme as the Approval Panel; a button is pressed by the Formal Clearing to approve and advance the resolution.",
+      advance: "Entering an FC access code to approve by the Formal Clearing Office"
     },
     {
       title: "Waiting to Print",
-      description: "This resolution has completed its validation process and will soon be printed by the Secreteriat. From this point on only Chairs have editing access to this resolution."
+      description: "This resolution has completed its validation process and will soon be printed by the Secreteriat. From this point on only Chairs have editing access to this resolution.",
+      advance: "Printing the resoluion and entering an SC (Secreteriat) access code to signify this action"
     },
     {
       title: "Waiting to Debate",
-      description: "The Secreteriat has printed this resolution for the committee and it will be debated some time after the printed copies have been distributed to the Delegates."
+      description: "The Secreteriat has printed this resolution for the committee and it will be debated some time after the printed copies have been distributed to the Delegates.",
+      advance: "Entering a Chair access code to begin the debate"
     },
     {
       title: "In Debate",
-      description: "This resolution is being actively debated by its committee and will frequently change because of this. LiveView, a propsed feature, will be enabled for this resolution during this stage and can be accessed by another device for presentation when this feature is implemented."
+      description: "This resolution is being actively debated by its committee and will frequently change because of this. LiveView, a propsed feature, will be enabled for this resolution during this stage and can be accessed by another device for presentation when this feature is implemented.",
+      advance: "Entering a Chair access code to end the debate and finalize the resolution"
     },
     {
       title: "Finished",
@@ -46,11 +53,17 @@ mixin stage-info-index(index, decorated, noDescription)
       index = stageData.length - 1;
       indexName = "?";
     }
+    var data = stageData[index];
   h5.light(id="rstage" + index)
     if decorated
       +stage-info-icon
       | Status:
-    =" " + stageData[index].title
+    =" " + data.title
     b.text-lighten-1.grey-text=" #" + indexName
   if ! noDescription
-    p.justify=stageData[index].description
+    p.justify=data.description
+      if data.advance
+        br
+        b Advance to next stage by:
+        |
+        =data.advance
