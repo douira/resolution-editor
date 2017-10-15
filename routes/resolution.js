@@ -12,11 +12,11 @@ const issueError = resUtil.issueError;
 
 //register callback to get collections on load
 let resolutions, access, db;
-databaseInterface.onload = (loadedDb) => {
+databaseInterface.onload((loadedDb) => {
   resolutions = loadedDb.collection("resolutions");
   access = loadedDb.collection("access");
   db = loadedDb;
-};
+});
 
 //delegate no privilege access code doc
 const delegateCodeDoc = { level: "DE" };
@@ -231,7 +231,7 @@ router.get("/new", function(req, res) {
     resolutions.insertOne({
       token: token, //identifier
       created: timeNow, //time of creation
-      changed: timeNow, //last tieme it was changed = saved
+      changed: timeNow, //last time it was changed = saved
       stageHistory: [ timeNow ], //index is resolution stage, time when reached that stage
       lastRender: 0, //logs pdf render events
       stage: 0 //current workflow stage (see phase 2 notes)
