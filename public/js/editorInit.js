@@ -564,7 +564,7 @@ function registerEventHandlers(loadedData) {
     //reset invalid labels
     $(this).removeClass("invalid");
   })
-  .on("change paste", function() {
+  .on("change paste keyup", function() {
     //register changed content and set flag for user alert
     changesSaved = false;
     noChangesMade = false;
