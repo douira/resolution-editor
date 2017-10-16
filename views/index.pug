@@ -42,12 +42,12 @@ block content
         .row.col.xl6.l5.s12
           .input-field.col.l12.m6.s12
             +icon("my_location", "prefix")
-            input#token-input(type="text" placeholder="@ 12345EFGH")
+            input#token-input(type="text" placeholder=tokenPlaceholder)
             label(for="token-input") Enter resolution token
           .input-field.col.l12.m6.s12
             form(method="POST" action="/")#code-form
               +icon("supervisor_account", "prefix")
-              input#code-input(name="code" type="text" placeholder="! ABCD5678")
+              input#code-input(name="code" type="text" placeholder=codePlaceholder)
               label(for="code-input") (optional) Enter access code
         .col.xl6.l7.m12#token-info.justify Talk to your chair if you've #[b forgotten] your resolution token. (Looking at your browser's history can be helpful too.) You're only required to enter an access code if editing access to the resolution has been #[b restricted] and you're granted elevated editing privileges with a personal access code. It's still possible to view a #[b read-only] version and metadata about a resolution if you don't have editing privileges. If you've forgotten your access code or have any other problems accessing the editor, please #[b contact IT-Management].
     .center: a.btn-large.waves-effect.waves-light#submit-btn(href="#" class=pri) Submit

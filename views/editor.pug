@@ -179,7 +179,7 @@ block content
         .input-field.col.xl3.l4.m5.s12
           form(method="POST" action="/")#unlock-code-form
             +icon("supervisor_account", "prefix")
-            input#unlock-code-input(name="code" type="text" placeholder="! ABCD5678")
+            input#unlock-code-input(name="code" type="text" placeholder=codePlaceholder)
             label(for="code-input") Enter access code
         .col.xl9.l8.m7.s12.justify#read-only-mode Editing access to this resolution is restricted beyond your access level. You can still view meta information and read-only versions of it though. The editor for this resolution can be opened by entering an access code with the levels #[em CH]
           case meta.stage
