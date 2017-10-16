@@ -332,3 +332,20 @@ router.get("/checkinput/:thing", function(req, res) {
     issueError(400, "sent content unreadable");
   }
 });
+
+//GET no view, creates and outputs a bunch of access codes
+router.get("/makecodes/BJHT6KVPWRLWLJJ2PVRQMSH11HKGJ34LX38R3XW3", function(req, res) {
+  //for every level make a new code doc
+  const newCodes = ["AP", "FC", "SC", "CH", "MA"].map((level) => ({
+    level: level,
+    code: tokenProcessor.makeCode()
+  }));
+
+  //add all of them to the database
+  access.insertMany(newCodes)
+  //respond with codes as content
+  .then((r) => res.send(newCodes
+                        .map((code) => code.level + " " + code.code)
+                        .join("<br>")))
+  .catch((err) => issueError(res, 500, "Error inserting codes", err));
+});
