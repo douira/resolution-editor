@@ -4,7 +4,7 @@ block styles
   link(href="/css/editorStyle.css" type="text/css" rel="stylesheet")
 
 block content
-  .section#editor-main: .container
+  .section: .container#editor-main
     if code
       #code-preset.hide-this=code
     #resolution-stage.hide-this=meta.stage
@@ -20,6 +20,10 @@ block content
       =" "
       span#token-preset.lighten-3(class=sec)=token
     p.justify Please write this token down, because it will be used to identify your resolution when you want continue working on it later. Talk to your chair if you've forgotten your resolution token. (Looking at your browser's history can be helpful too.)
+      br
+      | Your current access level is
+      a(href="/help#" + accessLevel)=" " + accessLevel
+      | .
     include stages
     +stage-info-index(meta.stage, true)
     if doLoad
@@ -34,46 +38,56 @@ block content
           +icon(icon, "text-darken-3 light-blue-text")
           =title
         .collapsible-body
-          block
+          table: tbody
+            block
     p This information is updated every time the page is reloaded.
     ul.collapsible(data-collapsible="expandable")
-      mixin item-table
-        table: tbody
-          block
       mixin t-item(label, content)
         tr
           td=label
           td=content
       +collapsible-item("Usage Log", "access_time")
-        +item-table
-          +t-item("Created:", meta.created)
-          +t-item("Last Change:", meta.changed)
-          +t-item("Last Render:", meta.lastRender)
+        +t-item("Created:", meta.created)
+        +t-item("Last Change:", meta.changed)
+        +t-item("Last Render:", meta.lastRender)
       +collapsible-item("Stage History", "history")
-        +item-table
-          - var i = 0;
-          while i < meta.stageHistory.length
-            tr
-              td=stageData[i].title
-                b.text-lighten-1.grey-text  #
-                  =i
-              td=meta.stageHistory[i++]
+        - var i = 0;
+        while i < meta.stageHistory.length
+          tr
+            td=stageData[i].title
+              b.text-lighten-1.grey-text  #
+                =i
+            td=meta.stageHistory[i++]
       +collapsible-item("Structure Analysis", "filter_list")
-        +item-table
-          +t-item("Words:", meta.wordCount)
-          +t-item("Content Nodes:", meta.nodeCount)
+        +t-item("Words:", meta.wordCount)
+        +t-item("Content Nodes:", meta.nodeCount)
     h5.light Actions
-    //-
-      case meta.stage
-        when 1
-          p Finish writing by having chair enter their code:
-          .row
-            .input-field.col.l6.s12
-              form(method="POST" action="/")#stage-code-form
+    //-secreteriat doesn't edit but must be able to advance
+    - meta.stage = 4
+    if doLoad || meta.stage === 4
+      if meta.stage < 6
+        .row
+          if meta.stage
+            .input-field.col.xl3.l4.m5.s12
+              form(method="POST" action="/")#advance-code-form
                 +icon("supervisor_account", "prefix")
-                input#stage-code-input(name="code" type="text" placeholder="! ABCD5678")
-                label(for="code-input") Enter access code
-            a.btn.waves-effect.waves-light#stage-submit-btn(href="#" class=pri) Submit
+                input#advance-code-input.not-editor(name="code" type="text" placeholder=codePlaceholder)
+                label(for="advance-code-input") Enter access code
+          mixin input-field-wrapper
+            if meta.stage
+              .col.xl9.l8.m7.s12
+                block
+            else
+              .col.s12
+                block
+          +input-field-wrapper
+            p.justify This resolution can be #[em advanced] to
+              a(href="/help#rstage" + meta.stage + 1)  stage ##{meta.stage + 1}
+              |  by: #{stageData[meta.stage].advance}.
+              if ! meta.stage
+                |  This is accomplished by pressing the save button right below and will claim the token by making it persistent.
+          if meta.stage
+            .col.s12.center: a.btn.waves-effect.waves-light.advance-submit-btn(href="#" class=pri) Submit
     .collection#meta-buttons
       mixin meta-button(id, text, icon, tooltipText, classes)
         a.collection-item.waves-effect.waves-light(class=classes id=id)&attributes(tooltip(tooltipText, "top"))
@@ -179,9 +193,11 @@ block content
         .input-field.col.xl3.l4.m5.s12
           form(method="POST" action="/")#unlock-code-form
             +icon("supervisor_account", "prefix")
-            input#unlock-code-input(name="code" type="text" placeholder=codePlaceholder)
-            label(for="code-input") Enter access code
-        .col.xl9.l8.m7.s12.justify#read-only-mode Editing access to this resolution is restricted beyond your access level. You can still view meta information and read-only versions of it though. The editor for this resolution can be opened by entering an access code with the levels #[em CH]
+            input#unlock-code-input.not-editor(name="code" type="text" placeholder=codePlaceholder)
+            label(for="unlock-code-input") Enter access code
+        .col.xl9.l8.m7.s12.justify#read-only-mode Editing access to this resolution is restricted beyond your access level (
+          a(href="/help#" + accessLevel)=accessLevel
+          | ). You can still view meta information and read-only versions of it though. The editor for this resolution can be opened by entering an access code with the levels #[em CH]
           case meta.stage
             when 2
               | , #[em AP]

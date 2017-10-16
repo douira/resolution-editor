@@ -106,12 +106,12 @@ function checkBodyRes(req, res, callback) {
 //does auth with code, gets resolution doc given and does code and permission check
 function authWithCode(res, resolutionDoc, codeDoc, callback, permissionMissmatch) {
   //do permission auth
-  if (resUtil.checkPermissionMatch(resolutionDoc, codeDoc)) {
+  if (resUtil.checkEditPermissionMatch(resolutionDoc, codeDoc)) {
     //call callback with everythign gathered
     callback(resolutionDoc.token, resolutionDoc, codeDoc);
   } else if (typeof permissionMissmatch === "function") {
     //call alternative callback if given
-    permissionMissmatch(resolutionDoc.token, resolutionDoc);
+    permissionMissmatch(resolutionDoc.token, resolutionDoc, codeDoc);
   } else {
     issueError(res, 400, "not authorized");
   }
@@ -277,7 +277,8 @@ function getEditorViewParams(doLoad, resDoc, token, codeDoc) {
     token: token,
     meta: resUtil.getMetaInfo(resDoc),
     doLoad: doLoad,
-    code: typeof codeDoc === "undefined" ? null : codeDoc.code
+    code: codeDoc.hasOwnProperty("code") ? codeDoc.code : null,
+    accessLevel: codeDoc.level
   };
 }
 
@@ -290,9 +291,9 @@ function getEditorViewParams(doLoad, resDoc, token, codeDoc) {
       (token, resDoc, codeDoc) =>
         //send rendered editor page with token set
         res.render("editor", getEditorViewParams(true, resDoc, token, codeDoc)),
-      (token, resDoc) =>
+      (token, resDoc, codeDoc) =>
         //send edtor page but with "no access" notice
-        res.render("editor", getEditorViewParams(false, resDoc, token))
+        res.render("editor", getEditorViewParams(false, resDoc, token, codeDoc))
     );
   });
 });
@@ -333,7 +334,7 @@ router.get("/checkinput/:thing", function(req, res) {
   }
 });
 
-//GET no view, creates and outputs a bunch of access codes
+//GET no view, creates and outputs a bunch of access codes, for TESTING only: remove in production
 router.get("/makecodes/BJHT6KVPWRLWLJJ2PVRQMSH11HKGJ34LX38R3XW3", function(req, res) {
   //for every level make a new code doc
   const newCodes = ["AP", "FC", "SC", "CH", "MA"].map((level) => ({

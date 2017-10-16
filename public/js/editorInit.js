@@ -553,7 +553,7 @@ function registerEventHandlers(loadedData) {
       reader.readAsText(file);
     }
   });
-  $("input, textarea")
+  $("input, textarea").not(".not-editor")
   .on("activateLabel", function(e) {
     e.stopPropagation();
     //make associated labels active
@@ -584,7 +584,7 @@ function registerEventHandlers(loadedData) {
       elem.trigger("checkRequired");
     }
   });
-  $("input")
+  $("input:not(.not-editor)")
   .on("reset", function(e) {
     e.stopPropagation();
     $(this).val("").resetSiblingLabels();
@@ -1051,6 +1051,13 @@ $(document).ready(function() {
     //remove element
     codeElement.remove();
   }
+
+  //register an access input group for resolution advancement
+  registerAccessInputs("/resolution/editor/", ".advance-submit-btn", "#advance-code-form", {
+    //need to look at both fields, nothing given already
+    presetToken: resolutionToken,
+    codeFieldSelector: "#advance-code-input"
+  });
 
   //check if we are in read-only/no load mode
   if ($("#read-only-mode").length) {
