@@ -63,6 +63,17 @@ block content
           +t-item("Words:", meta.wordCount)
           +t-item("Content Nodes:", meta.nodeCount)
     h5.light Actions
+    //-
+      case meta.stage
+        when 1
+          p Finish writing by having chair enter their code:
+          .row
+            .input-field.col.l6.s12
+              form(method="POST" action="/")#stage-code-form
+                +icon("supervisor_account", "prefix")
+                input#stage-code-input(name="code" type="text" placeholder="! ABCD5678")
+                label(for="code-input") Enter access code
+            a.btn.waves-effect.waves-light#stage-submit-btn(href="#" class=pri) Submit
     .collection#meta-buttons
       mixin meta-button(id, text, icon, tooltipText, classes)
         a.collection-item.waves-effect.waves-light(class=classes id=id)&attributes(tooltip(tooltipText, "top"))
@@ -166,6 +177,7 @@ block content
       h4.center: +icon("highlight_off", "medium grey-text text-darken-2")
       p.center#read-only-mode Editing access to this resolution is restricted beyond your access level. You can still view meta information and read-only versions of it though.
 block scripts
+  script(src="/js/accessInputs.js")
   script(src="/js/resolutionFormat.js")
   script(src="/js/dataInteraction.js")
   script(src="/js/editorInit.js")

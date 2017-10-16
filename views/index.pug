@@ -28,7 +28,7 @@ block content
           | Shorter waiting, approval and printing times. You won't have to look for the right Word setting or wait for the Formal Clearing Office to correct your formatting. Making new clauses and subclauses is as easy as ever.
         +icon-box("done_all", "No Formatting Mistakes", "l4 m6 s12")
           | With this editor you can focus on the content of your resolution. No more fiddling with badly behaving list constructs or looking for just the right amount of spacing: You're guaranteed to get a perfectly formatted document whenever you want.
-        +icon-box("visibility", "Easy to Use", "l4 m6 s12")
+        +icon-box("lightbulb_outline", "Easy to Use", "l4 m6 s12")
           | The interface provides hints and is usable on any device. You can generate a formatted document, add a clause or reorder with the push of a button. We'll do all the heavy lifting in the background and you just have to worry about what you want to say.
           br
           b Tip:
@@ -51,7 +51,7 @@ block content
               +icon("supervisor_account", "prefix")
               input#code-input(name="code" type="text" placeholder="! ABCD5678")
               label(for="code-input") (optional) Enter access code
-        .light.col.xl6.l7.m12#token-info.justify
+        .col.xl6.l7.m12#token-info.justify
           | Talk to your chair if you've
           b  forgotten
           |  your resolution token. (Looking at your browser's history can be helpful too.) You're only required to enter an access code if editing access to the resolution has been
@@ -64,4 +64,5 @@ block content
     .center: a.btn-large.waves-effect.waves-light#submit-btn(href="#" class=pri) Submit
     br
 block scripts
+  script(src="/js/accessInputs.js")
   script(src="/js/indexInit.js")
