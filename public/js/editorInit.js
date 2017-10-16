@@ -7,6 +7,7 @@
   serverSave,
   Materialize,
   generatePlaintext,
+  registerAccessInputs,
   serverLoad */
 //registers events and data, controls interaction behavior
 
@@ -424,15 +425,15 @@ function registerEssentialEventHandlers(doLoad) {
         checkAlertDisplay();
       }
     });
-  })
-  .on("reset", function(e) {
-    e.stopPropagation();
-    var elem = $(this);
-    if (doLoad) {
+  });
+  if (doLoad) {
+    $(".modal").on("reset", function(e) {
+      e.stopPropagation();
+      var elem = $(this);
       elem.find("input,textarea").trigger("reset");
       elem.find("#file-selector").hide();
-    }
-  });
+    });
+  }
   $("#action-pdf")
   .on("click", function(e) {
     e.stopPropagation();
@@ -1053,6 +1054,13 @@ $(document).ready(function() {
 
   //check if we are in read-only/no load mode
   if ($("#read-only-mode").length) {
+    //register an access input group for unlock of editor
+    registerAccessInputs("/resolution/editor/", "#unlock-submit-btn", "#unlock-code-form", {
+      //need to look at both fields, nothing given already
+      presetToken: resolutionToken,
+      codeFieldSelector: "#unlock-code-input"
+    });
+
     //set save status flags for no load mode
     changesSaved = true;
     noChangesMade = true;
