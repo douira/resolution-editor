@@ -174,7 +174,7 @@ router.get("/renderpdf/:token", function(req, res) {
     }
 
     //url to pdf
-    var pdfUrl = "/resolution/rendered/" + token + ".pdf";
+    const pdfUrl = "/resolution/rendered/" + token + ".pdf";
 
     //don't render if hasn't been saved again since last render
     if (document.changed < document.lastRender) {
@@ -188,7 +188,7 @@ router.get("/renderpdf/:token", function(req, res) {
       pandoc(
         latexGenerator(document.content),
         "-o public/rendered/" + token + ".pdf --template=public/template.latex",
-        (pandocErr, pandocResult) => {
+        (pandocErr) => {
           //hint error if occured
           if (pandocErr) {
             issueError(res, 500, "render problem pandoc result", pandocErr);
@@ -249,7 +249,7 @@ router.post("/save/:token", function(req, res) {
   //require resolution content to be present and valid
   checkBodyRes(req, res, (resolutionSent) => {
     //authorize, doesn't do code auth if node code necessary
-    fullAuth(req, res, (token, resolutionDoc, codeDoc) => {
+    fullAuth(req, res, (token) => {
       //save new document
       resolutions.updateOne(
         { token: token },
@@ -305,7 +305,7 @@ function getEditorViewParams(doLoad, resDoc, token, codeDoc) {
 //POST (no view) (request from editor after being started with set token) send resolution data
 router.post("/load/:token", function(req, res) {
   //authorize
-  fullAuth(req, res, (token, resolutionDoc, codeDoc) => {
+  fullAuth(req, res, (token, resolutionDoc) => {
     //send resolution to client, remove database wrapper
     res.send(resolutionDoc.content);
   });
@@ -315,7 +315,7 @@ router.post("/load/:token", function(req, res) {
 //same as above just with node special code
 router.get("/load/:token", function(req, res) {
   //authorize, absence of code is detected in fullAuth
-  fullAuth(req, res, (token, resolutionDoc, codeDoc) => {
+  fullAuth(req, res, (token, resolutionDoc) => {
     //send resolution to client, remove database wrapper
     res.send(resolutionDoc.content);
   });
@@ -324,7 +324,7 @@ router.get("/load/:token", function(req, res) {
 //POST (no view) to advance resolution, redirect to editor without code after completion
 router.post("/advance/:token", function(req, res) {
   //authorize, absence of code is detected in fullAuth
-  fullAuth(req, res, (token, resolutionDoc, codeDoc) => {
+  fullAuth(req, res, (token) => {
     //advance resolution to next stage
     resolutions.updateOne({ token: token }, {
       $inc: { stage: 1 },
@@ -385,7 +385,7 @@ router.get("/makecodes/BJHT6KVPWRLWLJJ2PVRQMSH11HKGJ34LX38R3XW3", function(req, 
   //add all of them to the database
   access.insertMany(newCodes)
   //respond with codes as content
-  .then((r) => res.send(newCodes
+  .then(() => res.send(newCodes
                         .map((code) => code.level + " " + code.code)
                         .join("<br>")))
   .catch((err) => issueError(res, 500, "Error inserting codes", err));
