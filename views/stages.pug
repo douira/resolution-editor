@@ -59,7 +59,7 @@ mixin stage-info-index(index, decorated, noDescription)
       +stage-info-icon
       | Status:
     =" " + data.title
-    b.text-lighten-1.grey-text=" #" + indexName
+    a(href="/help#rstage" + indexName): b.text-lighten-1.grey-text=" #" + indexName
   if ! noDescription
     p.justify=data.description
       if data.advance

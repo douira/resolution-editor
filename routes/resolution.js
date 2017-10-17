@@ -104,32 +104,34 @@ function checkBodyRes(req, res, callback) {
 }
 
 //does auth with code, gets resolution doc given and does code and permission check
-function authWithCode(res, resolutionDoc, codeDoc, callback, permissionMissmatch) {
+function authWithCode(res, resolutionDoc, codeDoc, callback, opts) {
   //do permission auth
-  if (resUtil.checkEditPermissionMatch(resolutionDoc, codeDoc)) {
-    //call callback with everythign gathered
+  if (resUtil.checkPermission(
+    resolutionDoc, codeDoc,
+    typeof opts === "undefined" ? undefined : opts.matchMode || undefined)) {
+    //call callback with everything gathered
     callback(resolutionDoc.token, resolutionDoc, codeDoc);
-  } else if (typeof permissionMissmatch === "function") {
+  } else if (opts.hasOwnProperty("permissionMissmatch")) {
     //call alternative callback if given
-    permissionMissmatch(resolutionDoc.token, resolutionDoc, codeDoc);
+    opts.permissionMissmatch(resolutionDoc.token, resolutionDoc, codeDoc);
   } else {
     issueError(res, 400, "not authorized");
   }
 }
 
 //does full auth procedure (token, POSTed code and permission match)
-function fullAuth(req, res, callback, permissionMissmatch) {
+function fullAuth(req, res, callback, opts) {
   //check for token and save new resolution content
   checkToken(req, res, (token, resolutionDoc) => {
     //check if a code was sent
     if (req.body && req.body.code && req.body.code.length) {
       //check sent code
       checkCode(req, res, (codeDoc) => {
-        authWithCode(res, resolutionDoc, codeDoc, callback, permissionMissmatch);
+        authWithCode(res, resolutionDoc, codeDoc, callback, opts);
       });
     } else {
       //use "DE" delegate level code doc
-      authWithCode(res, resolutionDoc, delegateCodeDoc, callback, permissionMissmatch);
+      authWithCode(res, resolutionDoc, delegateCodeDoc, callback, opts);
     }
   });
 }
@@ -139,7 +141,7 @@ function attemptNewThing(res, isToken, finalCallback) {
   //make new token
   const thing = tokenProcessor[isToken ? "makeToken" : "makeCode"]();
 
-  //check if it exists
+  //check if it exists in db
   (isToken ? resolutions.findOne({ token: thing }) :
    access.findOne({ code: thing })).then((document) => {
     //check if it exists
@@ -231,7 +233,7 @@ router.get("/new", function(req, res) {
     resolutions.insertOne({
       token: token, //identifier
       created: timeNow, //time of creation
-      changed: timeNow, //last time it was changed = saved
+      changed: timeNow, //last time it was changed = saved, stage advances don't count
       stageHistory: [ timeNow ], //index is resolution stage, time when reached that stage
       lastRender: 0, //logs pdf render events
       stage: 0 //current workflow stage (see phase 2 notes)
@@ -291,9 +293,11 @@ function getEditorViewParams(doLoad, resDoc, token, codeDoc) {
       (token, resDoc, codeDoc) =>
         //send rendered editor page with token set
         res.render("editor", getEditorViewParams(true, resDoc, token, codeDoc)),
-      (token, resDoc, codeDoc) =>
-        //send edtor page but with "no access" notice
-        res.render("editor", getEditorViewParams(false, resDoc, token, codeDoc))
+      {
+        permissionMissmatch: (token, resDoc, codeDoc) =>
+          //send edtor page but with "no access" notice
+          res.render("editor", getEditorViewParams(false, resDoc, token, codeDoc))
+      }
     );
   });
 });
@@ -316,6 +320,42 @@ router.get("/load/:token", function(req, res) {
     res.send(resolutionDoc.content);
   });
 });
+
+//POST (no view) to advance resolution, redirect to editor without code after completion
+router.post("/advance/:token", function(req, res) {
+  //authorize, absence of code is detected in fullAuth
+  fullAuth(req, res, (token, resolutionDoc, codeDoc) => {
+    //advance resolution to next stage
+    resolutions.updateOne({ token: token }, {
+      $inc: { stage: 1 },
+      $push: { stageHistory: Date.now() }
+    })
+    //redirect to editor without code
+    .then(() => res.redirect("/resolution/editor/" + token))
+    .catch((err) => issueError(res, 500, "advance db error", err));
+  }, {
+    //error/warning page on fail
+    permissionMissmatch: (token, resolutionDoc, codeDoc) => {
+      //display error page
+      res.render("weakperm", {
+        token: resolutionDoc.token,
+        stage: resolutionDoc.stage,
+        accessLevel: codeDoc.level
+      });
+    },
+    //use advance match mode because editing and advancement have different requirements
+    matchMode: "advance"
+  });
+});
+
+//GET (view) mock version of the weakperm page
+/*router.get("/weakperm/:token", function(req, res) {
+  res.render("weakperm", {
+    token: "@PKMGK6JV",
+    stage: 5,
+    accessLevel: "DE"
+  });
+});*/
 
 //GET (no view, validation response) checks if sent token or code is valid (for form display)
 router.get("/checkinput/:thing", function(req, res) {

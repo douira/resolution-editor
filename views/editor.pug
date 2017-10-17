@@ -55,17 +55,15 @@ block content
         while i < meta.stageHistory.length
           tr
             td=stageData[i].title
-              b.text-lighten-1.grey-text  #
-                =i
+              a(href="/help#rstage" + i): b.text-lighten-1.grey-text=" #" + i
             td=meta.stageHistory[i++]
       +collapsible-item("Structure Analysis", "filter_list")
         +t-item("Words:", meta.wordCount)
         +t-item("Content Nodes:", meta.nodeCount)
     h5.light Actions
     //-secreteriat doesn't edit but must be able to advance
-    - meta.stage = 4
     if doLoad || meta.stage === 4
-      if meta.stage < 6
+      if meta.stage <= 6
         .row
           if meta.stage
             .input-field.col.xl3.l4.m5.s12
@@ -76,16 +74,19 @@ block content
           mixin input-field-wrapper
             if meta.stage
               .col.xl9.l8.m7.s12
-                block
+                p
+                  block
             else
               .col.s12
                 block
           +input-field-wrapper
-            p.justify This resolution can be #[em advanced] to
-              a(href="/help#rstage" + meta.stage + 1)  stage ##{meta.stage + 1}
+            .justify This resolution can be #[em advanced] to
+              a(href="/help#rstage" + (meta.stage + 1))  stage ##{meta.stage + 1}
               |  by: #{stageData[meta.stage].advance}.
-              if ! meta.stage
-                |  This is accomplished by pressing the save button right below and will claim the token by making it persistent.
+              if meta.stage
+                |  You will be redirected back to this page but will have to re-enter your access code if you still need and possess editing access to this resolution after its advancement to the next stage.
+              else
+                |  This is accomplished by pressing the save button right below and will claim the token by making it persistent. The page needs to be reloaded to update the stage and display the advancement access code input field.
           if meta.stage
             .col.s12.center: a.btn.waves-effect.waves-light.advance-submit-btn(href="#" class=pri) Submit
     .collection#meta-buttons

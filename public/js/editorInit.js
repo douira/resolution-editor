@@ -1053,7 +1053,7 @@ $(document).ready(function() {
   }
 
   //register an access input group for resolution advancement
-  registerAccessInputs("/resolution/editor/", ".advance-submit-btn", "#advance-code-form", {
+  registerAccessInputs("/resolution/advance/", ".advance-submit-btn", "#advance-code-form", {
     //need to look at both fields, nothing given already
     presetToken: resolutionToken,
     codeFieldSelector: "#advance-code-input"
