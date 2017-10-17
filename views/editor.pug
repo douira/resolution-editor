@@ -61,6 +61,7 @@ block content
       +collapsible-item("Structure Analysis", "filter_list")
         +t-item("Words:", meta.wordCount)
         +t-item("Content Nodes:", meta.nodeCount)
+        +t-item("Depth Index:", meta.depthIndex)
     h5.light Actions
     //-secreteriat doesn't edit but must be able to advance -> stage 4 displays advance field even if not editing
     if doLoad || meta.stage === 4
