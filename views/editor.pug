@@ -58,10 +58,17 @@ block content
             td=stageData[i].title
               a(href="/help#rstage" + i): b.text-lighten-1.grey-text=" #" + i
             td=meta.stageHistory[i++]
-      +collapsible-item("Structure Analysis", "filter_list")
-        +t-item("Words:", meta.wordCount)
-        +t-item("Content Nodes:", meta.nodeCount)
-        +t-item("Depth Index:", meta.depthIndex)
+      if meta.stage
+        +collapsible-item("Structure Analysis", "filter_list")
+          +t-item("Number of Words:", meta.wordCount)
+          +t-item("Number of Content Nodes:", meta.nodeCount)
+          +t-item("Depth Points per Clause:", meta.depthIndex)
+          +t-item("Average Number of Words per Clause:", meta.avrgClauseWords)
+          +t-item("Clauses:", meta.clauseCount[0])
+          if meta.clauseCount[1]
+            +t-item("Subclauses:", meta.clauseCount[1])
+          if meta.clauseCount[2]
+            +t-item("Subclauses:", meta.clauseCount[2])
     h5.light Actions
     //-secreteriat doesn't edit but must be able to advance -> stage 4 displays advance field even if not editing
     if doLoad || meta.stage === 4
