@@ -1,4 +1,5 @@
-/*jshint esversion: 5, browser: true, jquery: true */
+/*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
+/* exported module*/
 
 //module.exports for usa of node like files in browser
 var module = { exports: {} };

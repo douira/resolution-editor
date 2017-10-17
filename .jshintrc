@@ -12,5 +12,8 @@
   "eqeqeq": true,
   "curly": true,
   "bitwise": true,
-  "latedef": "nofunc"
+  "latedef": "nofunc",
+  "undef": true,
+  "unused": true,
+  "varstmt": true
 }

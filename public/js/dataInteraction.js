@@ -1,4 +1,4 @@
-/*jshint esversion: 5, browser: true, jquery: true */
+/*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
 /* global makeAlertMessage,
   checkRequiredFields,
   module,
@@ -7,6 +7,12 @@
   resolutionCode,
   Materialize,
   allowedSubclauseDepth */
+/* exported loadFilePick,
+  serverLoad,
+  generatePdf,
+  generatePlaintext,
+  serverSave,
+  downloadJson*/
 //file actions are defined in this file
 
 //current version of the resolution format supported
@@ -182,7 +188,7 @@ function loadJson(json, container, callbackOnSuccess) {
 }
 
 //load file from computer file system
-function loadFilePick(container, callback) {
+function loadFilePick(container) {
   //make alert message file select
   makeAlertMessage(
     "file_upload", "Open resolution file", "cancel", function(body, modal) {
@@ -270,7 +276,7 @@ function generatePdf() {
 }
 
 //directs the user to the plaintext view
-function generatePlaintext(container) {
+function generatePlaintext() {
   //make message
   makeAlertMessage(
     "description", "Generated Plaintext", "done",
@@ -436,7 +442,7 @@ function downloadJson(container) {
 function saveFileDownload(str) {
   //make element in modal to download with and add data to download
   var fileName = "resolution.rso";
-  makeAlertMessage("file_download", "Save resolution as file", "cancel", function(body, modal) {
+  makeAlertMessage("file_download", "Save resolution as file", "cancel", function(body) {
     //make download button with blob data
     body.append("<br>");
     $("<a/>")

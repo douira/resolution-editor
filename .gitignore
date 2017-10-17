@@ -145,7 +145,7 @@ render_out
 #settings file
 #.brackets.json
 
-#database and render cache with all it's ever changing files
+#database and render cache with all it's ever changing files, empty but present
 data/*
 public/rendered/*
 !*.gitkeep

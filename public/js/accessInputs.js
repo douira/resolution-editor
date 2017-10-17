@@ -1,4 +1,5 @@
-/*jshint esversion: 5, browser: true, jquery: true */
+/*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
+/*exported registerAccessInputs*/
 //deals with UI for input of token and access codes
 
 //handles code and token input and registers the event handlers for the given fields
@@ -86,7 +87,7 @@ function registerAccessInputs(url, submitSelector, formSelector, inputOpts) {
   }
 
   //token and code input validation
-  $(fieldSelector).on("keyup checkValidation", function(e) {
+  $(fieldSelector).on("keyup checkValidation", function() {
     var elem = $(this);
 
     //get value of current input field and remove any whitespace, make capitalized
@@ -130,7 +131,7 @@ function registerAccessInputs(url, submitSelector, formSelector, inputOpts) {
             //set in check register
             checkedValues[fieldId][value] = false;
           })
-          .always(function(responseData) {
+          .always(function() {
             //update again, (we're in a future callback)
             updateButtonState();
           });

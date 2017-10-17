@@ -1,4 +1,4 @@
-/*jshint esversion: 5, browser: true, jquery: true */
+/*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
 /*global
   registerAccessInputs
 */

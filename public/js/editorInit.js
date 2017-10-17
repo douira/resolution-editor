@@ -1,4 +1,4 @@
-/*jshint esversion: 5, browser: true, jquery: true */
+/*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
 /*global
   loadFilePick,
   generatePdf,
@@ -9,6 +9,7 @@
   generatePlaintext,
   registerAccessInputs,
   serverLoad */
+/* exported checkRequiredFields*/
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -91,7 +92,7 @@ function transformMarkedArrays(structure, flag, propValue, depth) {
           structure = obj;
         } else {
           //recurse deeper
-          structure.map(function(obj, index) {
+          structure.map(function(obj) {
             return transformMarkedArrays(obj, flag, propValue, depth + 1);
           });
         }
@@ -681,7 +682,7 @@ function registerEventHandlers(loadedData) {
     //apply to global flag
     badFieldPresent = badFieldPresent || valueBad;
   })
-  .on("chip.add chip.delete", function(e) {
+  .on("chip.add chip.delete", function() {
     //change action
     changesSaved = false;
     noChangesMade = false;
