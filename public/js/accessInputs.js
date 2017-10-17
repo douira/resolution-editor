@@ -7,18 +7,21 @@ function registerAccessInputs(url, submitSelector, formSelector, inputOpts) {
   //submitSelector and formSelector must both resolve to elments
   if (! $(submitSelector).length || $(formSelector).length !== 1) {
     //wrong
-    console.log("accessInput registration error: selectors faulty");
+    //console.log("accessInput registration error: selectors faulty"); only run when debugging
     return;
   }
 
-  //array of booleans that keep track of field validation states
-  var validationStates = {
-    token: false,
-    code: "onlyToken"
+  //states of the two fields
+  var fieldStates = {
+    token: {
+      valid: false, //field validation states
+      checkedValues: [] //array of already queried values
+    },
+    code: {
+      valid: "onlyToken",
+      checkedValues: []
+    }
   };
-
-  //array of already queried values
-  var checkedValues = { token: [], code: [] };
 
   //check for selector of code input field or given code for which a hidden field will be created
   var codeFieldSelector = "";
@@ -31,7 +34,7 @@ function registerAccessInputs(url, submitSelector, formSelector, inputOpts) {
                         inputOpts.presetCode + "'>");
 
     //is given and ok
-    validationStates.code = "onlyToken";
+    fieldStates.code.valid = "onlyToken";
   } else {
     //wrong
     console.log("accessInput registration error: missing token data");
@@ -49,7 +52,7 @@ function registerAccessInputs(url, submitSelector, formSelector, inputOpts) {
     presetToken = inputOpts.presetToken;
 
     //expect valid token and signify that in validation states
-    validationStates.token = true;
+    fieldStates.token.valid = true;
   } else {
     //wrong
     console.log("accessInput registration error: missing code data");
@@ -68,9 +71,9 @@ function registerAccessInputs(url, submitSelector, formSelector, inputOpts) {
   //updates the button state after checking the validation state of both fields
   function updateButtonState() {
     //check all validation states
-    allOk = validationStates.token &&
-      (validationStates.code &&
-       (validationStates.code === true || typeof presetToken === "undefined"));
+    allOk = fieldStates.token.valid &&
+      (fieldStates.code.valid &&
+       (fieldStates.code.valid === true || typeof presetToken === "undefined"));
 
     //apply to button state
     $(submitSelector)[allOk ? "removeClass" : "addClass"]("disabled");
@@ -79,7 +82,7 @@ function registerAccessInputs(url, submitSelector, formSelector, inputOpts) {
   //adds or removes the invalid flag
   function setInputValidState(element, isValid, id) {
     //register state
-    validationStates[id] = isValid;
+    fieldStates[id].valid = isValid;
 
     //add or remove class
     element[isValid ? "removeClass" : "addClass"]("invalid")
@@ -87,7 +90,7 @@ function registerAccessInputs(url, submitSelector, formSelector, inputOpts) {
   }
 
   //token and code input validation
-  $(fieldSelector).on("keyup checkValidation", function() {
+  $(fieldSelector).on("keyup paste checkValidation", function() {
     var elem = $(this);
 
     //get value of current input field and remove any whitespace, make capitalized
@@ -100,21 +103,40 @@ function registerAccessInputs(url, submitSelector, formSelector, inputOpts) {
 
     //proceed checking only if there is anything filled in
     if (value.length) {
+      //add @ or ! if missing one char and not already present
+      if (value.length === 8 && ! (value[0] === "@" || value[0] === "!")) {
+        //add prefix
+        value = (isTokenField ? "@" : "!") + value;
+      }
+
       //must be 8 plus prefix = 9 long and first char must be @ or !
       if (value.length === 9 && (value[0] === "@" || value[0] === "!")) {
         //correct prefix to @ or ! according to field type
         value = (isTokenField ? "@" : "!") + value.substring(1);
         elem.val(value);
 
+        //get checked values for fieldId
+        var checkedValues = fieldStates[fieldId].checkedValues;
+
         //check if we've already checked this value
-        if (checkedValues[fieldId].hasOwnProperty(value)) {
-          //apply state
-          setInputValidState(elem, checkedValues[fieldId][value], fieldId);
+        if (checkedValues.hasOwnProperty(value)) {
+          //if it's null, then we're in the process of asking the server
+          if (checkedValues[value] === null) {
+            //just wait
+            return;
+          } else {
+            //apply state
+            setInputValidState(elem, checkedValues[value], fieldId);
+          }
         } else { //ask server
           //make non displaying but invalid because we're waiting for a response
           elem.removeClass("valid invalid");
-          validationStates[fieldId] = false;
+          fieldStates[fieldId].valid = false;
 
+          //register as present but unknown so we don't ask the server twice
+          checkedValues[value] = null;
+
+          //console.log("checked", fieldId, value, e.type);
           //query server for validation
           $.get("/resolution/checkinput/" + value, function(responseData) {
             //set to ok or not
@@ -122,14 +144,14 @@ function registerAccessInputs(url, submitSelector, formSelector, inputOpts) {
             setInputValidState(elem, valid, fieldId);
 
             //set in check register
-            checkedValues[fieldId][value] = valid;
+            checkedValues[value] = valid;
           })
           .fail(function() {
             //not ok
             setInputValidState(elem, false, fieldId);
 
             //set in check register
-            checkedValues[fieldId][value] = false;
+            checkedValues[value] = false;
           })
           .always(function() {
             //update again, (we're in a future callback)
@@ -145,7 +167,7 @@ function registerAccessInputs(url, submitSelector, formSelector, inputOpts) {
       if (isTokenField) {
         setInputValidState(elem, false, fieldId);
       } else {
-        validationStates.code = "onlyToken"; //onlyToken means ok and empty
+        fieldStates.code.valid = "onlyToken"; //onlyToken means ok and empty
 
         //remove any other valid or invalid classes because the field doesn't matter
         elem.removeClass("valid invalid");
@@ -169,7 +191,7 @@ function registerAccessInputs(url, submitSelector, formSelector, inputOpts) {
 
       //send combined get and post request with token and code (if there is a code)
       //use only get request if no code given
-      if (validationStates.code === "onlyToken") { //only token
+      if (fieldStates.code.valid === "onlyToken") { //only token
         //change href and allow link click follow
         console.log(url);
         $(this).attr("href", buttonUrl);
