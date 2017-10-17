@@ -160,6 +160,7 @@
   },
   "forums": [
     "_convert",
+    ["General Assembly", "GA", true],
     ["1st Committee", "GA1"],
     ["2nd Committee", "GA2"],
     ["3rd Committee", "GA3"],
@@ -167,7 +168,7 @@
     ["6th Committee", "GA6"],
     ["Security Council", "SC"],
     ["International Atomic Energy Agency", "IAEA"],
-    ["Economic and Social Council", "ECOSOC"],
+    ["Economic and Social Council", "ECOSOC", true],
     ["Environment Commission", "EC"],
     ["Human Rights Council", "HRC"],
     ["Special Conference on Resources", "SCOR"]

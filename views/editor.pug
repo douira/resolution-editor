@@ -7,6 +7,7 @@ block content
   .section: .container#editor-main
     if code
       #code-preset.hide-this=code
+      #code-access-level.hide-this=accessLevel
     #resolution-stage.hide-this=meta.stage
     h3 Resolution Editor
     .divider
@@ -61,7 +62,7 @@ block content
         +t-item("Words:", meta.wordCount)
         +t-item("Content Nodes:", meta.nodeCount)
     h5.light Actions
-    //-secreteriat doesn't edit but must be able to advance
+    //-secreteriat doesn't edit but must be able to advance -> stage 4 displays advance field even if not editing
     if doLoad || meta.stage === 4
       if meta.stage <= 6
         .row
@@ -196,17 +197,13 @@ block content
             +icon("supervisor_account", "prefix")
             input#unlock-code-input.not-editor(name="code" type="text" placeholder=codePlaceholder)
             label(for="unlock-code-input") Enter access code
-        .col.xl9.l8.m7.s12.justify#read-only-mode Editing access to this resolution is restricted beyond your access level (
-          a(href="/help#" + accessLevel)=accessLevel
-          | ). You can still view meta information and read-only versions of it though. The editor for this resolution can be opened by entering an access code with the levels #[em CH]
+        .col.xl9.l8.m7.s12.justify#read-only-mode Editing access to this resolution is restricted beyond your access level (#[a(href="/help#" + accessLevel)=accessLevel]). You can still view meta information and read-only versions of it though. The editor for this resolution can be opened by entering an access code with the levels #[em CH]
           case meta.stage
             when 2
               | , #[em AP]
             when 3
               | , #[em FC]
-          |  or #[em MA]. See
-          a(href="/help#access-levels")  here
-          |  for a detailed description of all access levels.
+          |  or #[em MA]. See #[a(href="/help#access-levels") here] for a detailed description of all access levels.
       .center: a.btn.waves-effect.waves-light#unlock-submit-btn(href="#" class=pri) Submit
 block scripts
   script(src="/js/accessInputs.js")
