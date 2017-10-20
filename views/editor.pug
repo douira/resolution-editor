@@ -108,8 +108,8 @@ block content
       +meta-button("action-pdf", "View PDF", "description", "Generates a formatted PDF document", pritext)
       +meta-button("action-plaintext", "View Plaintext (fallback)", "receipt", "Generates a plain text version of the resolution: Only use in case of problems", "grey-text")
       if doLoad
-        +meta-button("legacy-action-save", "Save to file (deprecated)", "file_download", "Downloads the resolution in a resusable format", "grey-text")
-        +meta-button("legacy-action-load", "Open from file (deprecated)", "file_upload", "Loades a resolution from a previously saved file", "grey-text")
+        +meta-button("legacy-action-save", "Save to file (deprecated)", "file_download", "Downloads the resolution in a reusable format", "grey-text")
+        +meta-button("legacy-action-load", "Open from file (deprecated)", "file_upload", "Loads a resolution from a previously saved file", "grey-text")
     //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
     .modal#alert-message-modal
       .modal-content
@@ -136,7 +136,7 @@ block content
         +floating-sm-btn("cyan", "eab-add-ext", "playlist_add", "Adds a continuation text field under these subclauses")
         +floating-sm-btn("deep-orange", "eab-clear", resetIcon, "Resets the fields in this clause and removes the content continuation field")
         +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
-        +floating-sm-btn("green", "eab-done", "done", "Finish editing and deactivate edit mode")
+        +floating-sm-btn("green", "eab-done", "done", "Finishes editing and deactivates edit mode")
       mixin content-card(cardId)
         .row
           .col.s12(id=cardId class!=attributes.class)
