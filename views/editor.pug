@@ -1,0 +1,220 @@
+extends layout
+
+block styles
+  link(href="/css/editorStyle.css" type="text/css" rel="stylesheet")
+
+block content
+  .section: .container#editor-main
+    if code
+      #code-preset.hide-this=code
+      #code-access-level.hide-this=accessLevel
+    #resolution-stage.hide-this=meta.stage
+    h3 Resolution Editor
+    .divider
+    h5.light
+      +icon("my_location", "mediumsmall left text-darken-3 amber-text")
+      if doLoad
+        | Your Token:
+      else
+        | Token:
+      //-git removes spaces at end of lines so this is necessary
+      =" "
+      span#token-preset.lighten-3(class=sec)=token
+    p.justify Please write this token down, because it will be used to identify your resolution when you want continue working on it later. Talk to your chair if you've forgotten your resolution token. (Looking at your browser's history can be helpful too.)
+      br
+      | Your current access level is
+      a(href="/help#" + accessLevel)=" " + accessLevel
+      | .
+    include stages
+    +stage-info-index(meta.stage, true)
+    if doLoad
+      h5.light Important Note
+        +icon("announcement", "mediumsmall left red-text")
+      p.justify Please be aware of the fact that #[b opening the same resolution on multiple devices can have adverse effects on the integrity of the resolution] because the changes aren't updated on other devices until the page is reloaded and all local changes are thereby deleted.
+    h5.light Meta-Information
+    //todo: stage history
+    mixin collapsible-item(title, icon)
+      li
+        .collapsible-header
+          +icon(icon, "text-darken-3 light-blue-text")
+          =title
+        .collapsible-body
+          table: tbody
+            block
+    p This information is updated every time the page is reloaded.
+    ul.collapsible(data-collapsible="expandable")
+      mixin t-item(label, content)
+        tr
+          td=label
+          td=content
+      +collapsible-item("Usage Log", "access_time")
+        +t-item("Created:", meta.created)
+        +t-item("Last Change:", meta.changed)
+        +t-item("Last Render:", meta.lastRender)
+      +collapsible-item("Stage History", "history")
+        - var i = 0;
+        while i < meta.stageHistory.length
+          tr
+            td=stageData[i].title
+              a(href="/help#rstage" + i): b.text-lighten-1.grey-text=" #" + i
+            td=meta.stageHistory[i++]
+      if meta.stage
+        +collapsible-item("Structure Analysis", "filter_list")
+          +t-item("Number of Words:", meta.wordCount)
+          +t-item("Number of Content Nodes:", meta.nodeCount)
+          +t-item("Depth Points per Clause:", meta.depthIndex)
+          +t-item("Average Number of Words per Clause:", meta.avrgClauseWords)
+          +t-item("Clauses:", meta.clauseCount[0])
+          if meta.clauseCount[1]
+            +t-item("Subclauses:", meta.clauseCount[1])
+          if meta.clauseCount[2]
+            +t-item("Subclauses:", meta.clauseCount[2])
+    h5.light Actions
+    //-secreteriat doesn't edit but must be able to advance -> stage 4 displays advance field even if not editing
+    if doLoad || meta.stage === 4
+      if meta.stage <= 6
+        .row
+          if meta.stage
+            .input-field.col.xl3.l4.m5.s12
+              form(method="POST" action="/")#advance-code-form
+                +icon("supervisor_account", "prefix")
+                input#advance-code-input.not-editor(name="code" type="text" placeholder=codePlaceholder)
+                label(for="advance-code-input") Enter access code
+          mixin input-field-wrapper
+            if meta.stage
+              .col.xl9.l8.m7.s12
+                p
+                  block
+            else
+              .col.s12
+                block
+          +input-field-wrapper
+            .justify This resolution can be #[em advanced] to
+              a(href="/help#rstage" + (meta.stage + 1))  stage ##{meta.stage + 1}
+              |  by: #{stageData[meta.stage].advance}.
+              if meta.stage
+                |  You will be redirected back to this page but will have to re-enter your access code if you still need and possess editing access to this resolution after its advancement to the next stage.
+              else
+                |  This is accomplished by pressing the save button right below and will claim the token by making it persistent. The page needs to be reloaded to update the stage and display the advancement access code input field.
+          if meta.stage
+            .col.s12.center: a.btn.waves-effect.waves-light.advance-submit-btn(href="#" class=pri) Submit
+    .collection#meta-buttons
+      mixin meta-button(id, text, icon, tooltipText, classes)
+        a.collection-item.waves-effect.waves-light(class=classes id=id)&attributes(tooltip(tooltipText, "top"))
+          +icon(icon, "left")
+          =text
+      if doLoad
+        +meta-button("action-save", "Save", "backup", "Saves the resolution to the server", pritext)
+      +meta-button("action-pdf", "View PDF", "description", "Generates a formatted PDF document", pritext)
+      +meta-button("action-plaintext", "View Plaintext (fallback)", "receipt", "Generates a plain text version of the resolution: Only use in case of problems", "grey-text")
+      if doLoad
+        +meta-button("legacy-action-save", "Save to file (deprecated)", "file_download", "Downloads the resolution in a resusable format", "grey-text")
+        +meta-button("legacy-action-load", "Open from file (deprecated)", "file_upload", "Loades a resolution from a previously saved file", "grey-text")
+    //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
+    .modal#alert-message-modal
+      .modal-content
+        h4.modal-content-title Message
+        span.error-code.grey-text
+        p.modal-content-body Text content placeholder!
+        .file-field.input-field#file-selector.hide-this
+          .btn
+            span Select file
+            input.file-input(type="file")
+          .file-path-wrapper
+            input.file-path.validate(type="text" placeholder="File Path" pattern="^.*\.rso")
+      .modal-footer
+        a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
+    if doLoad
+      mixin floating-sm-btn(color, type, icon, tooltipText)
+        a.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)
+      #eab-inactive-anchor
+      #eab-wrapper.right.hide-this
+        //-eab stands for edit action button
+        +floating-sm-btn("blue", "eab-move-down", "arrow_downward", "Moves this clause down one space")
+        +floating-sm-btn("blue", "eab-move-up", "arrow_upward", "Moves this clause up one space")
+        +floating-sm-btn("indigo", "eab-add-sub", "format_indent_increase", "Creates a subclause in this clause")
+        +floating-sm-btn("cyan", "eab-add-ext", "playlist_add", "Adds a continuation text field under these subclauses")
+        +floating-sm-btn("deep-orange", "eab-clear", resetIcon, "Resets the fields in this clause and removes the content continuation field")
+        +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
+        +floating-sm-btn("green", "eab-done", "done", "Finish editing and deactivate edit mode")
+      mixin content-card(cardId)
+        .row
+          .col.s12(id=cardId class!=attributes.class)
+            block
+      mixin clause-content-field(type, placeholder, addClasses)
+        .input-field(class=type)
+          textarea.materialize-textarea(class=addClasses + " " + type + "-text")
+          label(for="materialize-textarea")=placeholder
+      mixin clause-card(cardId, clauseType, cardType)
+        +content-card(cardId)
+          h5=cardType + " Clauses"
+          .clause-list
+            .clause(data-clause-type=clauseType)
+              .divider
+              h6.grey-text.text-darken-2.clause-title
+                a.edit-mode-btn.btn.right.white-text.lighten-1(class=pri)&attributes(tooltip("Activates editing of this clause", "left"))
+                  +icon("mode_edit", "icon-sm-med")
+                span.clause-prefix
+                | Clause #
+                span.clause-number 1
+              .row.phrase-input-wrapper
+                .col.xl4.m6.s12
+                  .input-field
+                    input.autocomplete.required.phrase-input(type="text")
+                    label(for=".phrase-input") Phrase
+              +clause-content-field("clause-list-anchor clause-content", "Clause Content", "required")
+              +clause-content-field("clause-content-ext", "Continuation of Clause Content")
+            .add-clause-container
+              .divider
+              a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)&attributes(tooltip("Adds a new clause to the list", "right"))
+                +icon("add_circle_outline", "left")
+                | Add Clause
+      +content-card("meta-data")
+        .meta-input-wrapper
+          .right.btn-floating.btn-large.waves-effect.waves-light.deep-orange.reset-button(for="meta-data")&attributes(tooltip("Resets these fields", "left"))
+            +icon(resetIcon)
+          h5 General Data
+          .divider.reduced-width-divider
+          .input-field
+            input.required#author-name(type="text")
+            label(for="author-name") Document Author
+          .divider
+          .row
+            .col.xl4.m6.s12
+              .input-field
+                input.autocomplete.required#forum-name(type="text")
+                label(for="forum-name") Forum
+            .col.xl4.m6.s12
+              .input-field
+                input.required#question-of(type="text")
+                label(for="question-of") Question of
+            .col.xl4.s12
+              .input-field
+                input.autocomplete.required#main-spon(type="text")
+                label(for="main-spon") Main Sponsor
+            .col.s12
+              label(for="co-spon") Co-Sponsors
+              .chips.required#co-spon
+      +clause-card("preamb-clauses", "preamb", "Preambulatory")
+      +clause-card("op-clauses", "op", "Operative")
+    else
+      h4.center: +icon("highlight_off", "medium grey-text text-darken-2")
+      .row
+        .input-field.col.xl3.l4.m5.s12
+          form(method="POST" action="/")#unlock-code-form
+            +icon("supervisor_account", "prefix")
+            input#unlock-code-input.not-editor(name="code" type="text" placeholder=codePlaceholder)
+            label(for="unlock-code-input") Enter access code
+        .col.xl9.l8.m7.s12.justify#read-only-mode Editing access to this resolution is restricted beyond your access level (#[a(href="/help#" + accessLevel)=accessLevel]). You can still view meta information and read-only versions of it though. The editor for this resolution can be opened by entering an access code with the levels #[em CH]
+          case meta.stage
+            when 2
+              | , #[em AP]
+            when 3
+              | , #[em FC]
+          |  or #[em MA]. See #[a(href="/help#access-levels") here] for a detailed description of all access levels.
+      .center: a.btn.waves-effect.waves-light#unlock-submit-btn(href="#" class=pri) Submit
+block scripts
+  script(src="/js/accessInputs.js")
+  script(src="/js/resolutionFormat.js")
+  script(src="/js/dataInteraction.js")
+  script(src="/js/editorInit.js")

@@ -1,15 +1,25 @@
-/*jshint esversion: 5, browser: true, jquery: true */
-/*global
-  makeAlertMessage,
-  resolutionFileFormat,
-  validateObjectStructure,
-  magicIdentifier,
+/*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
+/* global makeAlertMessage,
   checkRequiredFields,
-  allowedSubclauseDepth: true */
+  module,
+  changesSaved:true,
+  resolutionToken,
+  resolutionCode,
+  Materialize,
+  allowedSubclauseDepth */
+/* exported loadFilePick,
+  serverLoad,
+  generatePdf,
+  generatePlaintext,
+  serverSave,
+  downloadJson*/
 //file actions are defined in this file
 
 //current version of the resolution format supported
-var supportedResFileFormats = [3];
+var supportedResFileFormats = [4];
+
+//get resolutionFormat from module exported
+var resolutionFormat = module.exports.resolutionFormat;
 
 //returns a bug report tag string
 function bugReportLink(errorCode) {
@@ -35,7 +45,7 @@ function jsonReadErrorModal(errorCode) {
   console.log("error", errorCode);
   makeAlertMessage(
     "error_outline", "Error reading file", "ok",
-    "The provided file could not be read and processed." +
+    "The provided data could not be read and processed." +
     " This may be because the file you provided isn't in the format produced by this program or" +
     " was corrupted in some way. Please file a " + bugReportLink(errorCode) +
     " and describe this problem if you believe this error isn't your fault.", errorCode);
@@ -92,7 +102,7 @@ function getMaxSubclauseDepth(clauseList, depthOffset) {
 //checks that a saved or loaded editor object has all the required data
 function validateEditorData(obj) {
   //validate object structure
-  var isValidStructure = validateObjectStructure(obj, resolutionFileFormat);
+  var isValidStructure = resolutionFormat.check(obj);
 
   //check maximum subclause tree depth
   if (isValidStructure) {
@@ -104,20 +114,25 @@ function validateEditorData(obj) {
 }
 
 //loads a json into the editor
-function loadJson(json, container) {
-  //basic parse
+function loadJson(json, container, callbackOnSuccess) {
+  //basic parse if necessary
   var obj;
-  try {
-    //json parse
-    obj = JSON.parse(json);
-  } catch (e) {
-    //notify and abort
-    jsonReadErrorModal("parse_fail");
-    return;
+  if (typeof json === "string") {
+    try {
+      //json parse
+      obj = JSON.parse(json);
+    } catch (e) {
+      //notify and abort
+      jsonReadErrorModal("parse_fail");
+      return;
+    }
+  } else {
+    //already parsed into object
+    obj = json;
   }
 
   //check for magic string to prevent loading of other json files (unless tampered with)
-  if (obj.magic !== magicIdentifier) {
+  if (obj.magic !== resolutionFormat.magicIdentifier) {
     jsonReadErrorModal("magic_wrong");
     return;
   }
@@ -143,7 +158,7 @@ function loadJson(json, container) {
   container.find("input, textarea").trigger("reset");
 
   //put author data into field
-  container.find("#author-name").val(obj.status.author).trigger("activateLabel");
+  container.find("#author-name").val(obj.author).trigger("activateLabel");
 
   //get resolution object
   var res = obj.resolution;
@@ -165,10 +180,15 @@ function loadJson(json, container) {
                   container.find("#preamb-clauses").children(".clause-list"));
   parseClauseList(res.clauses.operative,
                   container.find("#op-clauses").children(".clause-list"));
+
+  //call success callback
+  if (typeof callbackOnSuccess === "function") {
+    callbackOnSuccess();
+  }
 }
 
 //load file from computer file system
-function loadFilePick(container, callback) {
+function loadFilePick(container) {
   //make alert message file select
   makeAlertMessage(
     "file_upload", "Open resolution file", "cancel", function(body, modal) {
@@ -182,46 +202,86 @@ function loadFilePick(container, callback) {
 
         //load text into editor
         loadJson(text, container);
+
+        //changes loaded from file are not "really" server saved
+        //(and flag isn't reset because of this)
       };
     });
 }
 
-//sends the current json of to the server and calls back with the url to the generated pdf
-function generatePdf(container) {
-  //validate
-  if (! validateFields()) {
-    //stop because not ok with missing data
+//loads resolution from server
+function serverLoad(token, displayToast, container, callback) {
+  //stop if we're still in stage 0 and there isn't anything to load
+  if ($("#resolution-stage").text() === "0") {
     return;
   }
 
-  //send to server
-  $.ajax({
-    url: "/generatepdf",
-    method: "POST",
-    data: getEditorContent(container, false),
-    contentType: "application/json; charset=UTF-8",
-    dataType: "text",
-    error: makeAlertMessage.bind(null,
-        "error_outline", "Error sending data to server", "ok",
-        "Could not communicate with server properly." +
-        " Please file a " + bugReportLink("pdf_ajax") + " and describe this problem.", "pdf_ajax")
-  }).done(function(response) {
-    //error with response data "error"
-    if (response.endsWith(".pdf")) {
-      //display link to generated pdf
-      makeAlertMessage(
-        "description", "Generated PDF file", "done",
-        "Click <b><a href='" + response +
-        "'>here</a></b> to view your resolution as a PDF file.");
-    } else {
-      //display error and request creation of bug report
-      makeAlertMessage(
-        "error_outline", "Error generating PDF", "ok",
-        "The server encountered an unexpected error" +
-        " while trying to generate the requested PDF file." +
-        " Please file a " + bugReportLink("pdf_gen") + " and describe this problem.", "pdf_gen");
-    }
+  //make settings object
+  var ajaxSettings = {
+    url: "/resolution/load/" + resolutionToken,
+    type: resolutionCode ? "POST" : "GET"
+  };
+
+  //add post data if we have a code to send
+  if (resolutionCode) {
+    ajaxSettings.data = { code: resolutionCode };
+  }
+
+  //do ajax with settings
+  $.ajax(ajaxSettings)
+  .done(function(response) {
+    //attempt to load json into editor
+    loadJson(response, container, function() {
+        //display toast
+      if (displayToast) {
+        Materialize.toast("Successfully loaded", 3000);
+      }
+
+      //call callback if there is one
+      if (typeof callback === "function") {
+        callback();
+      }
+
+      //set flag
+      changesSaved = true;
+    });
+  })
+  .fail(function() {
+    //there was a problem
+    makeAlertMessage("error_outline", "Error loading resolution", "ok",
+        "The server encountered an error or denied the requst to load the resolution." +
+        " Please file a " + bugReportLink("res_load") + " and describe this problem.", "res_load");
   });
+}
+
+//sends the current json of to the server and calls back with the url to the generated pdf
+function generatePdf() {
+  //send to server
+  $.get("/resolution/renderpdf/" + resolutionToken)
+  .done(function(response) {
+    //display link to generated pdf
+    makeAlertMessage(
+      "description", "Generated PDF file", "done",
+      "Click <b><a href='" + response +
+      "' target='_blank'>here</a></b> to view your resolution as a PDF file.");
+  })
+  .fail(function() {
+    //display error and request creation of bug report
+    makeAlertMessage(
+      "error_outline", "Error generating PDF", "ok",
+      "The server encountered an unexpected error" +
+      " while trying to generate the requested PDF file." +
+      " Please file a " + bugReportLink("pdf_gen") + " and describe this problem.", "pdf_gen");
+  });
+}
+
+//directs the user to the plaintext view
+function generatePlaintext() {
+  //make message
+  makeAlertMessage(
+    "description", "Generated Plaintext", "done",
+    "Click <b><a href='/resolution/renderplain/" + resolutionToken +
+    "' target='_blank'>here</a></b> to view your resolution as a plain text file.");
 }
 
 //gets a clause as an object
@@ -251,7 +311,7 @@ $.fn.clauseAsObject = function() {
 
   //make object with content
   var clauseData = {
-    content: this.children(".clause-content").find("textarea").val()
+    content: this.children(".clause-content").find("textarea").val().trim()
   };
 
   //stop if no content
@@ -261,12 +321,12 @@ $.fn.clauseAsObject = function() {
 
   //check for phrase field
   if (this.children(".phrase-input-wrapper").length) {
-    clauseData.phrase = this.children(".phrase-input-wrapper").find("input").val();
+    clauseData.phrase = this.children(".phrase-input-wrapper").find("input").val().trim();
   }
 
   //check for visible extended clause content
   if (this.children(".clause-content-ext:visible").length) {
-    clauseData.contentExt = this.children(".clause-content-ext").find("textarea").val();
+    clauseData.contentExt = this.children(".clause-content-ext").find("textarea").val().trim();
   }
 
   //get subclauses and add if not empty
@@ -285,21 +345,18 @@ $.fn.clauseAsObject = function() {
 };
 
 //returns a json string of the object currently in the editor
-function getEditorContent(container, makeJson) {
+function getEditorContent(container, makeJsonNice) {
   //create root resolution object and gather data
   var res = {
-    magic: magicIdentifier,
+    magic: resolutionFormat.magicIdentifier,
     version: Math.max.apply(null, supportedResFileFormats), //use highest supported version
-    status: {
-      edited: Date.now(),
-      author: container.find("#author-name").val()
-    },
+    author: container.find("#author-name").val().trim(),
     resolution: {
       address: {
-        forum: container.find("#forum-name").val(),
-        questionOf: container.find("#question-of").val(),
+        forum: container.find("#forum-name").val().trim(),
+        questionOf: container.find("#question-of").val().trim(),
         sponsor: {
-          main: container.find("#main-spon").val()
+          main: container.find("#main-spon").val().trim()
         }
       },
       clauses: {
@@ -319,7 +376,54 @@ function getEditorContent(container, makeJson) {
   }
 
   //return stringyfied
-  return makeJson ? JSON.stringify(res, null, 2) : JSON.stringify(res);
+  return makeJsonNice ? JSON.stringify(res, null, 2) : JSON.stringify(res);
+}
+
+//saves the resolution from given container to the server
+function serverSave(container, callback, displayToast) {
+  //display if not specified
+  if (typeof displayToast === "undefined") {
+    displayToast = true;
+  }
+
+  //validate fields
+  if (! validateFields()) {
+    //stop because not ok with missing data
+    return;
+  }
+
+  //make data object
+  var data = {
+    content: getEditorContent(container, false)
+  };
+
+  //add code to data if given
+  if (resolutionCode) {
+    data.code = resolutionCode;
+  }
+
+  //send post request
+  $.post("/resolution/save/" + resolutionToken, data, "text")
+  .done(function() {
+    //make save ok toast if enabled
+    if (displayToast) {
+      Materialize.toast("Successfully saved", 3000);
+    }
+
+    //mark as saved
+    changesSaved = true;
+
+    //call callback on completion
+    if (typeof callback === "function") {
+      callback();
+    }
+  })
+  .fail(function() {
+    //there was a problem
+    makeAlertMessage("error_outline", "Error saving resolution", "ok",
+        "The server encountered an error or denied the requst to save the resolution." +
+        " Please file a " + bugReportLink("res_save") + " and describe this problem.", "res_save");
+  });
 }
 
 //generates and downloeads json representation of the editor content
@@ -338,21 +442,22 @@ function downloadJson(container) {
 function saveFileDownload(str) {
   //make element in modal to download with and add data to download
   var fileName = "resolution.rso";
-  makeAlertMessage("file_download", "Save resolution as file", "cancel", function(body, modal) {
+  makeAlertMessage("file_download", "Save resolution as file", "cancel", function(body) {
     //make download button with blob data
     body.append("<br>");
     $("<a/>")
-      .addClass("waves-effect waves-light btn white-text center-align" +
-                $("#file-action-save").attr("class"))
+      .addClass("waves-effect waves-light btn white-text center-align")
       .attr("download", fileName)
       .text("Download Resolution: " + fileName)
-      .attr("href", URL.createObjectURL(new Blob([str], {type: "application/json"})))
+      .attr("href", URL.createObjectURL(new Blob([str], { type: "application/json" })))
       .appendTo($("<div class='.clear-and-center'></div>").appendTo(body))
       .on("click", function(e) {
         e.stopPropagation();
 
         //close modal after download
         $(this).parents(".modal").modal("close");
+
+        //changes saved to file are not "really" server saved
       });
     body.append(
       "If the file download doesn't start, try again and if it still doesn't work " +

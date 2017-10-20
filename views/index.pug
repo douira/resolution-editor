@@ -1,135 +1,57 @@
 extends layout
 
 block styles
-  link(href="css/indexStyle.css" type="text/css" rel="stylesheet")
+  link(href="/css/indexStyle.css" type="text/css" rel="stylesheet")
 
 block content
   .container
     br
-    br
-    h1.header.center#editor-name-header(class=sectext) Resolution Editor
-    .center: h5.header.light A
-      em  simple
-      |  way of creating and editing resolutions without having to deal with formatting.
-    br
-    .center: a.btn-large.waves-effect.waves-light(href="#editor-main" class=sec) Start Writing
-    br
-    br
-    .row
-      //-icon box mixin
-      mixin icon-box(iconName, title)
-        .col.m12.l4: .icon-block
-          h2.center(class=pritext): +icon(iconName)
-          h5.center= title
-          p.light.promo-text
-            block
-      +icon-box("flash_on", "Speeds Up Editing and Approval")
-        | Shorter waiting, approval and printing times. You won't have to look for the right Word setting or wait for the Formal Clearing Office to correct your formatting. Making new clauses and subclauses is easier than ever.
-      +icon-box("done_all", "No Formatting Mistakes")
-        | With this editor you can focus on the content of your resolution. No more fiddling with badly behaving list constructs or looking for just the right amount of spacing: You're guaranteed to get a perfectly formatted document whenever you want.
-      +icon-box("visibility", "Easy to Use")
-        | The interface provides hints and is usable on any device. You can generate a formatted document, add a clause or reorder with the push of a button. We'll do all the heavy lifting in the background and you just have to worry about what you want to say.
-        br
-        b Tip:
-        |  Hover over buttons to display a helpful tooltip!
-
-  .section#editor-main: .container
-    mixin meta-button(id, text, icon, tooltipText)
-      a.waves-effect.waves-light.btn.right.white-text(class=pri id=id)&attributes(tooltip(tooltipText, "top"))
-        +icon(icon, "left")
-        =text
-    #meta-buttons
-      +meta-button("file-action-load", "open", "file_upload", "Loads a resolution from a previously saved file")
-      +meta-button("file-action-save", "save", "file_download", "Downloads the resolution in a reusable format")
-      +meta-button("file-action-pdf", "view pdf", "description", "Generates a formatted PDF document")
-    //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
-    .modal#alert-message-modal
-      .modal-content
-        h4.modal-content-title Message
-        span.error-code.grey-text
-        p.modal-content-body Text content placeholder!
-        .file-field.input-field#file-selector.hide-this
-          .btn
-            span Select file
-            input.file-input(type="file")
-          .file-path-wrapper
-            input.file-path.validate(type="text" placeholder="File Path" pattern="^.*\.rso")
-      .modal-footer
-        a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
-    mixin floating-sm-btn(color, type, icon, tooltipText)
-      a.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)
-    #eab-inactive-anchor
-    #eab-wrapper.right.hide-this
-      //-eab stands for edit action button
-      +floating-sm-btn("blue", "eab-move-down", "arrow_downward", "Moves this clause down one space")
-      +floating-sm-btn("blue", "eab-move-up", "arrow_upward", "Moves this clause up one space")
-      +floating-sm-btn("indigo", "eab-add-sub", "format_indent_increase", "Creates a subclause in this clause")
-      +floating-sm-btn("cyan", "eab-add-ext", "playlist_add", "Adds a continuation text field under these subclauses")
-      +floating-sm-btn("deep-orange", "eab-clear", resetIcon, "Resets the fields in this clause and removes the content continuation field")
-      +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
-      +floating-sm-btn("green", "eab-done", "done", "Finishes editing and deactivates edit mode")
-    h3 Editor
-    mixin content-card(cardId)
+    //-promo
+    if promo
+      br
+      h1.header.center#editor-name-header(class=sectext) Resolution Editor
+      .center: h5.header.light A #[em simple] way of creating and editing resolutions without having to have to deal with formatting.
+      br
+      .center: a.btn-large.waves-effect.waves-light(href="/resolution/new" class=sec) Start New Resolution
+      br
       .row
-        .col.s12.z-depth-2(id=cardId class!=attributes.class)
-          block
-    mixin clause-content-field(type, placeholder, addClasses)
-      .input-field(class=type)
-        textarea.materialize-textarea(class=addClasses + " " + type + "-text")
-        label(for="materialize-textarea")=placeholder
-    mixin clause-card(cardId, clauseType, cardType)
-      +content-card(cardId)
-        h5=cardType + " Clauses"
-        .clause-list
-          .clause(data-clause-type=clauseType)
-            .divider
-            h6.grey-text.text-darken-2.clause-title
-              a.edit-mode-btn.btn.right.white-text(class=pri)&attributes(tooltip("Activates editing of this clause", "left"))
-                +icon("mode_edit", "icon-sm-med")
-              span.clause-prefix
-              | Clause #
-              span.clause-number 1
-            .row.phrase-input-wrapper
-              .col.xl4.m6.s12
-                .input-field
-                  input.autocomplete.required.phrase-input(type="text")
-                  label(for=".phrase-input") Phrase
-            +clause-content-field("clause-list-anchor clause-content", "Clause Content", "required")
-            +clause-content-field("clause-content-ext", "Continuation of Clause Content")
-          .add-clause-container
-            .divider
-            a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)&attributes(tooltip("Adds a new clause to the list", "right"))
-              +icon("add_circle_outline", "left")
-              | Add Clause
-    +content-card("meta-data")
-      form
-        .right.btn-floating.btn-large.waves-effect.waves-light.deep-orange.reset-button(for="meta-data")&attributes(tooltip("Resets these fields", "left"))
-          +icon(resetIcon)
-        h5 General Data
-        .divider.reduced-width-divider
-        .input-field
-          input.required#author-name(type="text")
-          label(for="author-name") Document Author
-        .divider
-        .row
-          .col.xl4.m6.s12
-            .input-field
-              input.autocomplete.required#forum-name(type="text")
-              label(for="forum-name") Forum
-          .col.xl4.m6.s12
-            .input-field
-              input.required#question-of(type="text")
-              label(for="question-of") Question of
-          .col.xl4.s12
-            .input-field
-              input.autocomplete.required#main-spon(type="text")
-              label(for="main-spon") Main Sponsor
-          .col.s12
-            label(for="co-spon") Co-Sponsors
-            .chips.required#co-spon
-    +clause-card("preamb-clauses", "preamb", "Preambulatory")
-    +clause-card("op-clauses", "op", "Operative")
+        //-icon box mixin
+        mixin icon-box(iconName, title, sizeClasses)
+          .col(class=sizeClasses): .icon-block
+            h2.center(class=pritext): +icon(iconName)
+            h5.center=title
+            p.light.justify
+              block
+        +icon-box("flash_on", "Speeds Up Editing and Approval", "l4 m12")
+          | Shorter waiting, approval and printing times. You won't have to look for the right Word setting or wait for the Formal Clearing Office to correct your formatting. Making new clauses and subclauses is as easy as ever.
+        +icon-box("done_all", "No Formatting Mistakes", "l4 m6 s12")
+          | With this editor you can focus on the content of your resolution. No more fiddling with badly behaving list constructs or looking for just the right amount of spacing: You're guaranteed to get a perfectly formatted document whenever you want.
+        +icon-box("lightbulb_outline", "Easy to Use", "l4 m6 s12")
+          | The interface provides hints and is usable on any device. You can generate a formatted document, add a clause or reorder with the push of a button. We'll do all the heavy lifting in the background and you just have to worry about what you want to say.
+          br
+          b Tip:
+          |  Hover over buttons to display a helpful tooltip!
+      .divider
+      br
+
+    //-input of token and code
+    h4.center Open, Edit or View an existing resolution
+    br
+    .row: .col.s12#resolution-input
+      row
+        .row.col.xl6.l5.s12
+          .input-field.col.l12.m6.s12
+            +icon("my_location", "prefix")
+            input#token-input(type="text" placeholder=tokenPlaceholder)
+            label(for="token-input") Enter resolution token
+          .input-field.col.l12.m6.s12
+            form(method="POST" action="/")#code-form
+              +icon("supervisor_account", "prefix")
+              input#code-input(name="code" type="text" placeholder=codePlaceholder)
+              label(for="code-input") (optional) Enter access code
+        .col.xl6.l7.m12#token-info.justify Talk to your chair if you've #[b forgotten] your resolution token. (Looking at your browser's history can be helpful too.) You're only required to enter an access code if editing access to the resolution has been #[b restricted] and you're granted elevated editing privileges with a personal access code. It's still possible to view a #[b read-only] version and metadata about a resolution if you don't have editing privileges. If you've forgotten your access code or have any other problems accessing the editor, please #[b contact IT-Management].
+    .center: a.btn-large.waves-effect.waves-light#submit-btn(href="#" class=pri) Submit
+    br
 block scripts
-  script(src="js/resolutionFormat.js")
-  script(src="js/dataInteraction.js")
-  script(src="js/indexInit.js")
+  script(src="/js/accessInputs.js")
+  script(src="/js/indexInit.js")

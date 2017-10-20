@@ -1,4 +1,5 @@
 /*jshint esversion: 5, browser: false, jquery: false */
+/*global module */
 
 //string used to identify files saved by this website (mild protection for now)
 var magicIdentifier = "PG52QE1AM4LACMX9";
@@ -9,9 +10,162 @@ var magicIdentifier = "PG52QE1AM4LACMX9";
   return log;
 }*/
 
+//pattern of the resolution format - VERSION 2
+/*File format version history: (incremented when compatability changes or with large differences)
+1: start
+2: typo fix (from editied to edited)
+3: typo fix (from form to forum)
+*/
+var resolutionFileFormat = {
+  types: {
+    phraseClause: [
+      {
+        name: "phrase",
+        type: "string",
+        required: true
+      },
+      {
+        name: "content",
+        type: "string",
+        required: true
+      },
+      {
+        name: "sub",
+        type: "array",
+        required: false,
+        content: {
+          minLength: 1,
+          contentTypes: ["string", "phraselessClause"]
+        }
+      },
+      {
+        name: "contentExt",
+        type: "string",
+        required: false,
+        requiresField: "sub"
+      }
+    ],
+    phraselessClause: [
+      {
+        name: "content",
+        type: "string",
+        required: true
+      },
+      {
+        name: "sub",
+        type: "array",
+        required: false,
+        content: {
+          minLength: 1,
+          contentTypes: ["string", "phraselessClause"]
+        }
+      },
+      {
+        name: "contentExt",
+        type: "string",
+        required: false,
+        requiresField: "sub"
+      }
+    ]
+  },
+  structure: [
+    {
+      name: "magic",
+      type: "string",
+      value: magicIdentifier,
+      required: true
+    },
+    {
+      name: "version",
+      type: "number",
+      required: true
+    },
+    {
+      name: "author",
+      type: "string",
+      required: true
+    },
+    {
+      name: "resolution",
+      type: "object",
+      required: true,
+      content: [
+        {
+          name: "address",
+          type: "object",
+          required: true,
+          content: [
+            {
+              name: "questionOf",
+              type: "string",
+              required: true
+            },
+            {
+              name: "forum",
+              type: "string",
+              required: true
+            },
+            {
+              name: "sponsor",
+              type: "object",
+              required: true,
+              content: [
+                {
+                  name: "main",
+                  type: "string",
+                  required: true
+                },
+                {
+                  name: "co",
+                  type: "array",
+                  required: true,
+                  content: {
+                    minLength: 1,
+                    contentTypes: ["string"]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          name: "clauses",
+          type: "object",
+          required: true,
+          content: [
+            {
+              name: "preambulatory",
+              type: "array",
+              required: true,
+              content: {
+                minLength: 1,
+                contentTypes: ["phraseClause"]
+              }
+            },
+            {
+              name: "operative",
+              type: "array",
+              required: true,
+              content: {
+                minLength: 1,
+                contentTypes: ["phraseClause"]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
 //validates an object (parsed json for example) with given format spec
 //the format of the format is implied to be correct
 function validateObjectStructure(obj, format) {
+  //fall back to default format if none given
+  if (typeof format === "undefined") {
+    format = resolutionFileFormat;
+  }
+
   //built-in type validators
   var typeValidators = {
     //basic types only need typeof
@@ -147,162 +301,9 @@ function validateObjectStructure(obj, format) {
   return typeValidators.object(obj, format.structure);
 }
 
-//pattern of the resolution format - VERSION 2
-/*File format version history: (incremented when compatability changes or with large differences)
-1: start
-2: typo fix (from editied to edited)
-3: typo fix (from form to forum)
-*/
-var resolutionFileFormat = {
-  types: {
-    phraseClause: [
-      {
-        name: "phrase",
-        type: "string",
-        required: true
-      },
-      {
-        name: "content",
-        type: "string",
-        required: true
-      },
-      {
-        name: "sub",
-        type: "array",
-        required: false,
-        content: {
-          minLength: 1,
-          contentTypes: ["string", "phraselessClause"]
-        }
-      },
-      {
-        name: "contentExt",
-        type: "string",
-        required: false,
-        requiresField: "sub"
-      }
-    ],
-    phraselessClause: [
-      {
-        name: "content",
-        type: "string",
-        required: true
-      },
-      {
-        name: "sub",
-        type: "array",
-        required: false,
-        content: {
-          minLength: 1,
-          contentTypes: ["string", "phraselessClause"]
-        }
-      },
-      {
-        name: "contentExt",
-        type: "string",
-        required: false,
-        requiresField: "sub"
-      }
-    ]
-  },
-  structure: [
-    {
-      name: "magic",
-      type: "string",
-      value: magicIdentifier,
-      required: true
-    },
-    {
-      name: "version",
-      type: "number",
-      required: true
-    },
-    {
-      name: "status",
-      type: "object",
-      required: true,
-      content: [
-        {
-          name: "edited",
-          type: "number",
-          required: true
-        },
-        {
-          name: "author",
-          type: "string",
-          required: true
-        }
-      ]
-    },
-    {
-      name: "resolution",
-      type: "object",
-      required: true,
-      content: [
-        {
-          name: "address",
-          type: "object",
-          required: true,
-          content: [
-            {
-              name: "questionOf",
-              type: "string",
-              required: true
-            },
-            {
-              name: "forum",
-              type: "string",
-              required: true
-            },
-            {
-              name: "sponsor",
-              type: "object",
-              required: true,
-              content: [
-                {
-                  name: "main",
-                  type: "string",
-                  required: true
-                },
-                {
-                  name: "co",
-                  type: "array",
-                  required: true,
-                  content: {
-                    minLength: 1,
-                    contentTypes: ["string"]
-                  }
-                }
-              ]
-            }
-          ]
-        },
-        {
-          name: "clauses",
-          type: "object",
-          required: true,
-          content: [
-            {
-              name: "preambulatory",
-              type: "array",
-              required: true,
-              content: {
-                minLength: 1,
-                contentTypes: ["phraseClause"]
-              }
-            },
-            {
-              name: "operative",
-              type: "array",
-              required: true,
-              content: {
-                minLength: 1,
-                contentTypes: ["phraseClause"]
-              }
-            }
-          ]
-        }
-      ]
-    }
-  ]
+//nodejs module exporting
+module.exports.resolutionFormat = {
+  check: validateObjectStructure,
+  magicIdentifier: magicIdentifier,
+  resolutionFileFormat: resolutionFileFormat
 };
