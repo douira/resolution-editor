@@ -12,7 +12,7 @@ block content
     h3 Resolution Editor
     .divider
     h5.light
-      +icon("my_location", "mediumsmall left text-darken-3 amber-text")
+      +icon(tokenIcon, "mediumsmall left text-darken-3 amber-text")
       if doLoad
         | Your Token:
       else
@@ -77,7 +77,7 @@ block content
           if meta.stage
             .input-field.col.xl3.l4.m5.s12
               form(method="POST" action="/")#advance-code-form
-                +icon("supervisor_account", "prefix")
+                +icon(codeIcon, "prefix")
                 input#advance-code-input.not-editor(name="code" type="text" placeholder=codePlaceholder)
                 label(for="advance-code-input") Enter access code
           mixin input-field-wrapper
@@ -202,7 +202,7 @@ block content
       .row
         .input-field.col.xl3.l4.m5.s12
           form(method="POST" action="/")#unlock-code-form
-            +icon("supervisor_account", "prefix")
+            +icon(codeIcon, "prefix")
             input#unlock-code-input.not-editor(name="code" type="text" placeholder=codePlaceholder)
             label(for="unlock-code-input") Enter access code
         .col.xl9.l8.m7.s12.justify#read-only-mode Editing access to this resolution is restricted beyond your access level (#[a(href="/help#" + accessLevel)=accessLevel]). You can still view meta information and read-only versions of it though. The editor for this resolution can be opened by entering an access code with the levels #[em CH]
