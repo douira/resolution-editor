@@ -3,13 +3,27 @@
 //deals with UI for input of token and access codes
 
 //handles code and token input and registers the event handlers for the given fields
-function registerAccessInputs(url, submitSelector, formSelector, inputOpts) {
-  //submitSelector and formSelector must both resolve to elments
-  if (! $(submitSelector).length || $(formSelector).length !== 1) {
+function registerAccessInputs(submitOptions, formSelector, inputOpts) {
+  //formSelector must resolve to elment
+  if ($(formSelector).length !== 1) {
     //wrong
     //console.log("accessInput registration error: selectors faulty"); only run when debugging
     return;
   }
+
+  //make array if not already
+  if (! (submitOptions instanceof Array)) {
+    submitOptions = [submitOptions];
+  }
+
+  //get elements for submit selectors
+  submitOptions.forEach(function(opt) {
+    //get element from selector
+    opt.element = $(opt.selector);
+  });
+
+  //make submitSelector that selects all submit elements
+  var submitSelector = submitOptions.map(function(opt) { return opt.selector; }).join(",");
 
   //states of the two fields
   var fieldStates = {
@@ -67,6 +81,14 @@ function registerAccessInputs(url, submitSelector, formSelector, inputOpts) {
 
   //true if all fields are valid
   var allOk = false;
+
+  //get the url given the element that the event came ffrom
+  function getElementUrl(elem) {
+    elem = $(elem);
+
+    //find opt with that selector and return its specified url
+    return submitOptions.find(function(opt) { return elem.is(opt.selector); }).url;
+  }
 
   //updates the button state after checking the validation state of both fields
   function updateButtonState() {
@@ -186,14 +208,13 @@ function registerAccessInputs(url, submitSelector, formSelector, inputOpts) {
     //do click action if everything valid
     if (allOk) {
       //make url path
-      var buttonUrl = url + (typeof presetToken === "undefined" ?
+      var buttonUrl = getElementUrl(this) + (typeof presetToken === "undefined" ?
           $(tokenFieldSelector).val() : presetToken);
 
       //send combined get and post request with token and code (if there is a code)
       //use only get request if no code given
       if (fieldStates.code.valid === "onlyToken") { //only token
         //change href and allow link click follow
-        console.log(url);
         $(this).attr("href", buttonUrl);
       } else { //token and code
         var form = $(formSelector);

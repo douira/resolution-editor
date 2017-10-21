@@ -51,7 +51,9 @@ block content
               input#code-input(name="code" type="text" placeholder=codePlaceholder)
               label(for="code-input") (optional) Enter access code
         .col.xl6.l7.m12#token-info.justify Talk to your chair if you've #[b forgotten] your resolution token. (Looking at your browser's history can be helpful too.) You're only required to enter an access code if editing access to the resolution has been #[b restricted] and you're granted elevated editing privileges with a personal access code. It's still possible to view a #[b read-only] version and metadata about a resolution if you don't have editing privileges. If you've forgotten your access code or have any other problems accessing the editor, please #[b contact IT-Management].
-    .center: a.btn-large.waves-effect.waves-light#submit-btn(href="#" class=pri) Submit
+    .center
+      a.btn-large.waves-effect.waves-light#editor-submit-btn(href="#" class=pri) Editor
+      a.btn-large.waves-effect.waves-light.btn-spacing#liveview-submit-btn(href="#" class=pri) LiveView
     br
 block scripts
   script(src="/js/accessInputs.js")

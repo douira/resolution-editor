@@ -1054,7 +1054,10 @@ $(document).ready(function() {
   }
 
   //register an access input group for resolution advancement
-  registerAccessInputs("/resolution/advance/", ".advance-submit-btn", "#advance-code-form", {
+  registerAccessInputs({
+    url: "/resolution/advance/",
+    selector: ".advance-submit-btn"
+  }, "#advance-code-form", {
     //need to look at both fields, nothing given already
     presetToken: resolutionToken,
     codeFieldSelector: "#advance-code-input"
@@ -1063,7 +1066,10 @@ $(document).ready(function() {
   //check if we are in read-only/no load mode
   if ($("#read-only-mode").length) {
     //register an access input group for unlock of editor
-    registerAccessInputs("/resolution/editor/", "#unlock-submit-btn", "#unlock-code-form", {
+    registerAccessInputs({
+      url: "/resolution/editor/",
+      selector: "#unlock-submit-btn"
+    }, "#unlock-code-form", {
       //need to look at both fields, nothing given already
       presetToken: resolutionToken,
       codeFieldSelector: "#unlock-code-input"
