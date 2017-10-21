@@ -407,11 +407,6 @@ $.fn.addClause = function(amount, activationStateChanges) {
 
 //registers event handlers that are essential for the general function of the page
 function registerEssentialEventHandlers(doLoad) {
-  $("body")
-  .on("touchstart", function() {
-    //register touch event and remove tooltips for touch-devices
-    $(".tooltipped").tooltip("remove");
-  });
   $(".modal")
   .on("init", function() {
     //not using element specific data because this will be the same for all modals
