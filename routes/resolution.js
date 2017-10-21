@@ -155,6 +155,12 @@ function attemptNewThing(res, isToken, finalCallback) {
   }).catch(issueError.bind(null, res, 500, "code db read error"));
 }
 
+//registers a handler on the router for both GET and POST
+function getAndPost(onRouter, url, handler) {
+  ["get", "post"].forEach((method) =>
+    onRouter[method](url, (req, res) => handler(req, res)));
+}
+
 //GET (view) to /resolution displays front page without promo
 router.get("/", function(req, res) {
   res.render("index", { promo: false });
@@ -236,7 +242,8 @@ router.get("/new", function(req, res) {
       changed: timeNow, //last time it was changed = saved, stage advances don't count
       stageHistory: [ timeNow ], //index is resolution stage, time when reached that stage
       lastRender: 0, //logs pdf render events
-      stage: 0 //current workflow stage (see phase 2 notes)
+      stage: 0, //current workflow stage (see phase 2 notes)
+      liveviewOpen: false //if a liveview page is vewing this resolution right now
     }).then(() => {
       //redirect to editor page (because URL is right then)
       res.redirect("editor/" + token);
@@ -286,20 +293,43 @@ function getEditorViewParams(doLoad, resDoc, token, codeDoc) {
 
 //POST/GET (editor view) redirected to here to send editor with set token
 //(also only displays meta info if code necessary but not given or invalid)
-["get", "post"].forEach((method) => {
-  router[method]("/editor/:token", function(req, res) {
-    //check for token and code (check that none is needed)
-    fullAuth(req, res,
-      (token, resDoc, codeDoc) =>
-        //send rendered editor page with token set
-        res.render("editor", getEditorViewParams(true, resDoc, token, codeDoc)),
-      {
-        permissionMissmatch: (token, resDoc, codeDoc) =>
-          //send edtor page but with "no access" notice
-          res.render("editor", getEditorViewParams(false, resDoc, token, codeDoc))
-      }
-    );
-  });
+getAndPost(router, "/editor/:token", function(req, res) {
+  //check for token and code (check with DE perm is no code given)
+  fullAuth(req, res,
+    (token, resDoc, codeDoc) =>
+      //send rendered editor page with token set
+      res.render("editor", getEditorViewParams(true, resDoc, token, codeDoc)),
+    {
+      permissionMissmatch: (token, resDoc, codeDoc) =>
+        //send edtor page but with "no access" notice
+        res.render("editor", getEditorViewParams(false, resDoc, token, codeDoc))
+    }
+  );
+});
+
+//POST (view) the liveview page
+getAndPost(router, "/liveview/:token", function(req, res) {
+  //check for token and code and correct stage (liveview permission mode)
+  fullAuth(req, res,
+    (token, resDoc, codeDoc) =>
+      //send rendered editor page with token set
+      res.render("liveview", {
+        token: token,
+        code: codeDoc.code,
+        accessLevel: codeDoc.level,
+        stage: resDoc.stage
+      }),
+    {
+      permissionMissmatch: (token, resDoc, codeDoc) =>
+        //send edtor page but with "no access" notice
+        res.render("weakperm-liveview", {
+          token: resDoc.token,
+          stage: resDoc.stage,
+          accessLevel: codeDoc.level
+        }),
+      matchMode: "liveview"
+    }
+  );
 });
 
 //POST (no view) (request from editor after being started with set token) send resolution data
@@ -337,7 +367,7 @@ router.post("/advance/:token", function(req, res) {
     //error/warning page on fail
     permissionMissmatch: (token, resolutionDoc, codeDoc) => {
       //display error page
-      res.render("weakperm", {
+      res.render("weakperm-advance", {
         token: resolutionDoc.token,
         stage: resolutionDoc.stage,
         accessLevel: codeDoc.level
@@ -347,15 +377,6 @@ router.post("/advance/:token", function(req, res) {
     matchMode: "advance"
   });
 });
-
-//GET (view) mock version of the weakperm page
-/*router.get("/weakperm/:token", function(req, res) {
-  res.render("weakperm", {
-    token: "@PKMGK6JV",
-    stage: 5,
-    accessLevel: "DE"
-  });
-});*/
 
 //GET (no view, validation response) checks if sent token or code is valid (for form display)
 router.get("/checkinput/:thing", function(req, res) {
