@@ -101,7 +101,7 @@ block content
               else
                 |  This is accomplished by pressing the save button right below and will claim the token by making it persistent. The page needs to be reloaded to update the stage and display the advancement access code input field.
           if meta.stage
-            .col.s12.center: a.btn.waves-effect.waves-light.advance-submit-btn(href="#" class=pri) Submit
+            .col.s12.center: a.btn.waves-effect.waves-light.advance-submit-btn(href="#" class=pri) Advance
     .collection#meta-buttons
       mixin meta-button(id, text, icon, tooltipText, classes)
         a.collection-item.waves-effect.waves-light(class=classes id=id)&attributes(tooltip(tooltipText, "top"))
@@ -110,7 +110,7 @@ block content
       if doLoad
         +meta-button("action-save", "Save", "backup", "Saves the resolution to the server", pritext)
       +meta-button("action-pdf", "View PDF", "description", "Generates a formatted PDF document", pritext)
-      +meta-button("action-plaintext", "View Plaintext (fallback)", "receipt", "Generates a plain text version of the resolution: Only use in case of problems", "grey-text")
+      +meta-button("action-plaintext", "View Plaintext (fallback)", plaintextIcon, "Generates a plain text version of the resolution: Only use in case of problems", "grey-text")
       if doLoad
         +meta-button("legacy-action-save", "Save to file (deprecated)", "file_download", "Downloads the resolution in a resusable format", "grey-text")
         +meta-button("legacy-action-load", "Open from file (deprecated)", "file_upload", "Loades a resolution from a previously saved file", "grey-text")
@@ -216,7 +216,7 @@ block content
             when 3
               | , #[em FC]
           |  or #[em MA]. See #[a(href="/help#access-levels") here] for a detailed description of all access levels.
-      .center: a.btn.waves-effect.waves-light#unlock-submit-btn(href="#" class=pri) Submit
+      .center: a.btn.waves-effect.waves-light#unlock-submit-btn(href="#" class=pri) Unlock
 block scripts
   script(src="/js/accessInputs.js")
   script(src="/js/resolutionFormat.js")

@@ -1,0 +1,14 @@
+extends layout
+
+block styles
+  link(href="/css/liveviewStyle.css" type="text/css" rel="stylesheet")
+
+block content
+  .container
+    +icon(liveviewIcon, "large left" + liveviewColor)
+    h3 Resolution LiveView
+    h5.light=token
+    .z-depth-2#viewcontent Lorem Ipsum dolor sit amet
+    br
+block scripts
+  script(src="/js/liveviewInit.js")
