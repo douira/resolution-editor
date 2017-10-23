@@ -36,7 +36,6 @@ block content
         +icon("announcement", "mediumsmall left red-text")
       p.justify Please be aware of the fact that #[b opening the same resolution on multiple devices can have adverse effects on the integrity of the resolution] because the changes aren't updated on other devices until the page is reloaded and all local changes are thereby deleted.
     h5.light Meta-Information
-    //todo: stage history
     mixin collapsible-item(title, icon)
       li
         .collapsible-header
@@ -143,7 +142,7 @@ block content
         +floating-sm-btn("green", "eab-done", "done", "Finish editing and deactivate edit mode")
       mixin content-card(cardId)
         .row
-          .col.s12(id=cardId class!=attributes.class)
+          .col.s12(id=cardId)
             block
       mixin clause-content-field(type, placeholder, addClasses)
         .input-field(class=type)

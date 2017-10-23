@@ -482,15 +482,18 @@ function sendLVStructureUpdate() {
   //send as structure update
   sendJsonLV({
     type: "updateStructure",
-    update: getEditorObj() //just send the whole editor content for rerender anfter structure change
+    update: getEditorObj() //just send the whole editor content for rerender after structure change
   });
 }
 
 //sends a content update to server
-function sendLVContentUpdate(content) {
+function sendLVContentUpdate(elem, newContent) {
   //send as structure update
   sendJsonLV({
     type: "updateContent",
-    update: content
+    update: {
+      contentPath: elem.getContentPath(),
+      content: newContent
+    }
   });
 }
