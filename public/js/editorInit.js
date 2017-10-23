@@ -5,10 +5,12 @@
   downloadJson,
   bugReportLink,
   serverSave,
-  Materialize,
+  displayToast,
   generatePlaintext,
   registerAccessInputs,
-  serverLoad */
+  serverLoad,
+  makeAlertMessage,
+  startLiveviewWS */
 /* exported checkRequiredFields*/
 //registers events and data, controls interaction behavior
 
@@ -108,69 +110,6 @@ function transformMarkedArrays(structure, flag, propValue, depth) {
 
   //return object back
   return structure;
-}
-
-//queue of alert message we want to display
-var alertQueue = [];
-
-//checks if we can display an alert now or starts processing the queue
-function checkAlertDisplay() {
-  //only if any items in queue and still animating
-  if (alertQueue.length) {
-    var modal = $("#alert-message-modal");
-    if (! (modal.hasClass("open") || modal.hasClass("velocity-animating"))) {
-      //get next alert message from queue and display
-      var modalData = alertQueue.shift();
-
-      //get the modal element
-      var modalElement = $("#alert-message-modal");
-
-      //add content to the modal
-      modalElement
-        .find(".modal-content-title")
-        .html("<i class='material-icons small'>" + modalData.icon + "</i> " + modalData.title);
-      modalElement.find(".modal-dismiss-btn").html(modalData.buttonText);
-
-      //set error code if given
-      modalElement
-        .find(".error-code")
-        .text(modalData.hasErrorCode ? "error #" + modalData.errorCode : "")
-        [modalData.hasErrorCode ? "show" : "hide"]();
-
-      //call callback for content if given
-      var contentBody = modalElement.find(".modal-content-body");
-      if (typeof modalData.callbackOrMessage === "string") {
-        contentBody.html(modalData.callbackOrMessage);
-      } else {
-        contentBody.empty();
-        modalData.callbackOrMessage(contentBody, modalElement);
-      }
-
-      //open the modal for the user to see
-      modalElement.modal("open");
-    }
-  }
-}
-
-//creates an alert message
-function makeAlertMessage(icon, title, buttonText, callbackOrMessage, errorCode) {
-  //default button text
-  if (typeof buttonText === "undefined") {
-    buttonText = "OK";
-  }
-
-  //add alert message object to queue
-  alertQueue.push({
-    icon: icon,
-    title: title,
-    buttonText: buttonText,
-    callbackOrMessage: callbackOrMessage,
-    hasErrorCode: typeof errorCode !== "undefined",
-    errorCode: errorCode
-  });
-
-  //check immediately
-  checkAlertDisplay();
 }
 
 //updates the disabling state of eab movement buttons, used as event handler
@@ -411,21 +350,6 @@ function registerEssentialEventHandlers(doLoad) {
   .on("touchstart", function() {
     //register touch event and remove tooltips for touch-devices
     $(".tooltipped").tooltip("remove");
-  });
-  $(".modal")
-  .on("init", function() {
-    //not using element specific data because this will be the same for all modals
-    //(only the one modal atm)
-    var modal = $(this);
-    modal.modal({
-      dismissible: false,
-      complete: function() {
-        modal.trigger("reset");
-
-        //display next alert if there is one
-        checkAlertDisplay();
-      }
-    });
   });
   if (doLoad) {
     $(".modal").on("reset", function(e) {
@@ -1032,7 +956,7 @@ function registerEventHandlers(loadedData) {
 
     //don't save if everything already saved
     if (changesSaved) {
-      Materialize.toast("Already saved", 3000);
+      displayToast("Already saved");
     } else {
       //save json to server first
       serverSave($("#editor-main"));
@@ -1103,8 +1027,11 @@ $(document).ready(function() {
       var loadedData = {};
 
       //check for chair or admin access
-      var chairMode = $("#code-access-level").text();
-      chairMode = chairMode === "MA" || chairMode === "CH";
+      var accessLevel = $("#code-access-level").text();
+      var chairMode = accessLevel === "MA" || accessLevel === "CH";
+
+      //get stage of resolution
+      var resolutionStage = parseInt($("#resolution-stage").text(), 10);
 
       //map forums with chair code mode in mind
       data.forums = data.forums.map(function(forum) {
@@ -1167,6 +1094,12 @@ $(document).ready(function() {
 
       //initiate loading of resolution from server with preset token
       serverLoad(resolutionToken, true, $("#editor-main"));
+
+      //if at stage 6 and authorized as CH or MA, start liveview editor websocket
+      if (resolutionStage === 6 && accessLevel === "CH" || accessLevel === "MA") {
+        //give token and code, false for being editor type client
+        startLiveviewWS(false, resolutionToken, resolutionCode);
+      }
     });
   }
 });

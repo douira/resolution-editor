@@ -5,8 +5,8 @@
   changesSaved:true,
   resolutionToken,
   resolutionCode,
-  Materialize,
-  allowedSubclauseDepth */
+  displayToast,
+  allowedSubclauseDepth*/
 /* exported loadFilePick,
   serverLoad,
   generatePdf,
@@ -210,7 +210,7 @@ function loadFilePick(container) {
 }
 
 //loads resolution from server
-function serverLoad(token, displayToast, container, callback) {
+function serverLoad(token, doToast, container, callback) {
   //stop if we're still in stage 0 and there isn't anything to load
   if ($("#resolution-stage").text() === "0") {
     return;
@@ -233,8 +233,8 @@ function serverLoad(token, displayToast, container, callback) {
     //attempt to load json into editor
     loadJson(response, container, function() {
         //display toast
-      if (displayToast) {
-        Materialize.toast("Successfully loaded", 3000);
+      if (doToast) {
+        displayToast("Successfully loaded");
       }
 
       //call callback if there is one
@@ -380,10 +380,10 @@ function getEditorContent(container, makeJsonNice) {
 }
 
 //saves the resolution from given container to the server
-function serverSave(container, callback, displayToast) {
+function serverSave(container, callback, doToast) {
   //display if not specified
-  if (typeof displayToast === "undefined") {
-    displayToast = true;
+  if (typeof doToast === "undefined") {
+    doToast = true;
   }
 
   //validate fields
@@ -406,8 +406,8 @@ function serverSave(container, callback, displayToast) {
   $.post("/resolution/save/" + resolutionToken, data, "text")
   .done(function() {
     //make save ok toast if enabled
-    if (displayToast) {
-      Materialize.toast("Successfully saved", 3000);
+    if (doToast) {
+      displayToast("Successfully saved");
     }
 
     //mark as saved

@@ -4,11 +4,21 @@ block styles
   link(href="/css/liveviewStyle.css" type="text/css" rel="stylesheet")
 
 block content
+  .modal#alert-message-modal
+      .modal-content
+        h4.modal-content-title Message
+        span.error-code.grey-text
+        p.modal-content-body Text content placeholder!
+      .modal-footer
+        a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
   .container
     +icon(liveviewIcon, "large left" + liveviewColor)
     h3 Resolution LiveView
-    h5.light=token
+    h5.light#token-preset=token
+    #code-preset.hide-this=code
     .z-depth-2#viewcontent Lorem Ipsum dolor sit amet
     br
 block scripts
+  script(src="/js/dialogs.js")
+  script(src="/js/liveviewWS.js")
   script(src="/js/liveviewInit.js")

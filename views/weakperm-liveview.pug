@@ -5,9 +5,9 @@ block content
     h4.center: +icon(weakpermIcon, "large" + weakpermColor)
     h3.center Insufficient Permission for LiveView
     .divider
+    include stages
     p.justify LiveView could not be started for the resolution with token #[b=token]
       if stage !== 6
-        include stages
         |  because the resolution has to be in stage #{stageData[6].title}
         a(href="/help#rstage6"): b.text-lighten-1.grey-text  #6
         | .
