@@ -14,5 +14,5 @@ $(document).ready(function() {
 if (typeof Array.prototype.map !== "function") {
   alert("You are using an severely outdated browser and we strongly encourage you to update" +
         " it immediately. Because of that, this website may not work as expected and you may face" +
-        " security issues.");
+        " security issues (not just with this website, but in general).");
 }

@@ -6,7 +6,8 @@
   resolutionToken,
   resolutionCode,
   displayToast,
-  allowedSubclauseDepth*/
+  allowedSubclauseDepth,
+  sendJsonLV */
 /* exported loadFilePick,
   serverLoad,
   generatePdf,
@@ -114,7 +115,7 @@ function validateEditorData(obj) {
 }
 
 //loads a json into the editor
-function loadJson(json, container, callbackOnSuccess) {
+function loadJson(json, callbackOnSuccess) {
   //basic parse if necessary
   var obj;
   if (typeof json === "string") {
@@ -154,22 +155,22 @@ function loadJson(json, container, callbackOnSuccess) {
   }
 
   //prepare loading: reset editor to original state
-  container.find(".clause").trigger("attemptRemove");
-  container.find("input, textarea").trigger("reset");
+  $(".clause").trigger("attemptRemove");
+  $("input, textarea").trigger("reset");
 
   //put author data into field
-  container.find("#author-name").val(obj.author).trigger("activateLabel");
+  $("#author-name").val(obj.author).trigger("activateLabel");
 
   //get resolution object
   var res = obj.resolution;
 
   //put data into general data fields
-  container.find("#question-of").val(res.address.questionOf).trigger("activateLabel");
-  container.find("#forum-name").val(res.address.forum).trigger("activateLabel");
-  container.find("#main-spon").val(res.address.sponsor.main).trigger("activateLabel");
+  $("#question-of").val(res.address.questionOf).trigger("activateLabel");
+  $("#forum-name").val(res.address.forum).trigger("activateLabel");
+  $("#main-spon").val(res.address.sponsor.main).trigger("activateLabel");
 
   //init chips with new data
-  var elem = container.find("#co-spon");
+  var elem = $("#co-spon");
   elem.getData().data = res.address.sponsor.co.map(function(str) {
     return { tag: str };
   });
@@ -177,9 +178,9 @@ function loadJson(json, container, callbackOnSuccess) {
 
   //parse clauses
   parseClauseList(res.clauses.preambulatory,
-                  container.find("#preamb-clauses").children(".clause-list"));
+                  $("#preamb-clauses").children(".clause-list"));
   parseClauseList(res.clauses.operative,
-                  container.find("#op-clauses").children(".clause-list"));
+                  $("#op-clauses").children(".clause-list"));
 
   //call success callback
   if (typeof callbackOnSuccess === "function") {
@@ -188,7 +189,7 @@ function loadJson(json, container, callbackOnSuccess) {
 }
 
 //load file from computer file system
-function loadFilePick(container) {
+function loadFilePick() {
   //make alert message file select
   makeAlertMessage(
     "file_upload", "Open resolution file", "cancel", function(body, modal) {
@@ -201,7 +202,7 @@ function loadFilePick(container) {
         modal.modal("close");
 
         //load text into editor
-        loadJson(text, container);
+        loadJson(text);
 
         //changes loaded from file are not "really" server saved
         //(and flag isn't reset because of this)
@@ -210,7 +211,7 @@ function loadFilePick(container) {
 }
 
 //loads resolution from server
-function serverLoad(token, doToast, container, callback) {
+function serverLoad(token, doToast, callback) {
   //stop if we're still in stage 0 and there isn't anything to load
   if ($("#resolution-stage").text() === "0") {
     return;
@@ -231,7 +232,7 @@ function serverLoad(token, doToast, container, callback) {
   $.ajax(ajaxSettings)
   .done(function(response) {
     //attempt to load json into editor
-    loadJson(response, container, function() {
+    loadJson(response, function() {
         //display toast
       if (doToast) {
         displayToast("Successfully loaded");
@@ -345,29 +346,38 @@ $.fn.clauseAsObject = function() {
 };
 
 //returns a json string of the object currently in the editor
-function getEditorContent(container, makeJsonNice) {
+function getEditorContent(makeJsonNice) {
+  //get object
+  var res = getEditorObj();
+
+  //return stringyfied
+  return makeJsonNice ? JSON.stringify(res, null, 2) : JSON.stringify(res);
+}
+
+//return the editor content as the resolution file object
+function getEditorObj() {
   //create root resolution object and gather data
   var res = {
     magic: resolutionFormat.magicIdentifier,
     version: Math.max.apply(null, supportedResFileFormats), //use highest supported version
-    author: container.find("#author-name").val().trim(),
+    author: $("#author-name").val().trim(),
     resolution: {
       address: {
-        forum: container.find("#forum-name").val().trim(),
-        questionOf: container.find("#question-of").val().trim(),
+        forum: $("#forum-name").val().trim(),
+        questionOf: $("#question-of").val().trim(),
         sponsor: {
-          main: container.find("#main-spon").val().trim()
+          main: $("#main-spon").val().trim()
         }
       },
       clauses: {
-        preambulatory: container.find("#preamb-clauses > .clause-list").clauseAsObject(),
-        operative: container.find("#op-clauses > .clause-list").clauseAsObject()
+        preambulatory: $("#preamb-clauses > .clause-list").clauseAsObject(),
+        operative: $("#op-clauses > .clause-list").clauseAsObject()
       }
     }
   };
 
   //get co-sponsors and add if any present
-  var cosponsorData = container.find("#co-spon").material_chip("data");
+  var cosponsorData = $("#co-spon").material_chip("data");
   if (cosponsorData.length) {
     //map to array of strings
     res.resolution.address.sponsor.co = cosponsorData.map(function(obj) {
@@ -375,12 +385,12 @@ function getEditorContent(container, makeJsonNice) {
     });
   }
 
-  //return stringyfied
-  return makeJsonNice ? JSON.stringify(res, null, 2) : JSON.stringify(res);
+  //return created object
+  return res;
 }
 
-//saves the resolution from given container to the server
-function serverSave(container, callback, doToast) {
+//saves the resolution from editor to the server
+function serverSave(callback, doToast) {
   //display if not specified
   if (typeof doToast === "undefined") {
     doToast = true;
@@ -394,7 +404,7 @@ function serverSave(container, callback, doToast) {
 
   //make data object
   var data = {
-    content: getEditorContent(container, false)
+    content: getEditorContent(false)
   };
 
   //add code to data if given
@@ -427,7 +437,7 @@ function serverSave(container, callback, doToast) {
 }
 
 //generates and downloeads json representation of the editor content
-function downloadJson(container) {
+function downloadJson() {
   //validate
   if (! validateFields()) {
     //stop because not ok with missing data
@@ -435,7 +445,7 @@ function downloadJson(container) {
   }
 
   //make a file download with the editor content
-  saveFileDownload(getEditorContent(container, true));
+  saveFileDownload(getEditorContent(true));
 }
 
 //save file to be downloaded
@@ -462,5 +472,25 @@ function saveFileDownload(str) {
     body.append(
       "If the file download doesn't start, try again and if it still doesn't work " +
       "please file a " + bugReportLink("download_not_starting") + " and describe this problem.");
+  });
+}
+
+//the liveview socket, if present is in currentWS (var in liveviewWS.js)
+
+//sends a structure update to server
+function sendLVStructureUpdate() {
+  //send as structure update
+  sendJsonLV({
+    type: "updateStructure",
+    update: getEditorObj() //just send the whole editor content for rerender anfter structure change
+  });
+}
+
+//sends a content update to server
+function sendLVContentUpdate(content) {
+  //send as structure update
+  sendJsonLV({
+    type: "updateContent",
+    update: content
   });
 }

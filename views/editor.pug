@@ -4,7 +4,7 @@ block styles
   link(href="/css/editorStyle.css" type="text/css" rel="stylesheet")
 
 block content
-  .section: .container#editor-main
+  .section: .container
     if code
       #code-preset.hide-this=code
       #code-access-level.hide-this=accessLevel
@@ -221,6 +221,6 @@ block scripts
   script(src="/js/accessInputs.js")
   script(src="/js/resolutionFormat.js")
   script(src="/js/dialogs.js")
-  script(src="/js/dataInteraction.js")
   script(src="/js/liveviewWS.js")
+  script(src="/js/dataInteraction.js")
   script(src="/js/editorInit.js")

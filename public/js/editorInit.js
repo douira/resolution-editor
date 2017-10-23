@@ -372,7 +372,7 @@ function registerEssentialEventHandlers(doLoad) {
       generatePdf();
     } else {
       //save json to server first
-      serverSave($("#editor-main"), function() {
+      serverSave(function() {
         //display pdf directly after generating
         generatePdf();
       });
@@ -391,7 +391,7 @@ function registerEssentialEventHandlers(doLoad) {
       generatePlaintext();
     } else {
       //save json to server first
-      serverSave($("#editor-main"), function() {
+      serverSave(function() {
         //display pdf directly after generating
         generatePlaintext();
       });
@@ -935,7 +935,7 @@ function registerEventHandlers(loadedData) {
     e.stopPropagation();
 
     //load file from computer file system
-    loadFilePick($("#editor-main"));
+    loadFilePick();
   });
   $("#legacy-action-save")
   .on("click", function(e) {
@@ -945,7 +945,7 @@ function registerEventHandlers(loadedData) {
     $(".clause").trigger("editInactive");
 
     //download editor json
-    downloadJson($("#editor-main"));
+    downloadJson();
   });
   $("#action-save")
   .on("click", function(e) {
@@ -959,7 +959,7 @@ function registerEventHandlers(loadedData) {
       displayToast("Already saved");
     } else {
       //save json to server first
-      serverSave($("#editor-main"));
+      serverSave();
     }
   });
 }
@@ -1007,7 +1007,7 @@ $(document).ready(function() {
     registerEssentialEventHandlers(false);
 
     //trigger all init events
-    $("#editor-main").find("*").trigger("init");
+    $("*").trigger("init");
   } else { //proceed normally
     //load external sponsor, phrase and forum name data
     var autofillData;
@@ -1090,10 +1090,10 @@ $(document).ready(function() {
       }
 
       //trigger all init events
-      $("#editor-main").find("*").trigger("init");
+      $("*").trigger("init");
 
       //initiate loading of resolution from server with preset token
-      serverLoad(resolutionToken, true, $("#editor-main"));
+      serverLoad(resolutionToken, true);
 
       //if at stage 6 and authorized as CH or MA, start liveview editor websocket
       if (resolutionStage === 6 && accessLevel === "CH" || accessLevel === "MA") {

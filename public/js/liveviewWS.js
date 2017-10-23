@@ -1,73 +1,73 @@
 /*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
-/*exported startLiveviewWS*/
+/*exported startLiveviewWS, sendJsonLV*/
 /* global makeAlertMessage,
   displayToast*/
 
 //how many times we will try to connect
-var triesLeft = 3;
+var LVConnectTriesLeft = 3;
 
 //reference to the current websocket for closing it on page unload
 var currentWS;
 
 //token and code given on page
-var presetToken;
-var presetCode;
+var presetTokenLV;
+var presetCodeLV;
+
+//lv access token to authenticate communication with server
+var accessToken;
+
+//if we need to be sending edit updates or not
+var sendEditUpdates = false;
+
+//seends an object json encoded to the server
+function sendJsonLV(obj) {
+  //add access token for auth
+  if (accessToken) {
+    obj.accessToken = accessToken;
+  }
+
+  //send prepared object after stringify
+  currentWS.send(JSON.stringify(obj));
+}
 
 //starts a websockets connection to the server
 function startWS(isViewer) {
   //decrement try coutner
-  triesLeft --;
+  LVConnectTriesLeft --;
 
   //open websocket connection to server
-  var ws = new WebSocket("ws://" + window.location.host + "/resolution/liveview/ws");
-
-  //also put into global
-  currentWS = ws;
+  currentWS = new WebSocket("ws://" + window.location.host + "/resolution/liveview/ws");
 
   //get the token and code given in the page if not already present
-  presetToken = presetToken || $("#token-preset").text();
-  if (! presetCode) {
+  presetTokenLV = presetTokenLV || $("#token-preset").text();
+  if (! presetCodeLV) {
     //get code from page and remove element
     var codeElement = $("#code-preset");
-    presetCode = codeElement.text();
+    presetCodeLV = codeElement.text();
     codeElement.remove();
   }
 
-  //access token to authenticate communication with server
-  var accessToken;
-
-  //seends an object json encoded to the server
-  function sendJson(obj) {
-    //add access token for auth
-    if (accessToken) {
-      obj.accessToken = accessToken;
-    }
-
-    //send prepared object after stringify
-    ws.send(JSON.stringify(obj));
-  }
-
   //on finished opening connection, send token and code to register as listener
-  ws.onopen = function() {
+  currentWS.onopen = function() {
     //initial request for content updates
-    sendJson({
+    sendJsonLV({
       type: isViewer ? "initViewer" : "initEditor", //request for connection of correct type
-      token: presetToken, //give token and code for initial auth
-      code: presetCode
+      token: presetTokenLV, //give token and code for initial auth
+      code: presetCodeLV
     });
   };
 
   //when connection is closed by something inbetween or one of the parties
-  ws.onclose = function() {
+  currentWS.onclose = function() {
     //if wtill tries left
-    if (triesLeft > 0) {
+    if (LVConnectTriesLeft > 0) {
       makeAlertMessage("warning", "Connection closed", "ok", "The connection to the server has" +
                        " been closed. In 5 seconds another connection attempt will be started." +
-                       " (" + triesLeft + " tries left)");
+                       " (" + LVConnectTriesLeft + " tries left)");
 
       //try again
       setTimeout(function() { startWS(isViewer); }, 5000);
-    } else if (triesLeft === 0) {
+    } else if (LVConnectTriesLeft === 0) {
       //stop now
       makeAlertMessage("error_outline", "Connection failed", "ok", "The connection to the server" +
                        " has been closed and couldn't be re-opened." +
@@ -76,7 +76,7 @@ function startWS(isViewer) {
   };
 
   //when a message appears
-  ws.onmessage = function(event) {
+  currentWS.onmessage = function(event) {
     //parse sent object
     var data;
     try {
@@ -84,6 +84,11 @@ function startWS(isViewer) {
     } catch (err) {
       console.log("non-json data received/error", event.data, err);
       return;
+    }
+
+    //keep track of if we need to be sending updates
+    if (! isViewer && data.hasOwnProperty("sendUpdates")) {
+      sendEditUpdates = data.sendUpdates;
     }
 
     //for type of send message
@@ -94,7 +99,7 @@ function startWS(isViewer) {
 
         //check if we are allowed to retry
         if (! data.tryAgain) {
-          triesLeft = 0;
+          LVConnectTriesLeft = 0;
         }
 
         //alert user
@@ -106,10 +111,11 @@ function startWS(isViewer) {
         accessToken = data.accessToken;
 
         //notify of connection start
-        displayToast("Connection established");
+        displayToast("LV: Connection established");
 
         //build notification message
-        var displayString = data.viewerAmount + " Viewer" + (data.viewerAmount >= 2 ? "s" : "");
+        var displayString = "LV: " + data.viewerAmount +
+            " Viewer" + (data.viewerAmount >= 2 ? "s" : "");
         if (isViewer) {
           displayString += " and " + (data.editorPresent ? "an" : "no") + " Editor";
         }
@@ -119,22 +125,22 @@ function startWS(isViewer) {
         displayToast(displayString);
         break;
       case "editorReplaced": //viewer
-        displayToast("Editor replaced");
+        displayToast("LV: Editor replaced");
         break;
       case "editorJoined": //viewer
-        displayToast("Editor connected");
+        displayToast("LV: Editor connected");
         break;
       case "editorGone": //viewer
-        displayToast("Editor disconnected");
+        displayToast("LV: Editor disconnected");
         break;
       case "viewerJoined": //editor
-        displayToast("Viewer joined, now: " + data.amount);
+        displayToast("LV: Viewer joined, now: " + data.amount);
         break;
       case "viewerLeft": //editor
-        displayToast("Viewer left, now: " + data.amount);
+        displayToast("LV: Viewer left, now: " + data.amount);
         break;
       case "replacedByOther": //editor
-        displayToast("Editor replaced by server");
+        displayToast("LV: Editor replaced by server");
         break;
       case "updateStructure": //viewer
         //whole resolution content is resent because structure has changed
@@ -157,9 +163,9 @@ function startWS(isViewer) {
 function startLiveviewWS(isViewer, token, code) {
   //use given token and code if given
   if (typeof token !== "undefined") {
-    presetToken = token;
+    presetTokenLV = token;
     if (typeof code !== "undefined") {
-      presetCode = code;
+      presetCodeLV = code;
     }
   }
 
@@ -178,7 +184,7 @@ function startLiveviewWS(isViewer, token, code) {
   //close websocket on page unload/close, do it on both just to be sure
   $(window).on("unload beforeunload", function() {
     //prevent reopen and alert
-    triesLeft = -1;
+    LVConnectTriesLeft = -1;
 
     //close the websocket
     currentWS.close();
