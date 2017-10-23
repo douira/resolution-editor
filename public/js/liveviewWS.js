@@ -62,11 +62,11 @@ function startWS(isViewer) {
     //if wtill tries left
     if (triesLeft > 0) {
       makeAlertMessage("warning", "Connection closed", "ok", "The connection to the server has" +
-                       " been closed. In 3 seconds another connection attempt will be started." +
+                       " been closed. In 5 seconds another connection attempt will be started." +
                        " (" + triesLeft + " tries left)");
 
       //try again
-      setTimeout(function() { startWS(isViewer); }, 3000);
+      setTimeout(function() { startWS(isViewer); }, 5000);
     } else if (triesLeft === 0) {
       //stop now
       makeAlertMessage("error_outline", "Connection failed", "ok", "The connection to the server" +
