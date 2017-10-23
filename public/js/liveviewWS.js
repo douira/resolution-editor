@@ -60,7 +60,7 @@ function startWS(isViewer) {
   //when connection is closed by something inbetween or one of the parties
   ws.onclose = function() {
     //if wtill tries left
-    if (triesLeft) {
+    if (triesLeft > 0) {
       makeAlertMessage("warning", "Connection closed", "ok", "The connection to the server has" +
                        " been closed. In 3 seconds another connection attempt will be started." +
                        " (" + triesLeft + " tries left)");
@@ -72,7 +72,7 @@ function startWS(isViewer) {
       makeAlertMessage("error_outline", "Connection failed", "ok", "The connection to the server" +
                        " has been closed and couldn't be re-opened." +
                        " Contact IT-Management for help.", "liveview_conn_failed");
-    }
+    } //-1 means no alert
   };
 
   //when a message appears
@@ -105,8 +105,18 @@ function startWS(isViewer) {
         //get token from data, we are now ready to send and receive data
         accessToken = data.accessToken;
 
-        //notify
+        //notify of connection start
         displayToast("Connection established");
+
+        //build notification message
+        var displayString = data.viewerAmount + " Viewer" + (data.viewerAmount >= 2 ? "s" : "");
+        if (isViewer) {
+          displayString += " and " + (data.editorPresent ? "an" : "no") + " Editor";
+        }
+        displayString += " connected";
+
+        //notify of viewership and editor status
+        displayToast(displayString);
         break;
       case "editorReplaced": //viewer
         displayToast("Editor replaced");
