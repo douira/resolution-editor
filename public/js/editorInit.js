@@ -49,6 +49,9 @@ function makeAutofillSettingsPre(defaultSettings, data, settings) {
 var changesSaved = false;
 var noChangesMade = true;
 
+//set to true once the resolution has been fully loaded and the clauses generated
+var doneLoadingResolution = false;
+
 //token and access code for this resolution, used for saving
 var resolutionToken, resolutionCode;
 
@@ -462,9 +465,13 @@ function registerEventHandlers(loadedData) {
     $(this).trigger("checkRequired");
   });
   $(".clause input, .clause textarea")
-  .on("paste keyup change", function() {
-    //send content update
-    sendLVUpdate("content", $(this));
+  .on("paste keyup", function() {
+    //don't send update if still loading, some events may be fake-fired in the process of getting
+    //the editor ready for the user
+    if (doneLoadingResolution) {
+      //send content update
+      sendLVUpdate("content", $(this));
+    }
   });
   $("input[type='file']")
   .on("reset", function(e) {
@@ -1122,7 +1129,10 @@ $(document).ready(function() {
       $("*").trigger("init");
 
       //initiate loading of resolution from server with preset token
-      serverLoad(resolutionToken, true);
+      serverLoad(resolutionToken, true, function() {
+        //set flag for done loading resolution into editor
+        doneLoadingResolution = true;
+      });
 
       //if at stage 6 and authorized as CH or MA, start liveview editor websocket
       if (resolutionStage === 6 && accessLevel === "CH" || accessLevel === "MA") {

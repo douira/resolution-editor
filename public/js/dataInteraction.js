@@ -244,7 +244,7 @@ function serverLoad(token, doToast, callback) {
         callback();
       }
 
-      //set flag
+      //set flag, loaded resolution is fully saved already
       changesSaved = true;
     });
   })

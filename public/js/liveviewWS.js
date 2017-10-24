@@ -23,18 +23,44 @@ var accessToken;
 var sendEditUpdates = false;
 
 //seends an object json encoded to the server
-function sendJsonLV(obj) {
-  //add access token for auth
-  if (accessToken) {
-    obj.accessToken = accessToken;
-  }
+var sendJsonLV = (function() {
+  //message queue to send
+  var messageQueue = [];
 
-  //send prepared object after stringify
-  currentWS.send(JSON.stringify(obj));
-}
+  return function(obj, isInit) {
+    //if obj is "empty" the queue should be attempted to be emptied
+    if (obj === "empty") {
+      //send messages from the queue until none are left
+      while (messageQueue.length) {
+        //send oldest message, preserve queue ordering
+        sendJsonLV(messageQueue.shift());
+      }
+
+      //return because this function call wasn't for sending a message
+      return;
+    }
+
+    //send if we have an accessToken
+    if (accessToken || isInit) {
+      //add access token for auth, if present, do not add to init message
+      if (accessToken && ! isInit) {
+        obj.accessToken = accessToken;
+      }
+
+      //send prepared object after stringify
+      currentWS.send(JSON.stringify(obj));
+
+      //work on emptying queue
+      sendJsonLV("empty");
+    } else {
+      //put in queue
+      messageQueue.push(obj);
+    }
+  };
+})();
 
 //starts a websockets connection to the server
-function startWS(isViewer) {
+function startWS(isViewer, updateListener) {
   //decrement try coutner
   connectTriesLeftLV --;
 
@@ -57,17 +83,20 @@ function startWS(isViewer) {
       type: isViewer ? "initViewer" : "initEditor", //request for connection of correct type
       token: presetTokenLV, //give token and code for initial auth
       code: presetCodeLV
-    });
+    }, true);
   };
 
-  //when connection is closed by something inbetween or one of the parties
+  //when connection is closed by one of the parties
   currentWS.onclose = function() {
+    //reset access token
+    accessToken = null;
+
     //if wtill tries left
     if (connectTriesLeftLV > 0) {
       displayToast("LV: Connection error (" + connectTriesLeftLV + " tries left)");
 
       //try again
-      setTimeout(function() { startWS(isViewer); }, 5000);
+      setTimeout(function() { startWS(isViewer, updateListener); }, 5000);
     } else if (connectTriesLeftLV === 0) {
       //stop now
       makeAlertMessage("error_outline", "Connection failed", "ok", "The connection to the server" +
@@ -127,6 +156,14 @@ function startWS(isViewer) {
 
         //notify of viewership and editor status
         displayToast(displayString);
+
+        //if resolution data sent, call listener
+        if (data.hasOwnProperty("resolutionData") && typeof updateListener === "function") {
+          updateListener("structure", data.resolutionData);
+        }
+
+        //work on emptying queue now that an access token has been received
+        sendJsonLV("empty");
         break;
       case "editorReplaced": //viewer
         displayToast("LV: Editor replaced");
@@ -147,11 +184,11 @@ function startWS(isViewer) {
         displayToast("LV: Editor replaced by server");
         break;
       case "updateStructure": //viewer
-        //whole resolution content is resent because structure has changed
-        console.log("updateStructure", data.update);
-        break;
-      case "updateContent": //viewer, the content of one clause changed and only that is sent
-        console.log("updateContent", data.update);
+      case "updateContent":
+        //call listener with update
+        if (typeof updateListener === "function") {
+          updateListener(data.type === "updateStructure" ? "structure" : "content", data.update);
+        }
         break;
       default: //both
         console.log("unrecognised message type", data);
@@ -162,11 +199,11 @@ function startWS(isViewer) {
 
 //starts liveview websocket operations, given if this client is editor is viewer
 //called after/inside document load
-function startLiveviewWS(isViewer, token, code) {
+function startLiveviewWS(isViewer, token, code, updateListener) {
   //use given token and code if given
-  if (typeof token !== "undefined") {
+  if (typeof token === "string") {
     presetTokenLV = token;
-    if (typeof code !== "undefined") {
+    if (typeof code === "string") {
       presetCodeLV = code;
     }
   }
@@ -181,7 +218,7 @@ function startLiveviewWS(isViewer, token, code) {
   }
 
   //start the ws connection
-  startWS(isViewer);
+  startWS(isViewer, updateListener);
 
   //close websocket on page unload/close, do it on both just to be sure
   $(window).on("unload beforeunload", function() {
