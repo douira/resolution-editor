@@ -19,9 +19,6 @@ var presetCodeLV;
 //lv access token to authenticate communication with server
 var accessToken;
 
-//if we need to be sending edit updates or not
-var sendEditUpdates = false;
-
 //seends an object json encoded to the server
 var sendJsonLV = (function() {
   //message queue to send
@@ -84,6 +81,9 @@ function startWS(isViewer, updateListener) {
       token: presetTokenLV, //give token and code for initial auth
       code: presetCodeLV
     }, true);
+
+    //notify custom event handling
+    updateListener("connect");
   };
 
   //when connection is closed by one of the parties
@@ -94,6 +94,9 @@ function startWS(isViewer, updateListener) {
     //if wtill tries left
     if (connectTriesLeftLV > 0) {
       displayToast("LV: Connection error (" + connectTriesLeftLV + " tries left)");
+
+      //notify custom event handling
+      updateListener("disconnect");
 
       //try again
       setTimeout(function() { startWS(isViewer, updateListener); }, 5000);
@@ -118,7 +121,13 @@ function startWS(isViewer, updateListener) {
 
     //keep track of if we need to be sending updates
     if (! isViewer && data.hasOwnProperty("sendUpdates")) {
-      sendEditUpdates = data.sendUpdates;
+      //notify up new update necessity status
+      updateListener("sendUpdates", data.sendUpdates);
+    }
+
+    //if resolution data sent, call listener
+    if (data.hasOwnProperty("resolutionData") && typeof updateListener === "function") {
+      updateListener("structure", data.resolutionData);
     }
 
     //for type of send message
@@ -157,11 +166,6 @@ function startWS(isViewer, updateListener) {
         //notify of viewership and editor status
         displayToast(displayString);
 
-        //if resolution data sent, call listener
-        if (data.hasOwnProperty("resolutionData") && typeof updateListener === "function") {
-          updateListener("structure", data.resolutionData);
-        }
-
         //work on emptying queue now that an access token has been received
         sendJsonLV("empty");
         break;
@@ -193,6 +197,11 @@ function startWS(isViewer, updateListener) {
       default: //both
         console.log("unrecognised message type", data);
         return;
+    }
+
+    //custom event handling
+    if (typeof updateListener === "function") {
+      updateListener(data.type, data);
     }
   };
 }

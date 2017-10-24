@@ -7,21 +7,22 @@ var currentStructure;
 //start liveview as viewer on document load
 $(document).ready(function() {
   //true because we are a viewer, add function to deal with the updates it receives
-  startLiveviewWS(true, null, null, function(type, update) { //given type and update data
-    console.log(type, update);
-
+  startLiveviewWS(true, null, null, function(type, data) { //given type and update data
     //switch to update type
     switch (type) {
       case "structure": //whole resolution content is resent because structure has changed
         //copy to current structure
-        currentStructure = update;
-
-        //set content
-        $("#viewcontent").text(update);
+        currentStructure = data.update;
         break;
       case "content": //the content of one clause changed and only that is sent
+        //apply change to specified path
 
         break;
+    }
+
+    //set content
+    if (currentStructure) {
+      $("#viewcontent").text(JSON.stringify(currentStructure));
     }
   });
 });

@@ -12,7 +12,7 @@
   makeAlertMessage,
   startLiveviewWS,
   sendLVUpdate*/
-/* exported checkRequiredFields*/
+/* exported checkRequiredFields, sendLVUpdates*/
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -57,6 +57,9 @@ var resolutionToken, resolutionCode;
 
 //attach the default settings
 var makeAutofillSettings = makeAutofillSettingsPre.bind({}, autofillSettings);
+
+//is set to true if we need to send updates to LV viewers
+var sendLVUpdates = false;
 
 //transforms arrays containign a certain flag in an object and array json structure
 function transformMarkedArrays(structure, flag, propValue, depth) {
@@ -1137,7 +1140,25 @@ $(document).ready(function() {
       //if at stage 6 and authorized as CH or MA, start liveview editor websocket
       if (resolutionStage === 6 && accessLevel === "CH" || accessLevel === "MA") {
         //give token and code, false for being editor type client
-        startLiveviewWS(false, resolutionToken, resolutionCode);
+        startLiveviewWS(false, resolutionToken, resolutionCode, function(type, newSendStatus) {
+          //act on "sendUpdates" update
+          switch (type) {
+            case "sendUpdates":
+              //if now set to true and previously false,
+              //send structure update to catch server up on made changes
+              if (! sendLVUpdates && newSendStatus) {
+                sendLVUpdates = true;
+                sendLVUpdate("structure");
+              }
+
+              //copy value
+              sendLVUpdates = newSendStatus;
+              break;
+            case "disconnect":
+              //set send updates to false because we want to resend after connection failure
+              sendLVUpdates = false;
+          }
+        });
       }
     });
   }

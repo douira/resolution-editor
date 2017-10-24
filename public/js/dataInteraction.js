@@ -7,7 +7,8 @@
   resolutionCode,
   displayToast,
   allowedSubclauseDepth,
-  sendJsonLV */
+  sendJsonLV,
+  sendLVUpdates*/
 /* exported loadFilePick,
   serverLoad,
   generatePdf,
@@ -541,6 +542,11 @@ $.fn.getContentPath = function() {
 
 //sends edit updates
 function sendLVUpdate(type, elem) {
+  //don't send if not necessary
+  if (! sendLVUpdates) {
+    return;
+  }
+
   //sends a structure update to server
   switch(type) {
     case "structure":
