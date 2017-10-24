@@ -149,11 +149,9 @@ function startWS(isViewer) {
       case "updateStructure": //viewer
         //whole resolution content is resent because structure has changed
         console.log("updateStructure", data.update);
-        displayToast("updateStructure");
         break;
       case "updateContent": //viewer, the content of one clause changed and only that is sent
         console.log("updateContent", data.update);
-        displayToast("updateContent");
         break;
       default: //both
         console.log("unrecognised message type", data);

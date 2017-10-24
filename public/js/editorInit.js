@@ -341,6 +341,8 @@ $.fn.addClause = function(amount, activationStateChanges) {
     addedClause.trigger("editActive");
   }
 
+  //structure update not sent here because this is also called when loading the resolution
+
   //return this for chaining
   return this;
 };
@@ -458,6 +460,11 @@ function registerEventHandlers(loadedData) {
     e.stopPropagation();
     //check again on changed value
     $(this).trigger("checkRequired");
+  });
+  $(".clause input, .clause textarea")
+  .on("paste keyup change", function() {
+    //send content update
+    sendLVUpdate("content", $(this));
   });
   $("input[type='file']")
   .on("reset", function(e) {
@@ -745,6 +752,9 @@ function registerEventHandlers(loadedData) {
 
       //update ids of other clauses around it
       parent.children(".clause").trigger("updateId");
+
+      //send structure update
+      sendLVUpdate("structure");
     }
   })
   .on("click", function(e) {
@@ -828,6 +838,9 @@ function registerEventHandlers(loadedData) {
     if ($(e.target).is("a")) {
       //add clause in enclosing list
       $(this).addClause(1, true);
+
+      //send structure update
+      sendLVUpdate("structure");
     }
   });
   $(".edit-mode-btn")
@@ -863,6 +876,9 @@ function registerEventHandlers(loadedData) {
 
     //update id of all clauses in section
     clause.triggerAllIdUpdate();
+
+    //send structure update
+    sendLVUpdate("structure");
   })
   .on("updateDisabled", makeEabMoveUpdateDisabledHandler(false));
   $("#eab-move-up")
@@ -873,6 +889,9 @@ function registerEventHandlers(loadedData) {
 
     //update id of all clauses in section
     clause.triggerAllIdUpdate();
+
+    //send structure update
+    sendLVUpdate("structure");
   })
   .on("updateDisabled", makeEabMoveUpdateDisabledHandler(true));
   $("#eab-add-sub")
@@ -882,6 +901,9 @@ function registerEventHandlers(loadedData) {
 
     //get enclosing clause and make inactive to prevent cloning of eab and add subclause
     elem.closest(".clause").addSubClause(true);
+
+    //send structure update
+    sendLVUpdate("structure");
   })
   .on("updateDisabled", function(e) {
     e.stopPropagation();
@@ -898,6 +920,9 @@ function registerEventHandlers(loadedData) {
 
     //make disabled after action performed
     $(this).disabledState(true);
+
+    //send structure update
+    sendLVUpdate("structure");
   })
   .on("updateDisabled", function(e) {
     e.stopPropagation();
@@ -913,6 +938,9 @@ function registerEventHandlers(loadedData) {
   .on("click", function(e) {
     e.stopPropagation();
     $(this).closest(".clause").trigger("clear");
+
+    //send structure update because ext cont is removed
+    sendLVUpdate("structure");
   });
   $("#eab-delete")
   .on("click", function(e) {

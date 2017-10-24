@@ -540,27 +540,30 @@ $.fn.getContentPath = function() {
 //the liveview socket, if present is in currentWS (var in liveviewWS.js)
 
 //sends edit updates
-function sendLVUpdate(type, elem, newContent) {
+function sendLVUpdate(type, elem) {
   //sends a structure update to server
-  if (type === "structure") {
-    //increment structure index with change happened
-    structureChangeIndex ++;
+  switch(type) {
+    case "structure":
+      //increment structure index with change happened
+      structureChangeIndex ++;
 
-    //send as structure update
-    sendJsonLV({
-      type: "updateStructure",
-      //just send the whole editor content for rerender after structure change
-      update: getEditorObj()
-    });
-  } else if (type === "content") {
-    //send as structure update
-    sendJsonLV({
-      type: "updateContent",
-      update: {
-        contentPath: elem.getContentPath(),
-        content: newContent
-      }
-    });
+      //send as structure update
+      sendJsonLV({
+        type: "updateStructure",
+        //just send the whole editor content for rerender after structure change
+        update: getEditorObj()
+      });
+      break;
+    case "content":
+      //send as structure update
+      sendJsonLV({
+        type: "updateContent",
+        update: {
+          contentPath: elem.getContentPath(),
+          content: elem.val().trim()
+        }
+      });
+      break;
   }
 }
 
