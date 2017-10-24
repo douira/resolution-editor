@@ -13,7 +13,8 @@
   generatePdf,
   generatePlaintext,
   serverSave,
-  downloadJson*/
+  downloadJson,
+  sendLVUpdate*/
 //file actions are defined in this file
 
 //current version of the resolution format supported
@@ -475,25 +476,91 @@ function saveFileDownload(str) {
   });
 }
 
+//index of structure changes, incremented every time the structure changes
+//paths calculated with a small index will be ignored and recalculated
+var structureChangeIndex = 0;
+
+//gets the path of a clause
+$.fn.getContentPath = function() {
+  //get data for this element
+  var data = this.getData();
+
+  //if no structure change has occured and path is present in data
+  if (data.hasOwnProperty("contentPath") &&
+      data.contentPath.structureIndex === structureChangeIndex) {
+    //use this path instead
+    return data.contentPath.path;
+  }
+
+  //path elements in order from deepest to top
+  var path = [];
+
+  //current element we are examining
+  var elem = this; //start off with this element
+
+  //must be input or textarea to have triggered a change(or similar) event
+  if (elem.is("input,textarea")) {
+    //first specifier in path is the role of the field in the clause
+    var elemClasses = elem.attr("class");
+    ["phrase-input", "clause-content-text", "clause-content-ext-text"]
+      .forEach(function(classValue) {
+      //check if element has current class
+      if (elemClasses.indexOf(classValue) !== -1) {
+        //use as first path specifier, we expect this only to happen once
+        path[0] = classValue;
+      }
+    });
+  } else {
+    //called on wrong element
+    return [];
+  }
+
+  //for parent clauses
+  elem.parents(".clause").each(function() {
+    //add index of each clause in its list to path
+    path.push($(this).indexInParent());
+  });
+
+  //no parent found, we are at the top level: specify what type of clause (op or preamb)
+  path.push(elem.closest("#preamb-clauses") ? "preamb" : "op");
+
+  //reverse path so it starts with the topmost element
+  path.reverse();
+
+  //put path into data to reuse
+  data.contentPath = {
+    path: path,
+    structureIndex: structureChangeIndex
+  };
+
+  //return calculated path
+  return path;
+};
+
 //the liveview socket, if present is in currentWS (var in liveviewWS.js)
 
-//sends a structure update to server
-function sendLVStructureUpdate() {
-  //send as structure update
-  sendJsonLV({
-    type: "updateStructure",
-    update: getEditorObj() //just send the whole editor content for rerender after structure change
-  });
+//sends edit updates
+function sendLVUpdate(type, elem, newContent) {
+  //sends a structure update to server
+  if (type === "structure") {
+    //increment structure index with change happened
+    structureChangeIndex ++;
+
+    //send as structure update
+    sendJsonLV({
+      type: "updateStructure",
+      //just send the whole editor content for rerender after structure change
+      update: getEditorObj()
+    });
+  } else if (type === "content") {
+    //send as structure update
+    sendJsonLV({
+      type: "updateContent",
+      update: {
+        contentPath: elem.getContentPath(),
+        content: newContent
+      }
+    });
+  }
 }
 
-//sends a content update to server
-function sendLVContentUpdate(elem, newContent) {
-  //send as structure update
-  sendJsonLV({
-    type: "updateContent",
-    update: {
-      contentPath: elem.getContentPath(),
-      content: newContent
-    }
-  });
-}

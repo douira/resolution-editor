@@ -10,7 +10,8 @@
   registerAccessInputs,
   serverLoad,
   makeAlertMessage,
-  startLiveviewWS */
+  startLiveviewWS,
+  sendLVUpdate*/
 /* exported checkRequiredFields*/
 //registers events and data, controls interaction behavior
 
@@ -342,59 +343,6 @@ $.fn.addClause = function(amount, activationStateChanges) {
 
   //return this for chaining
   return this;
-};
-
-//gets the path of a clause
-$.fn.getContentPath = function() {
-  //get data for this element
-  var data = this.getData();
-
-  //if no structure change has occured and path is present in data
-  if (data.hasOwnProperty("contentPath")) {
-    //use this path instead
-    return data.contentPath;
-  }
-
-  //path elements in order from deepest to top
-  var path = [];
-
-  //current element we are examining
-  var elem = this; //start off with this element
-
-  //must be input or textarea to have triggered a change(or similar) event
-  if (elem.is("input,textarea")) {
-    //first specifier in path is the role of the field in the clause
-    var elemClasses = elem.attr("class");
-    ["phrase-input", "clause-content-text", "clause-content-ext-text"]
-      .forEach(function(classValue) {
-      //check if element has current class
-      if (elemClasses.indexOf(classValue) !== -1) {
-        //use as first path specifier, we expect this only to happen once
-        path[0] = classValue;
-      }
-    });
-  } else {
-    //called on wrong element
-    return [];
-  }
-
-  //for parent clauses
-  elem.parents(".clause").each(function() {
-    //add index of each clause in its list to path
-    path.push($(this).indexInParent());
-  });
-
-  //no parent found, we are at the top level: specify what type of clause (op or preamb)
-  path.push(elem.closest("#preamb-clauses") ? "preamb" : "op");
-
-  //reverse path so it starts with the topmost element
-  path.reverse();
-
-  //put path into data to reuse
-  data.contentPath = path;
-
-  //return calculated path
-  return path;
 };
 
 //registers event handlers that are essential for the general function of the page
