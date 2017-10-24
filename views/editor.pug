@@ -63,10 +63,10 @@ block content
             td=meta.stageHistory[i++]
       if meta.stage
         +collapsible-item("Structure Analysis", "filter_list")
-          +t-item("Number of Words:", meta.wordCount)
-          +t-item("Number of Content Nodes:", meta.nodeCount)
-          +t-item("Depth Points per Clause:", meta.depthIndex)
-          +t-item("Average Number of Words per Clause:", meta.avrgClauseWords)
+          +t-item("Number of words:", meta.wordCount)
+          +t-item("Number of content nodes:", meta.nodeCount)
+          +t-item("Depth points per clause:", meta.depthIndex)
+          +t-item("Average number of words per clause:", meta.avrgClauseWords)
           +t-item("Clauses:", meta.clauseCount[0])
           if meta.clauseCount[1]
             +t-item("Subclauses:", meta.clauseCount[1])
