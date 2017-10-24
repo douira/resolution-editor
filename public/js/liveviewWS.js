@@ -4,7 +4,10 @@
   displayToast*/
 
 //how many times we will try to connect
-var LVConnectTriesLeft = 3;
+var connectTriesLV = 3;
+
+//how many tries are left, reset to LVConnectTries when a connection is established
+var connectTriesLeftLV = connectTriesLV;
 
 //reference to the current websocket for closing it on page unload
 var currentWS;
@@ -33,7 +36,7 @@ function sendJsonLV(obj) {
 //starts a websockets connection to the server
 function startWS(isViewer) {
   //decrement try coutner
-  LVConnectTriesLeft --;
+  connectTriesLeftLV --;
 
   //open websocket connection to server
   currentWS = new WebSocket("ws://" + window.location.host + "/resolution/liveview/ws");
@@ -60,14 +63,12 @@ function startWS(isViewer) {
   //when connection is closed by something inbetween or one of the parties
   currentWS.onclose = function() {
     //if wtill tries left
-    if (LVConnectTriesLeft > 0) {
-      makeAlertMessage("warning", "Connection closed", "ok", "The connection to the server has" +
-                       " been closed. In 5 seconds another connection attempt will be started." +
-                       " (" + LVConnectTriesLeft + " tries left)");
+    if (connectTriesLeftLV > 0) {
+      displayToast("LV: Connection error (" + connectTriesLeftLV + " tries left)");
 
       //try again
       setTimeout(function() { startWS(isViewer); }, 5000);
-    } else if (LVConnectTriesLeft === 0) {
+    } else if (connectTriesLeftLV === 0) {
       //stop now
       makeAlertMessage("error_outline", "Connection failed", "ok", "The connection to the server" +
                        " has been closed and couldn't be re-opened." +
@@ -99,7 +100,7 @@ function startWS(isViewer) {
 
         //check if we are allowed to retry
         if (! data.tryAgain) {
-          LVConnectTriesLeft = 0;
+          connectTriesLeftLV = 0;
         }
 
         //alert user
@@ -115,11 +116,14 @@ function startWS(isViewer) {
 
         //build notification message
         var displayString = "LV: " + data.viewerAmount +
-            " Viewer" + (data.viewerAmount >= 2 ? "s" : "");
+            " Viewer" + (data.viewerAmount === 1 ? "" : "s");
         if (isViewer) {
           displayString += " and " + (data.editorPresent ? "an" : "no") + " Editor";
         }
         displayString += " connected";
+
+        //reset retry counter because a connection was established
+        connectTriesLeftLV = connectTriesLV;
 
         //notify of viewership and editor status
         displayToast(displayString);
@@ -133,7 +137,7 @@ function startWS(isViewer) {
       case "editorGone": //viewer
         displayToast("LV: Editor disconnected");
         break;
-      case "viewerJoined": //editor
+      case "viewerJoined": //both
         displayToast("LV: Viewer joined, now: " + data.amount);
         break;
       case "viewerLeft": //editor
@@ -184,7 +188,7 @@ function startLiveviewWS(isViewer, token, code) {
   //close websocket on page unload/close, do it on both just to be sure
   $(window).on("unload beforeunload", function() {
     //prevent reopen and alert
-    LVConnectTriesLeft = -1;
+    connectTriesLeftLV = -1;
 
     //close the websocket
     currentWS.close();
