@@ -1137,7 +1137,7 @@ $(document).ready(function() {
         doneLoadingResolution = true;
       });
 
-      //if at stage 6 and authorized as CH or MA, start liveview editor websocket
+      //if as MA or at stage 6 and authorized as CH, start liveview editor websocket
       if (resolutionStage === 6 && accessLevel === "CH" || accessLevel === "MA") {
         //give token and code, false for being editor type client
         startLiveviewWS(false, resolutionToken, resolutionCode, function(type, newSendStatus) {
