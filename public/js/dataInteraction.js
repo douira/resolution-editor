@@ -290,14 +290,14 @@ function generatePlaintext() {
 //gets a clause as an object
 //IMPORTANT: if the outputted format changes, increment the version number by one!
 //(see resolutionFormat.js)
-$.fn.clauseAsObject = function() {
+$.fn.clauseAsObject = function(allowEmpty) {
   //return as array if given list
   if (this.is(".clause-list")) {
     var clauses = [];
 
     //add all clauses
     this.children(".clause").each(function() {
-      var clauseObj = $(this).clauseAsObject();
+      var clauseObj = $(this).clauseAsObject(allowEmpty);
       if (clauseObj) {
         clauses.push(clauseObj);
       }
@@ -318,7 +318,7 @@ $.fn.clauseAsObject = function() {
   };
 
   //stop if no content
-  if (! clauseData.content) {
+  if (! clauseData.content && ! allowEmpty) {
     return false;
   }
 
@@ -332,14 +332,14 @@ $.fn.clauseAsObject = function() {
     clauseData.contentExt = this.children(".clause-content-ext").find("textarea").val().trim();
   }
 
-  //get subclauses and add if not empty
-  var subclauses = this.children(".clause-list-sub").clauseAsObject();
+  //get subclauses and add if not empty list
+  var subclauses = this.children(".clause-list-sub").clauseAsObject(allowEmpty);
   if (subclauses.length) {
     clauseData.sub = subclauses;
   }
 
   //if content is the only attribute, coerce to single string
-  if (Object.keys(clauseData).length === 1) {
+  if (Object.keys(clauseData).length === 1 && ! allowEmpty) { //use full object if allowing empties
     clauseData = clauseData.content;
   }
 
@@ -357,7 +357,7 @@ function getEditorContent(makeJsonNice) {
 }
 
 //return the editor content as the resolution file object
-function getEditorObj() {
+function getEditorObj(allowEmpty) {
   //create root resolution object and gather data
   var res = {
     magic: resolutionFormat.magicIdentifier,
@@ -372,8 +372,8 @@ function getEditorObj() {
         }
       },
       clauses: {
-        preambulatory: $("#preamb-clauses > .clause-list").clauseAsObject(),
-        operative: $("#op-clauses > .clause-list").clauseAsObject()
+        preambulatory: $("#preamb-clauses > .clause-list").clauseAsObject(allowEmpty),
+        operative: $("#op-clauses > .clause-list").clauseAsObject(allowEmpty)
       }
     }
   };
@@ -557,7 +557,7 @@ function sendLVUpdate(type, elem) {
       sendJsonLV({
         type: "updateStructure",
         //just send the whole editor content for rerender after structure change
-        update: getEditorObj()
+        update: getEditorObj(true) //true to also get empty fields
       });
       break;
     case "content":

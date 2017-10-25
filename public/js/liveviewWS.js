@@ -46,7 +46,7 @@ var sendJsonLV = (function() {
 
       //send prepared object after stringify
       currentWS.send(JSON.stringify(obj));
-
+      console.log("sent:", obj);
       //work on emptying queue
       sendJsonLV("empty");
     } else {
@@ -129,7 +129,7 @@ function startWS(isViewer, updateListener) {
     if (data.hasOwnProperty("resolutionData") && typeof updateListener === "function") {
       updateListener("structure", data.resolutionData);
     }
-
+    console.log("received:", data);
     //for type of send message
     switch (data.type) {
       case "error": //both, error message from server
@@ -189,10 +189,7 @@ function startWS(isViewer, updateListener) {
         break;
       case "updateStructure": //viewer
       case "updateContent":
-        //call listener with update
-        if (typeof updateListener === "function") {
-          updateListener(data.type === "updateStructure" ? "structure" : "content", data.update);
-        }
+        //no special action, handling done by update listener
         break;
       default: //both
         console.log("unrecognised message type", data);

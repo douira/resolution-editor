@@ -10,17 +10,18 @@ $(document).ready(function() {
   startLiveviewWS(true, null, null, function(type, data) { //given type and update data
     //switch to update type
     switch (type) {
-      case "structure": //whole resolution content is resent because structure has changed
+      case "updateStructure": //whole resolution content is resent because structure has changed
         //copy to current structure
         currentStructure = data.update;
+        console.log(currentStructure);
         break;
-      case "content": //the content of one clause changed and only that is sent
+      case "updateContent": //the content of one clause changed and only that is sent
         //apply change to specified path
 
         break;
     }
 
-    //set content
+    //if present display current resolution object
     if (currentStructure) {
       $("#viewcontent").text(JSON.stringify(currentStructure));
     }
