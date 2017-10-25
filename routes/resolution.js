@@ -118,8 +118,9 @@ router.get("/new", function(req, res) {
       changed: timeNow, //last time it was changed = saved, stage advances don't count
       stageHistory: [ timeNow ], //index is resolution stage, time when reached that stage
       lastRender: 0, //logs pdf render events
+      lastLiveview: 0, //last time a liveview session happened with this resolution
       stage: 0, //current workflow stage (see phase 2 notes)
-      liveviewOpen: false //if a liveview page is vewing this resolution right now
+      liveviewOpen: false //if a liveview page is viewing this resolution right now
     }).then(() => {
       //redirect to editor page (because URL is right then)
       res.redirect("editor/" + token);

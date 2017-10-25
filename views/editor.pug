@@ -54,6 +54,7 @@ block content
         +t-item("Created:", meta.created)
         +t-item("Last Change:", meta.changed)
         +t-item("Last Render:", meta.lastRender)
+        +t-item("Last LiveView:", meta.lastLiveview)
       +collapsible-item("Stage History", "history")
         - var i = 0;
         while i < meta.stageHistory.length
