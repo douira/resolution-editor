@@ -1151,6 +1151,20 @@ $(document).ready(function() {
         $(dataSelector).data(dataPrefix, initData[dataSelector]);
       }
 
+      //if in stage 0, start timer for save reminder
+      //TODO: replace this is proper resolution stage variable as used in other branches(?)
+      if ($("#resolution-stage").text() === "0") {
+        setTimeout(function() {
+          //display alert modal with alert message
+          makeAlertMessage(
+            "backup", "Save Reminder", "Yes, I will do that now",
+            "The page will attempt to prevent you" +
+            " from accidentally leaving, but before registering your resolution token permanently" +
+            " by saving it for the first time, auto-save will not be active. Please remember to" +
+            " save your resolution if it was actually your intention to start writing a new one.");
+        }, 1000 * 60 * 15); //15 minutes
+      }
+
       //trigger all init events
       $("#editor-main").find("*").trigger("init");
 

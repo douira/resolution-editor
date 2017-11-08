@@ -105,7 +105,7 @@ block content
       mixin meta-button(id, text, icon, tooltipText, classes)
         a.collection-item.waves-effect.waves-light(class=classes id=id)&attributes(tooltip(tooltipText, "top"))
           +icon(icon, "left")
-          =text
+          span=text
       if doLoad
         +meta-button("action-save", "Save", "backup", "Saves the resolution to the server", pritext)
       +meta-button("action-pdf", "View PDF", "description", "Generates a formatted PDF document", pritext)
