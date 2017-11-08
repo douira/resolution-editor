@@ -124,7 +124,7 @@ router.get("/new", function(req, res) {
     }).then(() => {
       //redirect to editor page (because URL is right then)
       res.redirect("editor/" + token);
-    });
+    }, () => issueError(res, 500, "can't create new"));
   });
 });
 
