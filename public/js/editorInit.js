@@ -235,7 +235,7 @@ $.fn.detectManipulator = function() {
         "error_outline", "Attention!", "Yes, I will do that now",
         "Please <b>disable Grammarly</b> spellchecking on this website because it may break the " +
         "website visually, its internal workings or even obstruct its usage. It's advised that " +
-        "you save your progress before <b>reloading</b> the page after having disabled Grammarly" +
+        "you save your progress before <b>reloading</b> the page after having disabled Grammarly " +
         "or any other browser extention that manipulates website content. Grammarly integration " +
         "may become a feature some time in the future.");
     }
@@ -407,11 +407,6 @@ $.fn.addClause = function(amount, activationStateChanges) {
 
 //registers event handlers that are essential for the general function of the page
 function registerEssentialEventHandlers(doLoad) {
-  $("body")
-  .on("touchstart", function() {
-    //register touch event and remove tooltips for touch-devices
-    $(".tooltipped").tooltip("remove");
-  });
   $(".modal")
   .on("init", function() {
     //not using element specific data because this will be the same for all modals
@@ -1096,15 +1091,15 @@ $(document).ready(function() {
       //data object to pass to scope of event handlers
       var loadedData = {};
 
-      //check for chair or admin access
+      //check for Chair or admin access
       var chairMode = $("#code-access-level").text();
       chairMode = chairMode === "MA" || chairMode === "CH";
 
-      //map forums with chair code mode in mind
+      //map forums with Chair code mode in mind
       data.forums = data.forums.map(function(forum) {
         //process only if array of length 3
         if (forum instanceof Array && forum[2] === true) {
-          //in chair mode, return normally, otherwise mark to be removed
+          //in Chair mode, return normally, otherwise mark to be removed
           return chairMode ? forum : false;
         } else {
           //return normally

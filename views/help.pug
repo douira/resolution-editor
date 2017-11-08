@@ -1,8 +1,7 @@
 extends layout
 
-//- doesn't do anything at the moment
-  block styles
-    link(href="/css/helpStyle.css" type="text/css" rel="stylesheet")
+block title
+  title Help Page - Resolution Editor
 
 block content
   .container
@@ -12,7 +11,7 @@ block content
     .divider
     h4: +icon("supervisor_account", "mediumsmall left text-darken-3 amber-text")
     h4#access-levels Access Levels
-    | These are the access levels of access codes that are displayed on the edtor page of each resolution.
+    | These are the access levels of access codes that are displayed on the editor page of each resolution.
     table.striped
       thead: tr
         th Holder
@@ -35,14 +34,14 @@ block content
           | Editing is restricted to the Formal Clearing. Resolutions are restricted to this access level when they are in stage
           a(href="#rstage3")  #3
           | .
-        +row("The Secreteriat", "SC")
-          | The Secreteriat enters its access code in stage
+        +row("The Secretariat", "SC")
+          | The Secretariat enters its access code in stage
           a(href="#rstage3")  #4
           |  to signify that the resolution is being printed and is to be advanced to stage #5. It doesn't have editing access though.
         +row("Chairs", "CH")
-          | Chairs always have unrestricted access to resolutions. This overrides other restrictions, like the levels FC and AP. This is the maximum level found on a resolution.
+          | Chairs always have unrestricted access to resolutions. This overrides other restrictions, such as the levels FC and AP. This is the maximum level found on a resolution.
         +row("Administration", "MA")
-          | This level represents unrestircted access to all available functions of the website. This also includes changing access levels of specific codes or giving out new access codes.
+          | This level represents unrestricted access to all available functions of the website. This also includes changing access levels of specific codes or giving out new access codes.
     h4: +stage-info-icon
     h4#workflow-stages Resolution Workflow Stages
     - var i = 0;

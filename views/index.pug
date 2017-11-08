@@ -1,5 +1,8 @@
 extends layout
 
+block title
+  title Resolution Editor - Front Page
+
 block styles
   link(href="/css/indexStyle.css" type="text/css" rel="stylesheet")
 
@@ -10,7 +13,7 @@ block content
     if promo
       br
       h1.header.center#editor-name-header(class=sectext) Resolution Editor
-      .center: h5.header.light A #[em simple] way of creating and editing resolutions without having to have to deal with formatting.
+      .center: h5.header.light A #[em simple] way of creating and editing resolutions without having to deal with formatting.
       br
       .center: a.btn-large.waves-effect.waves-light(href="/resolution/new" class=sec) Start New Resolution
       br
@@ -23,14 +26,14 @@ block content
             p.light.justify
               block
         +icon-box("flash_on", "Speeds Up Editing and Approval", "l4 m12")
-          | Shorter waiting, approval and printing times. You won't have to look for the right Word setting or wait for the Formal Clearing Office to correct your formatting. Making new clauses and subclauses is as easy as ever.
+          | Shorter waiting, approval and printing times. You won't have to look for the right Word setting or wait for the Formal Clearing Office to correct your formatting. Making new clauses and subclauses is easier than ever.
         +icon-box("done_all", "No Formatting Mistakes", "l4 m6 s12")
           | With this editor you can focus on the content of your resolution. No more fiddling with badly behaving list constructs or looking for just the right amount of spacing: You're guaranteed to get a perfectly formatted document whenever you want.
         +icon-box("lightbulb_outline", "Easy to Use", "l4 m6 s12")
           | The interface provides hints and is usable on any device. You can generate a formatted document, add a clause or reorder with the push of a button. We'll do all the heavy lifting in the background and you just have to worry about what you want to say.
           br
           b Tip:
-          |  Hover over buttons to display a helpful tooltip!
+          |  Hover over buttons to display a helpful tool tip!
       .divider
       br
 
@@ -49,8 +52,8 @@ block content
               +icon("supervisor_account", "prefix")
               input#code-input(name="code" type="text" placeholder=codePlaceholder)
               label(for="code-input") (optional) Enter access code
-        .col.xl6.l7.m12#token-info.justify Talk to your chair if you've #[b forgotten] your resolution token. (Looking at your browser's history can be helpful too.) You're only required to enter an access code if editing access to the resolution has been #[b restricted] and you're granted elevated editing privileges with a personal access code. It's still possible to view a #[b read-only] version and metadata about a resolution if you don't have editing privileges. If you've forgotten your access code or have any other problems accessing the editor, please #[b contact IT-Management].
-    .center: a.btn-large.waves-effect.waves-light#submit-btn(href="#" class=pri) Submit
+        .col.xl6.l7.m12#token-info.justify Talk to your Chair if you've #[b forgotten] your resolution token. (Looking at your browser's history can be helpful too.) You're only required to enter an access code if editing access to the resolution has been #[b restricted] and you're granted elevated editing privileges with a personal access code. It's still possible to view a #[b read-only] version and metadata about a resolution if you don't have editing privileges. If you've forgotten your access code or have any other problems accessing the editor, please #[b contact IT-Management].
+    .center: a.btn-large.waves-effect.waves-light#submit-btn(href="#" class=pri)&attributes(tooltip("Opens the editor for given token and code", "top")) Submit
     br
 block scripts
   script(src="/js/accessInputs.js")

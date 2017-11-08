@@ -18,7 +18,7 @@ databaseInterface.onload((loadedDb) => {
   db = loadedDb;
 });
 
-//delegate no privilege access code doc
+//Delegate no privilege access code doc
 const delegateCodeDoc = { level: "DE" };
 
 //deals with token in URL and calls callback if token present in db
@@ -130,7 +130,7 @@ function fullAuth(req, res, callback, opts) {
         authWithCode(res, resolutionDoc, codeDoc, callback, opts);
       });
     } else {
-      //use "DE" delegate level code doc
+      //use "DE" Delegate level code doc
       authWithCode(res, resolutionDoc, delegateCodeDoc, callback, opts);
     }
   });
