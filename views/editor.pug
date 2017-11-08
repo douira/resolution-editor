@@ -107,7 +107,8 @@ block content
           +icon(icon, "left")
           span=text
       if doLoad
-        +meta-button("action-save", "Save", "backup", "Saves the resolution to the server", pritext)
+        //-large save button in stage 0
+        +meta-button("action-save", "Save", "backup", "Saves the resolution to the server", pritext + (meta.stage ? "" : " action-save-large"))
       +meta-button("action-pdf", "View PDF", "description", "Generates a formatted PDF document", pritext)
       +meta-button("action-plaintext", "View Plaintext (fallback)", "receipt", "Generates a plain text version of the resolution: Only use in case of problems", "grey-text")
       if doLoad

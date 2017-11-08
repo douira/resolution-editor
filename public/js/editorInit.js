@@ -359,6 +359,9 @@ $.fn.addSubClause = function(activationStateChanges) {
   //update is of all clauses in list
   subList.children(".clause").trigger("updateId");
 
+  //made a change
+  changesSaved = false;
+
   //return this for chaining
   return this;
 };
@@ -400,6 +403,9 @@ $.fn.addClause = function(amount, activationStateChanges) {
   if (activationStateChanges) {
     addedClause.trigger("editActive");
   }
+
+  //made a change
+  changesSaved = false;
 
   //return this for chaining
   return this;
@@ -720,6 +726,9 @@ function registerEventHandlers(loadedData) {
       .find("#eab-add-ext")
       .not(".clause-list-sub #eab-add-ext")
       .trigger("updateDisabled");
+
+    //change made
+    changesSaved = false;
   })
   .on("editActive", function(e) {
     e.stopPropagation();
@@ -760,6 +769,13 @@ function registerEventHandlers(loadedData) {
     //hide add clause button if we're a subclause
     if (elem.isSubClause()) {
       elem.siblings(".add-clause-container").hide();
+    }
+
+    //auto-save if not at stage 0 and has unsaved changes
+    //no alert message on fail, only red mark
+    if (! changesSaved && ! noChangesMade &&
+        $("#resolution-stage").text() !== "0") { //TODO: use proper variable
+      serverSave($("#editor-main"), null, false, true);
     }
   })
   .on("updateId", function(e) {
@@ -815,6 +831,9 @@ function registerEventHandlers(loadedData) {
 
       //update ids of other clauses around it
       parent.children(".clause").trigger("updateId");
+
+      //made changes
+      changesSaved = false;
     }
   })
   .on("click", function(e) {
@@ -931,6 +950,9 @@ function registerEventHandlers(loadedData) {
     var clause = $(this).closest(".clause");
     clause.next(".clause").after(clause);
 
+    //made a change
+    changesSaved = false;
+
     //update id of all clauses in section
     clause.triggerAllIdUpdate();
   })
@@ -940,6 +962,9 @@ function registerEventHandlers(loadedData) {
     e.stopPropagation();
     var clause = $(this).closest(".clause");
     clause.prev(".clause").before(clause);
+
+    //made a change
+    changesSaved = false;
 
     //update id of all clauses in section
     clause.triggerAllIdUpdate();
@@ -1162,7 +1187,7 @@ $(document).ready(function() {
             " from accidentally leaving, but before registering your resolution token permanently" +
             " by saving it for the first time, auto-save will not be active. Please remember to" +
             " save your resolution if it was actually your intention to start writing a new one.");
-        }, 1000 * 60 * 15); //15 minutes
+        }, 1000 * 60 * 5); //5 minutes
       }
 
       //trigger all init events
