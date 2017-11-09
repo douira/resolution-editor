@@ -452,7 +452,7 @@ function registerEssentialEventHandlers(doLoad) {
       serverSave($("#editor-main"), function() {
         //display pdf directly after generating
         generatePdf();
-      });
+      }, true);
     }
   });
   $("#action-plaintext")
@@ -471,7 +471,7 @@ function registerEssentialEventHandlers(doLoad) {
       serverSave($("#editor-main"), function() {
         //display pdf directly after generating
         generatePlaintext();
-      });
+      }, true);
     }
   });
 }
@@ -1047,15 +1047,21 @@ function registerEventHandlers(loadedData) {
   .on("click", function(e) {
     e.stopPropagation();
 
-    //finalize editing on all fields
-    $(".clause").trigger("editInactive");
-
-    //don't save if everything already saved
+    //display message before triggering save on clauses, will probably be in saved state afterwards
     if (changesSaved) {
       Materialize.toast("Already saved", 3000);
     } else {
+      //save message
+      Materialize.toast("Saving", 3000);
+    }
+
+    //finalize editing on all fields
+    $(".clause").trigger("editInactive");
+
+    //save to server if still not everything saved
+    if (! changesSaved) {
       //save json to server first
-      serverSave($("#editor-main"));
+      serverSave($("#editor-main"), null, true);
     }
   });
 }

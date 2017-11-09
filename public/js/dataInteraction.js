@@ -403,6 +403,9 @@ function serverSave(container, callback, displayToast, silentFail) {
     data.code = resolutionCode;
   }
 
+  //preemptively mark as saved
+  changesSaved = true;
+
   //send post request
   $.post("/resolution/save/" + resolutionToken, data, "text")
   .done(function() {
@@ -411,15 +414,15 @@ function serverSave(container, callback, displayToast, silentFail) {
       Materialize.toast("Successfully saved", 3000);
     }
 
-    //mark as saved
-    changesSaved = true;
-
     //call callback on completion
     if (typeof callback === "function") {
       callback();
     }
   })
   .fail(function() {
+    //mark as not saved, problem
+    changesSaved = false;
+
     //there was a problem
     makeAlertMessage("error_outline", "Error saving resolution", "ok",
         "The server encountered an error or denied the requst to save the resolution." +
