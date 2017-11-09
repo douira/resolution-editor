@@ -45,6 +45,7 @@ function makeAutofillSettingsPre(defaultSettings, data, settings) {
 //set to true when there are unsaved changes that the user has to be alerted about
 var changesSaved = false;
 var noChangesMade = true;
+var metaChangesSaved = true;
 
 //token and access code for this resolution, used for saving
 var resolutionToken, resolutionCode;
@@ -530,8 +531,7 @@ function registerEventHandlers(loadedData) {
     //apply to global flag
     badFieldPresent = badFieldPresent || valueBad;
   })
-  .on("change", function(e) {
-    e.stopPropagation();
+  .on("change", function() {
     //check again on changed value
     $(this).trigger("checkRequired");
   });
@@ -570,6 +570,11 @@ function registerEventHandlers(loadedData) {
     //register changed content and set flag for user alert
     changesSaved = false;
     noChangesMade = false;
+  });
+  $(".meta-input-wrapper")
+  .on("change", "input", function() {
+    //set meta canges unsaved flag
+    metaChangesSaved = true;
   });
   $("input#forum-name")
   .on("change", function(e) {
@@ -732,6 +737,11 @@ function registerEventHandlers(loadedData) {
   })
   .on("editActive", function(e) {
     e.stopPropagation();
+    //save to server if meta hanges are unsaved
+    if (! metaChangesSaved && $("#resolution-stage").text() !== "0") { //TODO: proper var
+      serverSave($("#editor-main"), null, false, true);
+    }
+
     //make all other clauses inactive
     $(".clause").not(this).trigger("editInactive");
 
@@ -943,6 +953,12 @@ function registerEventHandlers(loadedData) {
     $("#" + $(this).attr("for"))
       .find("*")
       .trigger("reset");
+
+    //changes made, now unsaved
+    changesSaved = false;
+
+    //also set meta changes unsaved flag to allow next focus on clause to autosave
+    metaChangesSaved = false;
   });
   $("#eab-move-down")
   .on("click", function(e) {
