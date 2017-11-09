@@ -33,10 +33,13 @@ function checkToken(req, res, modifyResolution, callback) {
   }
 
   //get token from params
-  const token = req.params.token || req.params.thing;
+  let token = req.params.token || req.params.thing;
 
   //must be "token" type and be valid
   if (token.length && token[0] === "@" && tokenProcessor.check(token)) {
+    //make upper case
+    token = token.toUpperCase();
+
     //load corresponding resolution
     (doModify ? //modify as well if flag set
       resolutions.findOneAndUpdate({ token: token }, modifyResolution, { returnOriginal: true }) :
