@@ -52,12 +52,12 @@ function jsonReadErrorModal(errorCode) {
 }
 
 //validates fields with user feedback, returns false if there is a bad field
-function validateFields() {
+function validateFields(noAlert) {
   //actually check the fields
   var fieldsOk = checkRequiredFields();
 
   //make error message if necessary
-  if (! fieldsOk) {
+  if (! fieldsOk && (typeof noAlert === "undefined" || ! noAlert)) {
     makeAlertMessage(
       "warning", "Some field(s) invalid", "ok",
       "There are fields with missing or invalid values. " +
@@ -380,14 +380,15 @@ function getEditorContent(container, makeJsonNice) {
 }
 
 //saves the resolution from given container to the server
-function serverSave(container, callback, displayToast) {
+//TODO: make sure the container is removed
+function serverSave(container, callback, displayToast, silentFail) {
   //display if not specified
   if (typeof displayToast === "undefined") {
     displayToast = true;
   }
 
-  //validate fields
-  if (! validateFields()) {
+  //validate fields, no message if silent fail is specified
+  if (! validateFields(silentFail)) {
     //stop because not ok with missing data
     return;
   }
@@ -402,6 +403,9 @@ function serverSave(container, callback, displayToast) {
     data.code = resolutionCode;
   }
 
+  //preemptively mark as saved
+  changesSaved = true;
+
   //send post request
   $.post("/resolution/save/" + resolutionToken, data, "text")
   .done(function() {
@@ -410,15 +414,15 @@ function serverSave(container, callback, displayToast) {
       Materialize.toast("Successfully saved", 3000);
     }
 
-    //mark as saved
-    changesSaved = true;
-
     //call callback on completion
     if (typeof callback === "function") {
       callback();
     }
   })
   .fail(function() {
+    //mark as not saved, problem
+    changesSaved = false;
+
     //there was a problem
     makeAlertMessage("error_outline", "Error saving resolution", "ok",
         "The server encountered an error or denied the requst to save the resolution." +

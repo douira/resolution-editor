@@ -44,7 +44,7 @@ block content
         .collapsible-body
           table: tbody
             block
-    p This information is updated every time the page is reloaded.
+    p This information is updated every time the page is reloaded. Timestamps are in local time of the server. (Germany)
     ul.collapsible(data-collapsible="expandable")
       mixin t-item(label, content)
         tr
@@ -105,9 +105,10 @@ block content
       mixin meta-button(id, text, icon, tooltipText, classes)
         a.collection-item.waves-effect.waves-light(class=classes id=id)&attributes(tooltip(tooltipText, "top"))
           +icon(icon, "left")
-          =text
+          span=text
       if doLoad
-        +meta-button("action-save", "Save", "backup", "Saves the resolution to the server", pritext)
+        //-large save button in stage 0
+        +meta-button("action-save", "Save", "backup", "Saves the resolution to the server", pritext + (meta.stage ? "" : " action-save-large"))
       +meta-button("action-pdf", "View PDF", "description", "Generates a formatted PDF document", pritext)
       +meta-button("action-plaintext", "View Plaintext (fallback)", "receipt", "Generates a plain text version of the resolution: Only use in case of problems", "grey-text")
       if doLoad

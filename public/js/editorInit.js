@@ -45,6 +45,7 @@ function makeAutofillSettingsPre(defaultSettings, data, settings) {
 //set to true when there are unsaved changes that the user has to be alerted about
 var changesSaved = false;
 var noChangesMade = true;
+var metaChangesSaved = true;
 
 //token and access code for this resolution, used for saving
 var resolutionToken, resolutionCode;
@@ -359,6 +360,9 @@ $.fn.addSubClause = function(activationStateChanges) {
   //update is of all clauses in list
   subList.children(".clause").trigger("updateId");
 
+  //made a change
+  changesSaved = false;
+
   //return this for chaining
   return this;
 };
@@ -400,6 +404,9 @@ $.fn.addClause = function(amount, activationStateChanges) {
   if (activationStateChanges) {
     addedClause.trigger("editActive");
   }
+
+  //made a change
+  changesSaved = false;
 
   //return this for chaining
   return this;
@@ -446,7 +453,7 @@ function registerEssentialEventHandlers(doLoad) {
       serverSave($("#editor-main"), function() {
         //display pdf directly after generating
         generatePdf();
-      });
+      }, true);
     }
   });
   $("#action-plaintext")
@@ -465,7 +472,7 @@ function registerEssentialEventHandlers(doLoad) {
       serverSave($("#editor-main"), function() {
         //display pdf directly after generating
         generatePlaintext();
-      });
+      }, true);
     }
   });
 }
@@ -524,8 +531,7 @@ function registerEventHandlers(loadedData) {
     //apply to global flag
     badFieldPresent = badFieldPresent || valueBad;
   })
-  .on("change", function(e) {
-    e.stopPropagation();
+  .on("change", function() {
     //check again on changed value
     $(this).trigger("checkRequired");
   });
@@ -564,6 +570,11 @@ function registerEventHandlers(loadedData) {
     //register changed content and set flag for user alert
     changesSaved = false;
     noChangesMade = false;
+  });
+  $(".meta-input-wrapper")
+  .on("change", "input", function() {
+    //set meta canges unsaved flag
+    metaChangesSaved = true;
   });
   $("input#forum-name")
   .on("change", function(e) {
@@ -720,9 +731,17 @@ function registerEventHandlers(loadedData) {
       .find("#eab-add-ext")
       .not(".clause-list-sub #eab-add-ext")
       .trigger("updateDisabled");
+
+    //change made
+    changesSaved = false;
   })
   .on("editActive", function(e) {
     e.stopPropagation();
+    //save to server if meta hanges are unsaved
+    if (! metaChangesSaved && $("#resolution-stage").text() !== "0") { //TODO: proper var
+      serverSave($("#editor-main"), null, false, true);
+    }
+
     //make all other clauses inactive
     $(".clause").not(this).trigger("editInactive");
 
@@ -760,6 +779,13 @@ function registerEventHandlers(loadedData) {
     //hide add clause button if we're a subclause
     if (elem.isSubClause()) {
       elem.siblings(".add-clause-container").hide();
+    }
+
+    //auto-save if not at stage 0 and has unsaved changes
+    //no alert message on fail, only red mark
+    if (! changesSaved && ! noChangesMade &&
+        $("#resolution-stage").text() !== "0") { //TODO: use proper variable
+      serverSave($("#editor-main"), null, false, true);
     }
   })
   .on("updateId", function(e) {
@@ -815,6 +841,9 @@ function registerEventHandlers(loadedData) {
 
       //update ids of other clauses around it
       parent.children(".clause").trigger("updateId");
+
+      //made changes
+      changesSaved = false;
     }
   })
   .on("click", function(e) {
@@ -924,12 +953,21 @@ function registerEventHandlers(loadedData) {
     $("#" + $(this).attr("for"))
       .find("*")
       .trigger("reset");
+
+    //changes made, now unsaved
+    changesSaved = false;
+
+    //also set meta changes unsaved flag to allow next focus on clause to autosave
+    metaChangesSaved = false;
   });
   $("#eab-move-down")
   .on("click", function(e) {
     e.stopPropagation();
     var clause = $(this).closest(".clause");
     clause.next(".clause").after(clause);
+
+    //made a change
+    changesSaved = false;
 
     //update id of all clauses in section
     clause.triggerAllIdUpdate();
@@ -940,6 +978,9 @@ function registerEventHandlers(loadedData) {
     e.stopPropagation();
     var clause = $(this).closest(".clause");
     clause.prev(".clause").before(clause);
+
+    //made a change
+    changesSaved = false;
 
     //update id of all clauses in section
     clause.triggerAllIdUpdate();
@@ -1022,15 +1063,21 @@ function registerEventHandlers(loadedData) {
   .on("click", function(e) {
     e.stopPropagation();
 
-    //finalize editing on all fields
-    $(".clause").trigger("editInactive");
-
-    //don't save if everything already saved
+    //display message before triggering save on clauses, will probably be in saved state afterwards
     if (changesSaved) {
       Materialize.toast("Already saved", 3000);
     } else {
+      //save message
+      Materialize.toast("Saving", 3000);
+    }
+
+    //finalize editing on all fields
+    $(".clause").trigger("editInactive");
+
+    //save to server if still not everything saved
+    if (! changesSaved) {
       //save json to server first
-      serverSave($("#editor-main"));
+      serverSave($("#editor-main"), null, true);
     }
   });
 }
@@ -1149,6 +1196,20 @@ $(document).ready(function() {
       for (var dataSelector in initData) {
         //attach data to all elements that match
         $(dataSelector).data(dataPrefix, initData[dataSelector]);
+      }
+
+      //if in stage 0, start timer for save reminder
+      //TODO: replace this is proper resolution stage variable as used in other branches(?)
+      if ($("#resolution-stage").text() === "0") {
+        setTimeout(function() {
+          //display alert modal with alert message
+          makeAlertMessage(
+            "backup", "Save Reminder", "Yes, I will do that now",
+            "The page will attempt to prevent you" +
+            " from accidentally leaving, but before registering your resolution token permanently" +
+            " by saving it for the first time, auto-save will not be active. Please remember to" +
+            " save your resolution if it was actually your intention to start writing a new one.");
+        }, 1000 * 60 * 5); //5 minutes
       }
 
       //trigger all init events
