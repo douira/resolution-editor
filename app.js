@@ -10,9 +10,10 @@ const bodyParser = require("body-parser");
 const index = require("./routes/index");
 const help = require("./routes/help");
 const resolution = require("./routes/resolution");
+const handytextbox = require("./routes/handytextbox");
 
 //start database connection
-const db = require("./lib/database");
+require("./lib/database");
 
 //make express app
 const app = express();
@@ -34,6 +35,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use("/", index);
 app.use("/help", help);
 app.use("/resolution", resolution);
+app.use("/handytextbox", handytextbox);
 
 //catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -43,7 +45,7 @@ app.use(function(req, res, next) {
 });
 
 //error handler
-app.use(function(err, req, res, next) {
+app.use(function(err, req, res) {
   //set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
