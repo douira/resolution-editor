@@ -14,6 +14,7 @@ const issueError = resUtil.issueError;
 //register callback to get collections on load
 let resolutions, access;
 databaseInterface((collections) => {
+  //get collections in vars for easier use
   resolutions = collections.resolutions;
   access = collections.access;
 });
