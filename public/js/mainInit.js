@@ -8,6 +8,13 @@ var module = { exports: {} };
 $(document).ready(function() {
   //init collapsable navbar
   $(".button-collapse").sideNav();
+
+  //register event handlers
+  $("body")
+  .on("touchstart", function() {
+    //register touch event and remove tooltips for touch-devices
+    $(".tooltipped").tooltip("remove");
+  });
 });
 
 //check for old browser and alert

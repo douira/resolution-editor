@@ -56,13 +56,18 @@ html(lang="en")
     //-setup for materialize
     meta(name="viewport" content="width=device-width, initial-scale=1")
 
-    title Resolution Editor
+    block title
+      title Resolution Editor
 
     //-custom and materialize style sheets
     link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
     //-link(href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700" rel="stylesheet")
     link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css")
     link(href="/css/mainStyle.css" type="text/css" rel="stylesheet")
+
+    //-critical styles are inlined
+    style
+      include ../public/css/critical.css
 
     //-favicon directives, see all colors here: http://materializecss.com/color.html
     //-teal #009688, amber #ffc107
@@ -145,7 +150,6 @@ html(lang="en")
                 li: a.white-text(href="https://pugjs.org") Pug
                 li: a.white-text(href="https://nodejs.org/en") node.js
                 li: a.white-text(href="https://github.com") GitHub
-
         .footer-copyright
           .container Copyright © 2017 by the
             a.text-lighten-3(class=sectext href="https://github.com/douira/resolution-editor/graphs/contributors")  Contributors

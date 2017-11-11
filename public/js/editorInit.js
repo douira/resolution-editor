@@ -11,7 +11,8 @@
   serverLoad,
   makeAlertMessage,
   startLiveviewWS,
-  sendLVUpdate*/
+  sendLVUpdate,
+  Materialize*/
 /* exported checkRequiredFields, sendLVUpdates*/
 //registers events and data, controls interaction behavior
 
@@ -48,6 +49,10 @@ function makeAutofillSettingsPre(defaultSettings, data, settings) {
 //set to true when there are unsaved changes that the user has to be alerted about
 var changesSaved = false;
 var noChangesMade = true;
+var metaChangesSaved = true;
+
+//set to true once the resolution has been fully loaded and the clauses generated
+var doneLoadingResolution = false;
 
 //set to true once the resolution has been fully loaded and the clauses generated
 var doneLoadingResolution = false;
@@ -181,7 +186,7 @@ $.fn.detectManipulator = function() {
         "error_outline", "Attention!", "Yes, I will do that now",
         "Please <b>disable Grammarly</b> spellchecking on this website because it may break the " +
         "website visually, its internal workings or even obstruct its usage. It's advised that " +
-        "you save your progress before <b>reloading</b> the page after having disabled Grammarly" +
+        "you save your progress before <b>reloading</b> the page after having disabled Grammarly " +
         "or any other browser extention that manipulates website content. Grammarly integration " +
         "may become a feature some time in the future.");
     }
@@ -305,6 +310,9 @@ $.fn.addSubClause = function(activationStateChanges) {
   //update is of all clauses in list
   subList.children(".clause").trigger("updateId");
 
+  //made a change
+  changesSaved = false;
+
   //return this for chaining
   return this;
 };
@@ -347,6 +355,9 @@ $.fn.addClause = function(amount, activationStateChanges) {
     addedClause.trigger("editActive");
   }
 
+  //made a change
+  changesSaved = false;
+
   //structure update not sent here because this is also called when loading the resolution
 
   //return this for chaining
@@ -384,7 +395,7 @@ function registerEssentialEventHandlers(doLoad) {
       serverSave(function() {
         //display pdf directly after generating
         generatePdf();
-      });
+      }, true);
     }
   });
   $("#action-plaintext")
@@ -403,7 +414,7 @@ function registerEssentialEventHandlers(doLoad) {
       serverSave(function() {
         //display pdf directly after generating
         generatePlaintext();
-      });
+      }, true);
     }
   });
 }
@@ -462,8 +473,7 @@ function registerEventHandlers(loadedData) {
     //apply to global flag
     badFieldPresent = badFieldPresent || valueBad;
   })
-  .on("change", function(e) {
-    e.stopPropagation();
+  .on("change", function() {
     //check again on changed value
     $(this).trigger("checkRequired");
   });
@@ -511,6 +521,11 @@ function registerEventHandlers(loadedData) {
     //register changed content and set flag for user alert
     changesSaved = false;
     noChangesMade = false;
+  });
+  $(".meta-input-wrapper")
+  .on("change", "input", function() {
+    //set meta canges unsaved flag
+    metaChangesSaved = true;
   });
   $("input#forum-name")
   .on("change", function(e) {
@@ -667,9 +682,17 @@ function registerEventHandlers(loadedData) {
       .find("#eab-add-ext")
       .not(".clause-list-sub #eab-add-ext")
       .trigger("updateDisabled");
+
+    //change made
+    changesSaved = false;
   })
   .on("editActive", function(e) {
     e.stopPropagation();
+    //save to server if meta hanges are unsaved
+    if (! metaChangesSaved && $("#resolution-stage").text() !== "0") { //TODO: proper var
+      serverSave(null, false, true);
+    }
+
     //make all other clauses inactive
     $(".clause").not(this).trigger("editInactive");
 
@@ -707,6 +730,13 @@ function registerEventHandlers(loadedData) {
     //hide add clause button if we're a subclause
     if (elem.isSubClause()) {
       elem.siblings(".add-clause-container").hide();
+    }
+
+    //auto-save if not at stage 0 and has unsaved changes
+    //no alert message on fail, only red mark
+    if (! changesSaved && ! noChangesMade &&
+        $("#resolution-stage").text() !== "0") { //TODO: use proper variable
+      serverSave(null, false, true);
     }
   })
   .on("updateId", function(e) {
@@ -762,6 +792,9 @@ function registerEventHandlers(loadedData) {
 
       //update ids of other clauses around it
       parent.children(".clause").trigger("updateId");
+
+      //made changes
+      changesSaved = false;
 
       //send structure update
       sendLVUpdate("structure");
@@ -877,12 +910,21 @@ function registerEventHandlers(loadedData) {
     $("#" + $(this).attr("for"))
       .find("*")
       .trigger("reset");
+
+    //changes made, now unsaved
+    changesSaved = false;
+
+    //also set meta changes unsaved flag to allow next focus on clause to autosave
+    metaChangesSaved = false;
   });
   $("#eab-move-down")
   .on("click", function(e) {
     e.stopPropagation();
     var clause = $(this).closest(".clause");
     clause.next(".clause").after(clause);
+
+    //made a change
+    changesSaved = false;
 
     //update id of all clauses in section
     clause.triggerAllIdUpdate();
@@ -896,6 +938,9 @@ function registerEventHandlers(loadedData) {
     e.stopPropagation();
     var clause = $(this).closest(".clause");
     clause.prev(".clause").before(clause);
+
+    //made a change
+    changesSaved = false;
 
     //update id of all clauses in section
     clause.triggerAllIdUpdate();
@@ -990,15 +1035,21 @@ function registerEventHandlers(loadedData) {
   .on("click", function(e) {
     e.stopPropagation();
 
-    //finalize editing on all fields
-    $(".clause").trigger("editInactive");
-
-    //don't save if everything already saved
+    //display message before triggering save on clauses, will probably be in saved state afterwards
     if (changesSaved) {
       displayToast("Already saved");
     } else {
+      //save message
+      Materialize.toast("Saving", 3000);
+    }
+
+    //finalize editing on all fields
+    $(".clause").trigger("editInactive");
+
+    //save to server if still not everything saved
+    if (! changesSaved) {
       //save json to server first
-      serverSave();
+      serverSave(null, true);
     }
   });
 }
@@ -1072,11 +1123,11 @@ $(document).ready(function() {
       //get stage of resolution
       var resolutionStage = parseInt($("#resolution-stage").text(), 10);
 
-      //map forums with chair code mode in mind
+      //map forums with Chair code mode in mind
       data.forums = data.forums.map(function(forum) {
         //process only if array of length 3
         if (forum instanceof Array && forum[2] === true) {
-          //in chair mode, return normally, otherwise mark to be removed
+          //in Chair mode, return normally, otherwise mark to be removed
           return chairMode ? forum : false;
         } else {
           //return normally
@@ -1126,6 +1177,20 @@ $(document).ready(function() {
       for (var dataSelector in initData) {
         //attach data to all elements that match
         $(dataSelector).data(dataPrefix, initData[dataSelector]);
+      }
+
+      //if in stage 0, start timer for save reminder
+      //TODO: replace this is proper resolution stage variable as used in other branches(?)
+      if ($("#resolution-stage").text() === "0") {
+        setTimeout(function() {
+          //display alert modal with alert message
+          makeAlertMessage(
+            "backup", "Save Reminder", "Yes, I will do that now",
+            "The page will attempt to prevent you" +
+            " from accidentally leaving, but before registering your resolution token permanently" +
+            " by saving it for the first time, auto-save will not be active. Please remember to" +
+            " save your resolution if it was actually your intention to start writing a new one.");
+        }, 1000 * 60 * 5); //5 minutes
       }
 
       //trigger all init events
