@@ -54,6 +54,9 @@ var metaChangesSaved = true;
 //set to true once the resolution has been fully loaded and the clauses generated
 var doneLoadingResolution = false;
 
+//set to true once the resolution has been fully loaded and the clauses generated
+var doneLoadingResolution = false;
+
 //token and access code for this resolution, used for saving
 var resolutionToken, resolutionCode;
 
