@@ -25,10 +25,21 @@
     return obj;
   }
 
-  //-icons
+  //icons
   const resetIcon = "clear";
+  const codeIcon = "supervisor_account";
+  const tokenIcon = "my_location";
+  const liveviewIcon = "dvr";
+  //other liveview icon options:
+  //present_to_all, add_to_queue, unarchive, dvr, settings_system_daydream, cast_connected
+  const weakpermIcon = "block";
+  const plaintextIcon = "receipt";
 
-  //-placeholders, for adjusting length
+  //colors for icons
+  const liveviewColor = " text-darken-1 blue-text";
+  const weakpermColor = " text-darken-1 grey-text";
+
+  //placeholders, for adjusting length
   const tokenPlaceholder = "@ 12345EFGH";
   const codePlaceholder = "! ABCD5678";
 
@@ -92,7 +103,8 @@ html(lang="en")
       .container
         -
           const navElements = [
-            ["Font Page", "/"],
+            ["Front Page", "/"],
+            ["New Resolution", "/resolution/new"],
             ["Editor", "/resolution"],
             ["About", "/about"],
             ["Help", "/help"]

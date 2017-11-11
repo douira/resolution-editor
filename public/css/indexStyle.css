@@ -1,3 +1,7 @@
 #editor-name-header {
   word-wrap: break-word;
 }
+
+.btn-spacing {
+  margin-left: 2rem;
+}

@@ -4,140 +4,19 @@ const router = module.exports = express.Router();
 const pandoc = require("node-pandoc");
 const latexGenerator = require("../lib/latex-generator");
 const databaseInterface = require("../lib/database");
-const resolutionFormat = require("../public/js/resolutionFormat").resolutionFormat;
 const tokenProcessor = require("../lib/token");
 const resUtil = require("../lib/resUtil");
+const routingUtil = require("../lib/routingUtil");
+const liveView = require("../lib/liveView").router;
 
 const issueError = resUtil.issueError;
 
 //register callback to get collections on load
-let resolutions, access, db;
-databaseInterface.onload((loadedDb) => {
-  resolutions = loadedDb.collection("resolutions");
-  access = loadedDb.collection("access");
-  db = loadedDb;
+let resolutions, access;
+databaseInterface((collections) => {
+  resolutions = collections.resolutions;
+  access = collections.access;
 });
-
-//Delegate no privilege access code doc
-const delegateCodeDoc = { level: "DE" };
-
-//deals with token in URL and calls callback if token present in db
-function checkToken(req, res, modifyResolution, callback) {
-  //if only three args, callback is in modifyResolution
-  let doModify = true;
-  if (arguments.length === 3) {
-    callback = modifyResolution;
-
-    //set flag to use findOneAndUpdate instead
-    doModify = false;
-  }
-
-  //get token from params
-  let token = req.params.token || req.params.thing;
-
-  //must be "token" type and be valid
-  if (token.length && token[0] === "@" && tokenProcessor.check(token)) {
-    //make upper case
-    token = token.toUpperCase();
-
-    //load corresponding resolution
-    (doModify ? //modify as well if flag set
-      resolutions.findOneAndUpdate({ token: token }, modifyResolution, { returnOriginal: true }) :
-      resolutions.findOne({ token: token })
-    ).then((document) => {
-      //check for existance
-      if (document) {
-        //call callback with gotten document
-        callback(token, doModify ? document.value : document);
-      } else {
-        issueError(res, 400, "token wrong");
-      }
-    }).catch(issueError.bind(null, res, 500, "token db read error"));
-  } else {
-    issueError(res, 400, "token invalid");
-  }
-}
-
-//deals with access code in POST and checks permissions
-function checkCode(req, res, callback) {
-  //get code from params
-  const code = req.body.code || req.params.thing;
-
-  //must be "code" type and be valid
-  if (code.length && code[0] === "!" && tokenProcessor.check(code)) {
-    //load corresponding access entry
-    access.findOne({ code: code }).then((document) => {
-      //code found
-      if (document) {
-        //call callback with gotten code doc
-        callback(document);
-      } else {
-        issueError(res, 400, "code wrong");
-      }
-    }).catch(issueError.bind(null, res, 500, "code db read error"));
-  } else {
-    issueError(res, 400, "code invalid");
-  }
-}
-
-//deals with resolutions in req.body and checks them against the format
-function checkBodyRes(req, res, callback) {
-  //needs to be present
-  if (req.body && typeof req.body === "object") {
-    //get resolution from post content
-    let resolution = req.body.content;
-
-    //attempt parse
-    try {
-      resolution = JSON.parse(resolution);
-    } catch (e) {
-      issueError(res, 400, "parse error");
-      return;
-    }
-
-    //must match format
-    if (resolutionFormat.check(resolution)) {
-      callback(resolution);
-    } else {
-      issueError(res, 400, "format invalid");
-    }
-  } else {
-    issueError(res, 400, "nothing sent");
-  }
-}
-
-//does auth with code, gets resolution doc given and does code and permission check
-function authWithCode(res, resolutionDoc, codeDoc, callback, opts) {
-  //do permission auth
-  if (resUtil.checkPermission(
-    resolutionDoc, codeDoc,
-    typeof opts === "undefined" ? undefined : opts.matchMode || undefined)) {
-    //call callback with everything gathered
-    callback(resolutionDoc.token, resolutionDoc, codeDoc);
-  } else if (opts.hasOwnProperty("permissionMissmatch")) {
-    //call alternative callback if given
-    opts.permissionMissmatch(resolutionDoc.token, resolutionDoc, codeDoc);
-  } else {
-    issueError(res, 400, "not authorized");
-  }
-}
-
-//does full auth procedure (token, POSTed code and permission match)
-function fullAuth(req, res, callback, opts) {
-  //check for token and save new resolution content
-  checkToken(req, res, (token, resolutionDoc) => {
-    //check if a code was sent
-    if (req.body && req.body.code && req.body.code.length) {
-      //check sent code
-      checkCode(req, res, (codeDoc) => {
-        authWithCode(res, resolutionDoc, codeDoc, callback, opts);
-      });
-    } else {
-      //use "DE" Delegate level code doc
-      authWithCode(res, resolutionDoc, delegateCodeDoc, callback, opts);
-    }
-  });
-}
 
 //generates a token/code and queries the database to see if it's already present (recursive)
 function attemptNewThing(res, isToken, finalCallback) {
@@ -166,7 +45,7 @@ router.get("/", function(req, res) {
 //GET (responds with url, no view) render pdf
 router.get("/renderpdf/:token", function(req, res) {
   //check for token and save new resolution content
-  checkToken(req, res, {
+  routingUtil.checkToken(req, res, {
     //add current time to render history log
     $set: { lastRender: Date.now() }
   }, (token, document) => {
@@ -210,7 +89,7 @@ router.get("/renderpdf/:token", function(req, res) {
 //GET (responds with url, no view) render plaintext, not really render but similar
 router.get("/renderplain/:token", function(req, res) {
   //check for token and save new resolution content
-  checkToken(req, res, (token, document) => {
+  routingUtil.checkToken(req, res, (token, document) => {
     //don't render if nothing saved yet
     if (! document.stage) {
       issueError(res, 400, "nothing saved (stage 0)");
@@ -239,20 +118,22 @@ router.get("/new", function(req, res) {
       changed: timeNow, //last time it was changed = saved, stage advances don't count
       stageHistory: [ timeNow ], //index is resolution stage, time when reached that stage
       lastRender: 0, //logs pdf render events
-      stage: 0 //current workflow stage (see phase 2 notes)
+      lastLiveview: 0, //last time a liveview session happened with this resolution
+      stage: 0, //current workflow stage (see phase 2 notes)
+      liveviewOpen: false //if a liveview page is viewing this resolution right now
     }).then(() => {
       //redirect to editor page (because URL is right then)
       res.redirect("editor/" + token);
-    });
+    }, () => issueError(res, 500, "can't create new"));
   });
 });
 
 //POST (no view) save resolution
 router.post("/save/:token", function(req, res) {
   //require resolution content to be present and valid
-  checkBodyRes(req, res, (resolutionSent) => {
+  routingUtil.checkBodyRes(req, res, (resolutionSent) => {
     //authorize, doesn't do code auth if node code necessary
-    fullAuth(req, res, (token) => {
+    routingUtil.fullAuth(req, res, (token) => {
       //save new document
       resolutions.updateOne(
         { token: token },
@@ -289,26 +170,27 @@ function getEditorViewParams(doLoad, resDoc, token, codeDoc) {
 
 //POST/GET (editor view) redirected to here to send editor with set token
 //(also only displays meta info if code necessary but not given or invalid)
-["get", "post"].forEach((method) => {
-  router[method]("/editor/:token", function(req, res) {
-    //check for token and code (check that none is needed)
-    fullAuth(req, res,
-      (token, resDoc, codeDoc) =>
-        //send rendered editor page with token set
-        res.render("editor", getEditorViewParams(true, resDoc, token, codeDoc)),
-      {
-        permissionMissmatch: (token, resDoc, codeDoc) =>
-          //send edtor page but with "no access" notice
-          res.render("editor", getEditorViewParams(false, resDoc, token, codeDoc))
-      }
-    );
-  });
+routingUtil.getAndPost(router, "/editor/:token", function(req, res) {
+  //check for token and code (check with DE perm is no code given)
+  routingUtil.fullAuth(req, res,
+    (token, resDoc, codeDoc) =>
+      //send rendered editor page with token set
+      res.render("editor", getEditorViewParams(true, resDoc, token, codeDoc)),
+    {
+      permissionMissmatch: (token, resDoc, codeDoc) =>
+        //send edtor page but with "no access" notice
+        res.render("editor", getEditorViewParams(false, resDoc, token, codeDoc))
+    }
+  );
 });
+
+//pass liveview stuff on to that module
+router.use("/liveview", liveView);
 
 //POST (no view) (request from editor after being started with set token) send resolution data
 router.post("/load/:token", function(req, res) {
   //authorize
-  fullAuth(req, res, (token, resolutionDoc) => {
+  routingUtil.fullAuth(req, res, (token, resolutionDoc) => {
     //send resolution to client, remove database wrapper
     res.send(resolutionDoc.content);
   });
@@ -318,7 +200,7 @@ router.post("/load/:token", function(req, res) {
 //same as above just with node special code
 router.get("/load/:token", function(req, res) {
   //authorize, absence of code is detected in fullAuth
-  fullAuth(req, res, (token, resolutionDoc) => {
+  routingUtil.fullAuth(req, res, (token, resolutionDoc) => {
     //send resolution to client, remove database wrapper
     res.send(resolutionDoc.content);
   });
@@ -327,7 +209,7 @@ router.get("/load/:token", function(req, res) {
 //POST (no view) to advance resolution, redirect to editor without code after completion
 router.post("/advance/:token", function(req, res) {
   //authorize, absence of code is detected in fullAuth
-  fullAuth(req, res, (token) => {
+  routingUtil.fullAuth(req, res, (token) => {
     //advance resolution to next stage
     resolutions.updateOne({ token: token }, {
       $inc: { stage: 1 },
@@ -340,7 +222,7 @@ router.post("/advance/:token", function(req, res) {
     //error/warning page on fail
     permissionMissmatch: (token, resolutionDoc, codeDoc) => {
       //display error page
-      res.render("weakperm", {
+      res.render("weakperm-advance", {
         token: resolutionDoc.token,
         stage: resolutionDoc.stage,
         accessLevel: codeDoc.level
@@ -351,24 +233,15 @@ router.post("/advance/:token", function(req, res) {
   });
 });
 
-//GET (view) mock version of the weakperm page
-/*router.get("/weakperm/:token", function(req, res) {
-  res.render("weakperm", {
-    token: "@PKMGK6JV",
-    stage: 5,
-    accessLevel: "DE"
-  });
-});*/
-
 //GET (no view, validation response) checks if sent token or code is valid (for form display)
 router.get("/checkinput/:thing", function(req, res) {
   //respond with token/code ok or not
   if (req.params.thing[0] === "@") {
-    checkToken(req, res, () => {
+    routingUtil.checkToken(req, res, () => {
       res.send("ok token");
     });
   } else if (req.params.thing[0] === "!") {
-    checkCode(req, res, () => {
+    routingUtil.checkCode(req, res, () => {
       res.send("ok code");
     });
   } else {

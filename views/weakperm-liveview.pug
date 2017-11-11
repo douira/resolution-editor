@@ -1,0 +1,20 @@
+extends layout
+
+block content
+  .container
+    h4.center: +icon(weakpermIcon, "large" + weakpermColor)
+    h3.center Insufficient Permission for LiveView
+    .divider
+    include stages
+    p.justify LiveView could not be started for the resolution with token #[b=token]
+      if stage !== 6
+        |  because the resolution has to be in stage #{stageData[6].title}
+        a(href="/help#rstage6"): b.text-lighten-1.grey-text  #6
+        | .
+      else
+        |  because the provided valid access code did not have the required permission level #[a(href="/help#CH") CH] or #[a(href="/help#MA") MA]. You entered a code with the permission level #[a(href="/help#" + accessLevel)=accessLevel].
+      br
+      | #[a(href="/resolution/editor/" + token) Return] to the editor page.
+    if stage === 6
+      h4 Current Stage:
+      +stage-info-index(stage, false)

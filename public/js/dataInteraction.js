@@ -5,14 +5,17 @@
   changesSaved:true,
   resolutionToken,
   resolutionCode,
-  Materialize,
-  allowedSubclauseDepth */
+  displayToast,
+  allowedSubclauseDepth,
+  sendJsonLV,
+  sendLVUpdates*/
 /* exported loadFilePick,
   serverLoad,
   generatePdf,
   generatePlaintext,
   serverSave,
-  downloadJson*/
+  downloadJson,
+  sendLVUpdate*/
 //file actions are defined in this file
 
 //current version of the resolution format supported
@@ -114,7 +117,7 @@ function validateEditorData(obj) {
 }
 
 //loads a json into the editor
-function loadJson(json, container, callbackOnSuccess) {
+function loadJson(json, callbackOnSuccess) {
   //basic parse if necessary
   var obj;
   if (typeof json === "string") {
@@ -154,22 +157,22 @@ function loadJson(json, container, callbackOnSuccess) {
   }
 
   //prepare loading: reset editor to original state
-  container.find(".clause").trigger("attemptRemove");
-  container.find("input, textarea").trigger("reset");
+  $(".clause").trigger("attemptRemove");
+  $("input, textarea").trigger("reset");
 
   //put author data into field
-  container.find("#author-name").val(obj.author).trigger("activateLabel");
+  $("#author-name").val(obj.author).trigger("activateLabel");
 
   //get resolution object
   var res = obj.resolution;
 
   //put data into general data fields
-  container.find("#question-of").val(res.address.questionOf).trigger("activateLabel");
-  container.find("#forum-name").val(res.address.forum).trigger("activateLabel");
-  container.find("#main-spon").val(res.address.sponsor.main).trigger("activateLabel");
+  $("#question-of").val(res.address.questionOf).trigger("activateLabel");
+  $("#forum-name").val(res.address.forum).trigger("activateLabel");
+  $("#main-spon").val(res.address.sponsor.main).trigger("activateLabel");
 
   //init chips with new data
-  var elem = container.find("#co-spon");
+  var elem = $("#co-spon");
   elem.getData().data = res.address.sponsor.co.map(function(str) {
     return { tag: str };
   });
@@ -177,9 +180,9 @@ function loadJson(json, container, callbackOnSuccess) {
 
   //parse clauses
   parseClauseList(res.clauses.preambulatory,
-                  container.find("#preamb-clauses").children(".clause-list"));
+                  $("#preamb-clauses").children(".clause-list"));
   parseClauseList(res.clauses.operative,
-                  container.find("#op-clauses").children(".clause-list"));
+                  $("#op-clauses").children(".clause-list"));
 
   //call success callback
   if (typeof callbackOnSuccess === "function") {
@@ -188,7 +191,7 @@ function loadJson(json, container, callbackOnSuccess) {
 }
 
 //load file from computer file system
-function loadFilePick(container) {
+function loadFilePick() {
   //make alert message file select
   makeAlertMessage(
     "file_upload", "Open resolution file", "cancel", function(body, modal) {
@@ -201,7 +204,7 @@ function loadFilePick(container) {
         modal.modal("close");
 
         //load text into editor
-        loadJson(text, container);
+        loadJson(text);
 
         //changes loaded from file are not "really" server saved
         //(and flag isn't reset because of this)
@@ -210,7 +213,7 @@ function loadFilePick(container) {
 }
 
 //loads resolution from server
-function serverLoad(token, displayToast, container, callback) {
+function serverLoad(token, doToast, callback) {
   //stop if we're still in stage 0 and there isn't anything to load
   if ($("#resolution-stage").text() === "0") {
     return;
@@ -231,10 +234,10 @@ function serverLoad(token, displayToast, container, callback) {
   $.ajax(ajaxSettings)
   .done(function(response) {
     //attempt to load json into editor
-    loadJson(response, container, function() {
+    loadJson(response, function() {
         //display toast
-      if (displayToast) {
-        Materialize.toast("Successfully loaded", 3000);
+      if (doToast) {
+        displayToast("Successfully loaded");
       }
 
       //call callback if there is one
@@ -242,7 +245,7 @@ function serverLoad(token, displayToast, container, callback) {
         callback();
       }
 
-      //set flag
+      //set flag, loaded resolution is fully saved already
       changesSaved = true;
     });
   })
@@ -287,14 +290,14 @@ function generatePlaintext() {
 //gets a clause as an object
 //IMPORTANT: if the outputted format changes, increment the version number by one!
 //(see resolutionFormat.js)
-$.fn.clauseAsObject = function() {
+$.fn.clauseAsObject = function(allowEmpty) {
   //return as array if given list
   if (this.is(".clause-list")) {
     var clauses = [];
 
     //add all clauses
     this.children(".clause").each(function() {
-      var clauseObj = $(this).clauseAsObject();
+      var clauseObj = $(this).clauseAsObject(allowEmpty);
       if (clauseObj) {
         clauses.push(clauseObj);
       }
@@ -315,7 +318,7 @@ $.fn.clauseAsObject = function() {
   };
 
   //stop if no content
-  if (! clauseData.content) {
+  if (! clauseData.content && ! allowEmpty) {
     return false;
   }
 
@@ -329,14 +332,14 @@ $.fn.clauseAsObject = function() {
     clauseData.contentExt = this.children(".clause-content-ext").find("textarea").val().trim();
   }
 
-  //get subclauses and add if not empty
-  var subclauses = this.children(".clause-list-sub").clauseAsObject();
+  //get subclauses and add if not empty list
+  var subclauses = this.children(".clause-list-sub").clauseAsObject(allowEmpty);
   if (subclauses.length) {
     clauseData.sub = subclauses;
   }
 
   //if content is the only attribute, coerce to single string
-  if (Object.keys(clauseData).length === 1) {
+  if (Object.keys(clauseData).length === 1 && ! allowEmpty) { //use full object if allowing empties
     clauseData = clauseData.content;
   }
 
@@ -345,29 +348,38 @@ $.fn.clauseAsObject = function() {
 };
 
 //returns a json string of the object currently in the editor
-function getEditorContent(container, makeJsonNice) {
+function getEditorContent(makeJsonNice) {
+  //get object
+  var res = getEditorObj();
+
+  //return stringyfied
+  return makeJsonNice ? JSON.stringify(res, null, 2) : JSON.stringify(res);
+}
+
+//return the editor content as the resolution file object
+function getEditorObj(allowEmpty) {
   //create root resolution object and gather data
   var res = {
     magic: resolutionFormat.magicIdentifier,
     version: Math.max.apply(null, supportedResFileFormats), //use highest supported version
-    author: container.find("#author-name").val().trim(),
+    author: $("#author-name").val().trim(),
     resolution: {
       address: {
-        forum: container.find("#forum-name").val().trim(),
-        questionOf: container.find("#question-of").val().trim(),
+        forum: $("#forum-name").val().trim(),
+        questionOf: $("#question-of").val().trim(),
         sponsor: {
-          main: container.find("#main-spon").val().trim()
+          main: $("#main-spon").val().trim()
         }
       },
       clauses: {
-        preambulatory: container.find("#preamb-clauses > .clause-list").clauseAsObject(),
-        operative: container.find("#op-clauses > .clause-list").clauseAsObject()
+        preambulatory: $("#preamb-clauses > .clause-list").clauseAsObject(allowEmpty),
+        operative: $("#op-clauses > .clause-list").clauseAsObject(allowEmpty)
       }
     }
   };
 
   //get co-sponsors and add if any present
-  var cosponsorData = container.find("#co-spon").material_chip("data");
+  var cosponsorData = $("#co-spon").material_chip("data");
   if (cosponsorData.length) {
     //map to array of strings
     res.resolution.address.sponsor.co = cosponsorData.map(function(obj) {
@@ -375,16 +387,15 @@ function getEditorContent(container, makeJsonNice) {
     });
   }
 
-  //return stringyfied
-  return makeJsonNice ? JSON.stringify(res, null, 2) : JSON.stringify(res);
+  //return created object
+  return res;
 }
 
-//saves the resolution from given container to the server
-//TODO: make sure the container is removed
-function serverSave(container, callback, displayToast, silentFail) {
+//saves the resolution from editor to the server
+function serverSave(callback, doToast, silentFail) {
   //display if not specified
-  if (typeof displayToast === "undefined") {
-    displayToast = true;
+  if (typeof doToast === "undefined") {
+    doToast = true;
   }
 
   //validate fields, no message if silent fail is specified
@@ -395,7 +406,7 @@ function serverSave(container, callback, displayToast, silentFail) {
 
   //make data object
   var data = {
-    content: getEditorContent(container, false)
+    content: getEditorContent(false)
   };
 
   //add code to data if given
@@ -410,8 +421,8 @@ function serverSave(container, callback, displayToast, silentFail) {
   $.post("/resolution/save/" + resolutionToken, data, "text")
   .done(function() {
     //make save ok toast if enabled
-    if (displayToast) {
-      Materialize.toast("Successfully saved", 3000);
+    if (doToast) {
+      displayToast("Successfully saved");
     }
 
     //call callback on completion
@@ -431,7 +442,7 @@ function serverSave(container, callback, displayToast, silentFail) {
 }
 
 //generates and downloeads json representation of the editor content
-function downloadJson(container) {
+function downloadJson() {
   //validate
   if (! validateFields()) {
     //stop because not ok with missing data
@@ -439,7 +450,7 @@ function downloadJson(container) {
   }
 
   //make a file download with the editor content
-  saveFileDownload(getEditorContent(container, true));
+  saveFileDownload(getEditorContent(true));
 }
 
 //save file to be downloaded
@@ -468,3 +479,100 @@ function saveFileDownload(str) {
       "please file a " + bugReportLink("download_not_starting") + " and describe this problem.");
   });
 }
+
+//index of structure changes, incremented every time the structure changes
+//paths calculated with a small index will be ignored and recalculated
+var structureChangeIndex = 0;
+
+//gets the path of a clause
+$.fn.getContentPath = function() {
+  //get data for this element
+  var data = this.getData();
+
+  //if no structure change has occured and path is present in data
+  if (data.hasOwnProperty("contentPath") &&
+      data.contentPath.structureIndex === structureChangeIndex) {
+    //use this path instead
+    return data.contentPath.path;
+  }
+
+  //path elements in order from deepest to top
+  var path = [];
+
+  //current element we are examining
+  var elem = this; //start off with this element
+
+  //must be input or textarea to have triggered a change(or similar) event
+  if (elem.is("input,textarea")) {
+    //first specifier in path is the role of the field in the clause
+    var elemClasses = elem.attr("class");
+    ["phrase-input", "clause-content-text", "clause-content-ext-text"]
+      .forEach(function(classValue) {
+      //check if element has current class
+      if (elemClasses.indexOf(classValue) !== -1) {
+        //use as first path specifier, we expect this only to happen once
+        path[0] = classValue;
+      }
+    });
+  } else {
+    //called on wrong element
+    return [];
+  }
+
+  //for parent clauses
+  elem.parents(".clause").each(function() {
+    //add index of each clause in its list to path
+    path.push($(this).indexInParent());
+  });
+
+  //no parent found, we are at the top level: specify what type of clause (op or preamb)
+  path.push(elem.closest("#preamb-clauses") ? "preamb" : "op");
+
+  //reverse path so it starts with the topmost element
+  path.reverse();
+
+  //put path into data to reuse
+  data.contentPath = {
+    path: path,
+    structureIndex: structureChangeIndex
+  };
+
+  //return calculated path
+  return path;
+};
+
+//the liveview socket, if present is in currentWS (var in liveviewWS.js)
+
+//sends edit updates
+function sendLVUpdate(type, elem) {
+  //don't send if not necessary
+  if (! sendLVUpdates) {
+    return;
+  }
+
+  //sends a structure update to server
+  switch(type) {
+    case "structure":
+      //increment structure index with change happened
+      structureChangeIndex ++;
+
+      //send as structure update
+      sendJsonLV({
+        type: "updateStructure",
+        //just send the whole editor content for rerender after structure change
+        update: getEditorObj(true) //true to also get empty fields
+      });
+      break;
+    case "content":
+      //send as structure update
+      sendJsonLV({
+        type: "updateContent",
+        update: {
+          contentPath: elem.getContentPath(),
+          content: elem.val().trim()
+        }
+      });
+      break;
+  }
+}
+

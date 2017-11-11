@@ -5,11 +5,15 @@
   downloadJson,
   bugReportLink,
   serverSave,
-  Materialize,
+  displayToast,
   generatePlaintext,
   registerAccessInputs,
-  serverLoad */
-/* exported checkRequiredFields*/
+  serverLoad,
+  makeAlertMessage,
+  startLiveviewWS,
+  sendLVUpdate,
+  Materialize*/
+/* exported checkRequiredFields, sendLVUpdates*/
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -47,11 +51,17 @@ var changesSaved = false;
 var noChangesMade = true;
 var metaChangesSaved = true;
 
+//set to true once the resolution has been fully loaded and the clauses generated
+var doneLoadingResolution = false;
+
 //token and access code for this resolution, used for saving
 var resolutionToken, resolutionCode;
 
 //attach the default settings
 var makeAutofillSettings = makeAutofillSettingsPre.bind({}, autofillSettings);
+
+//is set to true if we need to send updates to LV viewers
+var sendLVUpdates = false;
 
 //transforms arrays containign a certain flag in an object and array json structure
 function transformMarkedArrays(structure, flag, propValue, depth) {
@@ -109,69 +119,6 @@ function transformMarkedArrays(structure, flag, propValue, depth) {
 
   //return object back
   return structure;
-}
-
-//queue of alert message we want to display
-var alertQueue = [];
-
-//checks if we can display an alert now or starts processing the queue
-function checkAlertDisplay() {
-  //only if any items in queue and still animating
-  if (alertQueue.length) {
-    var modal = $("#alert-message-modal");
-    if (! (modal.hasClass("open") || modal.hasClass("velocity-animating"))) {
-      //get next alert message from queue and display
-      var modalData = alertQueue.shift();
-
-      //get the modal element
-      var modalElement = $("#alert-message-modal");
-
-      //add content to the modal
-      modalElement
-        .find(".modal-content-title")
-        .html("<i class='material-icons small'>" + modalData.icon + "</i> " + modalData.title);
-      modalElement.find(".modal-dismiss-btn").html(modalData.buttonText);
-
-      //set error code if given
-      modalElement
-        .find(".error-code")
-        .text(modalData.hasErrorCode ? "error #" + modalData.errorCode : "")
-        [modalData.hasErrorCode ? "show" : "hide"]();
-
-      //call callback for content if given
-      var contentBody = modalElement.find(".modal-content-body");
-      if (typeof modalData.callbackOrMessage === "string") {
-        contentBody.html(modalData.callbackOrMessage);
-      } else {
-        contentBody.empty();
-        modalData.callbackOrMessage(contentBody, modalElement);
-      }
-
-      //open the modal for the user to see
-      modalElement.modal("open");
-    }
-  }
-}
-
-//creates an alert message
-function makeAlertMessage(icon, title, buttonText, callbackOrMessage, errorCode) {
-  //default button text
-  if (typeof buttonText === "undefined") {
-    buttonText = "OK";
-  }
-
-  //add alert message object to queue
-  alertQueue.push({
-    icon: icon,
-    title: title,
-    buttonText: buttonText,
-    callbackOrMessage: callbackOrMessage,
-    hasErrorCode: typeof errorCode !== "undefined",
-    errorCode: errorCode
-  });
-
-  //check immediately
-  checkAlertDisplay();
 }
 
 //updates the disabling state of eab movement buttons, used as event handler
@@ -408,26 +355,18 @@ $.fn.addClause = function(amount, activationStateChanges) {
   //made a change
   changesSaved = false;
 
+  //structure update not sent here because this is also called when loading the resolution
+
   //return this for chaining
   return this;
 };
 
 //registers event handlers that are essential for the general function of the page
 function registerEssentialEventHandlers(doLoad) {
-  $(".modal")
-  .on("init", function() {
-    //not using element specific data because this will be the same for all modals
-    //(only the one modal atm)
-    var modal = $(this);
-    modal.modal({
-      dismissible: false,
-      complete: function() {
-        modal.trigger("reset");
-
-        //display next alert if there is one
-        checkAlertDisplay();
-      }
-    });
+  $("body")
+  .on("touchstart", function() {
+    //register touch event and remove tooltips for touch-devices
+    $(".tooltipped").tooltip("remove");
   });
   if (doLoad) {
     $(".modal").on("reset", function(e) {
@@ -450,7 +389,7 @@ function registerEssentialEventHandlers(doLoad) {
       generatePdf();
     } else {
       //save json to server first
-      serverSave($("#editor-main"), function() {
+      serverSave(function() {
         //display pdf directly after generating
         generatePdf();
       }, true);
@@ -469,7 +408,7 @@ function registerEssentialEventHandlers(doLoad) {
       generatePlaintext();
     } else {
       //save json to server first
-      serverSave($("#editor-main"), function() {
+      serverSave(function() {
         //display pdf directly after generating
         generatePlaintext();
       }, true);
@@ -534,6 +473,15 @@ function registerEventHandlers(loadedData) {
   .on("change", function() {
     //check again on changed value
     $(this).trigger("checkRequired");
+  });
+  $(".clause input, .clause textarea")
+  .on("paste keyup", function() {
+    //don't send update if still loading, some events may be fake-fired in the process of getting
+    //the editor ready for the user
+    if (doneLoadingResolution) {
+      //send content update
+      sendLVUpdate("content", $(this));
+    }
   });
   $("input[type='file']")
   .on("reset", function(e) {
@@ -739,7 +687,7 @@ function registerEventHandlers(loadedData) {
     e.stopPropagation();
     //save to server if meta hanges are unsaved
     if (! metaChangesSaved && $("#resolution-stage").text() !== "0") { //TODO: proper var
-      serverSave($("#editor-main"), null, false, true);
+      serverSave(null, false, true);
     }
 
     //make all other clauses inactive
@@ -752,7 +700,7 @@ function registerEventHandlers(loadedData) {
     //hide edit button
     editModeBtn
       .hide()
-      .before($("#eab-wrapper").show()); //show edit action buttons
+      .before($("#eab-wrapper").show()); //show edit action buttons and move to clause
 
     //update eab button disable
     $(this)
@@ -767,13 +715,13 @@ function registerEventHandlers(loadedData) {
   })
   .on("editInactive", function(e) {
     e.stopPropagation();
-
-    //show edit button to make switch to edit mode possible again
     var elem = $(this);
 
     //hide edit action buttons
     var eab = elem.find("#eab-wrapper");
     eab.hide().insertAfter($("#eab-inactive-anchor"));
+
+    //show edit button to make switch to edit mode possible again
     elem.find(".edit-mode-btn").show();
 
     //hide add clause button if we're a subclause
@@ -785,7 +733,7 @@ function registerEventHandlers(loadedData) {
     //no alert message on fail, only red mark
     if (! changesSaved && ! noChangesMade &&
         $("#resolution-stage").text() !== "0") { //TODO: use proper variable
-      serverSave($("#editor-main"), null, false, true);
+      serverSave(null, false, true);
     }
   })
   .on("updateId", function(e) {
@@ -844,6 +792,9 @@ function registerEventHandlers(loadedData) {
 
       //made changes
       changesSaved = false;
+
+      //send structure update
+      sendLVUpdate("structure");
     }
   })
   .on("click", function(e) {
@@ -927,6 +878,9 @@ function registerEventHandlers(loadedData) {
     if ($(e.target).is("a")) {
       //add clause in enclosing list
       $(this).addClause(1, true);
+
+      //send structure update
+      sendLVUpdate("structure");
     }
   });
   $(".edit-mode-btn")
@@ -971,6 +925,9 @@ function registerEventHandlers(loadedData) {
 
     //update id of all clauses in section
     clause.triggerAllIdUpdate();
+
+    //send structure update
+    sendLVUpdate("structure");
   })
   .on("updateDisabled", makeEabMoveUpdateDisabledHandler(false));
   $("#eab-move-up")
@@ -984,6 +941,9 @@ function registerEventHandlers(loadedData) {
 
     //update id of all clauses in section
     clause.triggerAllIdUpdate();
+
+    //send structure update
+    sendLVUpdate("structure");
   })
   .on("updateDisabled", makeEabMoveUpdateDisabledHandler(true));
   $("#eab-add-sub")
@@ -993,6 +953,9 @@ function registerEventHandlers(loadedData) {
 
     //get enclosing clause and make inactive to prevent cloning of eab and add subclause
     elem.closest(".clause").addSubClause(true);
+
+    //send structure update
+    sendLVUpdate("structure");
   })
   .on("updateDisabled", function(e) {
     e.stopPropagation();
@@ -1009,6 +972,9 @@ function registerEventHandlers(loadedData) {
 
     //make disabled after action performed
     $(this).disabledState(true);
+
+    //send structure update
+    sendLVUpdate("structure");
   })
   .on("updateDisabled", function(e) {
     e.stopPropagation();
@@ -1024,6 +990,9 @@ function registerEventHandlers(loadedData) {
   .on("click", function(e) {
     e.stopPropagation();
     $(this).closest(".clause").trigger("clear");
+
+    //send structure update because ext cont is removed
+    sendLVUpdate("structure");
   });
   $("#eab-delete")
   .on("click", function(e) {
@@ -1047,7 +1016,7 @@ function registerEventHandlers(loadedData) {
     e.stopPropagation();
 
     //load file from computer file system
-    loadFilePick($("#editor-main"));
+    loadFilePick();
   });
   $("#legacy-action-save")
   .on("click", function(e) {
@@ -1057,7 +1026,7 @@ function registerEventHandlers(loadedData) {
     $(".clause").trigger("editInactive");
 
     //download editor json
-    downloadJson($("#editor-main"));
+    downloadJson();
   });
   $("#action-save")
   .on("click", function(e) {
@@ -1065,7 +1034,7 @@ function registerEventHandlers(loadedData) {
 
     //display message before triggering save on clauses, will probably be in saved state afterwards
     if (changesSaved) {
-      Materialize.toast("Already saved", 3000);
+      displayToast("Already saved");
     } else {
       //save message
       Materialize.toast("Saving", 3000);
@@ -1077,7 +1046,7 @@ function registerEventHandlers(loadedData) {
     //save to server if still not everything saved
     if (! changesSaved) {
       //save json to server first
-      serverSave($("#editor-main"), null, true);
+      serverSave(null, true);
     }
   });
 }
@@ -1096,7 +1065,10 @@ $(document).ready(function() {
   }
 
   //register an access input group for resolution advancement
-  registerAccessInputs("/resolution/advance/", ".advance-submit-btn", "#advance-code-form", {
+  registerAccessInputs({
+    url: "/resolution/advance/",
+    selector: ".advance-submit-btn"
+  }, "#advance-code-form", {
     //need to look at both fields, nothing given already
     presetToken: resolutionToken,
     codeFieldSelector: "#advance-code-input"
@@ -1105,7 +1077,10 @@ $(document).ready(function() {
   //check if we are in read-only/no load mode
   if ($("#read-only-mode").length) {
     //register an access input group for unlock of editor
-    registerAccessInputs("/resolution/editor/", "#unlock-submit-btn", "#unlock-code-form", {
+    registerAccessInputs({
+      url: "/resolution/editor/",
+      selector: "#unlock-submit-btn"
+    }, "#unlock-code-form", {
       //need to look at both fields, nothing given already
       presetToken: resolutionToken,
       codeFieldSelector: "#unlock-code-input"
@@ -1119,7 +1094,7 @@ $(document).ready(function() {
     registerEssentialEventHandlers(false);
 
     //trigger all init events
-    $("#editor-main").find("*").trigger("init");
+    $("*").trigger("init");
   } else { //proceed normally
     //load external sponsor, phrase and forum name data
     var autofillData;
@@ -1138,9 +1113,12 @@ $(document).ready(function() {
       //data object to pass to scope of event handlers
       var loadedData = {};
 
-      //check for Chair or admin access
-      var chairMode = $("#code-access-level").text();
-      chairMode = chairMode === "MA" || chairMode === "CH";
+      //check for chair or admin access
+      var accessLevel = $("#code-access-level").text();
+      var chairMode = accessLevel === "MA" || accessLevel === "CH";
+
+      //get stage of resolution
+      var resolutionStage = parseInt($("#resolution-stage").text(), 10);
 
       //map forums with Chair code mode in mind
       data.forums = data.forums.map(function(forum) {
@@ -1213,10 +1191,37 @@ $(document).ready(function() {
       }
 
       //trigger all init events
-      $("#editor-main").find("*").trigger("init");
+      $("*").trigger("init");
 
       //initiate loading of resolution from server with preset token
-      serverLoad(resolutionToken, true, $("#editor-main"));
+      serverLoad(resolutionToken, true, function() {
+        //set flag for done loading resolution into editor
+        doneLoadingResolution = true;
+      });
+
+      //if as MA or at stage 6 and authorized as CH, start liveview editor websocket
+      if (resolutionStage === 6 && accessLevel === "CH" || accessLevel === "MA") {
+        //give token and code, false for being editor type client
+        startLiveviewWS(false, resolutionToken, resolutionCode, function(type, newSendStatus) {
+          //act on "sendUpdates" update
+          switch (type) {
+            case "sendUpdates":
+              //if now set to true and previously false,
+              //send structure update to catch server up on made changes
+              if (! sendLVUpdates && newSendStatus) {
+                sendLVUpdates = true;
+                sendLVUpdate("structure");
+              }
+
+              //copy value
+              sendLVUpdates = newSendStatus;
+              break;
+            case "disconnect":
+              //set send updates to false because we want to resend after connection failure
+              sendLVUpdates = false;
+          }
+        });
+      }
     });
   }
 });
