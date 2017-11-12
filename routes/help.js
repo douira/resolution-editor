@@ -13,7 +13,7 @@ router.get("/", function(req, res) {
 router.get("/formatdefinition", function(req, res) {
   //render help page
   res.render("formatdefinition", {
-    data: resolutionFormat.resolutionFileFormat
-    //JSON.stringify(resolutionFormat.resolutionFileFormat, null, 2)
+    data: resolutionFormat.resolutionFileFormat,
+    dataJson: JSON.stringify(resolutionFormat.resolutionFileFormat, null, 2)
   });
 });
