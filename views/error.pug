@@ -3,6 +3,10 @@ extends layout
 block title
   title Error - Resolution Editor
 
-block error
-  h2 Internal Server Error!
-  pre #{error.stack}
+block content
+  .container
+    h4.center: +icon("gesture", "large " + weakpermColor)
+    h3=error
+    h5.grey-text.text-lighten-1 Status #{error.status}
+    .divider
+    pre=error.stack
