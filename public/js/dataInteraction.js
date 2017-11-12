@@ -19,7 +19,7 @@
 //file actions are defined in this file
 
 //current version of the resolution format supported
-var supportedResFileFormats = [4];
+var supportedResFileFormats = [4, 5];
 
 //get resolutionFormat from module exported
 var resolutionFormat = module.exports.resolutionFormat;

@@ -211,11 +211,32 @@ router.get("/load/:token", function(req, res) {
 router.post("/advance/:token", function(req, res) {
   //authorize, absence of code is detected in fullAuth
   routingUtil.fullAuth(req, res, (token) => {
+    //query object to be possibly extended by a vote result setter
+    const query = {
+      $inc: { stage: 1 }, //advance to next stage index
+      $push: { stageHistory: Date.now() } //add timestamp to history
+    };
+
+    //if vote values are sent
+    if (req.body && "inFavor" in req.body) {
+      //stop if vote numbers faulty
+      try {
+        //add to query
+        query.$set = {
+          voteResults: {
+            // || 0 convert to 0 or number
+            inFavor: parseInt(req.body.inFavor, 10) || 0,
+            against: parseInt(req.body.against, 10) || 0,
+            abstention: parseInt(req.body.abstention, 10) || 0,
+          }
+        };
+      } catch (err) {
+        issueError(res, 400, "vote number parse fail", err);
+      }
+    }
+
     //advance resolution to next stage
-    resolutions.updateOne({ token: token }, {
-      $inc: { stage: 1 },
-      $push: { stageHistory: Date.now() }
-    })
+    resolutions.updateOne({ token: token }, query)
     //redirect to editor without code
     .then(() => res.redirect("/resolution/editor/" + token))
     .catch((err) => issueError(res, 500, "advance db error", err));
@@ -229,7 +250,7 @@ router.post("/advance/:token", function(req, res) {
         accessLevel: codeDoc.level
       });
     },
-    //use advance match mode because editing and advancement have different requirements
+    //use advance match mode because advancement has specific permission requirements
     matchMode: "advance"
   });
 });
