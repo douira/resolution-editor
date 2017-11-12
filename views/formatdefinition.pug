@@ -15,6 +15,7 @@ block content
         each val, prop in obj
           li
             if typeof val === "object"
+              =prop + ": "
               +objectlist(val)
             else
               =prop + ": " + val
