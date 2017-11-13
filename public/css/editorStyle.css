@@ -56,3 +56,7 @@
   float: left;
   height: 22px;
 }
+
+#resolution-pass-status {
+  margin-top: 0px;
+}

@@ -81,33 +81,48 @@ block content
           .collapsible-header
             +icon("thumbs_up_down", "text-darken-3 light-blue-text")
             | Vote Results
-          .collapsible-body: .row.no-bottom-mrg
-            .col.s12.l6
-              span.green-text #[b=meta.voteResults.inFavor] Votes in favor
-              |  •
-              span.red-text  #[b=meta.voteResults.against] Votes against
-              |  •
-              span.blue-text  #[b=meta.voteResults.abstention] Abstentions
-            .col.s12.l6
-              #vote-bar.z-depth-2
-                - var voteSum = meta.voteResults.inFavor + meta.voteResults.against + meta.voteResults.abstention;
-                mixin vote-part(color, votes)
-                  .vote-bar-part(class=color + " lighten-1" style="width: " + (votes * 100 / voteSum) + "%;")
-                +vote-part("green", meta.voteResults.inFavor)
-                +vote-part("red", meta.voteResults.against)
-                +vote-part("blue", meta.voteResults.abstention)
+          .collapsible-body
+            .center
+              if meta.voteResults.passed
+                +icon("check_circle", "mediumsmall light-green-text text-darken-1")
+              else
+                +icon("cancel", "mediumsmall red-text text-darken-1")
+              h5.light#resolution-pass-status The resolution has
+                b=meta.voteResults.passed ? " passed" : " failed"
+                | .
+            .row.no-bottom-mrg
+              .col.s12.l6
+                span.green-text
+                  b=meta.voteResults.inFavor
+                  |  Vote#{meta.voteResults.inFavor === 1 ? "" : "s"} in favor
+                |  •
+                span.red-text
+                  b=" " + meta.voteResults.against
+                  |  Vote#{meta.voteResults.against === 1 ? "" : "s"} against
+                |  •
+                span.blue-text
+                  b=" " + meta.voteResults.abstention
+                  |  Abstention#{meta.voteResults.abstention === 1 ? "" : "s"}
+              .col.s12.l6
+                #vote-bar.z-depth-2
+                  - var voteSum = meta.voteResults.inFavor + meta.voteResults.against + meta.voteResults.abstention;
+                  mixin vote-part(color, votes)
+                    .vote-bar-part(class=color + " lighten-1" style="width: " + (votes * 100 / voteSum) + "%;")
+                  +vote-part("green", meta.voteResults.inFavor)
+                  +vote-part("red", meta.voteResults.against)
+                  +vote-part("blue", meta.voteResults.abstention)
     h5.light Actions
     //-secretariat doesn't edit but must be able to advance -> stage 4 displays advance field even if not editing
     if doLoad || meta.stage === 4
       if meta.stage <= 6
         .row
           if meta.stage
-            form#advance-code-form.col.xl6.s12.no-bottom-mrg(method="POST" action="/" class=meta.stage === 6 ? "row" : "")
+            form#advance-code-form.col.xl6.l12.no-bottom-mrg(method="POST" action="/" class=meta.stage === 6 ? "row" : "")
               //-vote results
               if meta.stage === 6
                 .col.xl6.m6.s12
                   | Votes for the resolution as a whole:
-                  .row.no-bottom-mrg
+                  .row
                     mixin vote-input(name, id, labelText)
                       .col.s4.input-field
                         input.not-editor(name=name id=id type="number")
@@ -115,13 +130,16 @@ block content
                     +vote-input("inFavor", "infavor-vote-input", "In Favor")
                     +vote-input("against", "against-vote-input", "Against")
                     +vote-input("abstention", "abstention-vote-input", "Abstention")
+                    .col.s12
+                      input(type="checkbox" name="importantQuestion" id="important-question-checkbox")
+                      label(for="important-question-checkbox") Declared an important question
               .input-field(class=meta.stage === 6 ? "xl6 m6 s12 col" : "")
                 +icon(codeIcon, "prefix")
                 input#advance-code-input.not-editor(name="code" type="text" placeholder=codePlaceholder)
                 label(for="advance-code-input") Enter access code
           mixin input-field-wrapper
             if meta.stage
-              .col.xl6.s12
+              .col.xl6.l12
                 block
             else
               .col.s12

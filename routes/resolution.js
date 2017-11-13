@@ -221,15 +221,23 @@ router.post("/advance/:token", function(req, res) {
     if (req.body && "inFavor" in req.body) {
       //stop if vote numbers faulty
       try {
-        //add to query
-        query.$set = {
-          voteResults: {
-            // || 0 convert to 0 or number
-            inFavor: parseInt(req.body.inFavor, 10) || 0,
-            against: parseInt(req.body.against, 10) || 0,
-            abstention: parseInt(req.body.abstention, 10) || 0,
-          }
+        //make voting reults object
+        const voteResults = {
+          // "|| 0" convert to 0 or number
+          inFavor: parseInt(req.body.inFavor, 10) || 0,
+          against: parseInt(req.body.against, 10) || 0,
+          abstention: parseInt(req.body.abstention, 10) || 0,
+          importantQuestion: req.body.importantQuestion ? true : false,
         };
+
+        /*check and add prop wether or not this resolution passed.
+        must be majority for pass and 2/3 majority (= two times more than...)
+        for important question to pass*/
+        voteResults.passed = voteResults.inFavor > voteResults.against *
+          (voteResults.importantQuestion ? 2 : 1);
+
+        //add whole thing to query
+        query.$set = { voteResults: voteResults };
       } catch (err) {
         issueError(res, 400, "vote number parse fail", err);
       }
@@ -237,7 +245,7 @@ router.post("/advance/:token", function(req, res) {
 
     //advance resolution to next stage
     resolutions.updateOne({ token: token }, query)
-    //redirect to editor without code
+    //redirect to editor without code, prevent form resubmission
     .then(() => res.redirect("/resolution/editor/" + token))
     .catch((err) => issueError(res, 500, "advance db error", err));
   }, {
