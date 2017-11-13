@@ -47,3 +47,12 @@
 .btn-top-mrg {
   margin-top: 15px;
 }
+
+#vote-bar {
+  height: 22px;
+}
+
+.vote-bar-part {
+  float: left;
+  height: 22px;
+}

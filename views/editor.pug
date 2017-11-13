@@ -77,10 +77,25 @@ block content
           if meta.clauseCount[2]
             +t-item("Subclauses:", meta.clauseCount[2])
       if meta.voteResults
-        +collapsible-item("Vote Results", "thumbs_up_down")
-          +t-item("Votes in favor:", meta.voteResults.inFavor)
-          +t-item("Votes against:", meta.voteResults.against)
-          +t-item("Abstentions:", meta.voteResults.abstention)
+        li
+          .collapsible-header
+            +icon("thumbs_up_down", "text-darken-3 light-blue-text")
+            | Vote Results
+          .collapsible-body: .row.no-bottom-mrg
+            .col.s12.l6
+              span.green-text #[b=meta.voteResults.inFavor] Votes in favor
+              |  •
+              span.red-text  #[b=meta.voteResults.against] Votes against
+              |  •
+              span.blue-text  #[b=meta.voteResults.abstention] Abstentions
+            .col.s12.l6
+              #vote-bar.z-depth-2
+                - var voteSum = meta.voteResults.inFavor + meta.voteResults.against + meta.voteResults.abstention;
+                mixin vote-part(color, votes)
+                  .vote-bar-part(class=color + " lighten-1" style="width: " + (votes * 100 / voteSum) + "%;")
+                +vote-part("green", meta.voteResults.inFavor)
+                +vote-part("red", meta.voteResults.against)
+                +vote-part("blue", meta.voteResults.abstention)
     h5.light Actions
     //-secretariat doesn't edit but must be able to advance -> stage 4 displays advance field even if not editing
     if doLoad || meta.stage === 4
