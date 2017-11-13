@@ -8,7 +8,8 @@
   displayToast,
   allowedSubclauseDepth,
   sendJsonLV,
-  sendLVUpdates*/
+  sendLVUpdates,
+  resolutionStage*/
 /* exported loadFilePick,
   serverLoad,
   generatePdf,
@@ -428,6 +429,11 @@ function serverSave(callback, doToast, silentFail) {
     //call callback on completion
     if (typeof callback === "function") {
       callback();
+    }
+
+    //if we are in stage 0, reload the page on successful save
+    if (! resolutionStage) {
+      location.reload();
     }
   })
   .fail(function() {

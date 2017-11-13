@@ -13,7 +13,7 @@
   startLiveviewWS,
   sendLVUpdate,
   Materialize*/
-/* exported checkRequiredFields, sendLVUpdates*/
+/* exported checkRequiredFields, sendLVUpdates, resolutionStage, resolutionToken*/
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -51,12 +51,6 @@ var changesSaved = false;
 var noChangesMade = true;
 var metaChangesSaved = true;
 
-//set to true once the resolution has been fully loaded and the clauses generated
-var doneLoadingResolution = false;
-
-//set to true once the resolution has been fully loaded and the clauses generated
-var doneLoadingResolution = false;
-
 //token and access code for this resolution, used for saving
 var resolutionToken, resolutionCode;
 
@@ -65,6 +59,9 @@ var makeAutofillSettings = makeAutofillSettingsPre.bind({}, autofillSettings);
 
 //is set to true if we need to send updates to LV viewers
 var sendLVUpdates = false;
+
+//stage of the resolution, parsed from the rendered html page
+var resolutionStage;
 
 //transforms arrays containign a certain flag in an object and array json structure
 function transformMarkedArrays(structure, flag, propValue, depth) {
@@ -477,15 +474,6 @@ function registerEventHandlers(loadedData) {
     //check again on changed value
     $(this).trigger("checkRequired");
   });
-  $(".clause input, .clause textarea")
-  .on("paste keyup", function() {
-    //don't send update if still loading, some events may be fake-fired in the process of getting
-    //the editor ready for the user
-    if (doneLoadingResolution) {
-      //send content update
-      sendLVUpdate("content", $(this));
-    }
-  });
   $("input[type='file']")
   .on("reset", function(e) {
     e.stopPropagation();
@@ -689,7 +677,7 @@ function registerEventHandlers(loadedData) {
   .on("editActive", function(e) {
     e.stopPropagation();
     //save to server if meta hanges are unsaved
-    if (! metaChangesSaved && $("#resolution-stage").text() !== "0") { //TODO: proper var
+    if (! metaChangesSaved && resolutionStage) {
       serverSave(null, false, true);
     }
 
@@ -734,8 +722,7 @@ function registerEventHandlers(loadedData) {
 
     //auto-save if not at stage 0 and has unsaved changes
     //no alert message on fail, only red mark
-    if (! changesSaved && ! noChangesMade &&
-        $("#resolution-stage").text() !== "0") { //TODO: use proper variable
+    if (! changesSaved && ! noChangesMade && resolutionStage) {
       serverSave(null, false, true);
     }
   })
@@ -1067,6 +1054,9 @@ $(document).ready(function() {
     codeElement.remove();
   }
 
+  //get stage of resolution
+  resolutionStage = parseInt($("#resolution-stage").text(), 10);
+
   //register an access input group for resolution advancement
   registerAccessInputs({
     url: "/resolution/advance/",
@@ -1119,9 +1109,6 @@ $(document).ready(function() {
       //check for chair or admin access
       var accessLevel = $("#code-access-level").text();
       var chairMode = accessLevel === "MA" || accessLevel === "CH";
-
-      //get stage of resolution
-      var resolutionStage = parseInt($("#resolution-stage").text(), 10);
 
       //map forums with Chair code mode in mind
       data.forums = data.forums.map(function(forum) {
@@ -1180,8 +1167,7 @@ $(document).ready(function() {
       }
 
       //if in stage 0, start timer for save reminder
-      //TODO: replace this is proper resolution stage variable as used in other branches(?)
-      if ($("#resolution-stage").text() === "0") {
+      if (! resolutionStage) {
         setTimeout(function() {
           //display alert modal with alert message
           makeAlertMessage(
@@ -1198,8 +1184,13 @@ $(document).ready(function() {
 
       //initiate loading of resolution from server with preset token
       serverLoad(resolutionToken, true, function() {
-        //set flag for done loading resolution into editor
-        doneLoadingResolution = true;
+        //don't send update if still loading,
+        //some events may be fake-fired in the process of getting
+        $(".clause input, .clause textarea")
+        .on("paste keyup", function() {
+          //send content update
+          sendLVUpdate("content", $(this));
+        });
       });
 
       //if as MA or at stage 6 and authorized as CH, start liveview editor websocket
