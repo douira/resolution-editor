@@ -1064,7 +1064,42 @@ $(document).ready(function() {
   }, "#advance-code-form", {
     //need to look at both fields, nothing given already
     presetToken: resolutionToken,
-    codeFieldSelector: "#advance-code-input"
+    codeFieldSelector: "#advance-code-input",
+
+    //additional validation to check for vote field values
+    additionalValidation: function(setFieldState) {
+      //return true right away if we're not at stage 6
+      if (resolutionStage !== 6) {
+        return true;
+      }
+
+      //get input elements by selecting elements with their ids
+      var fields = ["#infavor-vote-input", "#against-vote-input", "#abstention-vote-input"]
+        .map(function(selector) { return $(selector); });
+
+      //get values from all fields
+      var values = fields.map(function(e) {
+        //return gotten number if above 0
+        return e.val();
+      });
+
+      //all of them are not positive
+      var anyPositive = ! values.every(function(v) { return v <= 0; });
+
+      //mark with validation signs
+      fields.forEach(function(e, index) {
+        //take individual value into consideration, all invalid if none positive
+        setFieldState(e, values[index] > 0 || (anyPositive && ! values[index]));
+      });
+
+      //check that there is at least one ok value and no bad value
+      return values.some(function(v) { return v; }) &&
+          values.every(function(v) { return v >= 0; });
+    },
+
+    //additional trigger fields
+    //that should trigger a validation check of these fields with additionalValidation
+    additionalInputsSelectors: "#infavor-vote-input,#against-vote-input,#abstention-vote-input"
   });
 
   //check if we are in read-only/no load mode

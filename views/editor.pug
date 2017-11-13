@@ -78,7 +78,7 @@ block content
             +t-item("Subclauses:", meta.clauseCount[2])
       if meta.voteResults
         li
-          .collapsible-header
+          .collapsible-header(class=meta.stage === 7 ? "active" : "")
             +icon("thumbs_up_down", "text-darken-3 light-blue-text")
             | Vote Results
           .collapsible-body
@@ -131,7 +131,7 @@ block content
                     +vote-input("against", "against-vote-input", "Against")
                     +vote-input("abstention", "abstention-vote-input", "Abstention")
                     .col.s12
-                      input(type="checkbox" name="importantQuestion" id="important-question-checkbox")
+                      input.not-editor(type="checkbox" name="importantQuestion" id="important-question-checkbox")
                       label(for="important-question-checkbox") Declared an important question
               .input-field(class=meta.stage === 6 ? "xl6 m6 s12 col" : "")
                 +icon(codeIcon, "prefix")
