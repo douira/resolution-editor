@@ -90,6 +90,8 @@ block content
               h5.light#resolution-pass-status The resolution has
                 b=meta.voteResults.passed ? " passed" : " failed"
                 | .
+              if meta.voteResults.importantQuestion
+                p This resolution was declared an #[em important question] and needs a 2/3 majority to pass.
             .row.no-bottom-mrg
               .col.s12.l6
                 span.green-text
