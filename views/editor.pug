@@ -94,15 +94,15 @@ block content
                 p This resolution was declared an #[em important question] and needs a 2/3 majority to pass.
             .row.no-bottom-mrg
               .col.s12.l6
-                span.green-text
+                span.light-green-text
                   b=meta.voteResults.inFavor
                   |  Vote#{meta.voteResults.inFavor === 1 ? "" : "s"} in favor
                 |  •
-                span.red-text
+                span.deep-orange-text
                   b=" " + meta.voteResults.against
                   |  Vote#{meta.voteResults.against === 1 ? "" : "s"} against
                 |  •
-                span.blue-text
+                span.light-blue-text
                   b=" " + meta.voteResults.abstention
                   |  Abstention#{meta.voteResults.abstention === 1 ? "" : "s"}
               .col.s12.l6
@@ -110,9 +110,9 @@ block content
                   - var voteSum = meta.voteResults.inFavor + meta.voteResults.against + meta.voteResults.abstention;
                   mixin vote-part(color, votes)
                     .vote-bar-part(class=color + " lighten-1" style="width: " + (votes * 100 / voteSum) + "%;")
-                  +vote-part("green", meta.voteResults.inFavor)
-                  +vote-part("red", meta.voteResults.against)
-                  +vote-part("blue", meta.voteResults.abstention)
+                  +vote-part("light-green", meta.voteResults.inFavor)
+                  +vote-part("deep-orange", meta.voteResults.against)
+                  +vote-part("light-blue", meta.voteResults.abstention)
     h5.light Actions
     //-secretariat doesn't edit but must be able to advance -> stage 4 displays advance field even if not editing
     if doLoad || meta.stage === 4
