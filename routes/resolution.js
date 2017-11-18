@@ -121,10 +121,11 @@ router.get("/new", function(req, res) {
       lastRender: 0, //logs pdf render events
       lastLiveview: 0, //last time a liveview session happened with this resolution
       stage: 0, //current workflow stage (see phase 2 notes)
-      liveviewOpen: false //if a liveview page is viewing this resolution right now
+      liveviewOpen: false, //if a liveview page is viewing this resolution right now (TODO: use)
+      attributes: "none" //attribute status, see /setattribs or fucntion, restricts actions
     }).then(() => {
       //redirect to editor page (because URL is right then)
-      res.redirect("editor/" + token);
+      res.redirect("/resolution/editor/" + token);
     }, () => issueError(res, 500, "can't create new"));
   });
 });
@@ -179,11 +180,47 @@ routingUtil.getAndPost(router, "/editor/:token", function(req, res) {
       res.render("editor", getEditorViewParams(true, resDoc, token, codeDoc)),
     {
       permissionMissmatch: (token, resDoc, codeDoc) =>
-        //send edtor page but with "no access" notice
+        //send edtor page but with "no access" notice and unlock form
         res.render("editor", getEditorViewParams(false, resDoc, token, codeDoc))
     }
   );
 });
+
+//POST (no view) update attributes and redirect back to editor page
+router.post("/setattribs/:token", function(req, res) {
+  //authorize, must have code matching MA access level
+  routingUtil.fullAuth(req, res, (token) => {
+    //check for present post body property and must be a ok value
+    if (req.body && req.body.attrib &&
+        ["none", "noadvance", "readonly", "static"].includes(req.body.attrib)) {
+      //set to new value in database
+      resolutions.updateOne(
+        { token: token },
+        {
+          $set: {
+            //set attrib string as found in post body
+            attributes: req.body.attrib
+          }
+        }
+      ).then(() => {
+        //redirect back to editor page
+        res.redirect("/resolution/editor/" + token);
+      }, (err) => issueError(res, 500, "can't set attribute", err));
+    } else {
+      issueError(res, 400, "missing or incorrect fields");
+    }
+  }, {
+    //just make no db query on auth fail
+    permissionMissmatch: (token) => {
+      //just go back to editor
+      res.redirect("/resolution/editor/" + token);
+    },
+
+    //use attribute setting permission set (resticted to MA level)
+    matchMode: "setattribs"
+  });
+});
+
 
 //pass liveview stuff on to that module
 router.use("/liveview", liveView);

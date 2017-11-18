@@ -507,9 +507,9 @@ function registerEventHandlers(loadedData) {
                            resolutionCode + "'>");
 
           //add action url to form with token
-          selectBox.attr("action", "/resolution/editor/" + resolutionToken);
+          selectBox.attr("action", "/resolution/setattribs/" + resolutionToken);
 
-          //submit form to reload and change state
+          //submit form to set attributes and then be redirected back here
           selectBox.submit();
         }
       })
