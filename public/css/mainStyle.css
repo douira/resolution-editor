@@ -10,3 +10,13 @@
   display: inline-flex;
   vertical-align: middle;
 }
+
+.custom-badge {
+  width: auto;
+  border-radius: 2px;
+  color: white;
+  float: left;
+  padding: 0px 5px;
+  font-weight: 300;
+  margin-right: 5px;
+}

@@ -36,6 +36,14 @@ block content
           | Chairs always have unrestricted access to resolutions. This overrides other restrictions, such as the levels FC and AP. This is the maximum level found on a resolution. Chairs can use LiveView when a resolution is being debated.
         +row("Administration", "MA")
           | This level represents unrestricted access to all available functions of the website including LiveView. This also includes changing access levels of specific codes or giving out new access codes.
+    h4: +icon("lock", "mediumsmall left text-lighten-1 indigo-text")
+    h4#attribute-states Attribute States
+    mixin attrib-display(name)
+      p: +attribute-descr(name, true)
+    +attrib-display("none")
+    +attrib-display("readonly")
+    +attrib-display("noadvance")
+    +attrib-display("static")
     h4: +stage-info-icon
     h4#workflow-stages Resolution Workflow Stages
     - var i = 0;
