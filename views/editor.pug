@@ -153,7 +153,7 @@ block content
                   +vote-input("against", "against-vote-input", "Against")
                   +vote-input("abstention", "abstention-vote-input", "Abstention")
                   .col.s12
-                    input(type="checkbox" name="importantQuestion" id="important-question-checkbox")
+                    input#important-question-checkbox(type="checkbox" name="importantQuestion")
                     label(for="important-question-checkbox") Declared an important question
             .input-field(class=meta.stage === 6 ? "xl6 m6 s12 col" : "")
               +icon(codeIcon, "prefix")

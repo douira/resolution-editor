@@ -596,7 +596,7 @@ function registerEventHandlers(loadedData) {
     }
   });
   //don't bind on inputs that are descendants of a not-editor classed element
-  $("textarea,input").not("* .not-editor")
+  $("textarea,input").not(".not-editor *")
   .on("activateLabel", function(e) {
     e.stopPropagation();
     //make associated labels active
@@ -632,7 +632,7 @@ function registerEventHandlers(loadedData) {
       elem.trigger("checkRequired");
     }
   });
-  $("input:not(.not-editor)")
+  $("input:not(.not-editor *)")
   .on("reset", function(e) {
     e.stopPropagation();
     $(this).val("").resetSiblingLabels();
