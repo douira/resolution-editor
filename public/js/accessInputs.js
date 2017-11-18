@@ -49,8 +49,9 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
     codeFieldSelector = inputOpts.codeFieldSelector;
   } else if (inputOpts.hasOwnProperty("presetCode")) {
     //make hidden field above submit button, code is expected to be valid
-    $(submitSelector).before("<input type='hidden' id='hidden-code-input' name='code' value='" +
-                        inputOpts.presetCode + "'>");
+    $(submitSelector).before(
+      "<input type='hidden' class='hidden-code-input not-editor' name='code' value='" +
+      inputOpts.presetCode + "'>");
 
     //is given and ok
     fieldStates.code.valid = "onlyToken";

@@ -54,6 +54,9 @@ var metaChangesSaved = true;
 //token and access code for this resolution, used for saving
 var resolutionToken, resolutionCode;
 
+//access level and chair mode are later taken from document
+var accessLevel, chairMode;
+
 //attach the default settings
 var makeAutofillSettings = makeAutofillSettingsPre.bind({}, autofillSettings);
 
@@ -62,6 +65,9 @@ var sendLVUpdates = false;
 
 //stage of the resolution, parsed from the rendered html page
 var resolutionStage;
+
+//attribute string of resolution, gotten from page
+var resolutionAttributes, attributesString;
 
 //transforms arrays containign a certain flag in an object and array json structure
 function transformMarkedArrays(structure, flag, propValue, depth) {
@@ -417,10 +423,12 @@ function registerEssentialEventHandlers(doLoad) {
 }
 
 //registers event handlers necessary for the editor
+//we can be sure this is loaded after all the data is gotten from the page and
+//other data loaded from the server (like autofill data)
 function registerEventHandlers(loadedData) {
   $(window)
   .on("beforeunload", function(e) {
-    //stop close if flag set
+    //stop close if flag set that there are unsaved changes
     if (! (changesSaved || noChangesMade)) {
       e.preventDefault();
 
@@ -429,6 +437,72 @@ function registerEventHandlers(loadedData) {
         "Press the 'Save' button to save your resolution.";
     }
   });
+  if (accessLevel === "MA") {
+    //init selector for attribute setting, only allow one handler to be set
+    $("select").one("init", function() {
+      //init select box
+      $(this).material_select();
+
+      //container for all of this
+      var selectBoxContainer = $("#attribute-select-box .select-wrapper");
+
+      //get the input element to set validation classes
+      var selectBoxInput = selectBoxContainer.children("input");
+
+      //get the submit button
+      var selectBoxSubmitButton = $("#attribute-submit-btn");
+
+      //gets the value of the selector (false returned if bad value or none selected)
+      var getSelectValue = function() {
+        //check which li element of the select wrapper is active
+        var activeOption = selectBoxContainer.find("li.active");
+
+        //any must be active
+        if (! activeOption.length) {
+          //remove valdation classes, disable button
+          selectBoxInput.removeClass("invalid valid");
+          selectBoxSubmitButton.addClass("disabled");
+          console.log("none selected");
+          //none selected
+          return false;
+        }
+
+        //get text of that option and get id for it
+        var activeId = selectBoxContainer.find("option:contains(" +
+          activeOption.children("span").text() + ")").val();
+
+        //must be one of the four possible states and not the current one
+        if (activeId === attributesString ||
+            ["none", "readonly", "noadvance", "static"].indexOf(activeId) === -1) {
+          //disable button and invalidate field
+          selectBoxInput.removeClass("valid").addClass("invalid");
+          selectBoxSubmitButton.addClass("disabled");
+          console.log("bad");
+          //bad value
+          return false;
+        }
+
+        //all is ok, enable button and display input field as valid
+        selectBoxInput.removeClass("invalid").addClass("valid");
+        selectBoxSubmitButton.removeClass("disabled");
+
+        //return truthy id string as gotten value
+        console.log("selected", activeId);
+        return activeId;
+      };
+
+      //attribute select and submission
+      selectBoxSubmitButton
+      .on("click mouseover", function() {
+        getSelectValue();
+      });
+
+      //trigger on change of selecter
+      $("#attribute-select-box select").on("change", function() {
+        getSelectValue();
+      });
+    });
+  }
   $(".autocomplete")
   .on("init", function(e) {
     e.stopPropagation();
@@ -494,7 +568,8 @@ function registerEventHandlers(loadedData) {
       reader.readAsText(file);
     }
   });
-  $("input, textarea").not(".not-editor")
+  //don't bind on inputs that are descendants of a not-editor classed element
+  $("textarea,input").not("* .not-editor")
   .on("activateLabel", function(e) {
     e.stopPropagation();
     //make associated labels active
@@ -1054,8 +1129,27 @@ $(document).ready(function() {
     codeElement.remove();
   }
 
+  //check for chair or admin access
+  accessLevel = $("#code-access-level").text();
+  chairMode = accessLevel === "MA" || accessLevel === "CH";
+
   //get stage of resolution
   resolutionStage = parseInt($("#resolution-stage").text(), 10);
+
+  //get attributes
+  attributesString = $("#resolution-attributes").text();
+
+  //parse what that attribute string means
+  resolutionAttributes = {};
+  ["readonly", "noadvance", "static"].forEach(function(name) {
+    resolutionAttributes[name] = name === attributesString;
+  });
+
+  //set other both is static is set
+  if (resolutionAttributes.static) {
+    resolutionAttributes.readonly = true;
+    resolutionAttributes.noadvance = true;
+  }
 
   //register an access input group for resolution advancement
   registerAccessInputs({
@@ -1102,8 +1196,8 @@ $(document).ready(function() {
     additionalInputsSelectors: "#infavor-vote-input,#against-vote-input,#abstention-vote-input"
   });
 
-  //check if we are in read-only/no load mode
-  if ($("#read-only-mode").length) {
+  //check if we are in no load mode
+  if ($("#no-load-mode").length) {
     //register an access input group for unlock of editor
     registerAccessInputs({
       url: "/resolution/editor/",
@@ -1140,10 +1234,6 @@ $(document).ready(function() {
     .done(function(data) {
       //data object to pass to scope of event handlers
       var loadedData = {};
-
-      //check for chair or admin access
-      var accessLevel = $("#code-access-level").text();
-      var chairMode = accessLevel === "MA" || accessLevel === "CH";
 
       //map forums with Chair code mode in mind
       data.forums = data.forums.map(function(forum) {
