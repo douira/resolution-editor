@@ -9,7 +9,8 @@
   allowedSubclauseDepth,
   sendJsonLV,
   sendLVUpdates,
-  resolutionStage*/
+  resolutionStage,
+  resolutionAttributes*/
 /* exported loadFilePick,
   serverLoad,
   generatePdf,
@@ -394,6 +395,11 @@ function getEditorObj(allowEmpty) {
 
 //saves the resolution from editor to the server
 function serverSave(callback, doToast, silentFail) {
+  //do not save if not allowed to
+  if (! resolutionAttributes.allowSave) {
+    return;
+  }
+
   //display if not specified
   if (typeof doToast === "undefined") {
     doToast = true;

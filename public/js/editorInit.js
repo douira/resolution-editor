@@ -13,7 +13,12 @@
   startLiveviewWS,
   sendLVUpdate,
   Materialize*/
-/* exported checkRequiredFields, sendLVUpdates, resolutionStage, resolutionToken*/
+/* exported
+  checkRequiredFields,
+  sendLVUpdates,
+  resolutionStage,
+  resolutionToken,
+  resolutionAttributes*/
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -1172,6 +1177,10 @@ $(document).ready(function() {
     resolutionAttributes.readonly = true;
     resolutionAttributes.noadvance = true;
   }
+
+  //allow props combine with access level (MA level supercedes restrictions)
+  resolutionAttributes.allowSave = ! resolutionAttributes.readonly || accessLevel === "MA";
+  resolutionAttributes.allowAdvance = ! resolutionAttributes.noadvance || accessLevel === "MA";
 
   //register an access input group for resolution advancement
   registerAccessInputs({

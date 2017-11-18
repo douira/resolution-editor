@@ -154,6 +154,9 @@ router.post("/save/:token", function(req, res) {
       ).then(() => {
         res.send("ok");
       }, () => issueError(res, 500, "can't save"));
+    }, {
+      //match mode save respects saving attrib restrictions
+      matchMode: "save"
     });
   });
 });
@@ -181,7 +184,10 @@ routingUtil.getAndPost(router, "/editor/:token", function(req, res) {
     {
       permissionMissmatch: (token, resDoc, codeDoc) =>
         //send edtor page but with "no access" notice and unlock form
-        res.render("editor", getEditorViewParams(false, resDoc, token, codeDoc))
+        res.render("editor", getEditorViewParams(false, resDoc, token, codeDoc)),
+
+      //editor match mode
+      matchMode: "editor"
     }
   );
 });
