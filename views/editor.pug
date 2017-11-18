@@ -134,8 +134,8 @@ block content
             .justify The resolution is in its original state and doesn't have any additional saving or advancement restrictions. This is the state that all resolutions are created with.
       if doLoad && meta.stage && accessLevel === "MA"
         br
-        .input-field.not-editor#attribute-select-box
-          select
+        form.input-field.not-editor#attribute-select-box(method="POST" action="#")
+          select(name="attrib")
             mixin state-option(value, descr)
               option(value=value "selected disabled"=meta.attributes === value)=descr
             +state-option("none", "No special state")
@@ -144,9 +144,6 @@ block content
             +state-option("static", "Static")
           label Select the new state
         .justify Set the attribute state of the resolution to one of four states. #[em Read-only] restricts editing access, #[em Non-advanceable] restricts advancement and #[em static] combines the two previous states. #[em No special state] is just that; the resolution is reset to its original unrestricted state. #[span.grey-text The current state in the selector box is displayed in grey.]
-        br
-        br
-        br
         .btn-top-mrg.center: a.btn.waves-effect.waves-light#attribute-submit-btn(href="#" class=pri)&attributes(tooltip("Sets the attribute state", "bottom")) Set State
     h5.light Actions
     //-secretariat doesn't edit but must be able to advance -> stage 4 displays advance field even if not editing

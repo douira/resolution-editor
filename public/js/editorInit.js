@@ -444,7 +444,8 @@ function registerEventHandlers(loadedData) {
       $(this).material_select();
 
       //container for all of this
-      var selectBoxContainer = $("#attribute-select-box .select-wrapper");
+      var selectBox = $("#attribute-select-box");
+      var selectBoxContainer = selectBox.find(".select-wrapper");
 
       //get the input element to set validation classes
       var selectBoxInput = selectBoxContainer.children("input");
@@ -462,7 +463,7 @@ function registerEventHandlers(loadedData) {
           //remove valdation classes, disable button
           selectBoxInput.removeClass("invalid valid");
           selectBoxSubmitButton.addClass("disabled");
-          console.log("none selected");
+
           //none selected
           return false;
         }
@@ -477,7 +478,7 @@ function registerEventHandlers(loadedData) {
           //disable button and invalidate field
           selectBoxInput.removeClass("valid").addClass("invalid");
           selectBoxSubmitButton.addClass("disabled");
-          console.log("bad");
+
           //bad value
           return false;
         }
@@ -487,18 +488,39 @@ function registerEventHandlers(loadedData) {
         selectBoxSubmitButton.removeClass("disabled");
 
         //return truthy id string as gotten value
-        console.log("selected", activeId);
         return activeId;
       };
 
       //attribute select and submission
       selectBoxSubmitButton
-      .on("click mouseover", function() {
+      .on("click", function(e) {
+        //prevent default link following
+        e.preventDefault();
+
+        //get value from validation
+        var selectedValue = getSelectValue();
+
+        //proceed to submission if value is truthy and selection thereby valid
+        if (selectedValue) {
+          //inject code input element
+          selectBox.append("<input type='hidden' name='code' value='" +
+                           resolutionCode + "'>");
+
+          //add action url to form with token
+          selectBox.attr("action", "/resolution/editor/" + resolutionToken);
+
+          //submit form to reload and change state
+          selectBox.submit();
+        }
+      })
+      .on("mouseover", function() {
+        //validation only
         getSelectValue();
       });
 
       //trigger on change of selecter
-      $("#attribute-select-box select").on("change", function() {
+      selectBox.find("select").on("change", function() {
+        //validation only
         getSelectValue();
       });
     });
