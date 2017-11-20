@@ -3,6 +3,11 @@
 //deals with UI for input of token and access codes
 
 //handles code and token input and registers the event handlers for the given fields
+/*pass function to check for other validation things as additionalValidation in inputOpts
+  return true when either validation is ok or nothing to validate
+  return false if user should be hindered from using the access button
+  first argument passed is function that adds/removes invalid and valid classes for input fields
+*/
 function registerAccessInputs(submitOptions, formSelector, inputOpts) {
   //formSelector must resolve to elment
   if ($(formSelector).length !== 1) {
@@ -44,8 +49,9 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
     codeFieldSelector = inputOpts.codeFieldSelector;
   } else if (inputOpts.hasOwnProperty("presetCode")) {
     //make hidden field above submit button, code is expected to be valid
-    $(submitSelector).before("<input type='hidden' id='hidden-code-input' name='code' value='" +
-                        inputOpts.presetCode + "'>");
+    $(submitSelector).before(
+      "<input type='hidden' class='hidden-code-input not-editor' name='code' value='" +
+      inputOpts.presetCode + "'>");
 
     //is given and ok
     fieldStates.code.valid = "onlyToken";
@@ -90,25 +96,36 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
     return submitOptions.find(function(opt) { return elem.is(opt.selector); }).url;
   }
 
+  //adds or removes the invalid flag
+  function setInputValidState(element, isValid, id) {
+    //register state
+    if (id) {
+      fieldStates[id].valid = isValid;
+    }
+
+    //add or remove class
+    element[isValid ? "removeClass" : "addClass"]("invalid")
+      [isValid ? "addClass" : "removeClass"]("valid");
+  }
+
   //updates the button state after checking the validation state of both fields
   function updateButtonState() {
     //check all validation states
-    allOk = fieldStates.token.valid &&
-      (fieldStates.code.valid &&
-       (fieldStates.code.valid === true || typeof presetToken === "undefined"));
+    allOk = fieldStates.token.valid && (fieldStates.code.valid &&
+      (fieldStates.code.valid === true || typeof presetToken === "undefined")) &&
+      //check with additional validation callback if given
+      (typeof inputOpts.additionalValidation === "function" ?
+       inputOpts.additionalValidation(setInputValidState, formSelector) : true);
 
     //apply to button state
     $(submitSelector)[allOk ? "removeClass" : "addClass"]("disabled");
   }
 
-  //adds or removes the invalid flag
-  function setInputValidState(element, isValid, id) {
-    //register state
-    fieldStates[id].valid = isValid;
-
-    //add or remove class
-    element[isValid ? "removeClass" : "addClass"]("invalid")
-      [isValid ? "addClass" : "removeClass"]("valid");
+  //check button state also when change happens on additional inputs
+  if (typeof inputOpts.additionalInputsSelectors === "string") {
+    $(inputOpts.additionalInputsSelectors).on("keyup paste", function() {
+      updateButtonState();
+    });
   }
 
   //token and code input validation

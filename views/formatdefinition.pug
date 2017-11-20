@@ -3,9 +3,24 @@ extends layout
 block title
   title Structure Definition - Resolution Editor
 
+block styles
+  link(href="/css/formatdefinitionStyle.css" type="text/css" rel="stylesheet")
+
 block content
   .container
     h3 Resolution Structure Format Definition
     p.justify This object describes the format of the resolution in a file or as stored in the database. All resolutions have this format. If the format changes, resolutions in outdated formats may become unreadable by the editor. This definition dictates the formal structure of a resolution in MUNOL.
-    .divider
-    pre=data
+    .row
+      .col.m6.s12
+        mixin objectlist(obj)
+          ul
+            each val, prop in obj
+              li
+                if typeof val === "object"
+                  =prop + ": "
+                  +objectlist(val)
+                else
+                  =prop + ": " + val
+        .padd-list: +objectlist(data)
+      .col.m6.s12
+        pre=dataJson
