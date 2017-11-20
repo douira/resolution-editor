@@ -1,0 +1,15 @@
+.hide-this {
+  display: none;
+}
+
+#token-preset {
+  font-family: monospace;
+}
+
+.mediumsmall {
+  font-size: 3rem;
+}
+
+.justify {
+  text-align: justify;
+}

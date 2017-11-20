@@ -1,10 +1,7 @@
 {
   "magic": "PG52QE1AM4LACMX9",
   "version": 3,
-  "status": {
-    "edited": 1501154294363,
-    "author": "author content"
-  },
+  "author": "author content",
   "resolution": {
     "address": {
       "questionOf": "question content",

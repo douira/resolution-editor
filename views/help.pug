@@ -1,0 +1,55 @@
+extends layout
+
+block title
+  title Help Page - Resolution Editor
+
+block content
+  .container
+    include stages
+    h4.center: +icon("help", "large text-darken-1 " + sectext)
+    h3.center Help and Information Page
+    .divider
+    h4: +icon(codeIcon, "mediumsmall left text-darken-3 amber-text")
+    h4#access-levels Access Levels
+    | These are the access levels of access codes that are displayed on the editor page of each resolution.
+    table.striped
+      thead: tr
+        th Holder
+        th Level
+        th Description
+      tbody
+        mixin row(holder, level)
+          tr(id=level)
+            td=holder
+            td=level
+            td.justify
+              block
+        +row("Everyone (Delegates)", "DE")
+          | This level means that there is no specific access restriction and the resolution can be viewed by anyone with the token. No access code is needed for this level.
+        +row("The Approval Panel", "AP")
+          | Editing is restricted to the Approval Panel. Resolutions are restricted to this access level when they are in stage
+          a(href="#rstage2")  #2
+          | .
+        +row("The Formal Clearing", "FC")
+          | Editing is restricted to the Formal Clearing. Resolutions are restricted to this access level when they are in stage
+          a(href="#rstage3")  #3
+          | .
+        +row("The Secretariat", "SC")
+          | The Secretariat enters its access code in stage
+          a(href="#rstage3")  #4
+          |  to signify that the resolution is being printed and is to be advanced to stage #5. It doesn't have editing access though.
+        +row("Chairs", "CH")
+          | Chairs always have unrestricted access to resolutions. This overrides other restrictions, such as the levels FC and AP. This is the maximum level found on a resolution. Chairs can use LiveView when a resolution is being debated.
+        +row("Administration", "MA")
+          | This level represents unrestricted access to all available functions of the website including LiveView. This also includes changing access levels of specific codes or giving out new access codes.
+    h4: +stage-info-icon
+    h4#workflow-stages Resolution Workflow Stages
+    - var i = 0;
+    while i <= 8
+      +stage-info-index(i++, false)
+    h4: +icon("build", "mediumsmall left text-darken-2 grey-text")
+    h4#structure-definition Resolution Structure Format Definition
+    p Click
+      a(href="/help/formatdefinition")  here
+      |  to view the JSON representation of the definition object of the resolution structure format.
+    br

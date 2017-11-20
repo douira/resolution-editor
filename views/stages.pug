@@ -1,0 +1,68 @@
+-
+  var stageData = [
+    { //0
+      title: "Initial Creation",
+      description: "This resolution has not been opened with the resolution token yet. The token will be released back into the system if the resolution remains unsaved at this stage for longer than 24 hours.",
+      advance: "Saving the resolution"
+    },
+    { //1
+      title: "Delegate Writing",
+      description: "This resolution is being worked on by the Delegate and has been opened with the resolution token. The resolution token is now bound to this saved resolution. The Delegate has to have their Chair enter their access code to approve the written resolution by the Chair.",
+      advance: "Entering a Chair access code for approval by the Chair"
+    },
+    { //2
+      title: "Approval Panel Correcting",
+      description: "The Approval Panel is correcting this resolution. Only Chairs, who always have access, and the Approval Panel can edit this resolution. After having entered the Approval Panel access code to open the editor, spelling and grammar mistakes in the resolution are corrected. Then a button is pressed to approve and advance this resolution to the next step.",
+      advance: "Entering an AP or Chair access code for approval by the Approval Panel"
+    },
+    { //3
+      title: "Formal Clearing Viewing",
+      description: "The Formal Clearing Office is looking at this resolution and determining its fulfilment of the formal constraints. The Formal Clearing approves the resolution following the same scheme as the Approval Panel; a button is pressed by the Formal Clearing to approve and advance the resolution.",
+      advance: "Entering an FC or Chair access code for approval by the Formal Clearing Office"
+    },
+    { //4
+      title: "Waiting to Print",
+      description: "This resolution has completed its validation process and will soon be printed by the Secretariat. From this point on only Chairs have editing access to this resolution.",
+      advance: "Printing the resolution and entering an SC (Secretariat) or Chair access code to signify this action"
+    },
+    { //5
+      title: "Waiting to Debate",
+      description: "The Secretariat has printed this resolution for the committee and it will be debated some time after the printed copies have been distributed to the Delegates.",
+      advance: "Entering a Chair access code to begin the debate"
+    },
+    { //6
+      title: "In Debate",
+      description: "This resolution is being actively debated by its committee and will frequently change because of this. LiveView is enabled for this resolution during this stage so that this resolution can be accessed by another device for presentation.",
+      advance: "Entering a Chair access code to end the debate and finalize the resolution"
+    },
+    { //7
+      title: "Finished",
+      description: "The final stage of the resolution has been reached. Congratulations! The corresponding committee has debated and finalized the content of this resolution. It may still be edited for use in the resolution booklet though."
+    },
+    { //8
+      title: "Unknown",
+      description: "Could not determine the status of this resolution. There seems to have been an error in the system. Please report this immediately as it may negatively affect the whole resolution workflow."
+    },
+  ];
+mixin stage-info-icon
+  +icon("assignment", "mediumsmall left text-lighten-1 light-green-text")
+mixin stage-info-index(index, decorated, noDescription)
+  -
+    var indexName = index;
+    if (index > stageData.length || index < 0) {
+      index = stageData.length - 1;
+      indexName = "?";
+    }
+    var data = stageData[index];
+  h5.light(id="rstage" + index)
+    if decorated
+      +stage-info-icon
+      | Status:
+    =" " + data.title
+    a(href="/help#rstage" + indexName): b.text-lighten-1.grey-text=" #" + indexName
+  if ! noDescription
+    p.justify=data.description
+      if data.advance
+        br
+        b Advance to next stage by:
+        =" " + data.advance

@@ -25,10 +25,25 @@
     return obj;
   }
 
-  //-icons
+  //icons
   const resetIcon = "clear";
+  const codeIcon = "supervisor_account";
+  const tokenIcon = "my_location";
+  const liveviewIcon = "dvr";
+  //other liveview icon options:
+  //present_to_all, add_to_queue, unarchive, dvr, settings_system_daydream, cast_connected
+  const weakpermIcon = "block";
+  const plaintextIcon = "receipt";
 
-//-icon maker
+  //colors for icons
+  const liveviewColor = " text-darken-1 blue-text";
+  const weakpermColor = " text-darken-1 grey-text";
+
+  //placeholders, for adjusting length
+  const tokenPlaceholder = "@ 12345EFGH";
+  const codePlaceholder = "! ABCD5678";
+
+//-icon maker, more icons here if necessary: https://materialdesignicons.com/
 mixin icon(name, classes)
   i.material-icons(class=classes)= name
 
@@ -41,13 +56,18 @@ html(lang="en")
     //-setup for materialize
     meta(name="viewport" content="width=device-width, initial-scale=1")
 
-    title Resolution Editor
+    block title
+      title Resolution Editor
 
     //-custom and materialize style sheets
     link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
     //-link(href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700" rel="stylesheet")
     link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css")
-    link(href="css/mainStyle.css" type="text/css" rel="stylesheet")
+    link(href="/css/mainStyle.css" type="text/css" rel="stylesheet")
+
+    //-critical styles are inlined
+    style
+      include ../public/css/critical.css
 
     //-favicon directives, see all colors here: http://materializecss.com/color.html
     //-teal #009688, amber #ffc107
@@ -83,10 +103,11 @@ html(lang="en")
       .container
         -
           const navElements = [
-            ["Editor", "/"],
-            ["About", "about"],
-            ["Help", "help"],
-            ["FooBar", "foobar"]
+            ["Front Page", "/"],
+            ["New Resolution", "/resolution/new"],
+            ["Editor", "/resolution"],
+            ["About", "/about"],
+            ["Help", "/help"]
           ];
         mixin navList(arr, useWave)
           each element in navElements
@@ -110,9 +131,9 @@ html(lang="en")
         .container
           .row
             .col.l6.s12
-              h5.white-text Created originally for MUNOL
+              h5.white-text Made for MUNOL
               p.grey-text.text-lighten-4 Created in need of a better way of formatting and distributing resolutions for MUNOL.
-            .col.l3.s6
+            .col.xl2.l3.m4.s6
               h5.white-text Contact
               ul
                 li: a.white-text(href="https://github.com/douira/resolution-editor") Repository
@@ -120,7 +141,7 @@ html(lang="en")
                 li: a.white-text(href="https://github.com/douira/resolution-editor/pulls") Contribute
                 li: a.white-text(href="http://munol.org") MUNOL
                 li: a.white-text(href="http://app.munol.org") MUNOL-App
-            .col.l3.s6
+            .col.xl3.l3.m4.s6
               h5.white-text Stack
               ul
                 li: a.white-text(href="https://material.io") Material Design (+Icons)
@@ -129,7 +150,6 @@ html(lang="en")
                 li: a.white-text(href="https://pugjs.org") Pug
                 li: a.white-text(href="https://nodejs.org/en") node.js
                 li: a.white-text(href="https://github.com") GitHub
-
         .footer-copyright
           .container Copyright © 2017 by the
             a.text-lighten-3(class=sectext href="https://github.com/douira/resolution-editor/graphs/contributors")  Contributors
@@ -140,7 +160,7 @@ html(lang="en")
     //-script(src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous")
     script(src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous")
     script(src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js")
-    script(src="js/mainInit.js")
+    script(src="/js/mainInit.js")
 
     //-specific scripts
     block scripts

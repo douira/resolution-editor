@@ -1,0 +1,41 @@
+.reduced-width-divider {
+  margin-right: 70px;
+}
+
+.add-clause-btn {
+  margin-bottom: 20px;
+  margin-top: 20px;
+}
+
+.clause-list-sub-mrg, .clause-list-sub {
+  margin-left: 35px;
+}
+
+#eab-wrapper a {
+  margin-left: 10px;
+  margin-bottom: 10px;
+}
+
+.clause-content-ext {
+  display: none;
+}
+
+.red-underline {
+  text-decoration: underline;
+  text-decoration-color: red;
+}
+
+#token-preset {
+  font-family: monospace;
+}
+
+.action-save-large span {
+  font-size: 2.3rem;
+  margin: 15px 0px;
+  display: block;
+}
+
+.action-save-large i {
+  font-size: 3rem;
+  margin: 5px 15px 5px 0px;
+}

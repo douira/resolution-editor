@@ -1,0 +1,17 @@
+extends layout
+
+block title
+  title Resolution #{token} Plainview
+
+block styles
+  link(href="/css/plainviewStyle.css" type="text/css" rel="stylesheet")
+
+block content
+  .container
+    +icon(plaintextIcon, "large left text-darken-1 purple-text")
+    h3 Plaintext Resolution
+    h5.light=token
+    .divider
+    pre.grey-text.text-darken-3#resolution-content=data
+    br
+    br
