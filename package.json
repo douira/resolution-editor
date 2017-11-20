@@ -12,6 +12,7 @@
     "dateutil": "^0.1.0",
     "debug": "^2.6.9",
     "express": "^4.16.2",
+    "extend": "^3.0.1",
     "mongodb": "^2.2.33",
     "morgan": "~1.8.1",
     "node-pandoc": "^0.3.0",

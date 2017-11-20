@@ -10,9 +10,7 @@ const routingUtil = require("../lib/routingUtil");
 const liveView = require("../lib/liveView").router;
 
 //static auth credentials. TODO: put into seperate file
-const credentials = {
-  makeCodesSuffix: "BJHT6KVPWRLWLJJ2PVRQMSH11HKGJ34LX38R3XW3"
-};
+const credentials = require("../lib/credentials");
 
 const issueError = resUtil.issueError;
 
