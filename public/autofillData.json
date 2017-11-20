@@ -165,12 +165,12 @@
     ["2nd Committee", "GA2"],
     ["3rd Committee", "GA3"],
     ["4th Committee", "GA4"],
-    ["6th Committee", "GA6"],
-    ["Security Council", "SC"],
-    ["International Atomic Energy Agency", "IAEA"],
-    ["Economic and Social Council", "ECOSOC", true],
+    ["Commission on Population and Development", "CPD"],
+    ["Economic Commission for Africa", "ECA"],
     ["Environment Commission", "EC"],
+    ["Special Conference on Globalism", "SCG"],
     ["Human Rights Council", "HRC"],
-    ["Special Conference on Resources", "SCOR"]
+    ["Security Council", "SC"],
+    ["Historical Security Council", "HSC"]
   ]
 }
