@@ -26,22 +26,28 @@ databaseInterface(collections => {
 });
 
 //generates a token/code and queries the database to see if it's already present (recursive)
-function attemptNewThing(res, isToken, finalCallback) {
-  //make new token
-  const thing = tokenProcessor[isToken ? "makeToken" : "makeCode"]();
+function makeNewThing(res, isToken) {
+  //return promise, pass recursive function
+  return new Promise(function attempt(resolve, reject) {
+    //make new token or code
+    const thing = tokenProcessor[isToken ? "makeToken" : "makeCode"]();
 
-  //check if it exists in db
-  (isToken ? resolutions.findOne({ token: thing }) :
-   access.findOne({ code: thing })).then(document => {
-    //check if it exists
-    if (document) {
-      //try again randomly
-      attemptNewThing(res, isToken, finalCallback);
-    } else {
-      //doesn't exist yet, call callback with found thing
-      finalCallback(thing);
-    }
-  }).catch(() => issueError(res, 500, "code db read error"));
+    //query if it exists in db
+    (isToken ? resolutions.findOne({ token: thing }) :
+     access.findOne({ code: thing })).then(document => {
+      //if it exists
+      if (document) {
+        //try again randomly
+        attempt(resolve, reject);
+      } else {
+        //doesn't exist yet, call callback with found thing
+        resolve(thing);
+      }
+    }, () => {
+      issueError(res, 500, "db read error");
+      reject("db read error");
+    });
+  });
 }
 
 //GET (view) to /resolution displays front page without promo
@@ -114,7 +120,7 @@ router.get("/renderplain/:token", function(req, res) {
 //GET (no view, processor) redirects to editor page with new registered token
 router.get("/new", function(req, res) {
   //make a new unique token, true flag for being a token
-  attemptNewThing(res, true, token => {
+  makeNewThing(res, true).then(token => {
     //get now (consistent)
     const timeNow = Date.now();
 
@@ -355,16 +361,15 @@ router.get("/checkinput/:thing", function(req, res) {
 //GET no view, creates and outputs a bunch of access codes
 router.get("/makecodes/" + credentials.makeCodesSuffix, function(req, res) {
   //for every level make a new code doc
-  const newCodes = ["AP", "FC", "SC", "CH", "MA"].map(level => ({
-    level: level,
-    code: tokenProcessor.makeCode()
-  }));
-
-  //add all of them to the database
-  access.insertMany(newCodes)
-  //respond with codes as content
-  .then(() => res.send(newCodes
-                        .map(code => code.level + " " + code.code)
-                        .join("<br>")))
-  .catch(err => issueError(res, 500, "Error inserting codes", err));
+  Promise.all(["AP", "FC", "SC", "CH", "MA"].map(
+    level => makeNewThing(res, false).then(code => ({ level: level, code: code }))
+  )).then(newCodes =>
+    //add all of them to the database
+    access.insertMany(newCodes)
+    //respond with codes as content
+    .then(() => res.send(newCodes
+      .map(code => code.level + " " + code.code)
+      .join("<br>"))
+    ).catch(err => issueError(res, 500, "Error inserting codes", err))
+  );
 });
