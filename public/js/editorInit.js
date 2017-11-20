@@ -11,8 +11,7 @@
   serverLoad,
   makeAlertMessage,
   startLiveviewWS,
-  sendLVUpdate,
-  Materialize*/
+  sendLVUpdate*/
 /* exported
   checkRequiredFields,
   sendLVUpdates,
@@ -379,11 +378,13 @@ function registerEssentialEventHandlers(doLoad) {
     //register touch event and remove tooltips for touch-devices
     $(".tooltipped").tooltip("remove");
   });
+  //we can only load from file or delete if we loaded the resolution
   if (doLoad) {
     $(".modal").on("reset", function(e) {
       e.stopPropagation();
       var elem = $(this);
       elem.find("input,textarea").trigger("reset");
+      elem.find("#delete-action-confirm").hide();
       elem.find("#file-selector").hide();
     });
   }
@@ -1129,7 +1130,7 @@ function registerEventHandlers(loadedData) {
       displayToast("Already saved");
     } else {
       //save message
-      Materialize.toast("Saving", 3000);
+      displayToast("Saving");
     }
 
     //finalize editing on all fields
@@ -1140,6 +1141,36 @@ function registerEventHandlers(loadedData) {
       //save json to server first
       serverSave(null, true);
     }
+  });
+  $("#delete-action-confirm")
+  .on("click", function(e) {
+    e.stopPropagation();
+
+    //send the delete request
+    $.post("/resolution/delete/" + resolutionToken, { code: resolutionCode }, function() {
+      //go back to front page
+      location.href = "/";
+    });
+  });
+  $("#action-delete")
+  .on("click", function(e) {
+    e.stopPropagation();
+
+    //ask for confirmation
+    makeAlertMessage(
+      "delete_forever", "Really Delete?!", "Keep",
+      function(contentBody, modal) {
+        //set text
+        contentBody.html(
+          "Are you really sure you want to delete this resolution forever? It will be gone" +
+          " and all its content lost forever. <br>Only use this option if the resolution contains" +
+          " content that clearly violates the <a href='/help/contentguidelines'>content" +
+          " guidelines</a>! Just leave it be if it was created accidentally or filled with" +
+          " random key smashing.");
+
+        //show button
+        modal.find("#delete-action-confirm").show();
+      });
   });
 }
 
