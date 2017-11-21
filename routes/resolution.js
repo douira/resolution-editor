@@ -8,8 +8,6 @@ const tokenProcessor = require("../lib/token");
 const resUtil = require("../lib/resUtil");
 const routingUtil = require("../lib/routingUtil");
 const liveView = require("../lib/liveView").router;
-
-//static auth credentials. TODO: put into seperate file
 const credentials = require("../lib/credentials");
 
 const issueError = resUtil.issueError;
