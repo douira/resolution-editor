@@ -38,13 +38,25 @@
 }
 \newenvironment{preambsubclause}{ \begin{itemize}[leftmargin=*,labelindent=2.5em,labelsep=2em,topsep=0pt] {} %
 \renewcommand\labelitemi{-}
-%\vspace*{-.8em}%
 \setlength{\itemsep}{0pt}%
 \setlength{\parskip}{0pt}%
 \setlength{\parsep}{0pt}%
 }{
     \end{itemize}
 }
+
+%OC Subclause 1. Level
+\newenvironment{ocsubclause}{ \begin {enumerate} [a),nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm, topsep=0pt]{}%
+}{%
+\end{enumerate}%
+}
+
+%OC Subclause 2. Level
+\newenvironment{ocsubsubclause}{ \begin {enumerate} [i.,nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm, topsep=0pt] {} %
+}{
+\end{enumerate}
+}
+
 \begin{document}
 $body$
 \end{document}
