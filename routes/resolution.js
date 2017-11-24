@@ -68,7 +68,7 @@ router.get("/renderpdf/:token", function(req, res) {
     const pdfUrl = "/resolution/rendered/" + token + ".pdf";
 
     //don't render if hasn't been saved again since last render
-    if (document.changed < document.lastRender) {
+    if (document.changed < document.lastRender && false) {
       //just send url and stop
       res.send(pdfUrl);
       return;
