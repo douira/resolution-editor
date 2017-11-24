@@ -55,4 +55,7 @@ db.createUser(
 Thanks for wanting to contribute, that's great! All the info on how to contribute is in the [CONTRIBUTING file](https://github.com/douira/resolution-editor/edit/meta/CONTRIBUTING.md).
 
 ## Preview
-Here are some previews of the editor as PDFs.
+Here are some previews of the editor as PDFs: (rendered on [this commit](https://github.com/douira/resolution-editor/commit/bafe125b2c8a7931f51447f0b91ae935ed67c862))
+- [Editor Page](https://github.com/douira/resolution-editor/blob/readme-update/preview/Editor%20Page.pdf)
+- [Front Page](https://github.com/douira/resolution-editor/blob/readme-update/preview/Front%20Page.pdf)
+- [Help Page](https://github.com/douira/resolution-editor/blob/readme-update/preview/Help%20Page.pdf)
