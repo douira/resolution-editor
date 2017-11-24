@@ -82,7 +82,7 @@ router.get("/renderpdf/:token", function(req, res) {
         pandocErr => {
           //hint error if occured
           if (pandocErr) {
-            issueError(res, 500, "render problem pandoc result", pandocErr);
+            console.error("error: render problem pandoc result", pandocErr);
           } else {
             //send url to rendered pdf
             res.send(pdfUrl);
