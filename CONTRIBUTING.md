@@ -14,7 +14,7 @@ Including but not limited to the following:
 - JSON is also to be formatted appropriately (unless never looked at), use a online formatter if necessary
 - Use JSHint with the given configuration file to validate your code before comitting (and remove all errors!)
 - HoundCi checks that all pull requests comply with the linting rules
-- JS version is ES5 on browser (so it's still mostly ok with IE10) and ES6 for node.js (so without harmony flag)
+- JS version is ES5 on browser (so it's still mostly ok with IE10) and ES6 for node.js (so without harmony flag) This will change when Materialize is updated to 1.0!
 - enable bitwise operators and other special options per-file
 - each js file must include a jsHint header to specify its use in browser or server
 

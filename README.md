@@ -29,7 +29,7 @@ mongod --port 27017 --dbpath data
 npm ./bin/www
 ```
 
-If you wan't to get rid of the warning about not having any access control on the database and/or are deploying this to a server where your database shouldn't be exposed without proper access control, create these users in the mongo shell:
+If you want to get rid of the warning about not having any access control on the database and/or are deploying this to a server where your database shouldn't be exposed without proper access control, create these users in the mongo shell:
 ```
 use admin
 db.createUser(
@@ -52,12 +52,7 @@ db.createUser(
 (You may have to enter these commands seperately.) Replace the `xyz` placeholders with the default passwords from `lib/credentials.js` or specify your own credentials a file in the same directory `lib/keys.json`. This file should not be committed and is irgnored by the default .gitignore. The structure of the key file is the same as the object that specifies the default credentials. The server will read the specified credentials and use them to authenticate as `resolutionEditor` to the database.
 
 ## How to contribute
-Thanks for wanting to contribute, that's great! All the info on how to contribute is in the [CONTRIBUTING file](https://github.com/douira/resolution-editor/edit/meta/README.md).
+Thanks for wanting to contribute, that's great! All the info on how to contribute is in the [CONTRIBUTING file](https://github.com/douira/resolution-editor/edit/meta/CONTRIBUTING.md).
 
-## Screenshots
-Here are some screenshots if you don't want to/can't get the repo to run on your machine: (from 26 Jun 2017)
-
-![Images of the Website: header and general data](http://i.imgur.com/3ZbJGfb.png)
-![Images of the Website: preamb clauses](http://i.imgur.com/0OSc8g1.png)
-![Images of the Website: op clauses with sublcauses and eab](http://i.imgur.com/ah6KhDi.png)
-![Images of the Website: footer](http://i.imgur.com/mAjybQL.png)
+## Preview
+Here is a PDF version of lots of the views that the editor has.
