@@ -16,15 +16,16 @@
 \renewcommand{\headrulewidth}{0pt}
 \setlength\parindent{0pt}
 \newenvironment{preamb}[2]{
-\vspace*{1em}
+%\vspace*{1em}
 \StrLeft{#1}{1}[\firstletter]%
 \StrBehind{#1}{\firstletter}[\rest]%
-\StrRight{#2}{1}[\lastletter]%
+\StrRight{#2}{1}[\lastletter] %
+~\\
 \emph{\capitalisewords{\firstletter}\rest}
 #2%
 }{%
-\IfStrEq{\lastletter}{:}{}{, \\\\}%
- }
+\IfStrEq{\lastletter}{:}{}{, \\}%
+}
 \newenvironment{oc}[2]{\item %
 \StrLeft{#1}{1}[\firstletter]%
 \StrBehind{#1}{\firstletter}[\rest]%
@@ -35,15 +36,27 @@
 {%
 \IfStrEq{\lastletter}{.}{}{;}%
 }
-\newenvironment{preambsubclause}{ \begin{itemize}[leftmargin=*,labelindent=2.5em,labelsep=2em] {} %
+\newenvironment{preambsubclause}{ \begin{itemize}[leftmargin=*,labelindent=2.5em,labelsep=2em,topsep=0pt] {} %
 \renewcommand\labelitemi{-}
-\vspace*{-.8em}%
 \setlength{\itemsep}{0pt}%
 \setlength{\parskip}{0pt}%
 \setlength{\parsep}{0pt}%
 }{
     \end{itemize}
 }
+
+%OC Subclause 1. Level
+\newenvironment{ocsubclause}{ \begin {enumerate} [a),nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm, topsep=0pt]{}%
+}{%
+\end{enumerate}%
+}
+
+%OC Subclause 2. Level
+\newenvironment{ocsubsubclause}{ \begin {enumerate} [i.,nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm, topsep=0pt] {} %
+}{
+\end{enumerate}
+}
+
 \begin{document}
 $body$
 \end{document}
