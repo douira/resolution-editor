@@ -39,3 +39,24 @@
   font-size: 3rem;
   margin: 5px 15px 5px 0px;
 }
+
+.no-bottom-mrg {
+  margin-bottom: 0;
+}
+
+.btn-top-mrg {
+  margin-top: 15px;
+}
+
+#vote-bar {
+  height: 22px;
+}
+
+.vote-bar-part {
+  float: left;
+  height: 22px;
+}
+
+#resolution-pass-status {
+  margin-top: 0px;
+}

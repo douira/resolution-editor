@@ -66,3 +66,19 @@ mixin stage-info-index(index, decorated, noDescription)
         br
         b Advance to next stage by:
         =" " + data.advance
+mixin attribute-descr(attrib, showDefaultState)
+  case attrib
+    when "readonly"
+      span.custom-badge.teal.lighten-1 Read-only
+      .justify This resolution is read-only and can't be edited without administrative privileges. The editor is displayed and can be used but automatic and user invoked saving is restricted until this flag is unset.
+    when "noadvance"
+      span.custom-badge.teal.lighten-1 Non-advanceable
+      .justify This resolution cannot be advanced without administrative privileges and will stay at this stage until this flag is unset. The editor can still be used by authorized users though.
+    when "static"
+      span.custom-badge.teal.lighten-1 Static
+      .justify This resolution cannot be advanced or edited without administrative privileges and will stay in this exact state until this flag is unset. The editor can be used if authorized to do so but changes won't be saved. This attribute combines #[em Read-only] and #[em Non-advanceable].
+    when "none"
+      //-tells the user what the current state is, otherwise hidden
+      if showDefaultState
+        span.custom-badge.teal.lighten-1 No special state
+        .justify The resolution is in its original state and doesn't have any additional saving or advancement restrictions. This is the state that all resolutions are created with.

@@ -11,9 +11,13 @@
   serverLoad,
   makeAlertMessage,
   startLiveviewWS,
-  sendLVUpdate,
-  Materialize*/
-/* exported checkRequiredFields, sendLVUpdates*/
+  sendLVUpdate*/
+/* exported
+  checkRequiredFields,
+  sendLVUpdates,
+  resolutionStage,
+  resolutionToken,
+  resolutionAttributes*/
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -51,20 +55,23 @@ var changesSaved = false;
 var noChangesMade = true;
 var metaChangesSaved = true;
 
-//set to true once the resolution has been fully loaded and the clauses generated
-var doneLoadingResolution = false;
-
-//set to true once the resolution has been fully loaded and the clauses generated
-var doneLoadingResolution = false;
-
 //token and access code for this resolution, used for saving
 var resolutionToken, resolutionCode;
+
+//access level and chair mode are later taken from document
+var accessLevel, chairMode;
 
 //attach the default settings
 var makeAutofillSettings = makeAutofillSettingsPre.bind({}, autofillSettings);
 
 //is set to true if we need to send updates to LV viewers
 var sendLVUpdates = false;
+
+//stage of the resolution, parsed from the rendered html page
+var resolutionStage;
+
+//attribute string of resolution, gotten from page
+var resolutionAttributes, attributesString;
 
 //transforms arrays containign a certain flag in an object and array json structure
 function transformMarkedArrays(structure, flag, propValue, depth) {
@@ -371,11 +378,13 @@ function registerEssentialEventHandlers(doLoad) {
     //register touch event and remove tooltips for touch-devices
     $(".tooltipped").tooltip("remove");
   });
+  //we can only load from file or delete if we loaded the resolution
   if (doLoad) {
     $(".modal").on("reset", function(e) {
       e.stopPropagation();
       var elem = $(this);
       elem.find("input,textarea").trigger("reset");
+      elem.find("#delete-action-confirm").hide();
       elem.find("#file-selector").hide();
     });
   }
@@ -420,10 +429,12 @@ function registerEssentialEventHandlers(doLoad) {
 }
 
 //registers event handlers necessary for the editor
+//we can be sure this is loaded after all the data is gotten from the page and
+//other data loaded from the server (like autofill data)
 function registerEventHandlers(loadedData) {
   $(window)
   .on("beforeunload", function(e) {
-    //stop close if flag set
+    //stop close if flag set that there are unsaved changes
     if (! (changesSaved || noChangesMade)) {
       e.preventDefault();
 
@@ -432,6 +443,7 @@ function registerEventHandlers(loadedData) {
         "Press the 'Save' button to save your resolution.";
     }
   });
+
   $("#hide-lieview-hint")
   .on("click", function() {
     //toggle visibility of liveview hint
@@ -447,6 +459,96 @@ function registerEventHandlers(loadedData) {
       clickText.text("[Hide hint]");
     }
   });
+
+  if (accessLevel === "MA") {
+    //init selector for attribute setting, only allow one handler to be set
+    $("select").one("init", function() {
+      //init select box
+      $(this).material_select();
+
+      //container for all of this
+      var selectBox = $("#attribute-select-box");
+      var selectBoxContainer = selectBox.find(".select-wrapper");
+
+      //get the input element to set validation classes
+      var selectBoxInput = selectBoxContainer.children("input");
+
+      //get the submit button
+      var selectBoxSubmitButton = $("#attribute-submit-btn");
+
+      //gets the value of the selector (false returned if bad value or none selected)
+      var getSelectValue = function() {
+        //check which li element of the select wrapper is active
+        var activeOption = selectBoxContainer.find("li.active");
+
+        //any must be active
+        if (! activeOption.length) {
+          //remove valdation classes, disable button
+          selectBoxInput.removeClass("invalid valid");
+          selectBoxSubmitButton.addClass("disabled");
+
+          //none selected
+          return false;
+        }
+
+        //get text of that option and get id for it
+        var activeId = selectBoxContainer.find("option:contains(" +
+          activeOption.children("span").text() + ")").val();
+
+        //must be one of the four possible states and not the current one
+        if (activeId === attributesString ||
+            ["none", "readonly", "noadvance", "static"].indexOf(activeId) === -1) {
+          //disable button and invalidate field
+          selectBoxInput.removeClass("valid").addClass("invalid");
+          selectBoxSubmitButton.addClass("disabled");
+
+          //bad value
+          return false;
+        }
+
+        //all is ok, enable button and display input field as valid
+        selectBoxInput.removeClass("invalid").addClass("valid");
+        selectBoxSubmitButton.removeClass("disabled");
+
+        //return truthy id string as gotten value
+        return activeId;
+      };
+
+      //attribute select and submission
+      selectBoxSubmitButton
+      .on("click", function(e) {
+        //prevent default link following
+        e.preventDefault();
+
+        //get value from validation
+        var selectedValue = getSelectValue();
+
+        //proceed to submission if value is truthy and selection thereby valid
+        if (selectedValue) {
+          //inject code input element
+          selectBox.append("<input type='hidden' name='code' value='" +
+                           resolutionCode + "'>");
+
+          //add action url to form with token
+          selectBox.attr("action", "/resolution/setattribs/" + resolutionToken);
+
+          //submit form to set attributes and then be redirected back here
+          selectBox.submit();
+        }
+      })
+      .on("mouseover", function() {
+        //validation only
+        getSelectValue();
+      });
+
+      //trigger on change of selecter
+      selectBox.find("select").on("change", function() {
+        //validation only
+        getSelectValue();
+      });
+    });
+  }
+
   $(".autocomplete")
   .on("init", function(e) {
     e.stopPropagation();
@@ -492,15 +594,6 @@ function registerEventHandlers(loadedData) {
     //check again on changed value
     $(this).trigger("checkRequired");
   });
-  $(".clause input, .clause textarea")
-  .on("paste keyup", function() {
-    //don't send update if still loading, some events may be fake-fired in the process of getting
-    //the editor ready for the user
-    if (doneLoadingResolution) {
-      //send content update
-      sendLVUpdate("content", $(this));
-    }
-  });
   $("input[type='file']")
   .on("reset", function(e) {
     e.stopPropagation();
@@ -521,7 +614,8 @@ function registerEventHandlers(loadedData) {
       reader.readAsText(file);
     }
   });
-  $("input, textarea").not(".not-editor")
+  //don't bind on inputs that are descendants of a not-editor classed element
+  $("textarea,input").not(".not-editor *")
   .on("activateLabel", function(e) {
     e.stopPropagation();
     //make associated labels active
@@ -557,7 +651,7 @@ function registerEventHandlers(loadedData) {
       elem.trigger("checkRequired");
     }
   });
-  $("input:not(.not-editor)")
+  $("input:not(.not-editor *)")
   .on("reset", function(e) {
     e.stopPropagation();
     $(this).val("").resetSiblingLabels();
@@ -704,7 +798,7 @@ function registerEventHandlers(loadedData) {
   .on("editActive", function(e) {
     e.stopPropagation();
     //save to server if meta hanges are unsaved
-    if (! metaChangesSaved && $("#resolution-stage").text() !== "0") { //TODO: proper var
+    if (! metaChangesSaved && resolutionStage) {
       serverSave(null, false, true);
     }
 
@@ -749,8 +843,7 @@ function registerEventHandlers(loadedData) {
 
     //auto-save if not at stage 0 and has unsaved changes
     //no alert message on fail, only red mark
-    if (! changesSaved && ! noChangesMade &&
-        $("#resolution-stage").text() !== "0") { //TODO: use proper variable
+    if (! changesSaved && ! noChangesMade && resolutionStage) {
       serverSave(null, false, true);
     }
   })
@@ -1055,7 +1148,7 @@ function registerEventHandlers(loadedData) {
       displayToast("Already saved");
     } else {
       //save message
-      Materialize.toast("Saving", 3000);
+      displayToast("Saving");
     }
 
     //finalize editing on all fields
@@ -1066,6 +1159,36 @@ function registerEventHandlers(loadedData) {
       //save json to server first
       serverSave(null, true);
     }
+  });
+  $("#delete-action-confirm")
+  .on("click", function(e) {
+    e.stopPropagation();
+
+    //send the delete request
+    $.post("/resolution/delete/" + resolutionToken, { code: resolutionCode }, function() {
+      //go back to front page
+      location.href = "/";
+    });
+  });
+  $("#action-delete")
+  .on("click", function(e) {
+    e.stopPropagation();
+
+    //ask for confirmation
+    makeAlertMessage(
+      "delete_forever", "Really Delete?!", "Keep",
+      function(contentBody, modal) {
+        //set text
+        contentBody.html(
+          "Are you really sure you want to delete this resolution forever? It will be gone" +
+          " and all its content lost forever. <br>Only use this option if the resolution contains" +
+          " content that clearly violates the <a href='/help/contentguidelines'>content" +
+          " guidelines</a>! Just leave it be if it was created accidentally or filled with" +
+          " random key smashing.");
+
+        //show button
+        modal.find("#delete-action-confirm").show();
+      });
   });
 }
 
@@ -1082,6 +1205,32 @@ $(document).ready(function() {
     codeElement.remove();
   }
 
+  //check for chair or admin access
+  accessLevel = $("#code-access-level").text();
+  chairMode = accessLevel === "MA" || accessLevel === "CH";
+
+  //get stage of resolution
+  resolutionStage = parseInt($("#resolution-stage").text(), 10);
+
+  //get attributes
+  attributesString = $("#resolution-attributes").text();
+
+  //parse what that attribute string means
+  resolutionAttributes = {};
+  ["readonly", "noadvance", "static"].forEach(function(name) {
+    resolutionAttributes[name] = name === attributesString;
+  });
+
+  //set other both is static is set
+  if (resolutionAttributes.static) {
+    resolutionAttributes.readonly = true;
+    resolutionAttributes.noadvance = true;
+  }
+
+  //allow props combine with access level (MA level supercedes restrictions)
+  resolutionAttributes.allowSave = ! resolutionAttributes.readonly || accessLevel === "MA";
+  resolutionAttributes.allowAdvance = ! resolutionAttributes.noadvance || accessLevel === "MA";
+
   //register an access input group for resolution advancement
   registerAccessInputs({
     url: "/resolution/advance/",
@@ -1089,11 +1238,46 @@ $(document).ready(function() {
   }, "#advance-code-form", {
     //need to look at both fields, nothing given already
     presetToken: resolutionToken,
-    codeFieldSelector: "#advance-code-input"
+    codeFieldSelector: "#advance-code-input",
+
+    //additional validation to check for vote field values
+    additionalValidation: function(setFieldState) {
+      //return true right away if we're not at stage 6
+      if (resolutionStage !== 6) {
+        return true;
+      }
+
+      //get input elements by selecting elements with their ids
+      var fields = ["#infavor-vote-input", "#against-vote-input", "#abstention-vote-input"]
+        .map(function(selector) { return $(selector); });
+
+      //get values from all fields
+      var values = fields.map(function(e) {
+        //return gotten number if above 0
+        return e.val();
+      });
+
+      //all of them are not positive
+      var anyPositive = ! values.every(function(v) { return v <= 0; });
+
+      //mark with validation signs
+      fields.forEach(function(e, index) {
+        //take individual value into consideration, all invalid if none positive
+        setFieldState(e, values[index] > 0 || (anyPositive && ! values[index]));
+      });
+
+      //check that there is at least one ok value and no bad value
+      return values.some(function(v) { return v; }) &&
+          values.every(function(v) { return v >= 0; });
+    },
+
+    //additional trigger fields
+    //that should trigger a validation check of these fields with additionalValidation
+    additionalInputsSelectors: "#infavor-vote-input,#against-vote-input,#abstention-vote-input"
   });
 
-  //check if we are in read-only/no load mode
-  if ($("#read-only-mode").length) {
+  //check if we are in no load mode
+  if ($("#no-load-mode").length) {
     //register an access input group for unlock of editor
     registerAccessInputs({
       url: "/resolution/editor/",
@@ -1130,13 +1314,6 @@ $(document).ready(function() {
     .done(function(data) {
       //data object to pass to scope of event handlers
       var loadedData = {};
-
-      //check for chair or admin access
-      var accessLevel = $("#code-access-level").text();
-      var chairMode = accessLevel === "MA" || accessLevel === "CH";
-
-      //get stage of resolution
-      var resolutionStage = parseInt($("#resolution-stage").text(), 10);
 
       //map forums with Chair code mode in mind
       data.forums = data.forums.map(function(forum) {
@@ -1195,8 +1372,7 @@ $(document).ready(function() {
       }
 
       //if in stage 0, start timer for save reminder
-      //TODO: replace this is proper resolution stage variable as used in other branches(?)
-      if ($("#resolution-stage").text() === "0") {
+      if (! resolutionStage) {
         setTimeout(function() {
           //display alert modal with alert message
           makeAlertMessage(
@@ -1213,8 +1389,13 @@ $(document).ready(function() {
 
       //initiate loading of resolution from server with preset token
       serverLoad(resolutionToken, true, function() {
-        //set flag for done loading resolution into editor
-        doneLoadingResolution = true;
+        //don't send update if still loading,
+        //some events may be fake-fired in the process of getting
+        $(".clause input, .clause textarea")
+        .on("paste keyup", function() {
+          //send content update
+          sendLVUpdate("content", $(this));
+        });
       });
 
       //if as MA or at stage 6 and authorized as CH, start liveview editor websocket
