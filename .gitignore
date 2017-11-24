@@ -149,3 +149,5 @@ render_out
 data/*
 public/rendered/*
 !*.gitkeep
+
+lib/keys.json

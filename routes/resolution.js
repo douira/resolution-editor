@@ -2,7 +2,7 @@
 const express = require("express");
 const router = module.exports = express.Router();
 const pandoc = require("node-pandoc");
-const latexGenerator = require("../lib/latex-generator");
+const latexGenerator = require("../lib/latexGenerator");
 const databaseInterface = require("../lib/database");
 const tokenProcessor = require("../lib/token");
 const resUtil = require("../lib/resUtil");
