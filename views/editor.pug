@@ -12,6 +12,11 @@ block content
       #code-preset.hide-this=code
       #code-access-level.hide-this=accessLevel
     #resolution-stage.hide-this=meta.stage
+    #resolution-attributes.hide-this=meta.attributes
+    -
+      //calculate states of the two restriction flags
+      const allowSave = ! (meta.attributes === "static" || meta.attributes === "readonly") || accessLevel === "MA";
+      const allowAdvance = ! (meta.attributes === "static" || meta.attributes === "noadvance") || accessLevel === "MA";
     h3 Resolution Editor
     .divider
     h5.light
@@ -33,7 +38,11 @@ block content
     if meta.stage === 6 && doLoad
       h5.light LiveView available
         +icon(liveviewIcon, "mediumsmall left blue-text text-darken-1")
-      p.justify To open LiveView on another device open the resolution by entering the resolution token and your access code on the #[a(href="/resolution" target="_blank") Resoluion Page] and clicking the "LiveView" button. LiveView will display a mock version of the rendered resolution document that will update in real time and colorize any changes you make while LiveView is active.
+      .justify
+        p To open LiveView on another device open the resolution by entering the resolution token and your access code on the #[a(href="/resolution" target="_blank") Resoluion Page] and clicking the "LiveView" button. LiveView will display a mock version of the rendered resolution document that will update in real time and colorize any changes you make while LiveView is active.
+        p
+          a#hide-lieview-hint.grey-text(href="#") [Hide hint]
+          span#liveview-hint  The following procedure is recommended: Retype amendments somehwere into your computer. This can be any texteditor or this #[a(href="/handytextbox" target="_blank") handy textbox]. When you want to discuss the resolution apply the changes that the amendment suggests to the resolution in the editor. LiveView will then display any changes you make to the resolution with colorized difference markings. Removed text will be colored #[span(class=redMarker) red] and added text will be colored #[span(class=greenMarker) green]. When it has been decided wether or not these changes will be kept in the resolution you press "#[em Keep Changes]" to use the current state of the editor as the new base state or "#[em Discard Changes]" to go back to the last point at which "#[em Keep Changes]" was pressed or the resolution saved with the save button.
     if doLoad
       h5.light Important Note
         +icon("announcement", "mediumsmall left red-text")
@@ -59,7 +68,7 @@ block content
         +t-item("Last Render:", meta.lastRender)
         +t-item("Last LiveView:", meta.lastLiveview)
       +collapsible-item("Stage History", "history")
-        - var i = 0;
+        - let i = 0;
         while i < meta.stageHistory.length
           tr
             td=stageData[i].title
@@ -76,41 +85,107 @@ block content
             +t-item("Subclauses:", meta.clauseCount[1])
           if meta.clauseCount[2]
             +t-item("Subclauses:", meta.clauseCount[2])
+      if meta.voteResults
+        li
+          .collapsible-header(class=meta.stage === 7 ? "active" : "")
+            +icon("thumbs_up_down", "text-darken-3 light-blue-text")
+            | Vote Results
+          .collapsible-body
+            .center
+              if meta.voteResults.passed
+                +icon("check_circle", "mediumsmall light-green-text text-darken-1")
+              else
+                +icon("cancel", "mediumsmall red-text text-darken-1")
+              h5.light#resolution-pass-status The resolution has
+                b=meta.voteResults.passed ? " passed" : " failed"
+                | .
+              if meta.voteResults.importantQuestion
+                p This resolution was declared an #[em important question] and needs a 2/3 majority to pass.
+            .row.no-bottom-mrg
+              .col.s12.l6
+                span.light-green-text
+                  b=meta.voteResults.inFavor
+                  |  Vote#{meta.voteResults.inFavor === 1 ? "" : "s"} in favor
+                |  •
+                span.deep-orange-text
+                  b=" " + meta.voteResults.against
+                  |  Vote#{meta.voteResults.against === 1 ? "" : "s"} against
+                |  •
+                span.light-blue-text
+                  b=" " + meta.voteResults.abstention
+                  |  Abstention#{meta.voteResults.abstention === 1 ? "" : "s"}
+              .col.s12.l6
+                #vote-bar.z-depth-2
+                  - const voteSum = meta.voteResults.inFavor + meta.voteResults.against + meta.voteResults.abstention;
+                  mixin vote-part(color, votes)
+                    .vote-bar-part(class=color + " lighten-1" style="width: " + (votes * 100 / voteSum) + "%;")
+                  +vote-part("light-green", meta.voteResults.inFavor)
+                  +vote-part("deep-orange", meta.voteResults.against)
+                  +vote-part("light-blue", meta.voteResults.abstention)
+    if meta.attributes !== "none" || accessLevel === "MA"
+      h5.light Attributes
+      +attribute-descr(meta.attributes, accessLevel === "MA")
+      if doLoad && meta.stage && accessLevel === "MA"
+        br
+        form.input-field.not-editor#attribute-select-box(method="POST" action="#")
+          select(name="attrib")
+            mixin state-option(value, descr)
+              option(value=value "selected disabled"=meta.attributes === value)=descr
+            +state-option("none", "No special state")
+            +state-option("readonly", "Read-only")
+            +state-option("noadvance", "Non-advanceable")
+            +state-option("static", "Static")
+          label Select the new state
+        .justify Set the attribute state of the resolution to one of four states. #[em Read-only] restricts editing access, #[em Non-advanceable] restricts advancement and #[em static] combines the two previous states. #[em No special state] is just that; the resolution is reset to its original unrestricted state. #[span.grey-text The current state in the selector box is displayed in grey.]
+        .btn-top-mrg.center: a.btn.waves-effect.waves-light#attribute-submit-btn(href="#" class=pri)&attributes(tooltip("Sets the attribute state", "bottom")) Set State
     h5.light Actions
     //-secretariat doesn't edit but must be able to advance -> stage 4 displays advance field even if not editing
-    if doLoad || meta.stage === 4
-      if meta.stage <= 6
-        .row
+    if (doLoad || meta.stage === 4) && meta.stage <= 6 && allowAdvance
+      .row
+        if meta.stage
+          form#advance-code-form.not-editor.col.xl6.l12.no-bottom-mrg(method="POST" action="/" class=meta.stage === 6 ? "row" : "")
+            //-vote results
+            if meta.stage === 6
+              .col.xl6.m6.s12
+                | Votes for the resolution as a whole:
+                .row
+                  mixin vote-input(name, id, labelText)
+                    .col.s4.input-field
+                      input(name=name id=id type="number")
+                      label(for=id)=labelText
+                  +vote-input("inFavor", "infavor-vote-input", "In Favor")
+                  +vote-input("against", "against-vote-input", "Against")
+                  +vote-input("abstention", "abstention-vote-input", "Abstention")
+                  .col.s12
+                    input#important-question-checkbox(type="checkbox" name="importantQuestion")
+                    label(for="important-question-checkbox") Declared an important question
+            .input-field(class=meta.stage === 6 ? "xl6 m6 s12 col" : "")
+              +icon(codeIcon, "prefix")
+              input#advance-code-input(name="code" type="text" placeholder=codePlaceholder)
+              label(for="advance-code-input") Enter access code
+        mixin input-field-wrapper
           if meta.stage
-            .input-field.col.xl3.l4.m5.s12
-              form(method="POST" action="/")#advance-code-form
-                +icon(codeIcon, "prefix")
-                input#advance-code-input.not-editor(name="code" type="text" placeholder=codePlaceholder)
-                label(for="advance-code-input") Enter access code
-          mixin input-field-wrapper
+            .col.xl6.l12
+              block
+          else
+            .col.s12
+              block
+        +input-field-wrapper
+          .justify This resolution can be advanced to
+            a(href="/help#rstage" + (meta.stage + 1))  stage ##{meta.stage + 1}
+            |  by: #{stageData[meta.stage].advance}.
             if meta.stage
-              .col.xl9.l8.m7.s12
-                p
-                  block
+              |  You will be redirected back to this page but will have to re-enter your access code if you still need and possess editing access to this resolution after its advancement to the next stage.
             else
-              .col.s12
-                block
-          +input-field-wrapper
-            .justify This resolution can be advanced to
-              a(href="/help#rstage" + (meta.stage + 1))  stage ##{meta.stage + 1}
-              |  by: #{stageData[meta.stage].advance}.
-              if meta.stage
-                |  You will be redirected back to this page but will have to re-enter your access code if you still need and possess editing access to this resolution after its advancement to the next stage.
-              else
-                |  This is accomplished by pressing #[em Save] and will claim the token by making it persistent. The page needs to be reloaded to update the stage and display the advancement access code input field.
-          if meta.stage
-            .col.s12.center: a.btn.waves-effect.waves-light.advance-submit-btn(href="#" class=pri)&attributes(tooltip("Advances the resolution with given code", "bottom")) Advance
-    .collection#meta-buttons
+              |  This is accomplished by pressing #[em Save] and will claim the token by making it persistent. The page will be automatically reloaded to update the stage and display the advancement access code input field.
+        if meta.stage
+          .btn-top-mrg.col.s12.center: a.btn.waves-effect.waves-light.advance-submit-btn(href="#" class=pri)&attributes(tooltip("Advances the resolution with given code", "bottom")) Advance
+    .collection.z-depth-1#meta-buttons
       mixin meta-button(id, text, icon, tooltipText, classes)
         a.collection-item.waves-effect.waves-light(class=classes id=id)&attributes(tooltip(tooltipText, "top"))
           +icon(icon, "left")
           span=text
-      if doLoad
+      if doLoad && allowSave
         //-large save button in stage 0
         +meta-button("action-save", "Save", "backup", "Saves the resolution to the server", pritext + (meta.stage ? "" : " action-save-large"))
       +meta-button("action-pdf", "View PDF", "description", "Generates a formatted PDF document", pritext)
@@ -118,6 +193,8 @@ block content
       if doLoad
         +meta-button("legacy-action-save", "Save to file (deprecated)", "file_download", "Downloads the resolution in a reusable format", "grey-text")
         +meta-button("legacy-action-load", "Open from file (deprecated)", "file_upload", "Loads a resolution from a previously saved file", "grey-text")
+        if accessLevel === "MA"
+          +meta-button("action-delete", "Delete resolution", "delete_forever", "Deletes the resolution permanently", "red-text text-lighten-1")
     //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
     .modal#alert-message-modal
       .modal-content
@@ -132,6 +209,7 @@ block content
             input.file-path.validate(type="text" placeholder="File Path" pattern="^.*\.rso")
       .modal-footer
         a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
+        a#delete-action-confirm.red-text.modal-action.modal-close.waves-effect.btn-flat.hide-this(class=priwaves) Delete forever
     if doLoad
       mixin floating-sm-btn(color, type, icon, tooltipText)
         a.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)
@@ -209,11 +287,11 @@ block content
       h4.center: +icon("highlight_off", "medium grey-text text-darken-2")
       .row
         .input-field.col.xl3.l4.m5.s12
-          form(method="POST" action="/")#unlock-code-form
+          form(method="POST" action="/").not-editor#unlock-code-form
             +icon(codeIcon, "prefix")
-            input#unlock-code-input.not-editor(name="code" type="text" placeholder=codePlaceholder)
+            input#unlock-code-input(name="code" type="text" placeholder=codePlaceholder)
             label(for="unlock-code-input") Enter access code
-        .col.xl9.l8.m7.s12.justify#read-only-mode Editing access to this resolution is restricted beyond your access level (#[a(href="/help#" + accessLevel)=accessLevel]). You can still view meta information and read-only versions of it however. The editor for this resolution can be opened by entering an access code with the levels #[em CH]
+        .col.xl9.l8.m7.s12.justify#no-load-mode Editing access to this resolution is restricted beyond your access level (#[a(href="/help#" + accessLevel)=accessLevel]). You can still view meta information and read-only versions of it however. The editor for this resolution can be opened by entering an access code with the levels #[em CH]
           case meta.stage
             when 2
               | , #[em AP]

@@ -9,6 +9,12 @@ $(document).ready(function() {
   //init collapsable navbar
   $(".button-collapse").sideNav();
 
+  //init help dropdown menu
+  $(".dropdown-button").dropdown({
+    constrainWidth: false,
+    hover: true
+  });
+
   //register event handlers
   $("body")
   .on("touchstart", function() {

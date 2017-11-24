@@ -8,7 +8,9 @@
   displayToast,
   allowedSubclauseDepth,
   sendJsonLV,
-  sendLVUpdates*/
+  sendLVUpdates,
+  resolutionStage,
+  resolutionAttributes*/
 /* exported loadFilePick,
   serverLoad,
   generatePdf,
@@ -19,7 +21,7 @@
 //file actions are defined in this file
 
 //current version of the resolution format supported
-var supportedResFileFormats = [4];
+var supportedResFileFormats = [4, 5];
 
 //get resolutionFormat from module exported
 var resolutionFormat = module.exports.resolutionFormat;
@@ -394,6 +396,11 @@ function getEditorObj(allowEmpty) {
 
 //saves the resolution from editor to the server
 function serverSave(callback, doToast, silentFail) {
+  //do not save if not allowed to
+  if (! resolutionAttributes.allowSave) {
+    return;
+  }
+
   //display if not specified
   if (typeof doToast === "undefined") {
     doToast = true;
@@ -429,6 +436,11 @@ function serverSave(callback, doToast, silentFail) {
     //call callback on completion
     if (typeof callback === "function") {
       callback();
+    }
+
+    //if we are in stage 0, reload the page on successful save
+    if (! resolutionStage) {
+      location.reload();
     }
   })
   .fail(function() {

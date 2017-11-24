@@ -150,4 +150,5 @@ data/*
 public/rendered/*
 !*.gitkeep
 
+#credentials, keys that nobody should have publicly
 lib/keys.json

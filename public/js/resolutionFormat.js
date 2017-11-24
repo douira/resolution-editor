@@ -1,4 +1,4 @@
-/*jshint esversion: 5, browser: false, jquery: false */
+/*jshint esversion: 5, browser: false, varstmt: false, jquery: false */
 /*global module */
 
 //string used to identify files saved by this website (mild protection for now)
@@ -84,6 +84,28 @@ var resolutionFileFormat = {
       name: "author",
       type: "string",
       required: true
+    },
+    {
+      name: "voteResults",
+      type: "object",
+      required: false,
+      content: [
+        {
+          name: "inFavor",
+          type: "number",
+          required: true
+        },
+        {
+          name: "against",
+          type: "number",
+          required: true
+        },
+        {
+          name: "abstention",
+          type: "number",
+          required: true
+        }
+      ]
     },
     {
       name: "resolution",

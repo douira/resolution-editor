@@ -1,0 +1,19 @@
+//the users created and necessary on the database
+
+use admin
+db.createUser(
+  {
+    user: "adminUser",
+    pwd: "...",
+    roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]
+  }
+)
+
+use resolution-editor
+db.createUser(
+  {
+    user: "resolutionEditor",
+    pwd: "...",
+    roles: [ { role: "readWrite", db: "resolution-editor" } ]
+  }
+)
