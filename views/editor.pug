@@ -177,7 +177,7 @@ block content
             if meta.stage
               |  You will be redirected back to this page but will have to re-enter your access code if you still need and possess editing access to this resolution after its advancement to the next stage.
             else
-              |  This is accomplished by pressing #[em Save] and will claim the token by making it persistent. The page needs to be reloaded to update the stage and display the advancement access code input field.
+              |  This is accomplished by pressing #[em Save] and will claim the token by making it persistent. The page will be automatically reloaded to update the stage and display the advancement access code input field.
         if meta.stage
           .btn-top-mrg.col.s12.center: a.btn.waves-effect.waves-light.advance-submit-btn(href="#" class=pri)&attributes(tooltip("Advances the resolution with given code", "bottom")) Advance
     .collection.z-depth-1#meta-buttons

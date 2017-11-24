@@ -50,8 +50,8 @@
   const codePlaceholder = "! ABCD5678";
 
 //-icon maker, more icons here if necessary: https://materialdesignicons.com/
-mixin icon(name, classes)
-  i.material-icons(class=classes)= name
+mixin icon(name, classes, id)
+  i.material-icons(class=classes id=id)= name
 
 doctype html
 html(lang="en")
@@ -105,27 +105,32 @@ html(lang="en")
     block error
 
     //-navigation, prepend with .navbar-fixed: for sticky navbar
+    ul#help-dropdown.dropdown-content
+      li: a(href="/help") Help
+      li: a(href="/help/contentguidelines") Content Guidelines
+      li: a(href="/help/support") Support
+      li: a(href="/help/impressum") Impressum
+      li: a(href="http://munol.org" target="_blank") MUNOL
     nav.lighten-2(class=pri role="navigation"): .nav-wrapper
       .container
-        -
-          const navElements = [
-            ["Front Page", "/"],
-            ["New Resolution", "/resolution/new"],
-            ["Editor", "/resolution"],
-            ["About", "/about"],
-            ["Help", "/help"]
-          ];
-        mixin navList(arr, useWave)
-          each element in navElements
-            li: a(class=useWave ? ["waves-effect", "waves-dark"] : [] href=element[1])=element[0]
+        mixin navList
+          li: a(href="/") Front Page
+          li: a(href="/resolution/new") New Resolution
+          li: a(href="/resolution") Editor
+          li: a(href="/about") About
+          li: a.dropdown-button(href="#" data-activates="help-dropdown") Help
+            +icon("arrow_drop_down", "right")
         ul.right.hide-on-small-and-down
-          +navList(navElements, false)
+          +navList(navElements)
         ul.side-nav#nav-mobile
           li(class=pritext)
             h4.center-align Navigation
             .divider
-          +navList(navElements, true)
+          +navList(navElements)
       a.button-collapse(href="#" data-activates="nav-mobile"): +icon("menu")
+
+    //-necessary for dropdown to work, idk why. removing this prevents the dropdown from apearing
+    a.dropdown-button(href="#" data-activates="help-dropdown")
 
     //-specific page contents
     main
@@ -163,7 +168,6 @@ html(lang="en")
             a.text-lighten-3(class=sectext href="https://github.com/douira/resolution-editor")  Github
 
     //-general scripts
-    //-script(src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous")
     script(src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous")
     script(src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js")
     script(src="/js/mainInit.js")
