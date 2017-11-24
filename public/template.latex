@@ -34,7 +34,6 @@
 #2%
 }
 {%
-\IfStrEq{\lastletter}{.}{}{;}%
 }
 \newenvironment{preambsubclause}{ \begin{itemize}[leftmargin=*,labelindent=2.5em,labelsep=2em,topsep=0pt] {} %
 \renewcommand\labelitemi{-}
