@@ -19,7 +19,7 @@ npm start
 ```
 The server will then respond on the default node port. Open `http://localhost:3000` to use the client.
 
-# Database Authentification
+### Database Authentification
 The mongoDB database start command in package.json uses the `--auth` flag which tells it to require connected clients to send credentials in order to be allowed to use the database. If you wish to use the editor without securing your database (because you're not deploying) just run the command in a seperate window/tab without the flag:
 ```
 //start seperately (first)
@@ -55,4 +55,4 @@ db.createUser(
 Thanks for wanting to contribute, that's great! All the info on how to contribute is in the [CONTRIBUTING file](https://github.com/douira/resolution-editor/edit/meta/CONTRIBUTING.md).
 
 ## Preview
-Here is a PDF version of lots of the views that the editor has.
+Here are some previews of the editor as PDFs.
