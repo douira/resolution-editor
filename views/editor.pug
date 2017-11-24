@@ -38,7 +38,11 @@ block content
     if meta.stage === 6 && doLoad
       h5.light LiveView available
         +icon(liveviewIcon, "mediumsmall left blue-text text-darken-1")
-      p.justify To open LiveView on another device open the resolution by entering the resolution token and your access code on the #[a(href="/resolution" target="_blank") Resoluion Page] and clicking the "LiveView" button. LiveView will display a mock version of the rendered resolution document that will update in real time and colorize any changes you make while LiveView is active.
+      .justify
+        p To open LiveView on another device open the resolution by entering the resolution token and your access code on the #[a(href="/resolution" target="_blank") Resoluion Page] and clicking the "LiveView" button. LiveView will display a mock version of the rendered resolution document that will update in real time and colorize any changes you make while LiveView is active.
+        p
+          a#hide-lieview-hint.grey-text(href="#") [Hide hint]
+          span#liveview-hint  The following procedure is recommended: Retype amendments somehwere into your computer. This can be any texteditor or this #[a(href="/handytextbox" target="_blank") handy textbox]. When you want to discuss the resolution apply the changes that the amendment suggests to the resolution in the editor. LiveView will then display any changes you make to the resolution with colorized difference markings. Removed text will be colored #[span(class=redMarker) red] and added text will be colored #[span(class=greenMarker) green]. When it has been decided wether or not these changes will be kept in the resolution you press "#[em Keep Changes]" to use the current state of the editor as the new base state or "#[em Discard Changes]" to go back to the last point at which "#[em Keep Changes]" was pressed or the resolution saved with the save button.
     if doLoad
       h5.light Important Note
         +icon("announcement", "mediumsmall left red-text")

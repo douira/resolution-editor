@@ -443,6 +443,23 @@ function registerEventHandlers(loadedData) {
         "Press the 'Save' button to save your resolution.";
     }
   });
+
+  $("#hide-lieview-hint")
+  .on("click", function() {
+    //toggle visibility of liveview hint
+    var clickText = $(this);
+    var hint = $("#liveview-hint");
+
+    //for both states, set visivility state and modify click text
+    if (hint.is(":visible")) {
+      hint.hide();
+      clickText.text("[Show hint]");
+    } else {
+      hint.show();
+      clickText.text("[Hide hint]");
+    }
+  });
+
   if (accessLevel === "MA") {
     //init selector for attribute setting, only allow one handler to be set
     $("select").one("init", function() {
@@ -531,6 +548,7 @@ function registerEventHandlers(loadedData) {
       });
     });
   }
+
   $(".autocomplete")
   .on("init", function(e) {
     e.stopPropagation();
