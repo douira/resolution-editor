@@ -191,7 +191,7 @@ function startWS(isViewer, updateListener) {
       case "updateContent":
         //no special action, handling done by update listener
         break;
-      default: //both
+      default: //both client types
         console.log("unrecognised message type", data);
         return;
     }

@@ -73,6 +73,9 @@ var resolutionStage;
 //attribute string of resolution, gotten from page
 var resolutionAttributes, attributesString;
 
+//if automatic saving is enabled or not, determiend from other state variables
+var autosaveEnabled;
+
 //transforms arrays containign a certain flag in an object and array json structure
 function transformMarkedArrays(structure, flag, propValue, depth) {
   //propValue is null if not given otherwise
@@ -797,8 +800,9 @@ function registerEventHandlers(loadedData) {
   })
   .on("editActive", function(e) {
     e.stopPropagation();
-    //save to server if meta hanges are unsaved
-    if (! metaChangesSaved && resolutionStage) {
+    //save to server if meta changes are unsaved (note that this is ativation of the cause)
+    if (! metaChangesSaved && autosaveEnabled) {
+      //do autosave
       serverSave(null, false, true);
     }
 
@@ -842,8 +846,9 @@ function registerEventHandlers(loadedData) {
     }
 
     //auto-save if not at stage 0 and has unsaved changes
-    //no alert message on fail, only red mark
-    if (! changesSaved && ! noChangesMade && resolutionStage) {
+    //no alert message on fail, only red marks
+    if (! changesSaved && ! noChangesMade && autosaveEnabled) {
+      //do autosave
       serverSave(null, false, true);
     }
   })
@@ -1212,6 +1217,9 @@ $(document).ready(function() {
   //get stage of resolution
   resolutionStage = parseInt($("#resolution-stage").text(), 10);
 
+  //autosave is aenabled if at non 0 stage
+  autosaveEnabled = resolutionStage > 0;
+
   //get attributes
   attributesString = $("#resolution-attributes").text();
 
@@ -1399,7 +1407,11 @@ $(document).ready(function() {
       });
 
       //if as MA or at stage 6 and authorized as CH, start liveview editor websocket
-      if (resolutionStage === 6 && accessLevel === "CH" || accessLevel === "MA") {
+      if (resolutionStage === 6 && accessLevel === "CH" ||
+          resolutionStage && accessLevel === "MA") { //MA access to LV needs at least once saved
+        //disable autosave for liveview, we don't want to be accidenatlly saving undesired states
+        autosaveEnabled = false;
+
         //give token and code, false for being editor type client
         startLiveviewWS(false, resolutionToken, resolutionCode, function(type, newSendStatus) {
           //act on "sendUpdates" update
