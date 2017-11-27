@@ -13,7 +13,6 @@ $(document).ready(function() {
       case "updateStructure": //whole resolution content is resent because structure has changed
         //copy to current structure
         currentStructure = data.update;
-        console.log(currentStructure);
         break;
       case "updateContent": //the content of one clause changed and only that is sent
         //apply change to specified path
