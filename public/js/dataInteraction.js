@@ -519,12 +519,16 @@ $.fn.getContentPath = function() {
   if (elem.is("input,textarea")) {
     //first specifier in path is the role of the field in the clause
     var elemClasses = elem.attr("class");
-    ["phrase-input", "clause-content-text", "clause-content-ext-text"]
-      .forEach(function(classValue) {
+
+    //map to structure format name
+    [{ from: "phrase-input", to: "phrase" },
+     { from: "clause-content-text", to: "content" },
+     { from: "clause-content-ext-text", to: "contentExt" }]
+    .forEach(function(classValue) {
       //check if element has current class
-      if (elemClasses.indexOf(classValue) !== -1) {
-        //use as first path specifier, we expect this only to happen once
-        path[0] = classValue;
+      if (elemClasses.indexOf(classValue.from) !== -1) {
+        //use mapped string as first path specifier, we expect this only to happen once
+        path[0] = classValue.to;
       }
     });
   } else {
@@ -533,16 +537,21 @@ $.fn.getContentPath = function() {
   }
 
   //for parent clauses
-  elem.parents(".clause").each(function() {
+  var parentClauses = elem.parents(".clause");
+  parentClauses.each(function(reversedDepth) {
     //add index of each clause in its list to path
     path.push($(this).indexInParent());
+
+    //add "sub" property path element if we're not in a top clause
+    if (parentClauses.length - 1 > reversedDepth) {
+      path.push("sub");
+    }
   });
 
   //no parent found, we are at the top level: specify what type of clause (op or preamb)
-  path.push(elem.closest("#preamb-clauses") ? "preamb" : "op");
+  path.push(elem.closest("#preamb-clauses") ? "preambulatory" : "operative");
 
-  //reverse path so it starts with the topmost element
-  path.reverse();
+  //path starts with the bottom element
 
   //put path into data to reuse
   data.contentPath = {

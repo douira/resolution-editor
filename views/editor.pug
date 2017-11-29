@@ -229,7 +229,7 @@ block content
             block
       mixin clause-content-field(type, placeholder, addClasses)
         .input-field(class=type)
-          textarea.materialize-textarea(class=addClasses + " " + type + "-text")
+          textarea.materialize-textarea(class=(addClasses ? addClasses + " " : "") + type + "-text")
           label(for="materialize-textarea")=placeholder
       mixin clause-card(cardId, clauseType, cardType)
         +content-card(cardId)

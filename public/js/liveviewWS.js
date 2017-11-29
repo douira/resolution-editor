@@ -125,10 +125,11 @@ function startWS(isViewer, updateListener) {
       updateListener("sendUpdates", data.sendUpdates);
     }
 
-    //if resolution data sent, call listener
+    //if resolution data sent as init, call listener with init structure
     if (data.hasOwnProperty("resolutionData") && typeof updateListener === "function") {
-      updateListener("structure", data.resolutionData);
+      updateListener("initStructure", { update: data.resolutionData });
     }
+
     console.log("received:", data);
     //for type of send message
     switch (data.type) {
