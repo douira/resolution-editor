@@ -15,16 +15,16 @@ function resolveChangePath(prevObj, remainingPath, setValue) {
   }
 
   //if there are still steps more to be taken in the path
-  if (remainingPath.length > 1) {
+  if (remainingPath.length) {
     //resolve one step further
     prevObj = prevObj[prop];
 
     //go one level deeper
     resolveChangePath(prevObj, remainingPath, setValue);
-  } else if (remainingPath.length) {
+  } else {
     //finished resolving, change value
     prevObj[prop] = setValue;
-  } //else: something went wrong
+  }
 }
 
 //start liveview as viewer on document load
