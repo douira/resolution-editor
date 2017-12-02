@@ -27,6 +27,19 @@ function resolveChangePath(prevObj, remainingPath, setValue) {
   }
 }
 
+//makes the given element go into full screen mode
+function makeFullScreen(elem) {
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.msRequestFullscreen) {
+    elem.msRequestFullscreen();
+  } else if (elem.mozRequestFullScreen) {
+    elem.mozRequestFullScreen();
+  } else if (elem.webkitRequestFullscreen) {
+    elem.webkitRequestFullscreen();
+  }
+}
+
 //start liveview as viewer on document load
 $(document).ready(function() {
   //true because we are a viewer, add function to deal with the updates it receives
@@ -52,5 +65,11 @@ $(document).ready(function() {
     if (currentStructure) {
       $("#viewcontent").text(JSON.stringify(currentStructure));
     }
+  });
+
+  //register fullscreen handlers
+  $("#enter-fullscreen").on("click", function() {
+    //get the viewcontent and try to make it fullscreen
+    makeFullScreen($("#viewcontent")[0]);
   });
 });
