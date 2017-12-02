@@ -16,7 +16,13 @@ block content
     h3 Resolution LiveView
     h5.light#token-preset=token
     #code-preset.hide-this=code
-    .z-depth-2#viewcontent: blockquote: em no content
+    .z-depth-2#viewcontent
+      #no-content-msg.hide-this
+        h5 No content received
+        p Start a LiveVew session by opening the editor with sufficient permissions at stage 6. If this page doesn't receive any updates although you started the session in the editor, reload both pages and if the problem persists contact IT-Management.
+      .center#spinner-wrapper
+        +spinner("blue", "small")
+      #resolution.hide-this
     br
   div.fixed-action-btn
     a.btn-floating.btn-large#enter-fullscreen(class=pri)

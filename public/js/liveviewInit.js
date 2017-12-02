@@ -63,9 +63,25 @@ $(document).ready(function() {
 
     //if present display current resolution object
     if (currentStructure) {
-      $("#viewcontent").text(JSON.stringify(currentStructure));
+      //show content container and hide the spinner and no-content warning
+      $("#resolution").show();
+      $("#spinner-wrapper").hide();
+      $("#no-content-msg").hide();
+
+      //generate a rendered document
+
+
+      $("#resolution").text(JSON.stringify(currentStructure));
     }
   });
+
+  //display no content message after two seconds (if the content isn't there then)
+  setTimeout(function() {
+    //check if the cotent is there, if not display no content message
+    if ($("#resolution").is(":hidden")) {
+      $("#no-content-msg").show(250);
+    }
+  }, 2000);
 
   //register fullscreen handlers
   $("#enter-fullscreen").on("click", function() {
