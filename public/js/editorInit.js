@@ -927,47 +927,38 @@ function registerEventHandlers(loadedData) {
     var elem = $(this);
     var data = elem.getData().loadedData;
 
-    //if data is only a string, fill content only
-    if (typeof data === "string") {
-      //fill content field
-      elem
-        .children(".clause-content")
-        .children("textarea")
-        .val(data)
-        //trigger keyup to make textarea update its size
-        .triggerAll("activateLabel keyup");
-    } else {
-      //fill phrase field
+    //fill phrase field if present
+    if ("phrase" in data) {
       elem
         .children(".phrase-input-wrapper")
         .find("input")
         .val(data.phrase)
         .trigger("activateLabel");
+    }
 
-      //fill content field
-      elem
-        .children(".clause-content")
-        .children("textarea")
-        .val(data.content)
-        .triggerAll("activateLabel keyup");
+    //fill content field
+    elem
+      .children(".clause-content")
+      .children("textarea")
+      .val(data.content)
+      .triggerAll("activateLabel keyup");
 
-      //add subclause data if given
-      if (data.sub) {
-        //make subclause list, give data and trigger to continue
-        elem.addSubClause(false);
-        var subclauseList = elem.find(".clause-list-sub");
-        subclauseList.getData().loadedData = data.sub;
-        subclauseList.trigger("fromLoadedData");
+    //add subclause data if given
+    if ("sub" in data) {
+      //make subclause list, give data and trigger to continue
+      elem.addSubClause(false);
+      var subclauseList = elem.find(".clause-list-sub");
+      subclauseList.getData().loadedData = data.sub;
+      subclauseList.trigger("fromLoadedData");
 
-        //also add ext data if given
-        if (data.contentExt) {
-          elem
-            .children(".clause-content-ext")
-            .show()
-            .children("textarea")
-            .val(data.contentExt)
-            .triggerAll("activateLabel keyup");
-        }
+      //also add ext data if given
+      if (data.contentExt) {
+        elem
+          .children(".clause-content-ext")
+          .show()
+          .children("textarea")
+          .val(data.contentExt)
+          .triggerAll("activateLabel keyup");
       }
     }
   });

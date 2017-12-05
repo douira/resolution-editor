@@ -21,7 +21,7 @@
 //file actions are defined in this file
 
 //current version of the resolution format supported
-var supportedResFileFormats = [4, 5];
+var supportedResFileFormats = [6];
 
 //get resolutionFormat from module exported
 var resolutionFormat = module.exports.resolutionFormat;
@@ -339,11 +339,6 @@ $.fn.clauseAsObject = function(allowEmpty) {
   var subclauses = this.children(".clause-list-sub").clauseAsObject(allowEmpty);
   if (subclauses.length) {
     clauseData.sub = subclauses;
-  }
-
-  //if content is the only attribute, coerce to single string
-  if (Object.keys(clauseData).length === 1 && ! allowEmpty) { //use full object if allowing empties
-    clauseData = clauseData.content;
   }
 
   //return created clause data object
