@@ -40,6 +40,68 @@ function makeFullScreen(elem) {
   }
 }
 
+//preps the diplay for resolution render
+function prepareResolutionRender() {
+  //show content container and hide the spinner and no-content warning
+  $("#resolution").show();
+  $("#spinner-wrapper").hide();
+  $("#no-content-msg").hide();
+}
+
+//fucntion that renders the given structure to the liveview display,
+//updates completely: do not use for content update
+function render(resolution) {
+  var time = Date.now();
+  //update header
+  $(".forum-info").text(resolution.address.forum);
+  $("#question-of-info").text(resolution.address.questionOf);
+  $("#sponsor-info").text(resolution.address.sponsor.main);
+
+  //get clause template and prepare for use
+  var clauseTemplate = $("#clause-template")
+    .clone()
+    .removeAttr("id");
+
+  //process clauses
+  [{
+    //the name in the resolution structure object and the selector for the element
+    name: "operative",
+    listSelector: "#op-clauses"
+  }, {
+    name: "preambulatory",
+    listSelector: "#preamb-clauses"
+  }].forEach(function(clauseType) { //for both types of clauses in the resolution
+    //get the dom list element and empty for new filling
+    var container = $(clauseType.listSelector).empty();
+
+    //for all clauses of this type, get clauses from structure
+    resolution.clauses[clauseType.name].forEach(function(clauseData) {
+      //create a clause object by cloning the template and adding data
+      var clause = clauseTemplate.clone();
+      clause.find(".phrase").text(clauseData.phrase.trim());
+      clause.find(".main-content").text(", " + clauseData.content.trim());
+
+      //process subclauses if any specified in data
+      if ("sub" in clauseData) {
+        //
+      }
+
+      //append ext content if specified
+      if ("extContent" in clauseData) {
+        //create another span with the text
+        clause.append("<span/>", {
+          class: ".ext-content",
+          text: clauseData.extContent
+        });
+      }
+
+      //add the newly created clause to the document and make it visible
+      clause.appendTo(container).show();
+    });
+  });
+  console.log(Date.now() - time);
+}
+
 //start liveview as viewer on document load
 $(document).ready(function() {
   //true because we are a viewer, add function to deal with the updates it receives
@@ -48,30 +110,30 @@ $(document).ready(function() {
     switch (type) {
       case "updateStructure": //whole resolution content is resent because structure has changed
       case "initStructure": //handle init the same way for now
+        //prepare if not prepared yet (first)
+        if (! currentStructure) {
+          prepareResolutionRender();
+        }
+
         //copy to current structure
         currentStructure = data.update;
+
+        //render fully
+        console.log(currentStructure);
+        render(currentStructure.resolution);
         break;
       case "updateContent": //the content of one clause changed and only that is sent
-        //apply change to specified path in contentStructure
-        resolveChangePath(
-          currentStructure.resolution.clauses, //currentStructure.resolution.clauses
-          data.update.contentPath,
-          data.update.content
-        );
+        //if we've got some structure at all
+        if (currentStructure) {
+          //apply change to specified path in contentStructure
+          resolveChangePath(
+            currentStructure.resolution.clauses, //currentStructure.resolution.clauses
+            data.update.contentPath,
+            data.update.content
+          );
+        }
+        //else: bad, no content update should arrive before the init or updateStructure messages
         break;
-    }
-
-    //if present display current resolution object
-    if (currentStructure) {
-      //show content container and hide the spinner and no-content warning
-      $("#resolution").show();
-      $("#spinner-wrapper").hide();
-      $("#no-content-msg").hide();
-
-      //generate a rendered document
-
-
-      $("#resolution").text(JSON.stringify(currentStructure));
     }
   });
 

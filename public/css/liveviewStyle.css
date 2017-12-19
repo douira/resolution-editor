@@ -15,3 +15,11 @@
 .mediumsmall-i {
   font-size: 3rem !important;
 }
+
+#op-clauses span.phrase {
+  text-decoration: underline;
+}
+
+#preamb-clauses span.phrase {
+  font-style: italic;
+}

@@ -19,10 +19,29 @@ block content
     .z-depth-2#viewcontent
       #no-content-msg.hide-this
         h5 No content received
-        p Start a LiveVew session by opening the editor with sufficient permissions at stage 6. If this page doesn't receive any updates although you started the session in the editor, reload both pages and if the problem persists contact IT-Management.
+        p Start a LiveView session by opening the editor with sufficient permissions at stage 6. If this page doesn't receive any updates although you started the session in the editor, reload both pages and if the problem persists contact IT-Management.
       .center#spinner-wrapper
         +spinner("blue", "small")
       #resolution.hide-this
+        #address
+          .row
+            .col.s6
+              p Forum:
+              p Question Of:
+              p Sponsor:
+            .col.s6
+              p.forum-info ?
+              p#question-of-info ?
+              p#sponsor-info ?
+          p The #[span.forum-info ?],
+        .divider
+        .clause.hide-this#clause-template
+          p.clause-content
+            span.phrase
+            span.main-content
+        #clauses
+          #preamb-clauses
+          #op-clauses
     br
   div.fixed-action-btn
     a.btn-floating.btn-large#enter-fullscreen(class=pri)
