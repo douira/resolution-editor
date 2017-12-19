@@ -92,21 +92,30 @@ function render(resolution) {
       if ("sub" in clauseData) {
         //add list for subclauses, choose type according to type of clause
         var subList = $("<" + clauseType.subListType + "/>")
-          .addClass("subs");
-
-        //set type if a op clause
-        if (clauseType.name === "operative") {
-          subList.attr("type", "a");
-        }
+          .addClass("subs")
+          .appendTo(clause); //add clause list to clause
 
         //add subclauses
-        clauseData.sub.forEach(function(subClause) {
-          //add an element for the subclause to the sublist
-          subList.append($("<li/>").text(subClause.content));
-        });
+        clauseData.sub.forEach(function(subClauseData) {
+          //make the subclause
+          var subClause = $("<li/>")
+            .text(subClauseData.content)
+            .appendTo(subList); //add subclause to its sub list
 
-        //add clause list to clause
-        clause.append(subList);
+          //check if a subsub list is specified
+          if ("sub" in subClauseData) {
+            //add subclause list
+            var subsubList = $("<" + clauseType.subListType + "/>")
+              .addClass("subs subsubs")
+              .appendTo(subClause); //add sub list to clause
+
+            //add all subsub clauses
+            subClauseData.sub.forEach(function(subsubClauseData) {
+              //append sub sub clause entry to sub sub list
+              subsubList.append("<li/>").text(subsubClauseData.content);
+            });
+          }
+        });
       }
 
       //append ext content if specified

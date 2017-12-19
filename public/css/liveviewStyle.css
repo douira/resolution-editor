@@ -16,6 +16,16 @@
   font-size: 3rem !important;
 }
 
+#address .row, #address .col {
+  margin: 0;
+  padding: 0;
+}
+
+#address .row p {
+  margin-top: 0;
+  margin-left: 0;
+}
+
 #preamb-clauses span.phrase {
   font-style: italic;
 }
@@ -46,9 +56,13 @@
 It was adapted and expanded.*/
 #clauses ol {
   counter-reset: item;
-  padding: 0;
   list-style-position: inside;
   word-break: normal;
+  padding: 0;
+}
+
+#clauses ol ol {
+  padding-left: 45px;
 }
 
 #clauses ol li {
@@ -64,16 +78,12 @@ It was adapted and expanded.*/
   left: 0;
 }
 
-#clauses ol li ol li:before {
+#clauses ol ol li:before {
   content: counter(item, lower-alpha) ") ";
 }
 
-#address .row, #address .col {
-  margin: 0;
-  padding: 0;
+#clauses ol ol ol li:before {
+  content: counter(item, lower-roman) ". ";
 }
 
-#address .row p {
-  margin-top: 0;
-  margin-left: 0;
-}
+
