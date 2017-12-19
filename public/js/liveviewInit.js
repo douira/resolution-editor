@@ -57,8 +57,8 @@ function render(resolution) {
   $("#question-of-info").text(resolution.address.questionOf);
   $("#sponsor-info").text(resolution.address.sponsor.main);
 
-  //get clause template and prepare for use
-  var clauseTemplate = $("#clause-template")
+  //get clause content template and prepare for use
+  var clauseContentTemplate = $("#clause-content-template")
     .clone()
     .removeAttr("id");
 
@@ -66,24 +66,47 @@ function render(resolution) {
   [{
     //the name in the resolution structure object and the selector for the element
     name: "operative",
-    listSelector: "#op-clauses"
+    listSelector: "#op-clauses",
+    elementType: "li",
+    subListType: "ol"
   }, {
     name: "preambulatory",
-    listSelector: "#preamb-clauses"
+    listSelector: "#preamb-clauses",
+    elementType: "div",
+    subListType: "ul"
   }].forEach(function(clauseType) { //for both types of clauses in the resolution
     //get the dom list element and empty for new filling
     var container = $(clauseType.listSelector).empty();
 
     //for all clauses of this type, get clauses from structure
     resolution.clauses[clauseType.name].forEach(function(clauseData) {
-      //create a clause object by cloning the template and adding data
-      var clause = clauseTemplate.clone();
+      //create a clause object by cloning the template
+      var clause = $("<" + clauseType.elementType + "/>")
+        .append(clauseContentTemplate.clone());
+
+      //add data
       clause.find(".phrase").text(clauseData.phrase.trim());
-      clause.find(".main-content").text(", " + clauseData.content.trim());
+      clause.find(".main-content").text(" " + clauseData.content.trim());
 
       //process subclauses if any specified in data
       if ("sub" in clauseData) {
-        //
+        //add list for subclauses, choose type according to type of clause
+        var subList = $("<" + clauseType.subListType + "/>")
+          .addClass("subs");
+
+        //set type if a op clause
+        if (clauseType.name === "operative") {
+          subList.attr("type", "a");
+        }
+
+        //add subclauses
+        clauseData.sub.forEach(function(subClause) {
+          //add an element for the subclause to the sublist
+          subList.append($("<li/>").text(subClause.content));
+        });
+
+        //add clause list to clause
+        clause.append(subList);
       }
 
       //append ext content if specified

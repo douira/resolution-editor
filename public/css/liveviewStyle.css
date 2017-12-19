@@ -16,10 +16,64 @@
   font-size: 3rem !important;
 }
 
+#preamb-clauses span.phrase {
+  font-style: italic;
+}
+
 #op-clauses span.phrase {
   text-decoration: underline;
 }
 
-#preamb-clauses span.phrase {
-  font-style: italic;
+#preamb-clauses ul {
+  margin-top: 0;
+  list-style-position: inside;
+  padding-left: 45px;
+}
+
+#preamb-clauses ul li:before {
+  position: absolute;
+  content: "- ";
+  left: 0;
+}
+
+#preamb-clauses ul li {
+  position: relative;
+  display: block;
+  padding-left: 45px;
+}
+
+/*See this: http://jsfiddle.net/NU48L for how this came to be like this.
+It was adapted and expanded.*/
+#clauses ol {
+  counter-reset: item;
+  padding: 0;
+  list-style-position: inside;
+  word-break: normal;
+}
+
+#clauses ol li {
+  display: block;
+  padding-left: 45px;
+  position: relative;
+}
+
+#clauses ol li:before {
+  content: counter(item) ". ";
+  counter-increment: item;
+  position: absolute;
+  left: 0;
+}
+
+#clauses ol li ol li:before {
+  content: counter(item, lower-alpha) ") ";
+}
+
+#address .row, #address .col {
+  margin: 0;
+  padding: 0;
+}
+
+#address .row p {
+  margin-top: 0;
+  margin-left: 0;
 }

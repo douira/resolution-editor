@@ -24,24 +24,23 @@ block content
         +spinner("blue", "small")
       #resolution.hide-this
         #address
-          .row
-            .col.s6
-              p Forum:
-              p Question Of:
-              p Sponsor:
-            .col.s6
-              p.forum-info ?
-              p#question-of-info ?
-              p#sponsor-info ?
+          mixin info-piece(type)
+            .row
+              .col.s4: p=type + ":"
+              .col.s8: block
+          +info-piece("Forum")
+            p.forum-info ?
+          +info-piece("Question Of")
+            p#question-of-info ?
+          +info-piece("Sponsor")
+            p#sponsor-info ?
           p The #[span.forum-info ?],
-        .divider
-        .clause.hide-this#clause-template
-          p.clause-content
-            span.phrase
-            span.main-content
+        .clause-content#clause-content-template
+          span.phrase
+          span.main-content
         #clauses
           #preamb-clauses
-          #op-clauses
+          ol#op-clauses
     br
   div.fixed-action-btn
     a.btn-floating.btn-large#enter-fullscreen(class=pri)
