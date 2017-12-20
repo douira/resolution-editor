@@ -177,6 +177,12 @@ function render(resolution) {
       //check if this is the last clause (can't be last if it's a preamb)
       var lastClause = isOps && index === arr.length - 1;
 
+      //check if there is ext content for this subclause
+      var contentExtPresent = "contentExt" in clauseData;
+
+      //compute if the main content of this clause is the lat piece of it
+      var lastPieceOfClause = ! subsPresent && ! contentExtPresent;
+
       //fill in the content data
       content.children(".main-content").text(clauseData.content.trim());
 
@@ -201,19 +207,26 @@ function render(resolution) {
           //check if a sub list is specified
           var subsubsPresent = "sub" in subClauseData;
 
+          //check if there is ext content for this subclause
+          var subContentExtPresent = "contentExt" in subClauseData;
+
           //check if this is the last subclause of this clause
           //(not in preambs, those are always ",")
           var lastSubClause = isOps && subIndex === subArr.length - 1;
+
+          //compute if the main content of this subclause is the last piece of the clause
+          lastPieceOfClause =
+              ! subsubsPresent && ! contentExtPresent && ! subContentExtPresent && lastSubClause;
 
           //add data to content
           subContent.children("span.main-content").text(subClauseData.content);
 
           //add punctuation
           subContent.append(getPunctuation(
-            subsubsPresent,
-            ! subsubsPresent && lastSubClause,
-            ! subsubsPresent && lastSubClause && lastClause
-          ));
+            subsubsPresent, lastPieceOfClause, lastPieceOfClause && lastClause));
+
+          //update lastPieceOfClause for subsubs
+          lastPieceOfClause = ! contentExtPresent && ! subContentExtPresent && lastSubClause;
 
           //if there are subsubs
           if (subsubsPresent) {
@@ -235,31 +248,35 @@ function render(resolution) {
 
               //add punctuation
               var lastSubsubClause = subsubIndex === subsubArr.length - 1;
+              console.log(lastSubsubClause);
               subsubContent.append(getPunctuation(
                 false,
-                lastSubsubClause && lastSubClause,
-                lastSubsubClause && lastSubClause && lastClause
+                lastSubsubClause && lastPieceOfClause,
+                lastSubsubClause && lastPieceOfClause && lastClause
               ));
             });
           }
 
           //append ext content if specified
-          if ("contentExt" in subClauseData) {
+          if (subContentExtPresent) {
             //create another span with the text
             subClause.append($("<span/>", {
               "class": "ext-content",
               text: subClauseData.contentExt
             }));
 
+            //update wether or not this is the last piece of the clause
+            lastPieceOfClause = ! contentExtPresent && lastSubClause;
+
             //add extra punctuation for ext content
             subClause.append(getPunctuation(
-              false, lastSubClause, lastSubClause && lastClause));
+              false, lastPieceOfClause, lastPieceOfClause && lastClause));
           }
         });
       }
 
       //append ext content if specified
-      if ("contentExt" in clauseData) {
+      if (contentExtPresent) {
         //create another span with the text
         clause.append($("<span/>", {
           "class": "ext-content",
