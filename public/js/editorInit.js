@@ -280,6 +280,11 @@ $.fn.addSubClause = function(activationStateChanges) {
     //remove left over clauses from clone
     subList.children().not(".add-clause-container").remove();
 
+    //hide the add clause container if the clause editInactive handler isn't going to do it
+    if (! activationStateChanges) {
+      subList.children(".add-clause-container").hide();
+    }
+
     //add created list to clause, add clause button will be made visible by clause event
     this.children(".clause-list-anchor").after(subList);
   }
@@ -293,7 +298,7 @@ $.fn.addSubClause = function(activationStateChanges) {
     .remove();
   strippedClause
     .trigger("reset") //trigger reset to make it like a new clause
-    .appendTo(subList) //add it to the subclause list
+    .appendTo(subList) //add it to the end of the subclause list
     .trigger("updateTreeDepth"); //update the info texts on it
 
   //move button to bottom of list
@@ -320,8 +325,9 @@ $.fn.addClause = function(amount, activationStateChanges) {
   var addClauseContainer = this;
   if (! this.is(".add-clause-container")) {
     if (this.is(".clause-list")) {
-      addClauseContainer = this.children(".add-clause-container");
+      addClauseContainer = this.children(".add-clause-container").last();
     } else {
+      console.error("could not find add clause container for element:", this);
       return this;
     }
   }
@@ -344,7 +350,7 @@ $.fn.addClause = function(amount, activationStateChanges) {
       .clone(true, true)
       .insertBefore(addClauseContainer)
       //trigger reset after inserting into main document because
-      //the autofill initneed to know in what kind of clause it is to get the correct data
+      //the autofill init needs to know in what kind of clause it is to get the correct data
       .triggerAll("reset updateId");
   }
 
