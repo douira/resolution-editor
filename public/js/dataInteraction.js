@@ -174,11 +174,13 @@ function loadJson(json, callbackOnSuccess) {
   $("#forum-name").val(res.address.forum).trigger("activateLabel");
   $("#main-spon").val(res.address.sponsor.main).trigger("activateLabel");
 
-  //init chips with new data
+  //init chips with new data, convert array to tag objects
   var elem = $("#co-spon");
   elem.getData().data = res.address.sponsor.co.map(function(str) {
     return { tag: str };
   });
+
+  //trigger init to actually display the content
   elem.trigger("init");
 
   //parse clauses
@@ -217,11 +219,6 @@ function loadFilePick() {
 
 //loads resolution from server
 function serverLoad(token, doToast, callback) {
-  //stop if we're still in stage 0 and there isn't anything to load
-  if ($("#resolution-stage").text() === "0") {
-    return;
-  }
-
   //make settings object
   var ajaxSettings = {
     url: "/resolution/load/" + resolutionToken,

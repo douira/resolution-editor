@@ -37,19 +37,6 @@ var allowedSubclauseDepth = {
 //keeps track of any invalid fields that are marked as such
 var badFieldPresent = true;
 
-//makes a autofill settings object
-function makeAutofillSettingsPre(defaultSettings, data, settings) {
-  //use default settings if no extra settings given
-  if (typeof settings === "undefined") {
-    settings = defaultSettings;
-  }
-
-  //merge settings and data prop object
-  return $.extend({
-    data: data
-  }, settings);
-}
-
 //set to true when there are unsaved changes that the user has to be alerted about
 var changesSaved = false;
 var noChangesMade = true;
@@ -60,9 +47,6 @@ var resolutionToken, resolutionCode;
 
 //access level and chair mode are later taken from document
 var accessLevel, chairMode;
-
-//attach the default settings
-var makeAutofillSettings = makeAutofillSettingsPre.bind({}, autofillSettings);
 
 //is set to true if we need to send updates to LV viewers
 var sendLVUpdates = false;
@@ -250,7 +234,9 @@ $.fn.triggerAll = function(eventNames, params) {
   //trigger all events with params
   eventNames.split(/[ ,]+/).forEach(function(event) {
     this.trigger(event, params);
-  }.bind(this));
+  }, this);
+
+  //return this for chaining
   return this;
 };
 
@@ -298,16 +284,17 @@ $.fn.addSubClause = function(activationStateChanges) {
     this.children(".clause-list-anchor").after(subList);
   }
 
-  //add new subclause by copying clause without phrase field
-  var strippedClause = this
-    .clone(true, true)
-    .trigger("reset");
+  //clone the clause as a base for the new clause
+  var strippedClause = this.clone(true, true);
+
+  //remove the phrase field (prevent failing autocomplete init on "floating" element through reset)
   strippedClause
     .children(".phrase-input-wrapper")
     .remove();
   strippedClause
-    .appendTo(subList)
-    .trigger("updateTreeDepth");
+    .trigger("reset") //trigger reset to make it like a new clause
+    .appendTo(subList) //add it to the subclause list
+    .trigger("updateTreeDepth"); //update the info texts on it
 
   //move button to bottom of list
   subList.children(".add-clause-container").appendTo(subList);
@@ -355,9 +342,10 @@ $.fn.addClause = function(amount, activationStateChanges) {
       .siblings(".clause")
       .first()
       .clone(true, true)
-      .trigger("reset")
       .insertBefore(addClauseContainer)
-      .trigger("updateId");
+      //trigger reset after inserting into main document because
+      //the autofill initneed to know in what kind of clause it is to get the correct data
+      .triggerAll("reset updateId");
   }
 
   //make last added clause active if enabled
@@ -369,6 +357,7 @@ $.fn.addClause = function(amount, activationStateChanges) {
   changesSaved = false;
 
   //structure update not sent here because this is also called when loading the resolution
+  //and we don't want lots of updates to be sent when we load the resolution into the editor
 
   //return this for chaining
   return this;
@@ -546,11 +535,38 @@ function registerEventHandlers(loadedData) {
       });
     });
   }
-
   $(".autocomplete")
   .on("init", function(e) {
     e.stopPropagation();
-    $(this).autocomplete($(this).getData());
+    var elem = $(this);
+
+    //get the autofill data that matches a selector in autofillInitData
+    var foundData;
+    for (var selector in loadedData.autofillInitData) {
+      //if this element matches the selector, use that data
+      if (elem.is(selector)) {
+        //store data and stop looking
+        foundData = loadedData.autofillInitData[selector];
+        break;
+      }
+    }
+
+    //check if there actually was any data for this element
+    if (foundData) {
+      //init the autocomplete on this field with the data for this field's autocomplete role
+      $(this).autocomplete($.extend({
+        data: foundData,
+
+        //attach a handler that makes a content update happen when a autocomplete field changes
+        onAutocomplete: function() {
+          sendLVUpdate("content", elem);
+        }
+
+        //other settings are taken from autofillSettings
+      }, autofillSettings));
+    } else { //there was no data for this element, error
+      console.error("no autocomplete data found for field", this);
+    }
   });
   $("input.required, textarea.required")
   .on("checkRequired", function(e) {
@@ -682,13 +698,30 @@ function registerEventHandlers(loadedData) {
     //cleanup textarea element
     $(this).removeAttr("data-gramm");
   });
-  $(".chips")
+  $(".chips#co-spon")
   .on("init", function(e) {
     e.stopPropagation();
     var elem = $(this);
-    elem.material_chip(elem.getData());
 
-    //reset data object in init data, may have been changed as data load
+    //init the chips thing with autocomplete options
+    elem.material_chip({
+      //chips prefilled data
+      data: elem.getData().data,
+
+      //autocomplete options for the input field
+      autocompleteOptions: $.extend({
+        //have it use the correct autocomplete data
+        data: loadedData.autofillInitData["#co-spon"],
+
+        //attach a handler that makes a content update happen when a autocomplete field changes
+        onAutocomplete: function() {
+          sendLVUpdate("content", elem);
+        }
+
+        //other settings are taken from autofillSettings
+      }, autofillSettings)
+    });
+
     elem.getData().data = [];
   })
   .on("reset", function(e) {
@@ -1293,7 +1326,6 @@ $(document).ready(function() {
     $("*").trigger("init");
   } else { //proceed normally
     //load external sponsor, phrase and forum name data
-    var autofillData;
     $.getJSON("/autofillData.json")
     .fail(function(data, status, error) {
       //log the error we have with getting the data
@@ -1341,32 +1373,47 @@ $(document).ready(function() {
         loadedData.forumAbbrevMapping[nameSet[1].trim().toLowerCase()] = nameSet[0];
       });
 
+      //transform into correct data structure when gotten data
+      var autofillData = transformMarkedArrays(data, "_convert", null);
+
+      //data used to inititalize autocomplete fields/thingies and their other options
+      loadedData.autofillInitData = {
+        "#forum-name": autofillData.forums,
+        "#main-spon": autofillData.sponsors,
+        "#co-spon": autofillData.sponsors,
+        "#preamb-clauses .phrase-input": autofillData.phrases.preamb,
+        "#op-clauses .phrase-input": autofillData.phrases.op,
+      };
+
       //register all event handlers
       registerEssentialEventHandlers(true);
       registerEventHandlers(loadedData);
 
-      //transform into correct data structure when gotten data
-      autofillData = transformMarkedArrays(data, "_convert", null);
+      //if not in stage 0 (there is something to load from the server)
+      if (resolutionStage) {
+        //trigger all init events that can be triggered before loading the resolution
+        //init is triggered on .chips in serverLoad after settign the data it should contain
+        $("*:not(.autocomplete, .chips)").trigger("init");
 
-      //data used to inititalize input fields/thingies and their other options
-      var initData = {
-        "#forum-name": makeAutofillSettings(autofillData.forums),
-        "#co-spon": {
-          autocompleteOptions: makeAutofillSettings(autofillData.sponsors)
-        },
-        "#main-spon": makeAutofillSettings(autofillData.sponsors),
-        "#preamb-clauses .phrase-input": makeAutofillSettings(autofillData.phrases.preamb),
-        "#op-clauses .phrase-input": makeAutofillSettings(autofillData.phrases.op),
-      };
+        //initiate loading of resolution from server with preset token
+        serverLoad(resolutionToken, true, function() {
+          //don't send update if still loading,
+          //some events may be fake-fired in the process of getting
+          $(".clause input, .clause textarea")
+          .on("paste keyup", function() {
+            //send content update
+            sendLVUpdate("content", $(this));
+          });
 
-      //for all init data attach the data to the element
-      for (var dataSelector in initData) {
-        //attach data to all elements that match
-        $(dataSelector).data(dataPrefix, initData[dataSelector]);
-      }
+          //init autocomplete fields now, they require to be already in their final positions
+          //to detect the correct dataset to use for completion
+          $(".autocomplete").trigger("init");
+        });
+      } else {
+        //trigger init on all
+        $("*").trigger("init");
 
-      //if in stage 0, start timer for save reminder
-      if (! resolutionStage) {
+        //start timer for save reminder
         setTimeout(function() {
           //display alert modal with alert message
           makeAlertMessage(
@@ -1377,20 +1424,6 @@ $(document).ready(function() {
             " save your resolution if it was actually your intention to start writing a new one.");
         }, 1000 * 60 * 5); //5 minutes
       }
-
-      //trigger all init events
-      $("*").trigger("init");
-
-      //initiate loading of resolution from server with preset token
-      serverLoad(resolutionToken, true, function() {
-        //don't send update if still loading,
-        //some events may be fake-fired in the process of getting
-        $(".clause input, .clause textarea")
-        .on("paste keyup", function() {
-          //send content update
-          sendLVUpdate("content", $(this));
-        });
-      });
 
       //if as MA or at stage 6 and authorized as CH, start liveview editor websocket
       if (resolutionStage === 6 && accessLevel === "CH" ||
