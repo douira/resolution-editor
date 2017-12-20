@@ -5,7 +5,7 @@
 var currentStructure;
 
 //resolves an array form object path and changes the field to the given value
-function resolveChangePath(prevObj, remainingPath, setValue) {
+/*function resolveChangePath(prevObj, remainingPath, setValue) {
   //get next property
   var prop = remainingPath.pop();
 
@@ -25,6 +25,76 @@ function resolveChangePath(prevObj, remainingPath, setValue) {
     //finished resolving, change value
     prevObj[prop] = setValue;
   }
+}*/
+
+//maps between string path segments and sub element selectors
+var pathSegmentMapping = {
+  sub: function(e) { return e.children(".subs").children(); },
+  phrase: function(e) { return e.children("div.clause-content").children("span.phrase"); },
+  content: function(e) { return e.children("div.clause-content").children("span.main-content"); },
+  extContent: function(e) { return e.children("div.clause-content").children("span.ext-content"); }
+};
+
+//cache paths and the elements they result in
+var changeCache = {};
+
+//applies a change to the resolution document in html given a path and a new content
+//basically does a translation between the resolution docuement and the dom version of it
+function applyDocumentChange(path, content) {
+  //element to apply the change to (set new value)
+  var currentElem;
+
+  //convert the path into a string as a key for caching
+  var pathAsString = path.join(",");
+
+  //if there is a already found element for the path, use that results instead of calculating it
+  if (pathAsString in changeCache) {
+    //simply use already computed result
+    currentElem = changeCache[pathAsString];
+  } else {
+    //the current element we are searching in, start off with preamb/op seperation
+    currentElem = $(path.pop() === "operative" ? "#op-clauses" : "#preamb-clauses").children();
+
+    //until we get to the element specified by the whole path
+    var pathProp;
+    while (path.length && currentElem.length) {
+      //pop off the next property to follow
+      pathProp = path.pop();
+
+      //is a string: return a sub element of the current element
+      if (typeof pathProp === "string") {
+        //apply a mapping from path segment to selector
+        pathProp = pathSegmentMapping[pathProp];
+
+        //if there even is a mapping for this path segment
+        if (typeof pathProp === "undefined") {
+          //bad, unknown path segment
+          throw Error("unknown path segment: " + pathProp);
+        } else {
+          //get element with selector
+          currentElem = pathProp(currentElem);
+        }
+      } //is a number and needs to be within length of elements
+      else if (typeof pathProp === "number" && pathProp < currentElem.length) {
+        //select nth element using given index
+        currentElem = currentElem.eq(pathProp);
+      } else {
+        //invalid path
+        throw Error("invalid path segment: " + pathProp);
+      }
+    }
+
+    //stop if there are no elements left and the path was selecting a non-existant element
+    if (currentElem.length !== 1) {
+      throw Error("path didn't resolve to a single element");
+    }
+
+    //put element result into cache
+    changeCache[pathAsString] = currentElem;
+  }
+
+  //apply the change to the found end of the path
+  currentElem.text(content);
 }
 
 //makes the given element go into full screen mode
@@ -80,12 +150,20 @@ function render(resolution) {
     //for all clauses of this type, get clauses from structure
     resolution.clauses[clauseType.name].forEach(function(clauseData) {
       //create a clause object by cloning the template
-      var clause = $("<" + clauseType.elementType + "/>")
-        .append(clauseContentTemplate.clone());
+      var content = clauseContentTemplate.clone();
+      var clause = $("<" + clauseType.elementType + "/>").append(content);
 
-      //add data
-      clause.find(".phrase").text(clauseData.phrase.trim());
-      clause.find(".main-content").text(" " + clauseData.content.trim());
+      //add the space between the phrase and the content
+      content.prepend(" ");
+
+      //add the phrase span
+      content.prepend($("<span/>", {
+        "class": "phrase",
+        text: clauseData.phrase.trim()
+      }));
+
+      //fill in the content data
+      content.children(".main-content").text(" " + clauseData.content.trim());
 
       //process subclauses if any specified in data
       if ("sub" in clauseData) {
@@ -97,9 +175,13 @@ function render(resolution) {
         //add subclauses
         clauseData.sub.forEach(function(subClauseData) {
           //make the subclause
+          var subContent = clauseContentTemplate.clone();
           var subClause = $("<li/>")
-            .text(subClauseData.content)
+            .append(subContent)
             .appendTo(subList); //add subclause to its sub list
+
+          //add data to content
+          subContent.children("span.main-content").text(subClauseData.content);
 
           //check if a subsub list is specified
           if ("sub" in subClauseData) {
@@ -110,9 +192,24 @@ function render(resolution) {
 
             //add all subsub clauses
             subClauseData.sub.forEach(function(subsubClauseData) {
-              //append sub sub clause entry to sub sub list
-              subsubList.append("<li/>").text(subsubClauseData.content);
+              //make the subclause
+              var subsubContent = clauseContentTemplate.clone();
+              $("<li/>")
+                .append(subsubContent)
+                .appendTo(subsubList); //add subsubclause to its sub list
+
+              //add data to content
+              subsubContent.children("span.main-content").text(subsubClauseData.content);
             });
+          }
+
+          //append ext content if specified
+          if ("extContent" in subClauseData) {
+            //create another span with the text
+            subClause.append($("<span/>", {
+              "class": ".ext-content",
+              text: subClauseData.extContent
+            }));
           }
         });
       }
@@ -148,19 +245,17 @@ $(document).ready(function() {
         //copy to current structure
         currentStructure = data.update;
 
+        //reset path/element cache because the dom elements may not be in the same order as before
+        changeCache = {};
+
         //render fully
-        console.log(currentStructure);
         render(currentStructure.resolution);
         break;
       case "updateContent": //the content of one clause changed and only that is sent
         //if we've got some structure at all
         if (currentStructure) {
-          //apply change to specified path in contentStructure
-          resolveChangePath(
-            currentStructure.resolution.clauses, //currentStructure.resolution.clauses
-            data.update.contentPath,
-            data.update.content
-          );
+          //apply the change to the document
+          applyDocumentChange(data.update.contentPath, data.update.content);
         }
         //else: bad, no content update should arrive before the init or updateStructure messages
         break;
