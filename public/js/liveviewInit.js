@@ -51,7 +51,6 @@ function prepareResolutionRender() {
 //fucntion that renders the given structure to the liveview display,
 //updates completely: do not use for content update
 function render(resolution) {
-  var time = Date.now();
   //update header
   $(".forum-info").text(resolution.address.forum);
   $("#question-of-info").text(resolution.address.questionOf);
@@ -131,7 +130,6 @@ function render(resolution) {
       clause.appendTo(container).show();
     });
   });
-  console.log(Date.now() - time);
 }
 
 //start liveview as viewer on document load

@@ -544,7 +544,7 @@ $.fn.getContentPath = function() {
   });
 
   //no parent found, we are at the top level: specify what type of clause (op or preamb)
-  path.push(elem.closest("#preamb-clauses") ? "preambulatory" : "operative");
+  path.push(elem.closest("#preamb-clauses").length ? "preambulatory" : "operative");
 
   //path starts with the bottom element
 
