@@ -26,6 +26,10 @@
   margin-left: 0;
 }
 
+p#address-line {
+  text-transform: uppercase;
+}
+
 #preamb-clauses span.phrase {
   font-style: italic;
 }

@@ -376,11 +376,6 @@ $.fn.addClause = function(amount, activationStateChanges) {
 
 //registers event handlers that are essential for the general function of the page
 function registerEssentialEventHandlers(doLoad) {
-  $("body")
-  .on("touchstart", function() {
-    //register touch event and remove tooltips for touch-devices
-    $(".tooltipped").tooltip("remove");
-  });
   //we can only load from file or delete if we loaded the resolution
   if (doLoad) {
     $(".modal").on("reset", function(e) {

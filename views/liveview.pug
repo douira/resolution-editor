@@ -34,7 +34,7 @@ block content
             p#question-of-info ?
           +info-piece("Sponsor")
             p#sponsor-info ?
-          p The #[span.forum-info ?],
+          p#address-line The #[span.forum-info ?],
         .clause-content#clause-content-template
           span.main-content
         #clauses
@@ -42,7 +42,7 @@ block content
           ol#op-clauses
     br
   div.fixed-action-btn
-    a.btn-floating.btn-large#enter-fullscreen(class=pri)
+    a.btn-floating.btn-large#enter-fullscreen(class=pri)&attributes(tooltip("Enter Fullscreen mode", "left"))
       +icon("fullscreen", "mediumsmall-i")
 block scripts
   script(src="/js/dialogs.js")
