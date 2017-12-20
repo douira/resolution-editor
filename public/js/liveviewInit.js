@@ -32,7 +32,7 @@ var pathSegmentMapping = {
   sub: function(e) { return e.children(".subs").children(); },
   phrase: function(e) { return e.children("div.clause-content").children("span.phrase"); },
   content: function(e) { return e.children("div.clause-content").children("span.main-content"); },
-  contentExt: function(e) { return e.children("div.clause-content").children("span.ext-content"); }
+  contentExt: function(e) { return e.children("span.ext-content"); }
 };
 
 //cache paths and the elements they result in
