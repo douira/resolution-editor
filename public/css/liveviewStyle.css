@@ -5,6 +5,7 @@
 #resolution {
   font-family: TimesNewRoman, "Times New Roman", Times, Baskerville, Georgia, serif;
   font-size: 16px;
+  line-height: 1.3em;
 }
 
 #viewcontent:-webkit-full-screen {
@@ -39,9 +40,9 @@ p#address-line {
 }
 
 #preamb-clauses ul {
-  margin-top: 0;
+  margin: 0;
   list-style-position: inside;
-  padding-left: 45px;
+  padding-left: 40px;
 }
 
 #preamb-clauses ul li:before {
@@ -53,7 +54,15 @@ p#address-line {
 #preamb-clauses ul li {
   position: relative;
   display: block;
-  padding-left: 45px;
+  padding-left: 40px;
+}
+
+#preamb-clauses {
+  margin-bottom: 1em;
+}
+
+#preamb-clauses > div {
+  margin-bottom: 1em;
 }
 
 /*See this: http://jsfiddle.net/NU48L for how this came to be like this.
@@ -66,12 +75,12 @@ It was adapted and expanded.*/
 }
 
 #clauses ol ol {
-  padding-left: 45px;
+  padding-left: 40px;
 }
 
 #clauses ol li {
   display: block;
-  padding-left: 45px;
+  padding-left: 40px;
   position: relative;
 }
 
@@ -90,4 +99,15 @@ It was adapted and expanded.*/
   content: counter(item, lower-roman) ". ";
 }
 
+#op-clauses {
+  margin: 0;
+}
+
+#op-clauses > li {
+  margin-bottom: 1em;
+}
+
+#op-clauses > li:last-child {
+  margin-bottom: 0;
+}
 

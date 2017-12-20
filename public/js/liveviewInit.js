@@ -32,7 +32,7 @@ var pathSegmentMapping = {
   sub: function(e) { return e.children(".subs").children(); },
   phrase: function(e) { return e.children("div.clause-content").children("span.phrase"); },
   content: function(e) { return e.children("div.clause-content").children("span.main-content"); },
-  extContent: function(e) { return e.children("div.clause-content").children("span.ext-content"); }
+  contentExt: function(e) { return e.children("div.clause-content").children("span.ext-content"); }
 };
 
 //cache paths and the elements they result in
@@ -64,15 +64,15 @@ function applyDocumentChange(path, content) {
       //is a string: return a sub element of the current element
       if (typeof pathProp === "string") {
         //apply a mapping from path segment to selector
-        pathProp = pathSegmentMapping[pathProp];
+        var elementFinder = pathSegmentMapping[pathProp];
 
         //if there even is a mapping for this path segment
-        if (typeof pathProp === "undefined") {
+        if (typeof elementFinder === "undefined") {
           //bad, unknown path segment
           throw Error("unknown path segment: " + pathProp);
         } else {
           //get element with selector
-          currentElem = pathProp(currentElem);
+          currentElem = elementFinder(currentElem);
         }
       } //is a number and needs to be within length of elements
       else if (typeof pathProp === "number" && pathProp < currentElem.length) {
@@ -118,6 +118,12 @@ function prepareResolutionRender() {
   $("#no-content-msg").hide();
 }
 
+//returns the correct punctuation for a given (op) clause context
+function getPunctuation(subPresent, lastInClause, lastInDoc) {
+  //essentially a precendence waterfall
+  return subPresent ? ":" : lastInDoc ? "." : lastInClause ? ";" : ",";
+}
+
 //fucntion that renders the given structure to the liveview display,
 //updates completely: do not use for content update
 function render(resolution) {
@@ -147,8 +153,11 @@ function render(resolution) {
     //get the dom list element and empty for new filling
     var container = $(clauseType.listSelector).empty();
 
+    //flag for this being in the ops
+    var isOps = clauseType.name === "operative";
+
     //for all clauses of this type, get clauses from structure
-    resolution.clauses[clauseType.name].forEach(function(clauseData) {
+    resolution.clauses[clauseType.name].forEach(function(clauseData, index, arr) {
       //create a clause object by cloning the template
       var content = clauseContentTemplate.clone();
       var clause = $("<" + clauseType.elementType + "/>").append(content);
@@ -162,36 +171,59 @@ function render(resolution) {
         text: clauseData.phrase.trim()
       }));
 
+      //check if subclauses exist
+      var subsPresent = "sub" in clauseData;
+
+      //check if this is the last clause (can't be last if it's a preamb)
+      var lastClause = isOps && index === arr.length - 1;
+
       //fill in the content data
-      content.children(".main-content").text(" " + clauseData.content.trim());
+      content.children(".main-content").text(clauseData.content.trim());
+
+      //add punctuation
+      content.append(getPunctuation(subsPresent, isOps && ! subsPresent, lastClause));
 
       //process subclauses if any specified in data
-      if ("sub" in clauseData) {
+      if (subsPresent) {
         //add list for subclauses, choose type according to type of clause
         var subList = $("<" + clauseType.subListType + "/>")
           .addClass("subs")
           .appendTo(clause); //add clause list to clause
 
         //add subclauses
-        clauseData.sub.forEach(function(subClauseData) {
+        clauseData.sub.forEach(function(subClauseData, subIndex, subArr) {
           //make the subclause
           var subContent = clauseContentTemplate.clone();
           var subClause = $("<li/>")
             .append(subContent)
             .appendTo(subList); //add subclause to its sub list
 
+          //check if a sub list is specified
+          var subsubsPresent = "sub" in subClauseData;
+
+          //check if this is the last subclause of this clause
+          //(not in preambs, those are always ",")
+          var lastSubClause = isOps && subIndex === subArr.length - 1;
+
           //add data to content
           subContent.children("span.main-content").text(subClauseData.content);
 
-          //check if a subsub list is specified
-          if ("sub" in subClauseData) {
+          //add punctuation
+          subContent.append(getPunctuation(
+            subsubsPresent,
+            ! subsubsPresent && lastSubClause,
+            ! subsubsPresent && lastSubClause && lastClause
+          ));
+
+          //if there are subsubs
+          if (subsubsPresent) {
             //add subclause list
             var subsubList = $("<" + clauseType.subListType + "/>")
               .addClass("subs subsubs")
               .appendTo(subClause); //add sub list to clause
 
             //add all subsub clauses
-            subClauseData.sub.forEach(function(subsubClauseData) {
+            subClauseData.sub.forEach(function(subsubClauseData, subsubIndex, subsubArr) {
               //make the subclause
               var subsubContent = clauseContentTemplate.clone();
               $("<li/>")
@@ -200,27 +232,42 @@ function render(resolution) {
 
               //add data to content
               subsubContent.children("span.main-content").text(subsubClauseData.content);
+
+              //add punctuation
+              var lastSubsubClause = subsubIndex === subsubArr.length - 1;
+              subsubContent.append(getPunctuation(
+                false,
+                lastSubsubClause && lastSubClause,
+                lastSubsubClause && lastSubClause && lastClause
+              ));
             });
           }
 
           //append ext content if specified
-          if ("extContent" in subClauseData) {
+          if ("contentExt" in subClauseData) {
             //create another span with the text
             subClause.append($("<span/>", {
-              "class": ".ext-content",
-              text: subClauseData.extContent
+              "class": "ext-content",
+              text: subClauseData.contentExt
             }));
+
+            //add extra punctuation for ext content
+            subClause.append(getPunctuation(
+              false, lastSubClause, lastSubClause && lastClause));
           }
         });
       }
 
       //append ext content if specified
-      if ("extContent" in clauseData) {
+      if ("contentExt" in clauseData) {
         //create another span with the text
-        clause.append("<span/>", {
-          class: ".ext-content",
-          text: clauseData.extContent
-        });
+        clause.append($("<span/>", {
+          "class": "ext-content",
+          text: clauseData.contentExt
+        }));
+
+        //add extra punctuation for ext content
+        clause.append(getPunctuation(false, isOps, lastClause));
       }
 
       //add the newly created clause to the document and make it visible
