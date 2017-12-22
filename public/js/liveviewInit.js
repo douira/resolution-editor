@@ -173,6 +173,14 @@ function render(resolution) {
       var content = clauseContentTemplate.clone();
       var clause = $("<" + clauseType.elementType + "/>").append(content);
 
+      //the element to be put into the container
+      var clauseWrapper = clause; //only clause itself for preambs
+
+      //stick op clauses into an additional container for amendment display
+      if (isOps) {
+        clauseWrapper = $("<div/>").addClass("op-wrapper").append(clause);
+      }
+
       //add the space between the phrase and the content
       content.prepend(" ");
 
@@ -298,9 +306,11 @@ function render(resolution) {
       }
 
       //add the newly created clause to the document and make it visible
-      clause.appendTo(container).show();
+      clauseWrapper.appendTo(container).show();
     });
   });
+
+  $("#amd-container").clone().insertAfter($("#op-clauses").children().first()).show();
 }
 
 //start liveview as viewer on document load

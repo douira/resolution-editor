@@ -1,8 +1,8 @@
 #viewcontent {
-  padding: 2rem;
+  padding: 2em;
 }
 
-#resolution {
+#preamb-clauses, #op-clauses > .op-wrapper, #address {
   font-family: TimesNewRoman, "Times New Roman", Times, Baskerville, Georgia, serif;
   font-size: 16px;
   line-height: 1.3em;
@@ -103,11 +103,27 @@ It was adapted and expanded.*/
   margin: 0;
 }
 
-#op-clauses > li {
+.op-wrapper {
   margin-bottom: 1em;
 }
 
-#op-clauses > li:last-child {
+.op-wrapper:last-child {
   margin-bottom: 0;
 }
 
+#amd-container {
+  border-style: solid;
+  border-color: lightgrey;
+  border-width: 1px 0;
+  margin: 0 -2em;
+  padding: 0 2em;
+}
+
+#amd-container + .op-wrapper {
+  background-color: lightgreen;
+  margin-left: -2rem;
+  margin-right: -2rem;
+  padding-left: 2rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
