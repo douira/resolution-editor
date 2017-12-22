@@ -90,7 +90,7 @@ router.get("/renderpdf/:token", function(req, res) {
         });
     } catch (e) {
       //catch any pandoc or rendering errors we can
-      issueError(res, 500, "render problem pandoc");
+      issueError(res, 500, "render problem pandoc", e);
     }
   });
 });
