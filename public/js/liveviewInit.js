@@ -132,6 +132,16 @@ function render(resolution) {
   $("#question-of-info").text(resolution.address.questionOf);
   $("#sponsor-info").text(resolution.address.sponsor.main);
 
+  //if there are co-sponsors fill i nthat field as well
+  var coSponsors = resolution.address.sponsor.co;
+  if (coSponsors && coSponsors.length) {
+    //insert content
+    $("#co-sponsor-info").text(coSponsors.join(", "));
+
+    //show enclosing row
+    $("#address > .hide-this").show();
+  }
+
   //get clause content template and prepare for use
   var clauseContentTemplate = $("#clause-content-template")
     .clone()
@@ -139,7 +149,8 @@ function render(resolution) {
 
   //process clauses
   [{
-    //the name in the resolution structure object and the selector for the element
+    //the name in the resolution structure object
+    //and the selectors/tag names for the elements to create
     name: "operative",
     listSelector: "#op-clauses",
     elementType: "li",
@@ -248,7 +259,6 @@ function render(resolution) {
 
               //add punctuation
               var lastSubsubClause = subsubIndex === subsubArr.length - 1;
-              console.log(lastSubsubClause);
               subsubContent.append(getPunctuation(
                 false,
                 lastSubsubClause && lastPieceOfClause,
