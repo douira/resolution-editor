@@ -4,6 +4,12 @@
 //keep a copy of the current structure
 var currentStructure;
 
+//keep a copy of the current amendment
+var currentAmendment;
+
+//the current amendment dom element
+var amendmentElem;
+
 //resolves an array form object path and changes the field to the given value
 /*function resolveChangePath(prevObj, remainingPath, setValue) {
   //get next property
@@ -32,7 +38,8 @@ var pathSegmentMapping = {
   sub: function(e) { return e.children(".subs").children(); },
   phrase: function(e) { return e.children("div.clause-content").children("span.phrase"); },
   content: function(e) { return e.children("div.clause-content").children("span.main-content"); },
-  contentExt: function(e) { return e.children("span.ext-content"); }
+  contentExt: function(e) { return e.children("span.ext-content"); },
+  unwrapOp: function(e) { return e.children(); }
 };
 
 //cache paths and the elements they result in
@@ -52,11 +59,20 @@ function applyDocumentChange(path, content) {
     //simply use already computed result
     currentElem = changeCache[pathAsString];
   } else {
+    //pop of the first element from the path stack
+    var pathProp = path.pop();
+
+    //insert a op-wrapper unwrapping path segment
+    //to expose the inner li in op clauses that are wrapped
+    if (pathProp === "operative") {
+      path.splice(-1, 0, "unwrapOp");
+    }
+
     //the current element we are searching in, start off with preamb/op seperation
-    currentElem = $(path.pop() === "operative" ? "#op-clauses" : "#preamb-clauses").children();
+    currentElem = $(pathProp === "operative" ? "#op-clauses" : "#preamb-clauses")
+      .children("div:not(#amd-container)");
 
     //until we get to the element specified by the whole path
-    var pathProp;
     while (path.length && currentElem.length) {
       //pop off the next property to follow
       pathProp = path.pop();
@@ -126,7 +142,7 @@ function getPunctuation(subPresent, lastInClause, lastInDoc) {
 
 //fucntion that renders the given structure to the liveview display,
 //updates completely: do not use for content update
-function render(resolution) {
+function render(resolution, amd) {
   //update header
   $(".forum-info").text(resolution.address.forum);
   $("#question-of-info").text(resolution.address.questionOf);
@@ -307,10 +323,95 @@ function render(resolution) {
 
       //add the newly created clause to the document and make it visible
       clauseWrapper.appendTo(container).show();
+
+      //check if the clause is subject of the amendment
+      if (isOps && amd && amd.clauseIndex === index) {
+        //add amendment box before clause wrapper
+        displayAmendment(amd, clauseWrapper);
+      }
     });
   });
+}
 
-  $("#amd-container").clone().insertAfter($("#op-clauses").children().first()).show();
+//preset strings for action message in amendments
+var amdActionTexts = {
+  change: "wants to change",
+  replace: "wants to replace",
+  add: "wants to append",
+  remove: "wants to strike out"
+};
+
+//error that means the amendment type is invalid
+function invalidAmdTypeError(type) {
+  return Error("no amendment action type '" + type + "' exists.");
+}
+
+//updates the text content of a given amendment box element
+function updateAmendmentContents(amd, elem) {
+  //error and stop if no such type exists
+  var actionText;
+  if (amd.type in amdActionTexts) {
+    //get action string for this type of amendment
+    actionText = amdActionTexts[amd.type];
+  } else {
+    throw invalidAmdTypeError(amd.type);
+  }
+
+  //fill clone with info
+  elem.find("span.amd-sponsor").text(amd.sponsor);
+  elem.find("span.amd-action-text").text(actionText);
+  //convert to 1 indexed counting
+  elem.find("span.amd-target").text("OC" + (amd.clauseIndex + 1));
+}
+
+//sets an amendment to be displayed inline in the resolution
+//clause elem must have a prenent element that we can put the amendment element in
+function displayAmendment(amd, clauseElem) {
+  //get a clone of the template amendment container
+  var amdContainer = $("#amd-container").clone();
+
+  //update the contents of the new element
+  updateAmendmentContents(amd, amdContainer);
+
+  //set the dom element
+  amendmentElem = amdContainer;
+
+  //prepend before the given clause element and make visible
+  amdContainer.insertBefore(clauseElem).show();
+}
+
+//for triggering and amendment message manually (function break-out)
+function amendmentMessage(data) {
+  //check if the type changed significantly
+  //change from falsy to truthy amendment or type changed
+  //the amendment is resolved (removed) by setting the whole amendment object to false
+  if (! (currentAmendment &&
+         currentAmendment.type === data.amendment.type &&
+         currentAmendment.clauseIndex === data.amendment.clauseIndex)) {
+    //make a structure update that contains the new amendment,
+    //need structure to be present because the amendment doesn't atually provide it
+    if (currentStructure) {
+      //save the amendment
+      currentAmendment = data.amendment;
+
+      //don't need to clear cache, doesn't change path indexes
+
+      //render again
+      render(currentStructure.resolution, currentAmendment);
+    } else {
+      //can't do structure update without having a structure
+      console.error("can't apply amendment without having a structure");
+    }
+  } else {
+    //save the amendment
+    currentAmendment = data.amendment;
+
+    //do a content update on the amendment
+    updateAmendmentContents(currentAmendment, amendmentElem);
+  }
+
+  //TODO: do structure update when contained structure of clause changes
+  //TODO: display according to amendment type
 }
 
 //start liveview as viewer on document load
@@ -326,29 +427,34 @@ $(document).ready(function() {
           prepareResolutionRender();
         }
 
-        //copy to current structure
+        //copy given resolution to current structure
         currentStructure = data.update;
 
         //reset path/element cache because the dom elements may not be in the same order as before
         changeCache = {};
 
         //render fully
-        render(currentStructure.resolution);
+        render(currentStructure.resolution, currentAmendment);
         break;
       case "updateContent": //the content of one clause changed and only that is sent
         //if we've got some structure at all
         if (currentStructure) {
           //apply the change to the document
           applyDocumentChange(data.update.contentPath, data.update.content);
+        } else {
+          //bad, no content update should arrive before the init or updateStructure messages
+          console.error("no content update should arrive before structure is received");
         }
-        //else: bad, no content update should arrive before the init or updateStructure messages
+        break;
+      case "amendment":
+        amendmentMessage(data);
         break;
     }
   });
 
   //display no content message after two seconds (if the content isn't there then)
   setTimeout(function() {
-    //check if the cotent is there, if not display no content message
+    //check if the content is there, if not display no content message
     if ($("#resolution").is(":hidden")) {
       $("#no-content-msg").show(250);
     }
