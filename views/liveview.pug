@@ -33,8 +33,8 @@ block content
         #address
           mixin info-piece(type)
             .row
-              .col.s4.l2: p=type.toUpperCase() + ":"
-              .col.s8.l10: block
+              .col.s4.l3: p=type.toUpperCase() + ":"
+              .col.s8.l9: block
           +info-piece("Forum")
             p.forum-info ?
           +info-piece("Question Of")
@@ -42,8 +42,8 @@ block content
           +info-piece("Sponsor")
             p#sponsor-info ?
           .row.hide-this
-            .col.s4.l2: p CO-SPONSORS:
-            .col.s8.l10: p#co-sponsor-info
+            .col.s4.l3: p CO-SPONSORS:
+            .col.s8.l9: p#co-sponsor-info
           p#address-line The #[span.forum-info ?],
         .clause-content#clause-content-template
           span.main-content

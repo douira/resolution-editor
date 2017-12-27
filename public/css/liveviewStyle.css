@@ -119,8 +119,9 @@ It was adapted and expanded.*/
   padding: 0 2em;
 }
 
+/*materialize .green.lighten-3 color*/
 #amd-container + .op-wrapper {
-  background-color: lightgreen;
+  background-color: #a5d6a7;
   margin-left: -2rem;
   margin-right: -2rem;
   padding-left: 2rem;
