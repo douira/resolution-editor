@@ -10,29 +10,6 @@ var currentAmendment;
 //the current amendment dom element
 var amendmentElem;
 
-//resolves an array form object path and changes the field to the given value
-/*function resolveChangePath(prevObj, remainingPath, setValue) {
-  //get next property
-  var prop = remainingPath.pop();
-
-  //error if property not present
-  if (! (prop in prevObj)) {
-    console.error("invalid path property segement:", prop, "in", prevObj);
-  }
-
-  //if there are still steps more to be taken in the path
-  if (remainingPath.length) {
-    //resolve one step further
-    prevObj = prevObj[prop];
-
-    //go one level deeper
-    resolveChangePath(prevObj, remainingPath, setValue);
-  } else {
-    //finished resolving, change value
-    prevObj[prop] = setValue;
-  }
-}*/
-
 //maps between string path segments and sub element selectors
 var pathSegmentMapping = {
   sub: function(e) { return e.children(".subs").children(); },
@@ -47,7 +24,7 @@ var changeCache = {};
 
 //applies a change to the resolution document in html given a path and a new content
 //basically does a translation between the resolution docuement and the dom version of it
-function applyDocumentChange(path, content) {
+function applyDocumentChange(resolution, path, content) {
   //element to apply the change to (set new value)
   var currentElem;
 
@@ -57,7 +34,11 @@ function applyDocumentChange(path, content) {
   //if there is a already found element for the path, use that results instead of calculating it
   if (pathAsString in changeCache) {
     //simply use already computed result
-    currentElem = changeCache[pathAsString];
+    var cacheResult = changeCache[pathAsString];
+    currentElem = cacheResult.elem;
+
+    //change in already found place in structure
+    cacheResult.clause[path[0]] = content;
   } else {
     //pop of the first element from the path stack
     var pathProp = path.pop();
@@ -67,6 +48,9 @@ function applyDocumentChange(path, content) {
     if (pathProp === "operative") {
       path.splice(-1, 0, "unwrapOp");
     }
+
+    //get object for first step
+    var structureObj = resolution.clauses[pathProp];
 
     //the current element we are searching in, start off with preamb/op seperation
     currentElem = $(pathProp === "operative" ? "#op-clauses" : "#preamb-clauses")
@@ -98,6 +82,13 @@ function applyDocumentChange(path, content) {
         //invalid path
         throw Error("invalid path segment: " + pathProp);
       }
+
+      //for the structure object: continue down if it results in an object
+      var pathStepResult = structureObj[pathProp];
+      if (pathProp !== "unwrapOp" && typeof pathStepResult === "object") {
+        //use as next structureObj
+        structureObj = pathStepResult;
+      }
     }
 
     //stop if there are no elements left and the path was selecting a non-existant element
@@ -106,7 +97,10 @@ function applyDocumentChange(path, content) {
     }
 
     //put element result into cache
-    changeCache[pathAsString] = currentElem;
+    changeCache[pathAsString] = {
+      elem: currentElem,
+      clause: structureObj
+    };
   }
 
   //apply the change to the found end of the path
@@ -440,7 +434,8 @@ $(document).ready(function() {
         //if we've got some structure at all
         if (currentStructure) {
           //apply the change to the document
-          applyDocumentChange(data.update.contentPath, data.update.content);
+          applyDocumentChange(
+            currentStructure.resolution, data.update.contentPath, data.update.content);
         } else {
           //bad, no content update should arrive before the init or updateStructure messages
           console.error("no content update should arrive before structure is received");

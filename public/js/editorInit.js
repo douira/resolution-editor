@@ -712,7 +712,7 @@ function registerEventHandlers(loadedData) {
     //init the chips thing with autocomplete options
     elem.material_chip({
       //chips prefilled data
-      data: elem.getData().data,
+      data: elem.getData().initData,
 
       //autocomplete options for the input field
       autocompleteOptions: $.extend({
@@ -728,7 +728,7 @@ function registerEventHandlers(loadedData) {
       }, autofillSettings)
     });
 
-    elem.getData().data = [];
+    elem.getData().initData = [];
   })
   .on("reset", function(e) {
     e.stopPropagation();

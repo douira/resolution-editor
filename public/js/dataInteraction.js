@@ -176,7 +176,7 @@ function loadJson(json, callbackOnSuccess) {
 
   //init chips with new data, convert array to tag objects
   var elem = $("#co-spon");
-  elem.getData().data = res.address.sponsor.co.map(function(str) {
+  elem.getData().initData = res.address.sponsor.co.map(function(str) {
     return { tag: str };
   });
 
@@ -485,20 +485,22 @@ function saveFileDownload(str) {
   });
 }
 
-//index of structure changes, incremented every time the structure changes
-//paths calculated with a small index will be ignored and recalculated
-var structureChangeIndex = 0;
+//the path cache keeps track of already calculated cached paths
+var pathCache = {};
 
-//gets the path of a clause
+//is incremented every time a path is added to the cache
+var nextPathId = 0;
+
+//gets the path of a clause,
+//path starts with the bottom element so that popping produces the first selector
 $.fn.getContentPath = function() {
   //get data for this element
   var data = this.getData();
 
-  //if no structure change has occured and path is present in data
-  if (data.hasOwnProperty("contentPath") &&
-      data.contentPath.structureIndex === structureChangeIndex) {
-    //use this path instead
-    return data.contentPath.path;
+  //check if there is a cached path for this element present
+  if ("pathId" in data && data.pathId in pathCache) {
+    //use cached path instead
+    return pathCache[data.pathId];
   }
 
   //path elements in order from deepest to top
@@ -543,13 +545,11 @@ $.fn.getContentPath = function() {
   //no parent found, we are at the top level: specify what type of clause (op or preamb)
   path.push(elem.closest("#preamb-clauses").length ? "preambulatory" : "operative");
 
-  //path starts with the bottom element
+  //set the path id as the current id number and increment
+  data.pathId = nextPathId++;
 
-  //put path into data to reuse
-  data.contentPath = {
-    path: path,
-    structureIndex: structureChangeIndex
-  };
+  //cache the path
+  pathCache[data.pathId] = path;
 
   //return calculated path
   return path;
@@ -567,8 +567,8 @@ function sendLVUpdate(type, elem) {
   //sends a structure update to server
   switch(type) {
     case "structure":
-      //increment structure index with change happened
-      structureChangeIndex ++;
+      //empty path cache
+      pathCache = {};
 
       //send as structure update
       sendJsonLV({
