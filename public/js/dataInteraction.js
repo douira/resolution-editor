@@ -494,13 +494,16 @@ var nextPathId = 0;
 //gets the path of a clause,
 //path starts with the bottom element so that popping produces the first selector
 $.fn.getContentPath = function() {
-  //get data for this element
-  var data = this.getData();
+  //get path id of this element
+  /*we use an element specific attribute because modifying it won't change the attribute in
+  other elements (.data() in jquery only copies the reference apparently when elements are
+  cloned and thereby causes two elements to have the same data object)*/
+  var pathId = this.attr("data-path-id");
 
   //check if there is a cached path for this element present
-  if ("pathId" in data && data.pathId in pathCache) {
+  if (typeof pathId !== "undefined" && String(pathId) in pathCache) {
     //use cached path instead
-    return pathCache[data.pathId];
+    return pathCache[String(pathId)];
   }
 
   //path elements in order from deepest to top
@@ -546,10 +549,10 @@ $.fn.getContentPath = function() {
   path.push(elem.closest("#preamb-clauses").length ? "preambulatory" : "operative");
 
   //set the path id as the current id number and increment
-  data.pathId = nextPathId++;
+  elem.attr("data-path-id", nextPathId);
 
-  //cache the path
-  pathCache[data.pathId] = path;
+  //cache the path and increment for next path cache operation
+  pathCache[nextPathId++] = path;
 
   //return calculated path
   return path;
