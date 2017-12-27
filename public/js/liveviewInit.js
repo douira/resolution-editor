@@ -96,6 +96,9 @@ function applyDocumentChange(resolution, path, content) {
       throw Error("path didn't resolve to a single element");
     }
 
+    //apply the change in the structure object
+    structureObj[pathProp] = content;
+
     //put element result into cache
     changeCache[pathAsString] = {
       elem: currentElem,
@@ -137,6 +140,10 @@ function getPunctuation(subPresent, lastInClause, lastInDoc) {
 //fucntion that renders the given structure to the liveview display,
 //updates completely: do not use for content update
 function render(resolution, amd) {
+  //clear change cache because we are generating new elements
+  //that aren't referenced in the cache
+  changeCache = {};
+
   //update header
   $(".forum-info").text(resolution.address.forum);
   $("#question-of-info").text(resolution.address.questionOf);
@@ -424,15 +431,14 @@ $(document).ready(function() {
         //copy given resolution to current structure
         currentStructure = data.update;
 
-        //reset path/element cache because the dom elements may not be in the same order as before
-        changeCache = {};
-
         //render fully
         render(currentStructure.resolution, currentAmendment);
         break;
       case "updateContent": //the content of one clause changed and only that is sent
         //if we've got some structure at all
         if (currentStructure) {
+          //console.log(data.update.contentPath.join(","), data.update.content);
+
           //apply the change to the document
           applyDocumentChange(
             currentStructure.resolution, data.update.contentPath, data.update.content);
