@@ -7,8 +7,8 @@ var currentStructure;
 //keep a copy of the current amendment
 var currentAmendment;
 
-//the current amendment dom element
-var amendmentElem;
+//the current amendment and clause elements
+var amendmentElements;
 
 //maps between string path segments and sub element selectors
 var pathSegmentMapping = {
@@ -374,8 +374,11 @@ function displayAmendment(amd, clauseElem) {
   //update the contents of the new element
   updateAmendmentContents(amd, amdContainer);
 
-  //set the dom element
-  amendmentElem = amdContainer;
+  //set the dom elements
+  amendmentElements = {
+    amd: amdContainer,
+    clause: clauseElem,
+  };
 
   //prepend before the given clause element and make visible
   amdContainer.insertBefore(clauseElem).show();
@@ -388,6 +391,7 @@ function amendmentMessage(data) {
   //the amendment is resolved (removed) by setting the whole amendment object to false
   if (! (currentAmendment &&
          currentAmendment.type === data.amendment.type &&
+         (currentAmendment.clauseIndex || data.amendment.clauseIndex) &&
          currentAmendment.clauseIndex === data.amendment.clauseIndex)) {
     //make a structure update that contains the new amendment,
     //need structure to be present because the amendment doesn't atually provide it
@@ -395,10 +399,14 @@ function amendmentMessage(data) {
       //save the amendment
       currentAmendment = data.amendment;
 
-      //don't need to clear cache, doesn't change path indexes
-
       //render again
       render(currentStructure.resolution, currentAmendment);
+
+      //scroll the amendment element and the clause into view
+      amendmentElements.amd.add(amendmentElements.clause).scrollIntoView({
+        direction: "y",
+        duration: "normal"
+      });
     } else {
       //can't do structure update without having a structure
       console.error("can't apply amendment without having a structure");
@@ -408,7 +416,7 @@ function amendmentMessage(data) {
     currentAmendment = data.amendment;
 
     //do a content update on the amendment
-    updateAmendmentContents(currentAmendment, amendmentElem);
+    updateAmendmentContents(currentAmendment, amendmentElements.amd);
   }
 
   //TODO: do structure update when contained structure of clause changes
