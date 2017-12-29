@@ -399,8 +399,37 @@ function amendmentMessage(data) {
       //save the amendment
       currentAmendment = data.amendment;
 
+      //if it's adding a clause
+      if (currentAmendment.type === "add") {
+        //get the array of op clauses in the resolution
+        var opClauses = currentStructure.resolution.clauses.operative;
+
+        //set the index to point to the newly added clause
+        currentAmendment.clauseIndex = opClauses.length;
+
+        //add it the end of the resolution
+        if (currentAmendment.newClause) {
+          opClauses.push(currentAmendment.newClause);
+        } else {
+          //error if not present
+          console.error("a new clause had to be specified with the amendment" +
+                        "type 'add' but was not.");
+        }
+
+      }
+
       //render again
       render(currentStructure.resolution, currentAmendment);
+
+      //reset color classes
+      amendmentElements.amd.removeClass("mark-amd-green mark-amd-red");
+
+      //set the color of the amendment according to type
+      if (currentAmendment.type === "add") {
+        amendmentElements.amd.addClass("mark-amd-green");
+      } else if (currentAmendment.type === "remove") {
+        amendmentElements.amd.addClass("mark-amd-red");
+      }
 
       //scroll the amendment element and the clause into view
       amendmentElements.amd.add(amendmentElements.clause).scrollIntoView({
