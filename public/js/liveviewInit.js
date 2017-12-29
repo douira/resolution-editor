@@ -54,7 +54,7 @@ function applyDocumentChange(resolution, path, content) {
 
     //the current element we are searching in, start off with preamb/op seperation
     currentElem = $(pathProp === "operative" ? "#op-clauses" : "#preamb-clauses")
-      .children("div:not(#amd-container)");
+      .children("div.op-wrapper, div.preamb-clause");
 
     //until we get to the element specified by the whole path
     while (path.length && currentElem.length) {
@@ -108,6 +108,10 @@ function applyDocumentChange(resolution, path, content) {
 
   //apply the change to the found end of the path
   currentElem.text(content);
+
+  //scroll the containing clause into view,
+  //this may have to be disabled if it prooves to be annoying
+  currentElem.closest("div.preamb-clause, div.op-wrapper").scrollIntoView();
 }
 
 //makes the given element go into full screen mode
@@ -196,6 +200,9 @@ function render(resolution, amd) {
       //stick op clauses into an additional container for amendment display
       if (isOps) {
         clauseWrapper = $("<div/>").addClass("op-wrapper").append(clause);
+      } else {
+        //add clause to preamb div for identification
+        clauseWrapper.addClass("preamb-clause");
       }
 
       //add the space between the phrase and the content
@@ -348,7 +355,7 @@ function invalidAmdTypeError(type) {
 }
 
 //updates the text content of a given amendment box element
-function updateAmendmentContents(amd, elem) {
+function updateAmendmentContents(amd, amdElem, clauseElem) {
   //error and stop if no such type exists
   var actionText;
   if (amd.type in amdActionTexts) {
@@ -359,10 +366,13 @@ function updateAmendmentContents(amd, elem) {
   }
 
   //fill clone with info
-  elem.find("span.amd-sponsor").text(amd.sponsor);
-  elem.find("span.amd-action-text").text(actionText);
+  amdElem.find("span.amd-sponsor").text(amd.sponsor);
+  amdElem.find("span.amd-action-text").text(actionText);
   //convert to 1 indexed counting
-  elem.find("span.amd-target").text("OC" + (amd.clauseIndex + 1));
+  amdElem.find("span.amd-target").text("OC" + (amd.clauseIndex + 1));
+
+  //scroll the amendment element and the clause into view
+  amdElem.add(clauseElem).scrollIntoView();
 }
 
 //sets an amendment to be displayed inline in the resolution
@@ -372,7 +382,7 @@ function displayAmendment(amd, clauseElem) {
   var amdContainer = $("#amd-container").clone();
 
   //update the contents of the new element
-  updateAmendmentContents(amd, amdContainer);
+  updateAmendmentContents(amd, amdContainer, clauseElem);
 
   //set the dom elements
   amendmentElements = {
@@ -412,8 +422,8 @@ function amendmentMessage(data) {
           opClauses.push(currentAmendment.newClause);
         } else {
           //error if not present
-          console.error("a new clause had to be specified with the amendment" +
-                        "type 'add' but was not.");
+          console.error("a new clause has to be specified with the amendment " +
+                        "type 'add', but was not.");
         }
 
       }
@@ -430,12 +440,6 @@ function amendmentMessage(data) {
       } else if (currentAmendment.type === "remove") {
         amendmentElements.amd.addClass("mark-amd-red");
       }
-
-      //scroll the amendment element and the clause into view
-      amendmentElements.amd.add(amendmentElements.clause).scrollIntoView({
-        direction: "y",
-        duration: "normal"
-      });
     } else {
       //can't do structure update without having a structure
       console.error("can't apply amendment without having a structure");
