@@ -359,10 +359,10 @@ function render(resolution, amd) {
 
 //preset strings for action message in amendments
 var amdActionTexts = {
-  change: "wants to change",
-  replace: "wants to replace",
-  add: "wants to append",
-  remove: "wants to strike out"
+  change: "change",
+  replace: "replace",
+  add: "append",
+  remove: "strike out"
 };
 
 //error that means the amendment type is invalid
@@ -484,7 +484,8 @@ function amendmentMessage(data) {
     .scrollIntoView();
 
   //TODO: do structure update when contained structure of clause changes
-  //TODO: display according to amendment type
+  //TODO: handle "change" type amendments
+  //TODO: allow changing the replacement clause in "replace" amendments
 }
 
 //start liveview as viewer on document load
