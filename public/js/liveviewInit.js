@@ -54,7 +54,8 @@ function applyDocumentChange(resolution, path, content) {
 
     //the current element we are searching in, start off with preamb/op seperation
     currentElem = $(pathProp === "operative" ? "#op-clauses" : "#preamb-clauses")
-      .children("div.op-wrapper, div.preamb-clause");
+      //count using only the real clause elements
+      .children("div.op-clause, div.preamb-clause");
 
     //until we get to the element specified by the whole path
     while (path.length && currentElem.length) {
@@ -199,7 +200,22 @@ function render(resolution, amd) {
 
       //stick op clauses into an additional container for amendment display
       if (isOps) {
-        clauseWrapper = $("<div/>").addClass("op-wrapper").append(clause);
+        //create a wrapper and add op-wrapper for layout and styling
+        clauseWrapper = $("<div/>").addClass("op-wrapper");
+
+        //if it's an actual clause that receives content updates, add class to signify
+        //otherwise color green as replacement clause in amendment
+        clauseWrapper.addClass(clauseData.isReplacement ? "mark-amd-green": "op-clause");
+
+        //set replacement clause (for scroll)
+        //this is always called after displayAmendment has run,
+        //so replacementClause won't be erased by it
+        if (clauseData.isReplacement) {
+          amendmentElements.replacementClause = clauseWrapper;
+        }
+
+        //encapsulate the inner clause element
+        clauseWrapper.append(clause);
       } else {
         //add clause to preamb div for identification
         clauseWrapper.addClass("preamb-clause");
@@ -355,7 +371,7 @@ function invalidAmdTypeError(type) {
 }
 
 //updates the text content of a given amendment box element
-function updateAmendmentContents(amd, amdElem, clauseElem) {
+function updateAmendmentContents(amd, amdElem) {
   //error and stop if no such type exists
   var actionText;
   if (amd.type in amdActionTexts) {
@@ -370,9 +386,6 @@ function updateAmendmentContents(amd, amdElem, clauseElem) {
   amdElem.find("span.amd-action-text").text(actionText);
   //convert to 1 indexed counting
   amdElem.find("span.amd-target").text("OC" + (amd.clauseIndex + 1));
-
-  //scroll the amendment element and the clause into view
-  amdElem.add(clauseElem).scrollIntoView();
 }
 
 //sets an amendment to be displayed inline in the resolution
@@ -382,12 +395,13 @@ function displayAmendment(amd, clauseElem) {
   var amdContainer = $("#amd-container").clone();
 
   //update the contents of the new element
-  updateAmendmentContents(amd, amdContainer, clauseElem);
+  updateAmendmentContents(amd, amdContainer);
 
   //set the dom elements
   amendmentElements = {
     amd: amdContainer,
     clause: clauseElem,
+    replacementClause: $() //empty set
   };
 
   //prepend before the given clause element and make visible
@@ -409,26 +423,36 @@ function amendmentMessage(data) {
       //save the amendment
       currentAmendment = data.amendment;
 
+      //require new clause to be specified with types add and replace
+      if ((currentAmendment.type === "add" || currentAmendment.type === "replace") &&
+          ! currentAmendment.newClause) {
+        //error if not present
+        throw Error("a new clause has to be specified with the amendment " +
+                      "type 'add', but was not.");
+      }
+
+      //get the array of op clauses in the resolution
+      var opClauses = currentStructure.resolution.clauses.operative;
+
       //if it's adding a clause
       if (currentAmendment.type === "add") {
-        //get the array of op clauses in the resolution
-        var opClauses = currentStructure.resolution.clauses.operative;
-
         //set the index to point to the newly added clause
         currentAmendment.clauseIndex = opClauses.length;
 
         //add it the end of the resolution
-        if (currentAmendment.newClause) {
-          opClauses.push(currentAmendment.newClause);
-        } else {
-          //error if not present
-          console.error("a new clause has to be specified with the amendment " +
-                        "type 'add', but was not.");
-        }
-
+        opClauses.push(currentAmendment.newClause);
       }
 
-      //render again
+      //add new clause after index of targeted clause as replacement
+      if (currentAmendment.type === "replace") {
+        //make the new clause a replacement clause so it's rendered as one
+        currentAmendment.newClause.isReplacement = true;
+
+        //splice into clauses
+        opClauses.splice(currentAmendment.clauseIndex + 1, 0, currentAmendment.newClause);
+      }
+
+      //render all
       render(currentStructure.resolution, currentAmendment);
 
       //reset color classes
@@ -437,7 +461,7 @@ function amendmentMessage(data) {
       //set the color of the amendment according to type
       if (currentAmendment.type === "add") {
         amendmentElements.amd.addClass("mark-amd-green");
-      } else if (currentAmendment.type === "remove") {
+      } else if (currentAmendment.type === "remove" || currentAmendment.type === "replace") {
         amendmentElements.amd.addClass("mark-amd-red");
       }
     } else {
@@ -451,6 +475,13 @@ function amendmentMessage(data) {
     //do a content update on the amendment
     updateAmendmentContents(currentAmendment, amendmentElements.amd);
   }
+
+  //scroll the amendment elements and the clause into view
+  amendmentElements.amd
+    .add(amendmentElements.clause)
+    //will do nothing if it is a empty set because the amendment isn't type replace
+    .add(amendmentElements.replacementClause)
+    .scrollIntoView();
 
   //TODO: do structure update when contained structure of clause changes
   //TODO: display according to amendment type

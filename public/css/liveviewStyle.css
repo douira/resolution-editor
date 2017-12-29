@@ -124,7 +124,7 @@ It was adapted and expanded.*/
 }
 
 /*materialize .grey.lighten-2 color*/
-#amd-container + .op-wrapper {
+#amd-container + .op-wrapper, .op-wrapper.mark-amd-green {
   background-color: #e0e0e0;
   margin-left: -2rem;
   margin-right: -2rem;
@@ -134,11 +134,15 @@ It was adapted and expanded.*/
 }
 
 /*materialize .green.lighten-3 color*/
-#amd-container.mark-amd-green + .op-wrapper {
+#amd-container.mark-amd-green + .op-wrapper, .op-wrapper.mark-amd-green {
   background-color: #a5d6a7;
 }
 
 /*materialize .red.lighten-3 color*/
 #amd-container.mark-amd-red + .op-wrapper {
   background-color: #ef9a9a;
+}
+
+.op-wrapper.mark-amd-green {
+  margin-top: -0.5em;
 }
