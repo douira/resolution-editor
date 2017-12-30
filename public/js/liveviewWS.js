@@ -190,6 +190,7 @@ function startWS(isViewer, updateListener) {
         break;
       case "updateStructure": //viewer
       case "updateContent":
+      case "amendment":
         //no special action, handling done by update listener
         break;
       default: //both client types
@@ -204,8 +205,8 @@ function startWS(isViewer, updateListener) {
   };
 }
 
-//starts liveview websocket operations, given if this client is editor is viewer
-//called after/inside document load
+//starts liveview websocket operations, given if this client is editor or viewer
+//should be called in document ready
 function startLiveviewWS(isViewer, token, code, updateListener) {
   //use given token and code if given
   if (typeof token === "string") {

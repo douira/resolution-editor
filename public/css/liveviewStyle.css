@@ -123,14 +123,17 @@ It was adapted and expanded.*/
   padding: 0 2em;
 }
 
-/*materialize .grey.lighten-2 color*/
 #amd-container + .op-wrapper, .op-wrapper.mark-amd-green {
-  background-color: #e0e0e0;
   margin-left: -2rem;
   margin-right: -2rem;
   padding-left: 2rem;
   padding-top: 1rem;
   padding-bottom: 1rem;
+}
+
+/*materialize .grey.lighten-2 color*/
+#amd-container + .op-wrapper, .op-wrapper.mark-amd-grey {
+  background-color: #eee;
 }
 
 /*materialize .green.lighten-3 color*/
