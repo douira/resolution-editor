@@ -205,7 +205,7 @@ function render(resolution, amd) {
 
         //if it's an actual clause that receives content updates, add class to signify
         //otherwise color green as replacement clause in amendment
-        clauseWrapper.addClass(clauseData.isReplacement ? "mark-amd-green": "op-clause");
+        clauseWrapper.addClass(clauseData.isReplacement ? "mark-green": "op-clause");
 
         //set replacement clause (for scroll)
         //this is always called after displayAmendment has run,
@@ -409,68 +409,68 @@ function displayAmendment(amd, clauseElem) {
 }
 
 //for triggering and amendment message manually (function break-out)
-function amendmentMessage(data) {
-  //check if the type changed significantly
-  //change from falsy to truthy amendment or type changed
-  //the amendment is resolved (removed) by setting the whole amendment object to false
-  if (! (currentAmendment &&
-         currentAmendment.type === data.amendment.type &&
-         (currentAmendment.clauseIndex || data.amendment.clauseIndex) &&
-         currentAmendment.clauseIndex === data.amendment.clauseIndex)) {
-    //make a structure update that contains the new amendment,
-    //need structure to be present because the amendment doesn't atually provide it
-    if (currentStructure) {
-      //save the amendment
-      currentAmendment = data.amendment;
+function amendmentMessage(amd) {
+  //changed significantly if server says so or this is the first amendment update we receive
+  if (! currentAmendment || amd.structureChanged) {
+    //save the amendment
+    currentAmendment = amd;
 
-      //require new clause to be specified with types add and replace
-      if ((currentAmendment.type === "add" || currentAmendment.type === "replace") &&
-          ! currentAmendment.newClause) {
-        //error if not present
-        throw Error("a new clause has to be specified with the amendment " +
-                      "type 'add', but was not.");
-      }
+    //make a copy to apply the amendment to on the next amdendment update,
+    //if there isn't a copy already made
+    /*if (! unamendedStructure) {
+      //deep copy with jquery extend is sufficiently fast 0.0016ms per op
+      unamendedStructure = $.extend(true, {}, obj);
+    }*/
+    //console.log("structure");
 
-      //get the array of op clauses in the resolution
-      var opClauses = currentStructure.resolution.clauses.operative;
+    //new current structure to apply amdendment to is given by server,
+    //which gets it from the editor and applies content updates to it on its own
+    currentStructure = amd.latestStructure;
 
-      //if it's adding a clause
-      if (currentAmendment.type === "add") {
-        //set the index to point to the newly added clause
-        currentAmendment.clauseIndex = opClauses.length;
+    //require new clause to be specified with types add and replace
+    if ((amd.type === "add" || amd.type === "replace") &&
+        ! amd.newClause) {
+      //error if not present
+      throw Error("a new clause has to be specified with the amendment " +
+                    "type 'add', but was not.");
+    }
 
-        //add it the end of the resolution
-        opClauses.push(currentAmendment.newClause);
-      }
+    //get the array of op clauses in the resolution
+    var opClauses = currentStructure.resolution.clauses.operative;
 
-      //add new clause after index of targeted clause as replacement
-      if (currentAmendment.type === "replace") {
-        //make the new clause a replacement clause so it's rendered as one
-        currentAmendment.newClause.isReplacement = true;
+    //if it's adding a clause
+    if (amd.type === "add") {
+      //set the index to point to the newly added clause
+      amd.clauseIndex = opClauses.length;
 
-        //splice into clauses
-        opClauses.splice(currentAmendment.clauseIndex + 1, 0, currentAmendment.newClause);
-      }
+      //add it the end of the resolution
+      opClauses.push(amd.newClause);
+    }
 
-      //render all
-      render(currentStructure.resolution, currentAmendment);
+    //add new clause after index of targeted clause as replacement
+    if (amd.type === "replace") {
+      //make the new clause a replacement clause so it's rendered as one
+      amd.newClause.isReplacement = true;
 
-      //reset color classes
-      amendmentElements.amd.removeClass("mark-amd-green mark-amd-red");
+      //splice into clauses
+      opClauses.splice(amd.clauseIndex + 1, 0, amd.newClause);
+    }
 
-      //set the color of the amendment according to type
-      if (currentAmendment.type === "add") {
-        amendmentElements.amd.addClass("mark-amd-green");
-      } else if (currentAmendment.type === "remove" || currentAmendment.type === "replace") {
-        amendmentElements.amd.addClass("mark-amd-red");
-      }
-    } else {
-      //can't do structure update without having a structure
-      console.error("can't apply amendment without having a structure");
+    //render all
+    render(currentStructure.resolution, amd);
+
+    //reset color classes
+    amendmentElements.amd.removeClass("mark-amd-green mark-amd-red");
+
+    //set the color of the amendment according to type
+    if (amd.type === "add") {
+      amendmentElements.amd.addClass("mark-amd-green");
+    } else if (amd.type === "remove" || amd.type === "replace") {
+      amendmentElements.amd.addClass("mark-amd-red");
     }
   } else {
     //save the amendment
-    currentAmendment = data.amendment;
+    currentAmendment = amd;
 
     //do a content update on the amendment
     updateAmendmentContents(currentAmendment, amendmentElements.amd);
@@ -521,7 +521,7 @@ $(document).ready(function() {
         }
         break;
       case "amendment":
-        amendmentMessage(data);
+        amendmentMessage(data.update.amendment);
         break;
     }
   });

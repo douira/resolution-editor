@@ -123,7 +123,11 @@ It was adapted and expanded.*/
   padding: 0 2em;
 }
 
-#amd-container + .op-wrapper, .op-wrapper.mark-amd-green {
+/*Color Marking:
+Use .mark-amd- only for the amendment element itself
+Use .mark- for all other elements that need to be colored
+*/
+#amd-container + .op-wrapper, .op-wrapper.mark-green {
   margin-left: -2rem;
   margin-right: -2rem;
   padding-left: 2rem;
@@ -131,21 +135,26 @@ It was adapted and expanded.*/
   padding-bottom: 1rem;
 }
 
-/*materialize .grey.lighten-2 color*/
-#amd-container + .op-wrapper, .op-wrapper.mark-amd-grey {
+/*materialize .grey.lighten-2 */
+#amd-container + .op-wrapper, .mark-grey {
   background-color: #eee;
 }
 
-/*materialize .green.lighten-3 color*/
-#amd-container.mark-amd-green + .op-wrapper, .op-wrapper.mark-amd-green {
+/*materialize .green.lighten-3 */
+#amd-container.mark-amd-green + .op-wrapper, .mark-green {
   background-color: #a5d6a7;
 }
 
-/*materialize .red.lighten-3 color*/
-#amd-container.mark-amd-red + .op-wrapper {
+/*materialize .red.lighten-3 */
+#amd-container.mark-amd-red + .op-wrapper, .mark-red {
   background-color: #ef9a9a;
 }
 
-.op-wrapper.mark-amd-green {
+/*materialize .yellow.lighten-3 */
+.mark-yellow {
+  background-color: #fff59d;
+}
+
+.op-wrapper.mark-green {
   margin-top: -0.5em;
 }
