@@ -415,12 +415,6 @@ function amendmentMessage(amd) {
     //save the amendment
     currentAmendment = amd;
 
-    //make a copy to apply the amendment to on the next amdendment update,
-    //if there isn't a copy already made
-    /*if (! unamendedStructure) {
-      //deep copy with jquery extend is sufficiently fast 0.0016ms per op
-      unamendedStructure = $.extend(true, {}, obj);
-    }*/
     //console.log("structure");
 
     //new current structure to apply amdendment to is given by server,
