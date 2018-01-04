@@ -1,11 +1,11 @@
-# Remove any boilerplate text that you aren't "replying to"/that doesn't apply to the issue you are submitting.
+## Remove any boilerplate text that you aren't "replying to"/that doesn't apply to the issue you are submitting.
 
-### Before you do anything
+## Before you do anything
 - Does the issue you are about to submit already exist in some form? (Maybe even as a PR) You can coment on related or very similar issues to discuss if your idea has already been discussed/submitted. Duplicate issues will be closed. Search the issues and PRs before submittign a new issue.
 - Are you in the correct repository? The main Resolution Editor repo for MUNOL is douira/resolution-editor. If you want to say something about a fork or a similar project, please go there instead.
 - Read `CONTRIBUTING.md` if you want to contribute
 
-### Reporting a Problem as an end-user?
+## Reporting a Problem as an end-user?
 
 Please try to provide as much information as possible.
 - Operating System
@@ -24,7 +24,7 @@ Please check before submitting an issue:
 - [ ] The browser supports JavaScript ES5 (and ES6 with an upcoming update) and WebSockets
 - [ ] There isn't any firewall or proxy that is interfering
 
-### Bug reports:
+## Bug reports:
 This is for advanced users that know a little about what is going on. ;-)
 - A description of the issue
 - The information as requested in the previous section as necessary
@@ -41,7 +41,7 @@ This is for advanced users that know a little about what is going on. ;-)
   - [ ] Delete the database (updates may have changed the way the server looks at the stored data)
 - Does the bug appear on other browsers too?
   
-### Features:
+## Features:
 
 **Please note by far the quickest way to get a new feature is to file a Pull Request.**
 
