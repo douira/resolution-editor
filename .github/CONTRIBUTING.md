@@ -14,21 +14,11 @@ Including but not limited to the following:
 - JSON is also to be formatted appropriately (unless never looked at), use a online formatter if necessary
 - Use JSHint with the given configuration file to validate your code before comitting (and remove all errors!)
 - HoundCi checks that all pull requests comply with the linting rules
-- JS version is ES5 on browser (so it's still mostly ok with IE10) and ES6 for node.js (so without harmony flag)
+- JS version is ES5 on browser (so it's still mostly ok with IE10) and latest stable feature set in node.js (so without harmony flag) This will change when Materialize is updated to 1.0 and support for non-ES6 browsers will be dropped!
 - enable bitwise operators and other special options per-file
 - each js file must include a jsHint header to specify its use in browser or server
 
 Typo fixes or small bugs are worthy of an issue too. So, if you find any bug that doesn't already have a issue, report it!
 
-### How to file a bug
-Make a screenshot of the bug as soon as it occurs. Also make screenshots of any subsequent variations on the bug if there are any. Please try to provide as much information as possible. These items are also on the new issue page when you get to it from the editor. Please provide all of these that apply:
-- Operating System
-- Device Type (handheld, desktop etc.)
-- Browser + Version
-- Browser Extensions that can modify website content
-- What you were doing when the bug occured and beforehand?
-- Were you able to reproduce the bug?
-- Did the bug occur several times or in a recognisable pattern?
-- Any other relevant information
-
-This is how you take a screenshot on your OS: https://www.take-a-screenshot.org/
+## How to file a bug
+Make a screenshot of the bug as soon as it occurs. Also make screenshots of any subsequent variations on the bug if there are any. Please try to provide as much helpful information as possible. See the template file or the filled in template text when you create a new issue. 
