@@ -1,4 +1,4 @@
-##Provide this and any other necessary information
+## Provide this and any other necessary information
 
 - What kind of change does this PR introduce? (Bug fix, feature, other...)
 - What is the current behavior? (You can also link to an open issue here)
@@ -8,4 +8,4 @@
 - Explain general implementation and/or details if applicable
 - Reference relevant commits/issues/PRs
 
-##Ensure that the changes follow our contribution guidelines, see CONTRIBUTING.md in this folder.
+## Ensure that the changes follow our contribution guidelines, see CONTRIBUTING.md in this folder.
