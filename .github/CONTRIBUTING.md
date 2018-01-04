@@ -20,5 +20,5 @@ Including but not limited to the following:
 
 Typo fixes or small bugs are worthy of an issue too. So, if you find any bug that doesn't already have a issue, report it!
 
-### How to file a bug
+## How to file a bug
 Make a screenshot of the bug as soon as it occurs. Also make screenshots of any subsequent variations on the bug if there are any. Please try to provide as much helpful information as possible. See the template file or the filled in template text when you create a new issue. 
