@@ -30,8 +30,7 @@ var resolutionFormat = module.exports.resolutionFormat;
 function bugReportLink(errorCode) {
   //calling it probelm report because it may be user error
   return "<a href='https://github.com/douira/resolution-editor/issues/new" +
-    "?&labels[]=user%20problem%20report" +
-    "&title=Problem Report: " + errorCode + "'>problem report</a>";
+    "?title=Problem Report: " + errorCode + "'>problem report</a>";
 }
 
 //displays a modal message for invalid json file at parse or apply stage
