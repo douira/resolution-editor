@@ -453,12 +453,17 @@ function registerEventHandlers(loadedData) {
     }
   });
 
+  //the attribute selector, only allow one handler to be set
   if (accessLevel === "MA") {
-    //init selector for attribute setting, only allow one handler to be set
+    //init selectors
     $("select").one("init", function() {
       //init select box
       $(this).material_select();
+    });
+    $("#amd-type-select-box > select").one("init", function() {
 
+    });
+    $("#attribute-select-box > select").one("init", function() {
       //container for all of this
       var selectBox = $("#attribute-select-box");
       var selectBoxContainer = selectBox.find(".select-wrapper");
@@ -559,17 +564,26 @@ function registerEventHandlers(loadedData) {
 
     //check if there actually was any data for this element
     if (foundData) {
-      //init the autocomplete on this field with the data for this field's autocomplete role
-      $(this).autocomplete($.extend({
+      //prepare the autocomplete init options object
+      var autoOpts = {
+        //init the autocomplete on this field with the data for this field's autocomplete role
         data: foundData,
 
-        //attach a handler that makes a content update happen when a autocomplete field changes
-        onAutocomplete: function() {
-          sendLVUpdate("content", elem);
-        }
-
         //other settings are taken from autofillSettings
-      }, autofillSettings));
+      };
+
+      //if this is a editor-relevant field that tracks changes and must be in a clause
+      //being in a clause implies it not having the .not-editor class
+      if (elem.is(".clause .autocomplete")) {
+        //attach a handler that makes a content update happen when a autocomplete field changes
+        autoOpts.onAutocomplete = function() {
+          sendLVUpdate("content", elem);
+        };
+      }
+      console.log(this, elem.is(".clause .autocomplete"));
+
+      //init with prepared data and predefined settings
+      $(this).autocomplete($.extend(autoOpts, autofillSettings));
     } else { //there was no data for this element, error
       console.error("no autocomplete data found for field", this);
     }
@@ -717,12 +731,9 @@ function registerEventHandlers(loadedData) {
       //autocomplete options for the input field
       autocompleteOptions: $.extend({
         //have it use the correct autocomplete data
-        data: loadedData.autofillInitData["#co-spon"],
+        data: loadedData.autofillInitData.sponsors,
 
-        //attach a handler that makes a content update happen when a autocomplete field changes
-        onAutocomplete: function() {
-          sendLVUpdate("content", elem);
-        }
+        //don't send content updates for header information
 
         //other settings are taken from autofillSettings
       }, autofillSettings)
@@ -1363,7 +1374,7 @@ $(document).ready(function() {
       //mapping between autofill data and input field selectors
       loadedData.autofillDataMapping = {
         "#forum-name": data.forums.map(function(pair) { return pair[0]; }), //only full name ok
-        "#main-spon,#co-spon": data.sponsors.slice(),
+        "#main-spon,#co-spon,#amd-spon": data.sponsors.slice(),
         "#preamb-clauses .phrase-input": data.phrases.preamb.slice(),
         "#op-clauses .phrase-input": data.phrases.op.slice(),
       };
@@ -1385,8 +1396,8 @@ $(document).ready(function() {
       //data used to inititalize autocomplete fields/thingies and their other options
       loadedData.autofillInitData = {
         "#forum-name": autofillData.forums,
-        "#main-spon": autofillData.sponsors,
-        "#co-spon": autofillData.sponsors,
+        "#main-spon,#co-spon,#amd-spon": autofillData.sponsors,
+        "sponsors": autofillData.sponsors, //shortcut for chips init
         "#preamb-clauses .phrase-input": autofillData.phrases.preamb,
         "#op-clauses .phrase-input": autofillData.phrases.op,
       };

@@ -36,7 +36,7 @@ block content
     include stages
     +stage-info-index(meta.stage, true)
     if meta.stage === 6 && doLoad
-      h5.light LiveView available
+      h5.light#liveview-heading LiveView available
         +icon(liveviewIcon, "mediumsmall left blue-text text-darken-1")
       .justify
         p To open LiveView on another device open the resolution by entering the resolution token and your access code on the #[a(href="/resolution" target="_blank") Resoluion Page] and clicking the "LiveView" button. LiveView will display a mock version of the rendered resolution document that will update in real time and colorize any changes you make while LiveView is active.
@@ -126,8 +126,7 @@ block content
       h5.light Attributes
       +attribute-descr(meta.attributes, accessLevel === "MA")
       if doLoad && meta.stage && accessLevel === "MA"
-        br
-        form.input-field.not-editor#attribute-select-box(method="POST" action="#")
+        form.input-field.not-editor.selector-mrg#attribute-select-box(method="POST" action="#")
           select(name="attrib")
             mixin state-option(value, descr)
               option(value=value "selected disabled"=meta.attributes === value)=descr
@@ -195,6 +194,24 @@ block content
         +meta-button("legacy-action-load", "Open from file (deprecated)", "file_upload", "Loads a resolution from a previously saved file", "grey-text")
         if accessLevel === "MA"
           +meta-button("action-delete", "Delete resolution", "delete_forever", "Deletes the resolution permanently", "red-text text-lighten-1")
+    - const allowAmendments = doLoad && allowSave && (meta.stage === 6 && accessLevel === "CH" || accessLevel === "MA");
+    if allowAmendments
+      h5.light Amendment
+      .justify Using this feature only makes sense if a #[a(href="#liveview-heading") LiveView ] client is connected. It will display the amendments you create integrated into the resolution and visually emphasise changes. Click the amendment button in an operative clause to display it here. You can then choose what type of amendment should be performed. #[br]The #[b add] type requires the creation of a new clause and needs no prior selection of an existing clause. Selecting this type will allow you to formulate a new operative clause here and append it to the end of the resolution. #[br]The #[b change] type creates a copy of the selected clause here and will display a detailed view of the changes you make in the LiveView client. #[br]The #[b replace] type is similar to #[b change] but implies a complete change of the clause content. It doesn't create a copy of the selected clause here, but rather allows you to write a new clause that will replace the selected clause. #[br]The #[b strike out] type will mark the selected clause for removal.
+      .row
+        .col.s12.m6: .input-field.not-editor#amd-type-select-box
+          select
+            mixin state-option(value, descr, first)
+              option(value=value "selected disabled"=first)=descr
+            +state-option("noselection", "Select a Type", true)
+            +state-option("add", "Add")
+            +state-option("change", "Change")
+            +state-option("replace", "Replace")
+            +state-option("remove", "Strike Out")
+          label Action Type
+        .col.s12.m6: .input-field
+          input.not-editor.autocomplete#amd-spon(type="text")
+          label(for="amd-spon") Sponsor
     //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
     .modal#alert-message-modal
       .modal-content
@@ -220,6 +237,8 @@ block content
         +floating-sm-btn("blue", "eab-move-up", "arrow_upward", "Moves this clause up one space")
         +floating-sm-btn("indigo", "eab-add-sub", "format_indent_increase", "Creates a subclause in this clause")
         +floating-sm-btn("cyan", "eab-add-ext", "playlist_add", "Adds a continuation text field under these subclauses")
+        if allowAmendments
+          +floating-sm-btn("lime darken-1", "eab-amd", "rate_review", "Selects this clause for an amendment")
         +floating-sm-btn("deep-orange", "eab-clear", resetIcon, "Resets the fields in this clause and removes the content continuation field")
         +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
         +floating-sm-btn("green", "eab-done", "done", "Finishes editing and deactivates edit mode")
