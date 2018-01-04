@@ -21,14 +21,4 @@ Including but not limited to the following:
 Typo fixes or small bugs are worthy of an issue too. So, if you find any bug that doesn't already have a issue, report it!
 
 ### How to file a bug
-Make a screenshot of the bug as soon as it occurs. Also make screenshots of any subsequent variations on the bug if there are any. Please try to provide as much information as possible. These items are also on the new issue page when you get to it from the editor. Please provide all of these that apply:
-- Operating System
-- Device Type (handheld, desktop etc.)
-- Browser + Version
-- Browser Extensions that can modify website content
-- What you were doing when the bug occured and beforehand?
-- Were you able to reproduce the bug?
-- Did the bug occur several times or in a recognisable pattern?
-- Any other relevant information
-
-This is how you take a screenshot on your OS: https://www.take-a-screenshot.org/
+Make a screenshot of the bug as soon as it occurs. Also make screenshots of any subsequent variations on the bug if there are any. Please try to provide as much helpful information as possible. See the template file or the filled in template text when you create a new issue. 
