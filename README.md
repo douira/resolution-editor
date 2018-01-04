@@ -26,7 +26,7 @@ The mongoDB database start command in package.json uses the `--auth` flag which 
 mongod --port 27017 --dbpath data
 
 //starts the server, database must be already running!
-npm ./bin/www
+node ./bin/www
 ```
 
 If you want to get rid of the warning about not having any access control on the database and/or are deploying this to a server where your database shouldn't be exposed without proper access control, create these users in the mongo shell:
@@ -49,7 +49,7 @@ db.createUser(
   }
 )
 ```
-(You may have to enter these commands seperately.) Replace the `xyz` placeholders with the default passwords from `lib/credentials.js` or specify your own credentials a file in the same directory `lib/keys.json`. This file should not be committed and is irgnored by the default .gitignore. The structure of the key file is the same as the object that specifies the default credentials. The server will read the specified credentials and use them to authenticate as `resolutionEditor` to the database.
+(You may have to enter these commands seperately.) Replace the `xyz` placeholders with the default passwords from `lib/credentials.js` or specify your own credentials a file in the same directory `lib/keys.json`. This file should not be committed and is ignored through .gitignore. The structure of the key file is the same as the object that specifies the default credentials. The server will read the specified credentials and use them to authenticate as `resolutionEditor` to the database.
 
 ## How to contribute
 Thanks for wanting to contribute, that's great! All the info on how to contribute is in the [CONTRIBUTING file](https://github.com/douira/resolution-editor/edit/meta/CONTRIBUTING.md).
