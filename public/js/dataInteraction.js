@@ -67,7 +67,7 @@ function validateFields(noAlert) {
       "warning", "Some field(s) invalid", "ok",
       "There are fields with missing or invalid values. " +
       "Phrase fields must contain one of the suggested values only. " +
-      "<br>The fields are marked <span class='red-underline'>red</span>.");
+      "<br>Invalid fields are marked <span class='red-underline'>red</span>.");
   }
 
   //return value again
