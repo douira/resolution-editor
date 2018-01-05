@@ -371,6 +371,58 @@ $.fn.addClause = function(amount, activationStateChanges) {
   return this;
 };
 
+//makes a modal pop up that informs the user about disallowed characters
+var showedDisallowedCharModal = false;
+function queueDisallowedCharInfo() {
+  //show only once
+  if (! showedDisallowedCharModal) {
+    //display message
+    makeAlertMessage("font_download", "Disallowed characters were removed", "OK",
+      "Some characters were removed from the text you entered into an input field." +
+      " In general, certain special characters and line breaks are removed." +
+      " Please check the detailed <a href='/help#writing-advice'>help page section</a> on allowed" +
+      " characters and writing advice. This message will only be displayed once.");
+
+    //set flag
+    showedDisallowedCharModal = true;
+  }
+}
+
+//removes illegal characters from inputs and textareas
+$.fn.filterIllegalContent = function() {
+  //for every passed element
+  this.each(function() {
+    var elem = $(this);
+
+    //get field content
+    var content = elem.val();
+
+    //see lib/latexGenerator.js for the server counterparts and explanations
+    //run cleansing regexp replacements over the content
+    var newContent = content
+      //remove duplicates of all but these characters a-zA-Z0-9
+      .replace(/([^a-zA-Z0-9])(?=\1)/g, "")
+
+      //remove large (bad) whitespace groups
+      .replace(/\s*[^\S ]+\s*/g, " ")
+
+      //remove bad characters (that interfere with latex)
+      .replace(/[#$%\\{}~]+/g, "")
+
+      //make all apostrophe like characters the same
+      .replace(/['`´’]/g, "’");
+
+    //if something changed
+    if (content !== newContent) {
+      //make notification
+      queueDisallowedCharInfo();
+
+      //apply by setting the content in the elemement
+      elem.val(newContent);
+    }
+  });
+};
+
 //registers event handlers that are essential for the general function of the page
 function registerEssentialEventHandlers(doLoad) {
   $("body")
@@ -840,6 +892,10 @@ function registerEventHandlers(loadedData) {
     if (elem.isSubClause()) {
       elem.siblings(".add-clause-container").hide();
     }
+
+    //strip illegal characters and whitespace from textareas and inputs
+    //this is done on the server as well, but we want to discourage this behavior in the user
+    elem.find("textarea.required,input.required").filterIllegalContent();
 
     //auto-save if not at stage 0 and has unsaved changes
     //no alert message on fail, only red mark
