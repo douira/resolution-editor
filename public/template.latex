@@ -45,13 +45,13 @@
 }
 
 %OC Subclause 1. Level
-\newenvironment{ocsubclause}{ \begin {enumerate} [a),nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm, topsep=0pt]{}%
+\newenvironment{ocsubclause}{ \begin {enumerate} [a),nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm, topsep=-12pt]{}%
 }{%
 \end{enumerate}%
 }
 
 %OC Subclause 2. Level
-\newenvironment{ocsubsubclause}{ \begin {enumerate} [i.,nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm, topsep=0pt] {} %
+\newenvironment{ocsubsubclause}{ \begin {enumerate} [i.,nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm, topsep=-12pt] {} %
 }{
 \end{enumerate}
 }
