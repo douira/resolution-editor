@@ -380,8 +380,8 @@ function queueDisallowedCharInfo() {
     makeAlertMessage("font_download", "Disallowed characters were removed", "OK",
       "Some characters were removed from the text you entered into an input field." +
       " In general, certain special characters and line breaks are removed." +
-      " Please check the detailed <a href='/help#writing-advice'>help page section</a> on allowed" +
-      " characters and writing advice. This message will only be displayed once.");
+      " Please check the detailed <a href='/help#formatting'>help page section</a> on allowed" +
+      " characters and formatting advice. This message will only be displayed once.");
 
     //set flag
     showedDisallowedCharModal = true;
