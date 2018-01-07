@@ -41,10 +41,12 @@ block content
           | This level represents unrestricted access to all available functions of the website including LiveView. This also includes changing access levels of specific codes or giving out new access codes.
     h4: +icon("font_download", "mediumsmall left blue-text")
     h4#formatting Formatting Advice and Special Characters
-    p This section will inform you about the formatting rules and special character restrictions in resolutions. This is about the formal and syntactical aspects only; for content advice, see the #[a(href="/help/contentguidelines") Content Guidelines].
-    h5.light Formatting Advice: Special Syntax
-    p The editor will attempt to make syntax become obvious to the user by providing interface elements that facilitate the different aspects of writing and formatting a resolution. However, in some special cases it is unavoidable to use special syntax to achieve some formatting types within clause content. Use this special formatting sparingly, only when necessary and not as a generic stylistic device.
-    table.striped.responsive-table#syntax-table
+    p This section will inform you about the formatting rules and special character restrictions in resolutions. This is about the formal and syntactical aspects only; for content advice, see the #[a(href="/help/contentguidelines") Content Guidelines]. Ask your Chair for assistance with formatting and if you are unsure of how to achieve a certain formal element of you resolution. #[span.grey-text Look in latexGenerator.js and editorInit.js for the code.]
+    p A basic clauses consists of a phrase and a content body, optionally followed a single enumeration. The enumeration items behave similarly to a regular clause, except for the lack of a phrase. Additionally, a single block of extended content can follow the enumeration. If you're trying to create a clause with more than two content blocks, more than one enumeration or a different ordering of these elements, restructure your clause to fit the formatting restrictions. This will also increase the legibility and semantic seperation of your resolution.
+    h5#special-syntax Special Syntax
+    p The editor will attempt to make syntax become obvious to the user by providing interface elements that facilitate the different aspects of writing and formatting a resolution. However, in some special cases it is unavoidable to use special syntax to achieve some formatting types within clause content. Use this special formatting sparingly, only when necessary and not as a generic stylistic device. Special syntax only applies to the body of clauses and enumeration items and phrases will not be formatted.
+    - const codeTransform = arr => (typeof arr === "string" ? [arr] : arr).map(v => "<code>" + v + "</code>").join(", ");
+    table.striped.responsive-table.responsive-formatted
       thead: tr
         th Styling
         th Examples
@@ -55,9 +57,9 @@ block content
           tr
             td=styling
             td!=example
-            td!=(typeof syntax === "string" ? [syntax] : syntax).map(v => "<code>" + v + "</code>").join(", ")
-            td.justify
-              block
+            td!=codeTransform(syntax)
+            td
+              .justify: block
         +row("Italics", "<em>A/RES/69/154</em>, <em>UNESCO Declaration...</em>", ["*A/RES/69/154*", "*UNESCO Declaration...*"])
           | Insert Asteriks #[code *] around the text you want to be rendered in #[em italics]. Apply italics to emphasise resolution identifiers like #[em A/RES/69/154] or names of formal documents, bodies or institutions.
         +row("Single character subscript", "H<sub>2</sub>O, CO<sub>2</sub>", ["H_2O", "CO_2"])
@@ -68,6 +70,38 @@ block content
           | Characters preceded by an circumflex #[code ^] will be rendered as superscript.
         +row("Multiple character superscript", "7<sup>th</sup> of May, 42<sup>nd</sup> edition", ["7^th| of May", "42^nd| edition"])
           | Use the circumflex character #[code ^], the text you want to be rendered as a superscript followed by the pipe character #[code |] to correctly display ordinal numbers.
+    h5#whitespace Whitespace
+    p Please refrain from inserting any abnormal whitespace into clause text areas or any other input field. The editor will most likely remove all unnecessary whitespace before rendering the resolution. Line breaks, tabs and more obscure whitespace characters will be removed from clauses in order to preserve formatting and aesthetics in the rendered document. Do not use tabs for indentation of sub clauses and instead use the integrated button, that appears in the clause when you click the edit button or start typing, to create sub clauses.
+    h5#special-chars Special Characters
+    p Some characters have a special meaning and are removed or transformed by the editor and the renderer. Try to find another way of expressing the meaning of a special character if it doesn't have the expected purpose in the editor. Phrases will be stripped of all non-alphanumeric characters. If any character is observed to behave differently than described here or produces an error, please immediately contact your Chair and IT-Management!
+    table.striped
+      thead: tr
+        th Character(s)
+        th Explanation
+      tbody
+        mixin row(chars)
+          tr
+            td.center!=codeTransform(chars)
+            td
+              .justify: block
+        +row(["tab", "new line", "carriage return"])
+          | See the above section on #[a(href="#whitespace") Whitespace]. All abnormal whitespace will be removed.
+        +row("$")
+          | The dollar sign is reserved for internal use. Please spell out names of currencies instead of using shorthand symbols. This recommendation applies to all currencies, in particular those which don't use the dollar sign.
+        +row("%")
+          | The percent sign is a reserved character. Spell out the percent sign as "per cent".
+        +row("#")
+          | Instead of the pound sign, use ordinal numbers to express counted items. See #[a(href="#special-syntax") Special Syntax]
+        +row("&")
+          | The ampersand is used internally as a reserved character but can still be used where required for the correct representation of names or similar descriptors.
+        +row(["\\", "{", "}", "~"])
+          | These miscellaneous reserved characters should not be used within resolutions in general and will be automatically removed.
+        +row(["`", "´"])
+          | Detached backticks #[code `] and detached forwardticks #[code ´] will be normalized to the typographically correct apostrophe #[code ’]. #[em Letters] with accent marks are allowed and won't be modified. #[br] Quotation marks and apostrophes won't be modified, but the recommendation is to use double quotation marks for regular quotes, single quotation marks for nested quotes and a consistent apostrophe.
+        +row([",", ":", ";", "."])
+          | Do not end your clauses or enumeration items with resolution specific punctuation. The renderer will reliably and correctly insert formal punctuation where necessary.
+        +row(["_", "^", "*", "|"])
+          | See #[a(href="#special-syntax") Special Syntax]. These characters are used to denote the application of special styling in the rendered document. Using them for a different purpose will produce unexpected results.
     h4: +icon(handytextboxIcon, "mediumsmall left" + handytextboxColor)
     h4#handytextbox Handy Textbox
     p Use this #[a(href="/handytextbox") handy textbox] for whatever you want. It's meant to be used as a temporary text area in which you can type amendments before copying them into editor's amendment interface to debate them.
