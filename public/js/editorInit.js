@@ -1477,6 +1477,35 @@ $(document).ready(function() {
           }
         });
       }
+
+      //check if localStorage is supported and no flag is found
+      if (typeof localStorage !== "undefined" && ! localStorage.getItem("helppagehint")) {
+        //set to false when an error happens while setting the flag in local storage
+        //we won't display the hint if we can't prevent it
+        //from being shown every time the page is reloaded
+        var canSetFlag = true;
+
+        //set the flag
+        try {
+          localStorage.setItem("helppagehint", "ok");
+        } catch (e) {
+          //didn't manage to set the flag
+          canSetFlag = false;
+        }
+
+        //display the help page hint, if we were able to set the flag
+        if (canSetFlag) {
+          //provide links to help page and formatting section
+          makeAlertMessage(
+            "help", "Read the Help Page", "I'm informed now",
+            "It is strongly recommended for all users who have't yet accustomed themselves to" +
+            " this editor to read the <a href='/help'>help page</a> before writing a resolution." +
+            " Specifically, the section <a href='/help#formatting'>Formatting Advice and Special" +
+            " Characters</a> helps to avoid confusion that arises from special syntax and" +
+            " disallowed characcters. Read the help page before asking any questions about how" +
+            " to use the editor. This message will only be displayed once.");
+        }
+      }
     });
   }
 });
