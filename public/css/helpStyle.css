@@ -2,3 +2,15 @@
 code {
   border: solid 1px #bdbdbd;
 }
+
+#syntax-table td:last-child {
+  white-space: normal;
+}
+
+#syntax-table thead {
+  border: 0;
+}
+
+#syntax-table tbody {
+  border-left: 1px solid #d0d0d0;
+}
