@@ -10,6 +10,8 @@
 \usepackage{soul}
 \usepackage{mfirstuc}
 \usepackage{xstring}
+\usepackage{csquotes}
+\MakeOuterQuote{"}
 \pagestyle{fancy}
 \fancyhf{}
 \rhead{Page \thepage\ of \pageref{LastPage}}

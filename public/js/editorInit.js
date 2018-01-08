@@ -377,9 +377,11 @@ function queueDisallowedCharInfo() {
   //show only once
   if (! showedDisallowedCharModal) {
     //display message
-    makeAlertMessage("font_download", "Disallowed characters were removed", "OK",
-      "Some characters were removed from the text you entered into an input field." +
+    makeAlertMessage("font_download", "Invalid characters were modified", "OK",
+      "Some characters were removed or changed from the text you entered into an input field." +
       " In general, certain special characters and line breaks are removed." +
+      " Unclosed quotes are completed by appending a quotation mark," +
+      " but you such occurences should be attended to." +
       " Please check the detailed <a href='/help#formatting'>help page section</a> on allowed" +
       " characters and formatting advice. This message will only be displayed once.");
 
@@ -401,16 +403,19 @@ $.fn.filterIllegalContent = function() {
     //run cleansing regexp replacements over the content
     var newContent = content
       //remove duplicates of all but these characters a-zA-Z0-9
-      .replace(/([^a-zA-Z0-9])(?=\1)/g, "")
+      .replace(/([^a-zA-Z0-9"])(?=\1)/g, "")
 
       //remove large (bad) whitespace groups
       .replace(/\s*[^\S ]+\s*/g, " ")
 
       //remove bad characters (that interfere with latex)
-      .replace(/[#$%\\{}~]+/g, "")
+      .replace(/[#$%\\{}~]+/g, "");
 
-      //make all apostrophe like characters the same
-      .replace(/['`´’]/g, "’");
+    //append final " if there is an odd amount
+    if ((newContent.match(/"/g) || []).length % 2) {
+      //append at end of string to saitfy renderer (throws error otherwise)
+      newContent += "\"";
+    }
 
     //if something changed
     if (content !== newContent) {

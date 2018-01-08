@@ -96,8 +96,10 @@ block content
           | The ampersand is used internally as a reserved character but can still be used where required for the correct representation of names or similar descriptors.
         +row(["\\", "{", "}", "~"])
           | These miscellaneous reserved characters should not be used within resolutions in general and will be automatically removed.
-        +row(["`", "´"])
-          | Detached backticks #[code `] and detached forwardticks #[code ´] will be normalized to the typographically correct apostrophe #[code ’]. #[em Letters] with accent marks are allowed and won't be modified. #[br] Quotation marks and apostrophes won't be modified, but the recommendation is to use double quotation marks for regular quotes, single quotation marks for nested quotes and a consistent apostrophe.
+        +row(["`", "´", "'"])
+          | Detached backticks #[code `], detached forwardticks #[code ´] and regular keyboard apostrophes #[code '] will be normalized to the typographically correct apostrophe #[code ’]. #[em Letters] with accent marks are allowed and won't be modified.
+        +row(["\"", "“", "”", "‹", "›", "«", "»"])
+          | All quote-like characters are automatically converted into correctly formatted and placed typographic quotation marks #[code “] and #[code ”]. Inner quotes will not be modified or correctly formatted and therefore their use is not recommended, as they may result in unpredictable formatting.
         +row([",", ":", ";", "."])
           | Do not end your clauses or enumeration items with resolution specific punctuation. The renderer will reliably and correctly insert formal punctuation where necessary.
         +row(["_", "^", "*", "|"])
