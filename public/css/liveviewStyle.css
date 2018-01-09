@@ -1,5 +1,160 @@
 #viewcontent {
-  padding: 2rem;
+  padding: 2em;
+}
+
+#lv-title {
+  margin-top: 1rem;
+}
+
+#preamb-clauses, #op-clauses > .op-wrapper, #address {
   font-family: TimesNewRoman, "Times New Roman", Times, Baskerville, Georgia, serif;
   font-size: 16px;
+  line-height: 1.3em;
+}
+
+#viewcontent:-webkit-full-screen {
+  width: 100%;
+  height: 100%;
+}
+
+.mediumsmall-i {
+  font-size: 3rem !important;
+}
+
+#address .row, #address .col {
+  margin: 0;
+  padding: 0;
+}
+
+#address .row p {
+  margin-top: 0;
+  margin-left: 0;
+}
+
+p#address-line {
+  text-transform: uppercase;
+}
+
+#preamb-clauses span.phrase {
+  font-style: italic;
+}
+
+#op-clauses span.phrase {
+  text-decoration: underline;
+}
+
+#preamb-clauses ul {
+  margin: 0;
+  list-style-position: inside;
+  padding-left: 40px;
+}
+
+#preamb-clauses ul li:before {
+  position: absolute;
+  content: "- ";
+  left: 0;
+}
+
+#preamb-clauses ul li {
+  position: relative;
+  display: block;
+  padding-left: 40px;
+}
+
+#preamb-clauses {
+  margin-bottom: 1em;
+}
+
+#preamb-clauses > div {
+  margin-bottom: 1em;
+}
+
+/*See this: http://jsfiddle.net/NU48L for how this came to be like this.
+It was adapted and expanded.*/
+#clauses ol {
+  counter-reset: item;
+  list-style-position: inside;
+  word-break: normal;
+  padding: 0;
+}
+
+#clauses ol ol {
+  padding-left: 40px;
+}
+
+#clauses ol li {
+  display: block;
+  padding-left: 40px;
+  position: relative;
+}
+
+#clauses ol li:before {
+  content: counter(item) ". ";
+  counter-increment: item;
+  position: absolute;
+  left: 0;
+}
+
+#clauses ol ol li:before {
+  content: counter(item, lower-alpha) ") ";
+}
+
+#clauses ol ol ol li:before {
+  content: counter(item, lower-roman) ". ";
+}
+
+#op-clauses {
+  margin: 0;
+}
+
+.op-wrapper {
+  margin-bottom: 1em;
+}
+
+.op-wrapper:last-child {
+  margin-bottom: 0;
+}
+
+#amd-container {
+  border-style: solid;
+  border-color: lightgrey;
+  border-width: 1px 0;
+  margin: 0 -2em;
+  padding: 0 2em;
+}
+
+/*Color Marking:
+Use .mark-amd- only for the amendment element itself
+Use .mark- for all other elements that need to be colored
+*/
+#amd-container + .op-wrapper, .op-wrapper.mark-green {
+  margin-left: -2rem;
+  margin-right: -2rem;
+  padding-left: 2rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+/*materialize .grey.lighten-2 */
+#amd-container + .op-wrapper, .mark-grey {
+  background-color: #eee;
+}
+
+/*materialize .green.lighten-3 */
+#amd-container.mark-amd-green + .op-wrapper, .mark-green {
+  background-color: #a5d6a7;
+}
+
+/*materialize .red.lighten-3 */
+#amd-container.mark-amd-red + .op-wrapper, .mark-red {
+  background-color: #ef9a9a;
+}
+
+/*materialize .yellow.lighten-3 */
+.mark-yellow {
+  background-color: #fff59d;
+}
+
+.op-wrapper.mark-green {
+  margin-top: -0.5em;
 }

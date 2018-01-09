@@ -60,3 +60,8 @@
 #resolution-pass-status {
   margin-top: 0px;
 }
+
+.input-field.selector-mrg input {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
