@@ -1,6 +1,7 @@
 \documentclass[12pt, a4paper]{scrartcl}
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
+\usepackage{mathptmx}
 \usepackage[T1]{fontenc}
 \usepackage{lastpage}
 \usepackage{fancyhdr}
@@ -22,11 +23,11 @@
 \StrLeft{#1}{1}[\firstletter]%
 \StrBehind{#1}{\firstletter}[\rest]%
 \StrRight{#2}{1}[\lastletter] %
-~\\
+%~\\
 \emph{\capitalisewords{\firstletter}\rest}
 #2%
 }{%
-\\
+\newline \newline
 }
 \newenvironment{oc}[2]{\item %
 \StrLeft{#1}{1}[\firstletter]%
@@ -37,7 +38,7 @@
 }
 {%
 }
-\newenvironment{preambsubclause}{ \begin{itemize}[leftmargin=*,labelindent=2.5em,labelsep=2em,topsep=0pt] {} %
+\newenvironment{preambsubclause}{ \begin{itemize}[leftmargin=*,labelindent=2.5em,labelsep=2em,topsep=0pt,after=\vspace{0cm}] {} %
 \renewcommand\labelitemi{-}
 \setlength{\itemsep}{0pt}%
 \setlength{\parskip}{0pt}%
@@ -47,7 +48,7 @@
 }
 
 %OC Subclause 1. Level
-\newenvironment{ocsubclause}{ \begin {enumerate} [a),nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm, topsep=0pt]{}%
+\newenvironment{ocsubclause}{ \begin {enumerate} [a),nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm, topsep=-6pt]{}%
 }{%
 \end{enumerate}%
 }
