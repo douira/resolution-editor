@@ -1,0 +1,38 @@
+/*Materialize color .grey.lighten-1*/
+code {
+  border: solid 1px #bdbdbd;
+}
+
+table.responsive-table.responsive-formatted tbody td:last-child {
+  white-space: normal;
+}
+
+table.responsive-table.responsive-formatted tbody tr {
+  padding-bottom: 50px;
+}
+
+table.responsive-table.responsive-formatted thead {
+  border-right: 0;
+}
+
+@media only screen and (max-width: 992px) {
+  table.responsive-table.responsive-formatted tbody {
+    border-left: 1px solid #d0d0d0;
+  }
+}
+
+p {
+  text-align: justify;
+}
+
+.no-justify {
+  text-align: left;
+}
+
+h5 {
+  font-weight: 300;
+}
+
+td code {
+  white-space: nowrap;
+}

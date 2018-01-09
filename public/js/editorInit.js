@@ -371,6 +371,63 @@ $.fn.addClause = function(amount, activationStateChanges) {
   return this;
 };
 
+//makes a modal pop up that informs the user about disallowed characters
+var showedDisallowedCharModal = false;
+function queueDisallowedCharInfo() {
+  //show only once
+  if (! showedDisallowedCharModal) {
+    //display message
+    makeAlertMessage("font_download", "Invalid characters were modified", "OK",
+      "Some characters were removed or changed from the text you entered into an input field." +
+      " In general, certain special characters and line breaks are removed." +
+      " Unclosed quotes are completed by appending a quotation mark," +
+      " but you such occurences should be attended to." +
+      " Please check the detailed <a href='/help#formatting'>help page section</a> on allowed" +
+      " characters and formatting advice. This message will only be displayed once.");
+
+    //set flag
+    showedDisallowedCharModal = true;
+  }
+}
+
+//removes illegal characters from inputs and textareas
+$.fn.filterIllegalContent = function() {
+  //for every passed element
+  this.each(function() {
+    var elem = $(this);
+
+    //get field content
+    var content = elem.val();
+
+    //see lib/latexGenerator.js for the server counterparts and explanations
+    //run cleansing regexp replacements over the content
+    var newContent = content
+      //remove duplicates of all but these characters a-zA-Z0-9
+      .replace(/([^a-zA-Z0-9"])(?=\1)/g, "")
+
+      //remove large (bad) whitespace groups
+      .replace(/\s*[^\S ]+\s*/g, " ")
+
+      //remove bad characters (that interfere with latex)
+      .replace(/[#$%\\{}~]+/g, "");
+
+    //append final " if there is an odd amount
+    if ((newContent.match(/"/g) || []).length % 2) {
+      //append at end of string to saitfy renderer (throws error otherwise)
+      newContent += "\"";
+    }
+
+    //if something changed
+    if (content !== newContent) {
+      //make notification
+      queueDisallowedCharInfo();
+
+      //apply by setting the content in the elemement
+      elem.val(newContent);
+    }
+  });
+};
+
 //registers event handlers that are essential for the general function of the page
 function registerEssentialEventHandlers(doLoad) {
   $("body")
@@ -840,6 +897,10 @@ function registerEventHandlers(loadedData) {
     if (elem.isSubClause()) {
       elem.siblings(".add-clause-container").hide();
     }
+
+    //strip illegal characters and whitespace from textareas and inputs
+    //this is done on the server as well, but we want to discourage this behavior in the user
+    elem.find("textarea.required,input.required").filterIllegalContent();
 
     //auto-save if not at stage 0 and has unsaved changes
     //no alert message on fail, only red mark
@@ -1420,6 +1481,35 @@ $(document).ready(function() {
               sendLVUpdates = false;
           }
         });
+      }
+
+      //check if localStorage is supported and no flag is found
+      if (typeof localStorage !== "undefined" && ! localStorage.getItem("helppagehint")) {
+        //set to false when an error happens while setting the flag in local storage
+        //we won't display the hint if we can't prevent it
+        //from being shown every time the page is reloaded
+        var canSetFlag = true;
+
+        //set the flag
+        try {
+          localStorage.setItem("helppagehint", "ok");
+        } catch (e) {
+          //didn't manage to set the flag
+          canSetFlag = false;
+        }
+
+        //display the help page hint, if we were able to set the flag
+        if (canSetFlag) {
+          //provide links to help page and formatting section
+          makeAlertMessage(
+            "help", "Read the Help Page", "I'm informed now",
+            "It is strongly recommended for all users who have't yet accustomed themselves to" +
+            " this editor to read the <a href='/help'>help page</a> before writing a resolution." +
+            " Specifically, the section <a href='/help#formatting'>Formatting Advice and Special" +
+            " Characters</a> helps to avoid confusion that arises from special syntax and" +
+            " disallowed characcters. Read the help page before asking any questions about how" +
+            " to use the editor. This message will only be displayed once.");
+        }
       }
     });
   }
