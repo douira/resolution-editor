@@ -637,7 +637,6 @@ function registerEventHandlers(loadedData) {
           sendLVUpdate("content", elem);
         };
       }
-      console.log(this, elem.is(".clause .autocomplete"));
 
       //init with prepared data and predefined settings
       $(this).autocomplete($.extend(autoOpts, autofillSettings));
