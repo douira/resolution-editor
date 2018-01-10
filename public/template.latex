@@ -27,7 +27,7 @@
 \emph{\capitalisewords{\firstletter}\rest}
 #2%
 }{%
-\newline \newline
+\par ~\newline
 }
 \newenvironment{oc}[2]{\item %
 \StrLeft{#1}{1}[\firstletter]%
