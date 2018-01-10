@@ -17,3 +17,9 @@ router.get("/formatdefinition", function(req, res) {
     dataJson: JSON.stringify(resolutionFormat.resolutionFileFormat, null, 2)
   });
 });
+
+//GET content guideliens page (static)
+router.get("/contentguidelines", function(req, res) {
+  //render page
+  res.render("contentguidelines");
+});
