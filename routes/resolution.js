@@ -74,24 +74,26 @@ router.get("/renderpdf/:token", function(req, res) {
       return;
     }
 
-    //render gotten resolution to pdf
-    try {
+    //make a promise that wraps the pandoc call
+    new Promise((resolve, reject) => {
+      //start render with pandoc
       pandoc(
         latexGenerator(document.content),
-        "-o public/rendered/" + token + ".pdf --template=public/template.latex",
-        pandocErr => {
-          //hint error if occured
-          if (pandocErr) {
-            console.error("error: render problem pandoc result", pandocErr);
-          } else {
-            //send url to rendered pdf
-            res.send(pdfUrl);
-          }
-        });
-    } catch (e) {
-      //catch any pandoc or rendering errors we can
-      issueError(res, 500, "render problem pandoc", e);
-    }
+        "-o public/rendered/" + token +
+
+        //set xelatex engine for unicode support
+        ".pdf --latex-engine=xelatex --template=public/template.latex",
+
+        //handle error if occured
+        err => err ? reject(err) : resolve()
+      );
+    }).then(
+      //send url to rendered pdf
+      () => res.send(pdfUrl),
+
+      //print and notify of error
+      (err) => issueError(res, 500, "render problem pandoc", err)
+    );
   });
 });
 

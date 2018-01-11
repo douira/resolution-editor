@@ -272,9 +272,11 @@ function generatePdf() {
     //display error and request creation of bug report
     makeAlertMessage(
       "error_outline", "Error generating PDF", "ok",
-      "The server encountered an unexpected error" +
-      " while trying to generate the requested PDF file." +
-      " Please file a " + bugReportLink("pdf_gen") + " and describe this problem.", "pdf_gen");
+      "The server encountered an error while trying to generate the requested" +
+      " PDF file. Read the <a href='/help#formatting'>help page section</a> on formatting" +
+      " and special characters before proceeding. If the error persists after modyfing your" +
+      " resolution to conform to the formatting and special character rules, please file a " +
+      bugReportLink("pdf_gen") + " and describe this problem.", "pdf_gen");
   });
 }
 
