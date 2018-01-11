@@ -95,15 +95,28 @@ block content
         +row("&")
           | The ampersand is used internally as a reserved character but can still be used where required for the correct representation of names or similar descriptors.
         +row(["\\", "{", "}", "~"])
-          | These miscellaneous reserved characters should not be used within resolutions in general and will be automatically removed.
+          | These miscellaneous reserved characters should not be used within resolutions in general and will be automatically removed. This includes the tilde #[code ~] character.
         +row(["`", "´", "'"])
-          | Detached backticks #[code `], detached forwardticks #[code ´] and regular keyboard apostrophes #[code '] will be normalized to the typographically correct apostrophe #[code ’]. #[em Letters] with accent marks are allowed and won't be modified.
+          | Detached backticks #[code `], detached forwardticks #[code ´] and regular keyboard apostrophes #[code '] will be normalized to the typographically correct apostrophe #[code ’]. #[em Letters] with diacritical marks are allowed and won't be modified. Do not use diacritical marks as apostrophes or quotation marks, as they will most likely be removed.
         +row(["\"", "“", "”", "‹", "›", "«", "»"])
           | All quote-like characters are automatically converted into correctly formatted and placed typographic quotation marks #[code “] and #[code ”]. Inner quotes will not be modified or correctly formatted and therefore their use is not recommended, as they may result in unpredictable formatting.
         +row([",", ":", ";", "."])
           | Do not end your clauses or enumeration items with resolution specific punctuation. The renderer will reliably and correctly insert formal punctuation where necessary.
         +row(["_", "^", "*", "|"])
           | See #[a(href="#special-syntax") Special Syntax]. These characters are used to denote the application of special styling in the rendered document. Using them for a different purpose will produce unexpected results.
+        +row(["ö", "é", "ì"])
+          | If you need to represent names in their romanized but still foreign form, use the letters with the different marks on them instead of adding combining diacritical marks, as they will be removed and are unspported by the renderer.
+        +row("other")
+          | Refrain from using characters that are not listed in this list of allowed characters. Additionally the most common letters with diacritical marks in the unicode range #[code U+00C0-U+024F] are supported as well. They can be viewed #[a(href="http://jrgraphix.net/r/Unicode/00A0-00FF") here], #[a(href="http://jrgraphix.net/r/Unicode/0100-017F") here] and #[a(href="http://jrgraphix.net/r/Unicode/0180-024F") here].
+          br
+          .center: code.block-code
+            | abcdefghijklmnopqrstuvwxyz
+            br
+            | ABCDEFGHIJKLMNOPQRSTUVWXYZ
+            br
+            | 0123456789
+            br
+            | *_^|&’"-.,()/+
     h4: +icon(handytextboxIcon, "mediumsmall left" + handytextboxColor)
     h4#handytextbox Handy Textbox
     p Use this #[a(href="/handytextbox") handy textbox] for whatever you want. It's meant to be used as a temporary text area in which you can type amendments before copying them into editor's amendment interface to debate them.
