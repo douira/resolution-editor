@@ -60,6 +60,9 @@ var resolutionAttributes, attributesString;
 //if automatic saving is enabled or not, determiend from other state variables
 var autosaveEnabled;
 
+//is set to true after the phrase in content message has been displayed
+var displayedPhraseContentMessage;
+
 //transforms arrays containign a certain flag in an object and array json structure
 function transformMarkedArrays(structure, flag, propValue, depth) {
   //propValue is null if not given otherwise
@@ -950,6 +953,39 @@ function registerEventHandlers(loadedData) {
     //this is done on the server as well, but we want to discourage this behavior in the user
     elem.find("textarea.required,input.required").filterIllegalContent();
 
+    //only check if message wasn't displayed yet
+    if (! displayedPhraseContentMessage) {
+      //get text of textarea
+      var clauseContent = elem
+        //get the textarea
+        .children(".clause-content")
+        .children("textarea")
+
+        //get and prepare the content for processing
+        .val()
+        .trim()
+        .toLowerCase();
+
+      //get the list of phrases that applies to this clause
+      var phrases = loadedData.phrases[elem.attr("data-clause-type")];
+
+      //check if the content text area includes a phrase
+      if (phrases.some(function(phrase) {
+        //return true if it starts with the phrase
+        return clauseContent.startsWith(phrase.toLowerCase());
+      })) {
+        //display message concerning phrase field
+        makeAlertMessage("info", "Phrase found in content field", "OK",
+          "The editor has detected that a clause content field in this resolution begins" +
+          " with a phrase. Please use the content text area only for the clause content and not" +
+          " the phrase of the clause. The text input field labeled 'Phrase' will suggest possible" +
+          " phrases when you start typing. This message will only be displayed once.");
+      }
+
+      //set flag to disabling state
+      displayedPhraseContentMessage = true;
+    }
+
     //auto-save if not at stage 0 and has unsaved changes
     //no alert message on fail, only red marks
     if (! changesSaved && ! noChangesMade && autosaveEnabled) {
@@ -1450,16 +1486,26 @@ $(document).ready(function() {
         loadedData.forumAbbrevMapping[nameSet[1].trim().toLowerCase()] = nameSet[0];
       });
 
+      //make copies in loadedData
+      loadedData.phrases = {
+        op: data.phrases.op.slice(),
+        preamb: data.phrases.preamb.slice()
+      };
+
+      //remove _convert element
+      loadedData.phrases.op.shift();
+      loadedData.phrases.preamb.shift();
+
       //transform into correct data structure when gotten data
-      var autofillData = transformMarkedArrays(data, "_convert", null);
+      transformMarkedArrays(data, "_convert", null);
 
       //data used to inititalize autocomplete fields/thingies and their other options
       loadedData.autofillInitData = {
-        "#forum-name": autofillData.forums,
-        "#main-spon,#co-spon,#amd-spon": autofillData.sponsors,
-        "sponsors": autofillData.sponsors, //shortcut for chips init
-        "#preamb-clauses .phrase-input": autofillData.phrases.preamb,
-        "#op-clauses .phrase-input": autofillData.phrases.op,
+        "#forum-name": data.forums,
+        "#main-spon,#co-spon,#amd-spon": data.sponsors,
+        "sponsors": data.sponsors, //shortcut for chips init
+        "#preamb-clauses .phrase-input": data.phrases.preamb,
+        "#op-clauses .phrase-input": data.phrases.op,
       };
 
       //register all event handlers
