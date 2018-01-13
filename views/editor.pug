@@ -80,11 +80,11 @@ block content
           +t-item("Number of content nodes:", meta.nodeCount)
           +t-item("Depth points per clause:", meta.depthIndex)
           +t-item("Average number of words per clause:", meta.avrgClauseWords)
-          +t-item("Clauses:", meta.clauseCount[0])
+          +t-item("Clauses (top level):", meta.clauseCount[0])
           if meta.clauseCount[1]
             +t-item("Subclauses:", meta.clauseCount[1])
           if meta.clauseCount[2]
-            +t-item("Subclauses:", meta.clauseCount[2])
+            +t-item("Subsubclauses:", meta.clauseCount[2])
       if meta.voteResults
         li
           .collapsible-header(class=meta.stage === 7 ? "active" : "")

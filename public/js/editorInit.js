@@ -397,21 +397,28 @@ $.fn.filterIllegalContent = function() {
     //get field content
     var content = elem.val();
 
-    //see lib/latexGenerator.js for the server counterparts and explanations
     //run cleansing regexp replacements over the content
+    //see lib/latexGenerator.js for the server version of this and explanations
     var newContent = content
-      //remove duplicates of all but these characters a-zA-Z0-9
-      .replace(/([^a-zA-Z0-9"])(?=\1)/g, "")
+      //normalize apostrophes
+      .replace(/ *[`´']+/g, "’")
 
-      //remove large (bad) whitespace groups
+      //normalize quotes
+      .replace(/[“”‹›«»]/g, "\"")
+
+      //filter characters
+      .replace(/[^a-zA-Z0-9*_^|&’"\-.,()/+\u00c0-\u024F ]+/g, "")
+
+      //remove bad whitespace
       .replace(/\s*[^\S ]+\s*/g, " ")
 
-      //remove bad characters (that interfere with latex)
-      .replace(/[#$%\\{}~]+/g, "");
+      //remove padding whitespace
+      .trim();
 
     //append final " if there is an odd amount
     if ((newContent.match(/"/g) || []).length % 2) {
-      //append at end of string to saitfy renderer (throws error otherwise)
+      //append at end of string to satisfy renderer
+      //(would be done on server otherwise, do it here so the user can be informed)
       newContent += "\"";
     }
 
