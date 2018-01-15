@@ -13,12 +13,13 @@ const credentials = require("../lib/credentials");
 const issueError = resUtil.issueError;
 
 //register callback to get collections on load
-let resolutions, access, resolutionArchive;
-databaseInterface(collections => {
+let resolutions, access, resolutionArchive, collections;
+databaseInterface(c => {
   //get collections in vars for easier use
-  resolutions = collections.resolutions;
-  resolutionArchive = collections.resolutionArchive;
-  access = collections.access;
+  resolutions = c.resolutions;
+  resolutionArchive = c.resolutionArchive;
+  access = c.access;
+  collections = collections;
 });
 
 //generates a token/code and queries the database to see if it's already present (recursive)
@@ -286,7 +287,7 @@ router.get("/load/:token", function(req, res) {
 //POST (no view) to advance resolution, redirect to editor without code after completion
 router.post("/advance/:token", function(req, res) {
   //authorize, absence of code is detected in fullAuth
-  routingUtil.fullAuth(req, res, token => {
+  routingUtil.fullAuth(req, res, (token, resDoc) => {
     //query object to be possibly extended by a vote result setter
     const query = {
       $inc: { stage: 1 }, //advance to next stage index
@@ -319,11 +320,31 @@ router.post("/advance/:token", function(req, res) {
       }
     }
 
-    //advance resolution to next stage
-    resolutions.updateOne({ token: token }, query)
+    //add resolution id if going from stage 3 (FC) to 4 (print), regular advance otherwise
+    (resDoc.stage === 3 ?
+      //get and increment resolution id for this year
+      collections.resolutionId.update({ year: new Date().getFullYear() }, {
+        //count up one
+        $inc: { counter: 1 }
+      })
+
+      //advance resolution to next stage and set id
+      .then(yearDoc => {
+        //add id and year to update query
+        query.$set.resolutionId = yearDoc.counter;
+        query.$set.idYear = yearDoc.year;
+
+        //execute query and return resulting promise
+        return resolutions.updateOne({ token: token }, query);
+      }) :
+
+      //execute and return query without adding resolution id
+      resolutions.updateOne({ token: token }, query)
+    )
+
     //redirect to editor without code, prevent form resubmission
-    .then(() => res.redirect("/resolution/editor/" + token))
-    .catch(err => issueError(res, 500, "advance db error", err));
+    .then(() => res.redirect("/resolution/editor/" + token),
+          err => issueError(res, 500, "advance db error", err));
   }, {
     //error/warning page on fail
     permissionMissmatch: (token, resolutionDoc, codeDoc) => {
@@ -363,11 +384,11 @@ router.get("/makecodes/" + credentials.makeCodesSuffix, function(req, res) {
     level => makeNewThing(res, false).then(code => ({ level: level, code: code }))
   )).then(newCodes =>
     //add all of them to the database
-    access.insertMany(newCodes)
-    //respond with codes as content
-    .then(() => res.send(newCodes
-      .map(code => code.level + " " + code.code)
-      .join("<br>"))
-    ).catch(err => issueError(res, 500, "Error inserting codes", err))
+    access.insertMany(newCodes).then(
+      //respond with codes as content
+      () => res.send(newCodes
+        .map(code => code.level + " " + code.code)
+        .join("<br>")),
+      err => issueError(res, 500, "Error inserting codes", err))
   );
 });
