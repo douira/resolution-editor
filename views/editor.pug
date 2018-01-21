@@ -28,11 +28,17 @@ block content
       //-git removes spaces at end of lines so this is necessary
       =" "
       span#token-preset.lighten-3(class=sec)=token
-    p.justify Please write this token down, because it will be used to identify your resolution when you want continue working on it later. Talk to your Chair if you've forgotten your resolution token. (Looking at your browser's history can be helpful too.)
+    p.justify Please write this token down, because it will be used to identify your resolution when you want continue working on it later. Talk to your Chair if you've forgotten your resolution token.
+      em  Looking at your browser's history can be helpful too.
       br
       | Your current access level is
       a(href="/help#" + accessLevel)=" " + accessLevel
       | .
+      if meta.resolutionId
+        br
+        | This resolution has been assigned a resolution ID that can be used to uniquely reference this resolution in other documents or resolutions:
+        =" "
+        span#res-id.lighten-4(class=sec) (MUNOL/#{meta.idYear}/#{meta.resolutionId})
     include stages
     +stage-info-index(meta.stage, true)
     if meta.stage === 6 && doLoad
@@ -56,7 +62,7 @@ block content
         .collapsible-body
           table: tbody
             block
-    p This information is updated every time the page is reloaded. Timestamps are in local time of the server. (Germany)
+    p This information is updated every time the page is reloaded. Timestamps are in local time of the server. (Germany: CET/CEST)
     ul.collapsible(data-collapsible="expandable")
       mixin t-item(label, content)
         tr

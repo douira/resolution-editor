@@ -19,7 +19,7 @@ databaseInterface(c => {
   resolutions = c.resolutions;
   resolutionArchive = c.resolutionArchive;
   access = c.access;
-  collections = collections;
+  collections = c;
 });
 
 //generates a token/code and queries the database to see if it's already present (recursive)
@@ -79,7 +79,7 @@ router.get("/renderpdf/:token", function(req, res) {
     new Promise((resolve, reject) => {
       //start render with pandoc
       pandoc(
-        latexGenerator(document.content),
+        latexGenerator(document),
         "-o public/rendered/" + token +
 
         //set xelatex engine for unicode support
@@ -300,7 +300,7 @@ router.post("/advance/:token", function(req, res) {
       try {
         //make voting reults object
         const voteResults = {
-          // "|| 0" convert to 0 or number
+          // "|| 0" convert to number or 0
           inFavor: parseInt(req.body.inFavor, 10) || 0,
           against: parseInt(req.body.against, 10) || 0,
           abstention: parseInt(req.body.abstention, 10) || 0,
@@ -323,16 +323,22 @@ router.post("/advance/:token", function(req, res) {
     //add resolution id if going from stage 3 (FC) to 4 (print), regular advance otherwise
     (resDoc.stage === 3 ?
       //get and increment resolution id for this year
-      collections.resolutionId.update({ year: new Date().getFullYear() }, {
+      //needs findOneAndUpdate because we need the value of the modified doc
+      collections.resolutionId.findOneAndUpdate({ year: new Date().getFullYear() }, {
         //count up one
         $inc: { counter: 1 }
       })
 
       //advance resolution to next stage and set id
       .then(yearDoc => {
+        //add $set property if not set already
+        if (! query.$set) {
+          query.$set = {};
+        }
+
         //add id and year to update query
-        query.$set.resolutionId = yearDoc.counter;
-        query.$set.idYear = yearDoc.year;
+        query.$set.resolutionId = yearDoc.value.counter;
+        query.$set.idYear = yearDoc.value.year;
 
         //execute query and return resulting promise
         return resolutions.updateOne({ token: token }, query);

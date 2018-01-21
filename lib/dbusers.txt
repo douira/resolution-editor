@@ -4,16 +4,20 @@ use admin
 db.createUser(
   {
     user: "adminUser",
-    pwd: "...",
+    pwd: "xyz",
     roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]
   }
 )
+
+//run this before the next command to auth and be able to add users
+use admin
+db.auth("adminUser", "xyz")
 
 use resolution-editor
 db.createUser(
   {
     user: "resolutionEditor",
-    pwd: "...",
+    pwd: "zyx",
     roles: [ { role: "readWrite", db: "resolution-editor" } ]
   }
 )
