@@ -36,3 +36,7 @@ h5 {
 td code {
   white-space: nowrap;
 }
+
+.block-code {
+  display: inline-block;
+}
