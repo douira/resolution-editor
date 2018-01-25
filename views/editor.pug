@@ -190,10 +190,14 @@ block content
         a.collection-item.waves-effect.waves-light(class=classes id=id)&attributes(tooltip(tooltipText, "top"))
           +icon(icon, "left")
           span=text
+          block
       if doLoad && allowSave
         //-large save button in stage 0
         +meta-button("action-save", "Save", "backup", "Saves the resolution to the server", pritext + (meta.stage ? "" : " action-save-large"))
       +meta-button("action-pdf", "View PDF", "description", "Generates a formatted PDF document", pritext)
+        .inline-spinner-wrapper.hide-this.blue-text#pdf-wait-spinner
+          +spinner("blue", "inline-spinner")
+          |  Rendering...
       +meta-button("action-plaintext", "View Plaintext (fallback)", plaintextIcon, "Generates a plain text version of the resolution: Only use in case of problems", "grey-text")
       if doLoad
         +meta-button("legacy-action-save", "Save to file (deprecated)", "file_download", "Downloads the resolution in a reusable format", "grey-text")

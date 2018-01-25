@@ -17,7 +17,8 @@
   generatePlaintext,
   serverSave,
   downloadJson,
-  sendLVUpdate*/
+  sendLVUpdate,
+  onAllSaveDone*/
 //file actions are defined in this file
 
 //current version of the resolution format supported
@@ -259,9 +260,16 @@ function serverLoad(token, doToast, callback) {
 
 //sends the current json of to the server and calls back with the url to the generated pdf
 function generatePdf() {
+  console.log("gen pdf");
+  //start the spinner to indicate activity
+  var spinner = $("#pdf-wait-spinner").removeClass("hide-this");
+
   //send to server
   $.get("/resolution/renderpdf/" + resolutionToken)
   .done(function(response) {
+    //stop showing spinner
+    spinner.addClass("hide-this");
+
     //display link to generated pdf
     makeAlertMessage(
       "description", "Generated PDF file", "done",
@@ -269,6 +277,9 @@ function generatePdf() {
       "' target='_blank'>here</a></b> to view your resolution as a PDF file.");
   })
   .fail(function() {
+    //stop showing spinner
+    spinner.addClass("hide-this");
+
     //display error and request creation of bug report
     makeAlertMessage(
       "error_outline", "Error generating PDF", "ok",
@@ -388,6 +399,29 @@ function getEditorObj(allowEmpty) {
   return res;
 }
 
+//wait for save operations to finish before starting pdf render
+var saveOps = {
+  //number of pending save operations,
+  pending: 0,
+
+  //call callbacks when all save operations finish, queue of added callbacks
+  callbacks: []
+};
+
+//registeres a callback
+function onAllSaveDone(callback) {
+  //must be a function
+  if (typeof callback === "function") {
+    //call immediately if there are no save operations in progress
+    if (saveOps.pending) {
+      //queue callback
+      saveOps.callbacks.push(callback);
+    } else {
+      callback();
+    }
+  }
+}
+
 //saves the resolution from editor to the server
 function serverSave(callback, doToast, silentFail) {
   //do not save if not allowed to
@@ -419,6 +453,12 @@ function serverSave(callback, doToast, silentFail) {
   //preemptively mark as saved
   changesSaved = true;
 
+  //registers callback
+  onAllSaveDone(callback);
+
+  //register a pending save op
+  saveOps.pending ++;
+
   //send post request
   $.post("/resolution/save/" + resolutionToken, data, "text")
   .done(function() {
@@ -427,9 +467,16 @@ function serverSave(callback, doToast, silentFail) {
       displayToast("Successfully saved");
     }
 
-    //call callback on completion
-    if (typeof callback === "function") {
-      callback();
+    //decrement active op counter
+    saveOps.pending --;
+
+    //if there are no ops pending
+    if (! saveOps.pending) {
+      //call all callbacks in order
+      saveOps.callbacks.forEach(function(c) { c(); });
+
+      //clear callbacks
+      saveOps.callbacks = [];
     }
 
     //if we are in stage 0, reload the page on successful save
@@ -438,6 +485,14 @@ function serverSave(callback, doToast, silentFail) {
     }
   })
   .fail(function() {
+    //decrement active op counter
+    saveOps.pending --;
+
+    //clear callbacks if no ops still running
+    if (! saveOps.pending) {
+      saveOps.callbacks = [];
+    }
+
     //mark as not saved, problem
     changesSaved = false;
 

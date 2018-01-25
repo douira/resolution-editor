@@ -11,7 +11,8 @@
   serverLoad,
   makeAlertMessage,
   startLiveviewWS,
-  sendLVUpdate*/
+  sendLVUpdate,
+  onAllSaveDone*/
 /* exported
   checkRequiredFields,
   sendLVUpdates,
@@ -454,17 +455,16 @@ function registerEssentialEventHandlers(doLoad) {
 
     //finalize editing on all fields
     $(".clause").trigger("editInactive");
-
     //save first if anything changed
     if (changesSaved) {
-      //no saving necessary
-      generatePdf();
+      //no saving necessary, register to run after save completes
+      onAllSaveDone(generatePdf);
     } else {
       //save json to server first
       serverSave(function() {
         //display pdf directly after generating
         generatePdf();
-      }, true);
+      });
     }
   });
   $("#action-plaintext")

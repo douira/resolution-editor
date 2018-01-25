@@ -68,7 +68,7 @@ mixin spinner(colorCode, size)
       "green": "spinner-green-only",
       "yellow": "spinner-yellow-only"
     })[colorCode];
-  .preloader-wrapper.active
+  .preloader-wrapper.active(class=size)
     .spinner-layer(class=colorCode)
       .circle-clipper.left
         .circle
