@@ -47,7 +47,7 @@ function makeNewThing(res, isToken) {
   });
 }
 
-//GET (view) to /resolution displays front page without promo
+//GET (view) to /resolution displays front page (token and code input) without promo
 router.get("/", function(req, res) {
   res.render("index", { promo: false });
 });
@@ -56,8 +56,13 @@ router.get("/", function(req, res) {
 router.get("/renderpdf/:token", function(req, res) {
   //check for token and save new resolution content
   routingUtil.checkToken(req, res, {
-    //add current time to render history log
-    $set: { lastRender: Date.now() }
+    $set: {
+      //add current time to render history log
+      lastRender: Date.now(),
+
+      //reset flag, don't do a rerender if not saved again
+      unrenderedChanges: false
+    }
   }, (token, document) => {
     //don't render if nothing saved yet
     if (! document.stage) {
@@ -67,9 +72,9 @@ router.get("/renderpdf/:token", function(req, res) {
 
     //url to pdf
     const pdfUrl = "/resolution/rendered/" + token + ".pdf";
-
-    //don't render if hasn't been saved again since last render
-    if (document.changed < document.lastRender && false) {
+    console.log(document);
+    //don't render if there hasn't been a save since the last render
+    if (! document.unrenderedChanges) {
       //just send url and stop
       res.send(pdfUrl);
       return;
@@ -133,7 +138,8 @@ router.get("/new", function(req, res) {
       lastLiveview: 0, //last time a liveview session happened with this resolution
       stage: 0, //current workflow stage (see phase 2 notes)
       liveviewOpen: false, //if a liveview page is viewing this resolution right now (TODO: use)
-      attributes: "none" //attribute status, see /setattribs or fucntion, restricts actions
+      attributes: "none", //attribute status, see /setattribs or fucntion, restricts actions
+      unrenderedChanges: false, //set to true when saved and reset when rendered
     }).then(() => {
       //redirect to editor page (because URL is right then)
       res.redirect("/resolution/editor/" + token);
@@ -153,7 +159,8 @@ router.post("/save/:token", function(req, res) {
         {
           $set: {
             content: resolutionSent, //update resolution content
-            changed: Date.now() //update changedate
+            changed: Date.now(), //update changedate
+            unrenderedChanges: true //must be rendered
           },
           $max: {
             stage: 1 //first saved stage at least
@@ -339,6 +346,10 @@ router.post("/advance/:token", function(req, res) {
         //add id and year to update query
         query.$set.resolutionId = yearDoc.value.counter;
         query.$set.idYear = yearDoc.value.year;
+
+        //as this changes the pdf generated from this resolution, flag must be set
+        //(the id is added to the pdf in a corner)
+        query.$set.unrenderedChanges = true;
 
         //execute query and return resulting promise
         return resolutions.updateOne({ token: token }, query);
