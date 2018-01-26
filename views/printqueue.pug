@@ -4,16 +4,24 @@ block title
   title Print Queue
 
 block styles
-  link(href="/css/printQueueStyle.css" type="text/css" rel="stylesheet")
+  //link(href="/css/printQueueStyle.css" type="text/css" rel="stylesheet")
 
 block content
   .container
+    #code-preset.hide-this=code
     h4 Print Queue
     .divider
-    p.justify This is a queue of all resolutions that are in stage #[a(href="/help#rstage4") 4] and need to be printed. After printing the generated PDF file, you can advance the resolution to the next stage.
-    ul.collection
-      li.collection-item Current Item
-      li.collection-item Second Item
-      li.collection-item Other Item
+    p.justify This is a queue of all resolutions that are in stage #[a(href="/help#rstage4") 4] and need to be printed. After printing the generated PDF file, you can advance the resolution to the next stage. Resolutions that cannot be advanced (or are static) will not appear on this list.
+    ul.collection.hide-this#queue
+      li.collection-item#first-item
+      li.collection-item.hide-this
+        | @
+        span.item-name ABCD1234
+    .center.hide-this#no-items-msg There currently are no documents waiting to print.
+    p.center.hide-this#error-msg There was an error with getting the data from from the server. Contact IT-Management if this problem persists after reloading the page.
+    .center
+      span.grey-text Automatically checking the server for new data every 30 seconds.
+      a#update-data-now(href="#!")  Check now
+    br
 block scripts
   script(src="/js/printQueueInit.js")
