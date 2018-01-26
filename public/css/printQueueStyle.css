@@ -1,0 +1,8 @@
+h5.item-token-wrapper {
+  display: inline-block;
+  margin-top: 0.23em;
+}
+
+.item-token-wrapper {
+  display: inline;
+}

@@ -4,19 +4,36 @@ block title
   title Print Queue
 
 block styles
-  //link(href="/css/printQueueStyle.css" type="text/css" rel="stylesheet")
+  link(href="/css/printQueueStyle.css" type="text/css" rel="stylesheet")
 
 block content
   .container
     #code-preset.hide-this=code
     h4 Print Queue
     .divider
-    p.justify This is a queue of all resolutions that are in stage #[a(href="/help#rstage4") 4] and need to be printed. After printing the generated PDF file, you can advance the resolution to the next stage. Resolutions that cannot be advanced (or are static) will not appear on this list.
-    ul.collection.hide-this#queue
+    p.justify This is a queue of all resolutions that are in stage #[a(href="/help#rstage4") 4] and need to be printed. After printing the generated PDF file, you can advance the resolution to the next stage. Once the resolution has been advanced to the next stage, it cannot be brought back into this list. Resolutions that cannot be advanced (or are static) will not appear on this list. The time a particular resolution has been waiting to print is displayed in the upper right corner of the item list.
+    mixin item-core-inner
+      span.item-token @ABCD1234
+      span.light=": "
+        span.item-year YYYY
+        | /
+        span.item-id nnn
+    mixin item-core(header)
+      if header
+        h5.item-token-wrapper
+          +item-core-inner
+      else
+        .item-token-wrapper
+          +item-core-inner
+      span.item-age.grey-text.right ? minutes
+    ul.collection#queue
       li.collection-item#first-item
-      li.collection-item.hide-this
-        | @
-        span.item-name ABCD1234
+        +item-core(true)
+        br
+        | Submitted to #[b.item-forum ffff] by #[b.item-sponsor ssss]
+        span.right Print #[span.item-print-copies ?] copies
+      li.collection-item.hide-this.list-item#item-template
+        +item-core
     .center.hide-this#no-items-msg There currently are no documents waiting to print.
     p.center.hide-this#error-msg There was an error with getting the data from from the server. Contact IT-Management if this problem persists after reloading the page.
     .center
