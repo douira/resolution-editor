@@ -25,6 +25,7 @@ block content
       else
         .item-token-wrapper
           +item-core-inner
+          block
       span.item-age.grey-text.right ? minutes
     ul.collection#queue
       li.collection-item#first-item
@@ -34,6 +35,7 @@ block content
         span.right Print #[span.item-print-copies ?] copies
       li.collection-item.hide-this.list-item#item-template
         +item-core
+          |  in #[b.item-forum ffff] by #[b.item-sponsor ssss]
     .center.hide-this#no-items-msg There currently are no documents waiting to print.
     p.center.hide-this#error-msg There was an error with getting the data from from the server. Contact IT-Management if this problem persists after reloading the page.
     .center

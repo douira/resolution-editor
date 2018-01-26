@@ -51,7 +51,7 @@ router.post("/print/getitems", function(req, res) {
       _id: 0
     }).sort({
       //sort by time in stage 4 (most necessary first), index 4 becase 0 is also a stage
-      "stageHistory.4": 1
+      "stageHistory.4": -1
     }).toArray().then(items => {
       //send data to client, rewrite stageHistory
       res.send(items.map(i => {

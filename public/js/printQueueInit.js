@@ -57,7 +57,12 @@ function setBasicAttribs(data, elem) {
   elem.find(".item-token").text(data.token);
   elem.find(".item-year").text(data.idYear);
   elem.find(".item-id").text(data.resolutionId);
-  console.log(data);
+
+  //set forum and main sponsor
+  var address = data.content.resolution.address;
+  elem.find(".item-forum").text(address.forum);
+  elem.find(".item-sponsor").text(address.sponsor.main);
+
   //set age, get delta time in seconds and convert to time text
   elem.find(".item-age").text(getTimeText((Date.now() - data.waitTime) / 1000));
 }
@@ -87,22 +92,26 @@ function updateList() {
       //set display of first item in special first item box
       var firstElem = $("#first-item");
 
-      //set basic attribs
+      //set basic attribs for first element
       setBasicAttribs(first, firstElem);
-
-      //set special attributes for header element
-      var address = first.content.resolution.address;
-      firstElem.find(".item-forum").text(address.forum);
-      firstElem.find(".item-sponsor").text(address.sponsor.main);
 
       //remove all list items that exceed the amount of items in the list
       list.children(".list-item").slice(data.length).remove();
 
-      //set data in the left over elements
-      list.children(".list-item").each(function(index) {
-        //set attributes of this item
-        setBasicAttribs(data[index], $(this));
-      });
+      //given that there are items left
+      if (data.length) {
+        //set data in the left over elements
+        list.children(".list-item").each(function() {
+          //set attributes of this item
+          setBasicAttribs(data.pop(), $(this));
+        });
+
+        //for any remainin data items, add new items
+        data.forEach(function(item) {
+          //make a clone of the template, add it to the list and add data to it
+          setBasicAttribs(item, templateItem.clone().appendTo(list));
+        });
+      }
     } else {
       //hide list (makes an ugly line otherwise) and show no items message
       list.hide();
@@ -124,7 +133,7 @@ $(document).ready(function() {
   presetCode = $("#code-preset").text();
 
   //detach the template element from the list
-  templateItem = $("#item-template").detach().removeClass(".hide-this");
+  templateItem = $("#item-template").detach().removeClass("hide-this");
 
   //do initial list update
   updateList();
