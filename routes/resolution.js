@@ -366,7 +366,8 @@ router.post("/advance/:token", function(req, res) {
     //error/warning page on fail
     permissionMissmatch: (token, resolutionDoc, codeDoc) => {
       //display error page
-      res.render("weakperm-advance", {
+      res.render("weakperm", {
+        type: "advance",
         token: resolutionDoc.token,
         stage: resolutionDoc.stage,
         accessLevel: codeDoc.level

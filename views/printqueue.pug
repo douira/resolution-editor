@@ -1,0 +1,19 @@
+extends layout
+
+block title
+  title Print Queue
+
+block styles
+  link(href="/css/printQueueStyle.css" type="text/css" rel="stylesheet")
+
+block content
+  .container
+    h4 Print Queue
+    .divider
+    p.justify This is a queue of all resolutions that are in stage #[a(href="/help#rstage4") 4] and need to be printed. After printing the generated PDF file, you can advance the resolution to the next stage.
+    ul.collection
+      li.collection-item Current Item
+      li.collection-item Second Item
+      li.collection-item Other Item
+block scripts
+  script(src="/js/printQueueInit.js")

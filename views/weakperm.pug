@@ -1,0 +1,39 @@
+extends layout
+
+block title
+  title Insufficient Permission - Resolution Editor
+
+block content
+  .container
+    h4.center: +icon(weakpermIcon, "large " + weakpermColor)
+    case type
+      when "workqueue"
+        h3.center Insufficient Permission for this Work Queue
+        .divider
+        p.justify This work queue could not be opened because the provided valid access code did not have the required permission level. Check the code entry page for permission requirements.
+      when "liveview"
+        include stages
+        h3.center Insufficient Permission for LiveView
+        .divider
+        p.justify LiveView could not be started for the resolution with token #[b=token]
+          if stage !== 6
+            |  because the resolution has to be in stage #{stageData[6].title}
+            a(href="/help#rstage6"): b.text-lighten-1.grey-text  #6
+            | .
+          else
+            |  because the provided valid access code did not have the required permission level #[a(href="/help#CH") CH] or #[a(href="/help#MA") MA]. You entered a code with the permission level #[a(href="/help#" + accessLevel)=accessLevel].
+          br
+          | #[a(href="/resolution/editor/" + token) Return] to the editor page.
+        if stage === 6
+          h4 Current Stage:
+          +stage-info-index(stage, false)
+      when "advance"
+        include stages
+        h3.center Insufficient Permission to Advance
+        .divider
+        p.justify The resolution with token #[b=token] could not be advanced to stage #[a(href="/help#rstage" + (stage + 1))="#" + (stage + 1)] with the provided valid access code because it did not have the required permission level. You entered a code with the permission level #[a(href="/help#" + accessLevel)=accessLevel].
+          br
+          | #[a(href="/resolution/editor/" + token) Return] to the editor page.
+        h4 Current Stage:
+        +stage-info-index(stage, false)
+      default: p This page has a problem. #[span.grey-text Surprise!]
