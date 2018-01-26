@@ -13,12 +13,13 @@ const credentials = require("../lib/credentials");
 const issueError = resUtil.issueError;
 
 //register callback to get collections on load
-let resolutions, access, resolutionArchive;
-databaseInterface(collections => {
+let resolutions, access, resolutionArchive, collections;
+databaseInterface(c => {
   //get collections in vars for easier use
-  resolutions = collections.resolutions;
-  resolutionArchive = collections.resolutionArchive;
-  access = collections.access;
+  resolutions = c.resolutions;
+  resolutionArchive = c.resolutionArchive;
+  access = c.access;
+  collections = c;
 });
 
 //generates a token/code and queries the database to see if it's already present (recursive)
@@ -46,7 +47,7 @@ function makeNewThing(res, isToken) {
   });
 }
 
-//GET (view) to /resolution displays front page without promo
+//GET (view) to /resolution displays front page (token and code input) without promo
 router.get("/", function(req, res) {
   res.render("index", { promo: false });
 });
@@ -55,8 +56,13 @@ router.get("/", function(req, res) {
 router.get("/renderpdf/:token", function(req, res) {
   //check for token and save new resolution content
   routingUtil.checkToken(req, res, {
-    //add current time to render history log
-    $set: { lastRender: Date.now() }
+    $set: {
+      //add current time to render history log
+      lastRender: Date.now(),
+
+      //reset flag, don't do a rerender if not saved again
+      unrenderedChanges: false
+    }
   }, (token, document) => {
     //don't render if nothing saved yet
     if (! document.stage) {
@@ -66,32 +72,34 @@ router.get("/renderpdf/:token", function(req, res) {
 
     //url to pdf
     const pdfUrl = "/resolution/rendered/" + token + ".pdf";
-
-    //don't render if hasn't been saved again since last render
-    if (document.changed < document.lastRender) {
+    console.log(document);
+    //don't render if there hasn't been a save since the last render
+    if (! document.unrenderedChanges) {
       //just send url and stop
       res.send(pdfUrl);
       return;
     }
 
-    //render gotten resolution to pdf
-    try {
+    //make a promise that wraps the pandoc call
+    new Promise((resolve, reject) => {
+      //start render with pandoc
       pandoc(
-        latexGenerator(document.content),
-        "-o public/rendered/" + token + ".pdf --template=public/template.latex",
-        pandocErr => {
-          //hint error if occured
-          if (pandocErr) {
-            issueError(res, 500, "render problem pandoc result", pandocErr);
-          } else {
-            //send url to rendered pdf
-            res.send(pdfUrl);
-          }
-        });
-    } catch (e) {
-      //catch any pandoc or rendering errors we can
-      issueError(res, 500, "render problem pandoc");
-    }
+        latexGenerator(document),
+        "-o public/rendered/" + token +
+
+        //set xelatex engine for unicode support
+        ".pdf --latex-engine=xelatex --template=public/template.latex",
+
+        //handle error if occured
+        err => err ? reject(err) : resolve()
+      );
+    }).then(
+      //send url to rendered pdf
+      () => res.send(pdfUrl),
+
+      //print and notify of error
+      (err) => issueError(res, 500, "render problem pandoc", err)
+    );
   });
 });
 
@@ -130,7 +138,8 @@ router.get("/new", function(req, res) {
       lastLiveview: 0, //last time a liveview session happened with this resolution
       stage: 0, //current workflow stage (see phase 2 notes)
       liveviewOpen: false, //if a liveview page is viewing this resolution right now (TODO: use)
-      attributes: "none" //attribute status, see /setattribs or fucntion, restricts actions
+      attributes: "none", //attribute status, see /setattribs or fucntion, restricts actions
+      unrenderedChanges: false, //set to true when saved and reset when rendered
     }).then(() => {
       //redirect to editor page (because URL is right then)
       res.redirect("/resolution/editor/" + token);
@@ -150,7 +159,8 @@ router.post("/save/:token", function(req, res) {
         {
           $set: {
             content: resolutionSent, //update resolution content
-            changed: Date.now() //update changedate
+            changed: Date.now(), //update changedate
+            unrenderedChanges: true //must be rendered
           },
           $max: {
             stage: 1 //first saved stage at least
@@ -284,7 +294,7 @@ router.get("/load/:token", function(req, res) {
 //POST (no view) to advance resolution, redirect to editor without code after completion
 router.post("/advance/:token", function(req, res) {
   //authorize, absence of code is detected in fullAuth
-  routingUtil.fullAuth(req, res, token => {
+  routingUtil.fullAuth(req, res, (token, resDoc) => {
     //query object to be possibly extended by a vote result setter
     const query = {
       $inc: { stage: 1 }, //advance to next stage index
@@ -297,7 +307,7 @@ router.post("/advance/:token", function(req, res) {
       try {
         //make voting reults object
         const voteResults = {
-          // "|| 0" convert to 0 or number
+          // "|| 0" convert to number or 0
           inFavor: parseInt(req.body.inFavor, 10) || 0,
           against: parseInt(req.body.against, 10) || 0,
           abstention: parseInt(req.body.abstention, 10) || 0,
@@ -317,11 +327,41 @@ router.post("/advance/:token", function(req, res) {
       }
     }
 
-    //advance resolution to next stage
-    resolutions.updateOne({ token: token }, query)
+    //add resolution id if going from stage 3 (FC) to 4 (print), regular advance otherwise
+    (resDoc.stage === 3 ?
+      //get and increment resolution id for this year
+      //needs findOneAndUpdate because we need the value of the modified doc
+      collections.resolutionId.findOneAndUpdate({ year: new Date().getFullYear() }, {
+        //count up one
+        $inc: { counter: 1 }
+      })
+
+      //advance resolution to next stage and set id
+      .then(yearDoc => {
+        //add $set property if not set already
+        if (! query.$set) {
+          query.$set = {};
+        }
+
+        //add id and year to update query
+        query.$set.resolutionId = yearDoc.value.counter;
+        query.$set.idYear = yearDoc.value.year;
+
+        //as this changes the pdf generated from this resolution, flag must be set
+        //(the id is added to the pdf in a corner)
+        query.$set.unrenderedChanges = true;
+
+        //execute query and return resulting promise
+        return resolutions.updateOne({ token: token }, query);
+      }) :
+
+      //execute and return query without adding resolution id
+      resolutions.updateOne({ token: token }, query)
+    )
+
     //redirect to editor without code, prevent form resubmission
-    .then(() => res.redirect("/resolution/editor/" + token))
-    .catch(err => issueError(res, 500, "advance db error", err));
+    .then(() => res.redirect("/resolution/editor/" + token),
+          err => issueError(res, 500, "advance db error", err));
   }, {
     //error/warning page on fail
     permissionMissmatch: (token, resolutionDoc, codeDoc) => {
@@ -361,11 +401,11 @@ router.get("/makecodes/" + credentials.makeCodesSuffix, function(req, res) {
     level => makeNewThing(res, false).then(code => ({ level: level, code: code }))
   )).then(newCodes =>
     //add all of them to the database
-    access.insertMany(newCodes)
-    //respond with codes as content
-    .then(() => res.send(newCodes
-      .map(code => code.level + " " + code.code)
-      .join("<br>"))
-    ).catch(err => issueError(res, 500, "Error inserting codes", err))
+    access.insertMany(newCodes).then(
+      //respond with codes as content
+      () => res.send(newCodes
+        .map(code => code.level + " " + code.code)
+        .join("<br>")),
+      err => issueError(res, 500, "Error inserting codes", err))
   );
 });

@@ -20,3 +20,13 @@
   font-weight: 300;
   margin-right: 5px;
 }
+
+.inline-spinner-wrapper {
+  margin-left: 0.7em;
+  display: inline-block;
+}
+
+.inline-spinner {
+  width: 1.2em;
+  height: 1.2em;
+}

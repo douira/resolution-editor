@@ -11,7 +11,8 @@
   serverLoad,
   makeAlertMessage,
   startLiveviewWS,
-  sendLVUpdate*/
+  sendLVUpdate,
+  onAllSaveDone*/
 /* exported
   checkRequiredFields,
   sendLVUpdates,
@@ -37,19 +38,6 @@ var allowedSubclauseDepth = {
 //keeps track of any invalid fields that are marked as such
 var badFieldPresent = true;
 
-//makes a autofill settings object
-function makeAutofillSettingsPre(defaultSettings, data, settings) {
-  //use default settings if no extra settings given
-  if (typeof settings === "undefined") {
-    settings = defaultSettings;
-  }
-
-  //merge settings and data prop object
-  return $.extend({
-    data: data
-  }, settings);
-}
-
 //set to true when there are unsaved changes that the user has to be alerted about
 var changesSaved = false;
 var noChangesMade = true;
@@ -61,9 +49,6 @@ var resolutionToken, resolutionCode;
 //access level and chair mode are later taken from document
 var accessLevel, chairMode;
 
-//attach the default settings
-var makeAutofillSettings = makeAutofillSettingsPre.bind({}, autofillSettings);
-
 //is set to true if we need to send updates to LV viewers
 var sendLVUpdates = false;
 
@@ -72,6 +57,12 @@ var resolutionStage;
 
 //attribute string of resolution, gotten from page
 var resolutionAttributes, attributesString;
+
+//if automatic saving is enabled or not, determiend from other state variables
+var autosaveEnabled;
+
+//is set to true after the phrase in content message has been displayed
+var displayedPhraseContentMessage;
 
 //transforms arrays containign a certain flag in an object and array json structure
 function transformMarkedArrays(structure, flag, propValue, depth) {
@@ -247,7 +238,9 @@ $.fn.triggerAll = function(eventNames, params) {
   //trigger all events with params
   eventNames.split(/[ ,]+/).forEach(function(event) {
     this.trigger(event, params);
-  }.bind(this));
+  }, this);
+
+  //return this for chaining
   return this;
 };
 
@@ -291,20 +284,26 @@ $.fn.addSubClause = function(activationStateChanges) {
     //remove left over clauses from clone
     subList.children().not(".add-clause-container").remove();
 
+    //hide the add clause container if the clause editInactive handler isn't going to do it
+    if (! activationStateChanges) {
+      subList.children(".add-clause-container").hide();
+    }
+
     //add created list to clause, add clause button will be made visible by clause event
     this.children(".clause-list-anchor").after(subList);
   }
 
-  //add new subclause by copying clause without phrase field
-  var strippedClause = this
-    .clone(true, true)
-    .trigger("reset");
+  //clone the clause as a base for the new clause
+  var strippedClause = this.clone(true, true);
+
+  //remove the phrase field (prevent failing autocomplete init on "floating" element through reset)
   strippedClause
     .children(".phrase-input-wrapper")
     .remove();
   strippedClause
-    .appendTo(subList)
-    .trigger("updateTreeDepth");
+    .trigger("reset") //trigger reset to make it like a new clause
+    .appendTo(subList) //add it to the end of the subclause list
+    .trigger("updateTreeDepth"); //update the info texts on it
 
   //move button to bottom of list
   subList.children(".add-clause-container").appendTo(subList);
@@ -330,8 +329,9 @@ $.fn.addClause = function(amount, activationStateChanges) {
   var addClauseContainer = this;
   if (! this.is(".add-clause-container")) {
     if (this.is(".clause-list")) {
-      addClauseContainer = this.children(".add-clause-container");
+      addClauseContainer = this.children(".add-clause-container").last();
     } else {
+      console.error("could not find add clause container for element:", this);
       return this;
     }
   }
@@ -352,9 +352,10 @@ $.fn.addClause = function(amount, activationStateChanges) {
       .siblings(".clause")
       .first()
       .clone(true, true)
-      .trigger("reset")
       .insertBefore(addClauseContainer)
-      .trigger("updateId");
+      //trigger reset after inserting into main document because
+      //the autofill init needs to know in what kind of clause it is to get the correct data
+      .triggerAll("reset updateId");
   }
 
   //make last added clause active if enabled
@@ -366,18 +367,78 @@ $.fn.addClause = function(amount, activationStateChanges) {
   changesSaved = false;
 
   //structure update not sent here because this is also called when loading the resolution
+  //and we don't want lots of updates to be sent when we load the resolution into the editor
 
   //return this for chaining
   return this;
 };
 
+//makes a modal pop up that informs the user about disallowed characters
+var showedDisallowedCharModal = false;
+function queueDisallowedCharInfo() {
+  //show only once
+  if (! showedDisallowedCharModal) {
+    //display message
+    makeAlertMessage("font_download", "Invalid characters were modified", "OK",
+      "Some characters were removed or changed from the text you entered into an input field." +
+      " In general, certain special characters and line breaks are removed." +
+      " Unclosed quotes are completed by appending a quotation mark," +
+      " but you such occurences should be attended to." +
+      " Please check the detailed <a href='/help#formatting'>help page section</a> on allowed" +
+      " characters and formatting advice. This message will only be displayed once.");
+
+    //set flag
+    showedDisallowedCharModal = true;
+  }
+}
+
+//removes illegal characters from inputs and textareas
+$.fn.filterIllegalContent = function() {
+  //for every passed element
+  this.each(function() {
+    var elem = $(this);
+
+    //get field content
+    var content = elem.val();
+
+    //run cleansing regexp replacements over the content
+    //see lib/latexGenerator.js for the server version of this and explanations
+    var newContent = content
+      //normalize apostrophes
+      .replace(/ *[`´']+/g, "’")
+
+      //normalize quotes
+      .replace(/[“”‹›«»]/g, "\"")
+
+      //filter characters
+      .replace(/[^a-zA-Z0-9*_^|&’"\-.,()/+\u00c0-\u024F ]+/g, "")
+
+      //remove bad whitespace
+      .replace(/\s*[^\S ]+\s*/g, " ")
+
+      //remove padding whitespace
+      .trim();
+
+    //append final " if there is an odd amount
+    if ((newContent.match(/"/g) || []).length % 2) {
+      //append at end of string to satisfy renderer
+      //(would be done on server otherwise, do it here so the user can be informed)
+      newContent += "\"";
+    }
+
+    //if something changed
+    if (content !== newContent) {
+      //make notification
+      queueDisallowedCharInfo();
+
+      //apply by setting the content in the elemement
+      elem.val(newContent);
+    }
+  });
+};
+
 //registers event handlers that are essential for the general function of the page
 function registerEssentialEventHandlers(doLoad) {
-  $("body")
-  .on("touchstart", function() {
-    //register touch event and remove tooltips for touch-devices
-    $(".tooltipped").tooltip("remove");
-  });
   //we can only load from file or delete if we loaded the resolution
   if (doLoad) {
     $(".modal").on("reset", function(e) {
@@ -394,17 +455,16 @@ function registerEssentialEventHandlers(doLoad) {
 
     //finalize editing on all fields
     $(".clause").trigger("editInactive");
-
     //save first if anything changed
     if (changesSaved) {
-      //no saving necessary
-      generatePdf();
+      //no saving necessary, register to run after save completes
+      onAllSaveDone(generatePdf);
     } else {
       //save json to server first
       serverSave(function() {
         //display pdf directly after generating
         generatePdf();
-      }, true);
+      });
     }
   });
   $("#action-plaintext")
@@ -460,12 +520,17 @@ function registerEventHandlers(loadedData) {
     }
   });
 
+  //the attribute selector, only allow one handler to be set
   if (accessLevel === "MA") {
-    //init selector for attribute setting, only allow one handler to be set
+    //init selectors
     $("select").one("init", function() {
       //init select box
       $(this).material_select();
+    });
+    $("#amd-type-select-box > select").one("init", function() {
 
+    });
+    $("#attribute-select-box > select").one("init", function() {
       //container for all of this
       var selectBox = $("#attribute-select-box");
       var selectBoxContainer = selectBox.find(".select-wrapper");
@@ -548,11 +613,46 @@ function registerEventHandlers(loadedData) {
       });
     });
   }
-
   $(".autocomplete")
   .on("init", function(e) {
     e.stopPropagation();
-    $(this).autocomplete($(this).getData());
+    var elem = $(this);
+
+    //get the autofill data that matches a selector in autofillInitData
+    var foundData;
+    for (var selector in loadedData.autofillInitData) {
+      //if this element matches the selector, use that data
+      if (elem.is(selector)) {
+        //store data and stop looking
+        foundData = loadedData.autofillInitData[selector];
+        break;
+      }
+    }
+
+    //check if there actually was any data for this element
+    if (foundData) {
+      //prepare the autocomplete init options object
+      var autoOpts = {
+        //init the autocomplete on this field with the data for this field's autocomplete role
+        data: foundData,
+
+        //other settings are taken from autofillSettings
+      };
+
+      //if this is a editor-relevant field that tracks changes and must be in a clause
+      //being in a clause implies it not having the .not-editor class
+      if (elem.is(".clause .autocomplete")) {
+        //attach a handler that makes a content update happen when a autocomplete field changes
+        autoOpts.onAutocomplete = function() {
+          sendLVUpdate("content", elem);
+        };
+      }
+
+      //init with prepared data and predefined settings
+      $(this).autocomplete($.extend(autoOpts, autofillSettings));
+    } else { //there was no data for this element, error
+      console.error("no autocomplete data found for field", this);
+    }
   });
   $("input.required, textarea.required")
   .on("checkRequired", function(e) {
@@ -684,14 +784,28 @@ function registerEventHandlers(loadedData) {
     //cleanup textarea element
     $(this).removeAttr("data-gramm");
   });
-  $(".chips")
+  $(".chips#co-spon")
   .on("init", function(e) {
     e.stopPropagation();
     var elem = $(this);
-    elem.material_chip(elem.getData());
 
-    //reset data object in init data, may have been changed as data load
-    elem.getData().data = [];
+    //init the chips thing with autocomplete options
+    elem.material_chip({
+      //chips prefilled data
+      data: elem.getData().initData,
+
+      //autocomplete options for the input field
+      autocompleteOptions: $.extend({
+        //have it use the correct autocomplete data
+        data: loadedData.autofillInitData.sponsors,
+
+        //don't send content updates for header information
+
+        //other settings are taken from autofillSettings
+      }, autofillSettings)
+    });
+
+    elem.getData().initData = [];
   })
   .on("reset", function(e) {
     e.stopPropagation();
@@ -797,8 +911,9 @@ function registerEventHandlers(loadedData) {
   })
   .on("editActive", function(e) {
     e.stopPropagation();
-    //save to server if meta hanges are unsaved
-    if (! metaChangesSaved && resolutionStage) {
+    //save to server if meta changes are unsaved (note that this is ativation of the cause)
+    if (! metaChangesSaved && autosaveEnabled) {
+      //do autosave
       serverSave(null, false, true);
     }
 
@@ -841,9 +956,47 @@ function registerEventHandlers(loadedData) {
       elem.siblings(".add-clause-container").hide();
     }
 
+    //strip illegal characters and whitespace from textareas and inputs
+    //this is done on the server as well, but we want to discourage this behavior in the user
+    elem.find("textarea.required,input.required").filterIllegalContent();
+
+    //only check if message wasn't displayed yet
+    if (! displayedPhraseContentMessage) {
+      //get text of textarea
+      var clauseContent = elem
+        //get the textarea
+        .children(".clause-content")
+        .children("textarea")
+
+        //get and prepare the content for processing
+        .val()
+        .trim()
+        .toLowerCase();
+
+      //get the list of phrases that applies to this clause
+      var phrases = loadedData.phrases[elem.attr("data-clause-type")];
+
+      //check if the content text area includes a phrase
+      if (phrases.some(function(phrase) {
+        //return true if it starts with the phrase
+        return clauseContent.startsWith(phrase.toLowerCase());
+      })) {
+        //display message concerning phrase field
+        makeAlertMessage("info", "Phrase found in content field", "OK",
+          "The editor has detected that a clause content field in this resolution begins" +
+          " with a phrase. Please use the content text area only for the clause content and not" +
+          " the phrase of the clause. The text input field labeled 'Phrase' will suggest possible" +
+          " phrases when you start typing. This message will only be displayed once.");
+      }
+
+      //set flag to disabling state
+      displayedPhraseContentMessage = true;
+    }
+
     //auto-save if not at stage 0 and has unsaved changes
-    //no alert message on fail, only red mark
-    if (! changesSaved && ! noChangesMade && resolutionStage) {
+    //no alert message on fail, only red marks
+    if (! changesSaved && ! noChangesMade && autosaveEnabled) {
+      //do autosave
       serverSave(null, false, true);
     }
   })
@@ -922,47 +1075,38 @@ function registerEventHandlers(loadedData) {
     var elem = $(this);
     var data = elem.getData().loadedData;
 
-    //if data is only a string, fill content only
-    if (typeof data === "string") {
-      //fill content field
-      elem
-        .children(".clause-content")
-        .children("textarea")
-        .val(data)
-        //trigger keyup to make textarea update its size
-        .triggerAll("activateLabel keyup");
-    } else {
-      //fill phrase field
+    //fill phrase field if present
+    if ("phrase" in data) {
       elem
         .children(".phrase-input-wrapper")
         .find("input")
         .val(data.phrase)
         .trigger("activateLabel");
+    }
 
-      //fill content field
-      elem
-        .children(".clause-content")
-        .children("textarea")
-        .val(data.content)
-        .triggerAll("activateLabel keyup");
+    //fill content field
+    elem
+      .children(".clause-content")
+      .children("textarea")
+      .val(data.content)
+      .triggerAll("activateLabel keyup");
 
-      //add subclause data if given
-      if (data.sub) {
-        //make subclause list, give data and trigger to continue
-        elem.addSubClause(false);
-        var subclauseList = elem.find(".clause-list-sub");
-        subclauseList.getData().loadedData = data.sub;
-        subclauseList.trigger("fromLoadedData");
+    //add subclause data if given
+    if ("sub" in data) {
+      //make subclause list, give data and trigger to continue
+      elem.addSubClause(false);
+      var subclauseList = elem.find(".clause-list-sub");
+      subclauseList.getData().loadedData = data.sub;
+      subclauseList.trigger("fromLoadedData");
 
-        //also add ext data if given
-        if (data.contentExt) {
-          elem
-            .children(".clause-content-ext")
-            .show()
-            .children("textarea")
-            .val(data.contentExt)
-            .triggerAll("activateLabel keyup");
-        }
+      //also add ext data if given
+      if (data.contentExt) {
+        elem
+          .children(".clause-content-ext")
+          .show()
+          .children("textarea")
+          .val(data.contentExt)
+          .triggerAll("activateLabel keyup");
       }
     }
   });
@@ -1212,6 +1356,9 @@ $(document).ready(function() {
   //get stage of resolution
   resolutionStage = parseInt($("#resolution-stage").text(), 10);
 
+  //autosave is aenabled if at non 0 stage
+  autosaveEnabled = resolutionStage > 0;
+
   //get attributes
   attributesString = $("#resolution-attributes").text();
 
@@ -1299,7 +1446,6 @@ $(document).ready(function() {
     $("*").trigger("init");
   } else { //proceed normally
     //load external sponsor, phrase and forum name data
-    var autofillData;
     $.getJSON("/autofillData.json")
     .fail(function(data, status, error) {
       //log the error we have with getting the data
@@ -1331,7 +1477,7 @@ $(document).ready(function() {
       //mapping between autofill data and input field selectors
       loadedData.autofillDataMapping = {
         "#forum-name": data.forums.map(function(pair) { return pair[0]; }), //only full name ok
-        "#main-spon,#co-spon": data.sponsors.slice(),
+        "#main-spon,#co-spon,#amd-spon": data.sponsors.slice(),
         "#preamb-clauses .phrase-input": data.phrases.preamb.slice(),
         "#op-clauses .phrase-input": data.phrases.op.slice(),
       };
@@ -1347,32 +1493,57 @@ $(document).ready(function() {
         loadedData.forumAbbrevMapping[nameSet[1].trim().toLowerCase()] = nameSet[0];
       });
 
+      //make copies in loadedData
+      loadedData.phrases = {
+        op: data.phrases.op.slice(),
+        preamb: data.phrases.preamb.slice()
+      };
+
+      //remove _convert element
+      loadedData.phrases.op.shift();
+      loadedData.phrases.preamb.shift();
+
+      //transform into correct data structure when gotten data
+      transformMarkedArrays(data, "_convert", null);
+
+      //data used to inititalize autocomplete fields/thingies and their other options
+      loadedData.autofillInitData = {
+        "#forum-name": data.forums,
+        "#main-spon,#co-spon,#amd-spon": data.sponsors,
+        "sponsors": data.sponsors, //shortcut for chips init
+        "#preamb-clauses .phrase-input": data.phrases.preamb,
+        "#op-clauses .phrase-input": data.phrases.op,
+      };
+
       //register all event handlers
       registerEssentialEventHandlers(true);
       registerEventHandlers(loadedData);
 
-      //transform into correct data structure when gotten data
-      autofillData = transformMarkedArrays(data, "_convert", null);
+      //if not in stage 0 (there is something to load from the server)
+      if (resolutionStage) {
+        //trigger all init events that can be triggered before loading the resolution
+        //init is triggered on .chips in serverLoad after settign the data it should contain
+        $("*:not(.autocomplete, .chips)").trigger("init");
 
-      //data used to inititalize input fields/thingies and their other options
-      var initData = {
-        "#forum-name": makeAutofillSettings(autofillData.forums),
-        "#co-spon": {
-          autocompleteOptions: makeAutofillSettings(autofillData.sponsors)
-        },
-        "#main-spon": makeAutofillSettings(autofillData.sponsors),
-        "#preamb-clauses .phrase-input": makeAutofillSettings(autofillData.phrases.preamb),
-        "#op-clauses .phrase-input": makeAutofillSettings(autofillData.phrases.op),
-      };
+        //initiate loading of resolution from server with preset token
+        serverLoad(resolutionToken, true, function() {
+          //don't send update if still loading,
+          //some events may be fake-fired in the process of getting
+          $(".clause input, .clause textarea")
+          .on("paste keyup", function() {
+            //send content update
+            sendLVUpdate("content", $(this));
+          });
 
-      //for all init data attach the data to the element
-      for (var dataSelector in initData) {
-        //attach data to all elements that match
-        $(dataSelector).data(dataPrefix, initData[dataSelector]);
-      }
+          //init autocomplete fields now, they require to be already in their final positions
+          //to detect the correct dataset to use for completion
+          $(".autocomplete").trigger("init");
+        });
+      } else {
+        //trigger init on all
+        $("*").trigger("init");
 
-      //if in stage 0, start timer for save reminder
-      if (! resolutionStage) {
+        //start timer for save reminder
         setTimeout(function() {
           //display alert modal with alert message
           makeAlertMessage(
@@ -1384,22 +1555,12 @@ $(document).ready(function() {
         }, 1000 * 60 * 5); //5 minutes
       }
 
-      //trigger all init events
-      $("*").trigger("init");
-
-      //initiate loading of resolution from server with preset token
-      serverLoad(resolutionToken, true, function() {
-        //don't send update if still loading,
-        //some events may be fake-fired in the process of getting
-        $(".clause input, .clause textarea")
-        .on("paste keyup", function() {
-          //send content update
-          sendLVUpdate("content", $(this));
-        });
-      });
-
       //if as MA or at stage 6 and authorized as CH, start liveview editor websocket
-      if (resolutionStage === 6 && accessLevel === "CH" || accessLevel === "MA") {
+      if (resolutionStage === 6 && accessLevel === "CH" ||
+          resolutionStage && accessLevel === "MA") { //MA access to LV needs at least once saved
+        //disable autosave for liveview, we don't want to be accidenatlly saving undesired states
+        autosaveEnabled = false;
+
         //give token and code, false for being editor type client
         startLiveviewWS(false, resolutionToken, resolutionCode, function(type, newSendStatus) {
           //act on "sendUpdates" update
@@ -1420,6 +1581,35 @@ $(document).ready(function() {
               sendLVUpdates = false;
           }
         });
+      }
+
+      //check if localStorage is supported and no flag is found
+      if (typeof localStorage !== "undefined" && ! localStorage.getItem("helppagehint")) {
+        //set to false when an error happens while setting the flag in local storage
+        //we won't display the hint if we can't prevent it
+        //from being shown every time the page is reloaded
+        var canSetFlag = true;
+
+        //set the flag
+        try {
+          localStorage.setItem("helppagehint", "ok");
+        } catch (e) {
+          //didn't manage to set the flag
+          canSetFlag = false;
+        }
+
+        //display the help page hint, if we were able to set the flag
+        if (canSetFlag) {
+          //provide links to help page and formatting section
+          makeAlertMessage(
+            "help", "Read the Help Page", "I'm informed now",
+            "It is strongly recommended for all users who have't yet accustomed themselves to" +
+            " this editor to read the <a href='/help'>help page</a> before writing a resolution." +
+            " Specifically, the section <a href='/help#formatting'>Formatting Advice and Special" +
+            " Characters</a> helps to avoid confusion that arises from special syntax and" +
+            " disallowed characcters. Read the help page before asking any questions about how" +
+            " to use the editor. This message will only be displayed once.");
+        }
       }
     });
   }

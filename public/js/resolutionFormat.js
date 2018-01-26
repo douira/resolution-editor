@@ -15,6 +15,7 @@ var magicIdentifier = "PG52QE1AM4LACMX9";
 1: start
 2: typo fix (from editied to edited)
 3: typo fix (from form to forum)
+6: removed clauses of just strings, must always be objects
 */
 var resolutionFileFormat = {
   types: {
@@ -35,7 +36,7 @@ var resolutionFileFormat = {
         required: false,
         content: {
           minLength: 1,
-          contentTypes: ["string", "phraselessClause"]
+          contentTypes: ["phraselessClause"]
         }
       },
       {
@@ -57,7 +58,7 @@ var resolutionFileFormat = {
         required: false,
         content: {
           minLength: 1,
-          contentTypes: ["string", "phraselessClause"]
+          contentTypes: ["phraselessClause"]
         }
       },
       {

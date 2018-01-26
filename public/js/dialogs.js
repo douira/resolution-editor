@@ -46,7 +46,7 @@ function checkAlertDisplay() {
 //creates an alert message
 function makeAlertMessage(icon, title, buttonText, callbackOrMessage, errorCode) {
   //default button text
-  if (typeof buttonText === "undefined") {
+  if (typeof buttonText !== "string") {
     buttonText = "OK";
   }
 

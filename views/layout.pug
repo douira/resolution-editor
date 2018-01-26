@@ -53,6 +53,30 @@
 mixin icon(name, classes, id)
   i.material-icons(class=classes id=id)= name
 
+//-colorized spinner
+mixin spinner(colorCode, size)
+  -
+    if (typeof size === "undefined") {
+      size = "medium";
+    }
+    if (typeof colorCode === "undefined") {
+      colorCode = "blue";
+    }
+    colorCode = ({
+      "blue": "spinner-blue-only",
+      "red": "spinner-red-only",
+      "green": "spinner-green-only",
+      "yellow": "spinner-yellow-only"
+    })[colorCode];
+  .preloader-wrapper.active(class=size)
+    .spinner-layer(class=colorCode)
+      .circle-clipper.left
+        .circle
+      .gap-patch
+        .circle
+      .circle-clipper.right
+        .circle
+
 doctype html
 html(lang="en")
   head

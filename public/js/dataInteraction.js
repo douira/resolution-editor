@@ -17,11 +17,12 @@
   generatePlaintext,
   serverSave,
   downloadJson,
-  sendLVUpdate*/
+  sendLVUpdate,
+  onAllSaveDone*/
 //file actions are defined in this file
 
 //current version of the resolution format supported
-var supportedResFileFormats = [4, 5];
+var supportedResFileFormats = [6];
 
 //get resolutionFormat from module exported
 var resolutionFormat = module.exports.resolutionFormat;
@@ -55,7 +56,7 @@ function validateFields(noAlert) {
       "warning", "Some field(s) invalid", "ok",
       "There are fields with missing or invalid values. " +
       "Phrase fields must contain one of the suggested values only. " +
-      "<br>The fields are marked <span class='red-underline'>red</span>.");
+      "<br>Invalid fields are marked <span class='red-underline'>red</span>.");
   }
 
   //return value again
@@ -162,11 +163,13 @@ function loadJson(json, callbackOnSuccess) {
   $("#forum-name").val(res.address.forum).trigger("activateLabel");
   $("#main-spon").val(res.address.sponsor.main).trigger("activateLabel");
 
-  //init chips with new data
+  //init chips with new data, convert array to tag objects
   var elem = $("#co-spon");
-  elem.getData().data = res.address.sponsor.co.map(function(str) {
+  elem.getData().initData = res.address.sponsor.co.map(function(str) {
     return { tag: str };
   });
+
+  //trigger init to actually display the content
   elem.trigger("init");
 
   //parse clauses
@@ -205,11 +208,6 @@ function loadFilePick() {
 
 //loads resolution from server
 function serverLoad(token, doToast, callback) {
-  //stop if we're still in stage 0 and there isn't anything to load
-  if ($("#resolution-stage").text() === "0") {
-    return;
-  }
-
   //make settings object
   var ajaxSettings = {
     url: "/resolution/load/" + resolutionToken,
@@ -250,9 +248,16 @@ function serverLoad(token, doToast, callback) {
 
 //sends the current json of to the server and calls back with the url to the generated pdf
 function generatePdf() {
+  console.log("gen pdf");
+  //start the spinner to indicate activity
+  var spinner = $("#pdf-wait-spinner").removeClass("hide-this");
+
   //send to server
   $.get("/resolution/renderpdf/" + resolutionToken)
   .done(function(response) {
+    //stop showing spinner
+    spinner.addClass("hide-this");
+
     //display link to generated pdf
     makeAlertMessage(
       "description", "Generated PDF file", "done",
@@ -260,12 +265,17 @@ function generatePdf() {
       "' target='_blank'>here</a></b> to view your resolution as a PDF file.");
   })
   .fail(function() {
+    //stop showing spinner
+    spinner.addClass("hide-this");
+
     //display error and request creation of bug report
     makeAlertMessage(
       "error_outline", "Error generating PDF", "ok",
-      "The server encountered an unexpected error" +
-      " while trying to generate the requested PDF file." +
-      " Please file a " + bugReportLink("pdf_gen") + " and describe this problem.", "pdf_gen");
+      "The server encountered an error while trying to generate the requested" +
+      " PDF file. Read the <a href='/help#formatting'>help page section</a> on formatting" +
+      " and special characters before proceeding. If the error persists after modyfing your" +
+      " resolution to conform to the formatting and special character rules, please file a " +
+      bugReportLink("pdf_gen") + " and describe this problem.", "pdf_gen");
   });
 }
 
@@ -329,11 +339,6 @@ $.fn.clauseAsObject = function(allowEmpty) {
     clauseData.sub = subclauses;
   }
 
-  //if content is the only attribute, coerce to single string
-  if (Object.keys(clauseData).length === 1 && ! allowEmpty) { //use full object if allowing empties
-    clauseData = clauseData.content;
-  }
-
   //return created clause data object
   return clauseData;
 };
@@ -382,6 +387,29 @@ function getEditorObj(allowEmpty) {
   return res;
 }
 
+//wait for save operations to finish before starting pdf render
+var saveOps = {
+  //number of pending save operations,
+  pending: 0,
+
+  //call callbacks when all save operations finish, queue of added callbacks
+  callbacks: []
+};
+
+//registeres a callback
+function onAllSaveDone(callback) {
+  //must be a function
+  if (typeof callback === "function") {
+    //call immediately if there are no save operations in progress
+    if (saveOps.pending) {
+      //queue callback
+      saveOps.callbacks.push(callback);
+    } else {
+      callback();
+    }
+  }
+}
+
 //saves the resolution from editor to the server
 function serverSave(callback, doToast, silentFail) {
   //do not save if not allowed to
@@ -413,6 +441,12 @@ function serverSave(callback, doToast, silentFail) {
   //preemptively mark as saved
   changesSaved = true;
 
+  //registers callback
+  onAllSaveDone(callback);
+
+  //register a pending save op
+  saveOps.pending ++;
+
   //send post request
   $.post("/resolution/save/" + resolutionToken, data, "text")
   .done(function() {
@@ -421,9 +455,16 @@ function serverSave(callback, doToast, silentFail) {
       displayToast("Successfully saved");
     }
 
-    //call callback on completion
-    if (typeof callback === "function") {
-      callback();
+    //decrement active op counter
+    saveOps.pending --;
+
+    //if there are no ops pending
+    if (! saveOps.pending) {
+      //call all callbacks in order
+      saveOps.callbacks.forEach(function(c) { c(); });
+
+      //clear callbacks
+      saveOps.callbacks = [];
     }
 
     //if we are in stage 0, reload the page on successful save
@@ -432,6 +473,14 @@ function serverSave(callback, doToast, silentFail) {
     }
   })
   .fail(function() {
+    //decrement active op counter
+    saveOps.pending --;
+
+    //clear callbacks if no ops still running
+    if (! saveOps.pending) {
+      saveOps.callbacks = [];
+    }
+
     //mark as not saved, problem
     changesSaved = false;
 
@@ -481,20 +530,25 @@ function saveFileDownload(str) {
   });
 }
 
-//index of structure changes, incremented every time the structure changes
-//paths calculated with a small index will be ignored and recalculated
-var structureChangeIndex = 0;
+//the path cache keeps track of already calculated cached paths
+var pathCache = {};
 
-//gets the path of a clause
+//is incremented every time a path is added to the cache
+var nextPathId = 0;
+
+//gets the path of a clause,
+//path starts with the bottom element so that popping produces the first selector
 $.fn.getContentPath = function() {
-  //get data for this element
-  var data = this.getData();
+  //get path id of this element
+  /*we use an element specific attribute because modifying it won't change the attribute in
+  other elements (.data() in jquery only copies the reference apparently when elements are
+  cloned and thereby causes two elements to have the same data object)*/
+  var pathId = this.attr("data-path-id");
 
-  //if no structure change has occured and path is present in data
-  if (data.hasOwnProperty("contentPath") &&
-      data.contentPath.structureIndex === structureChangeIndex) {
-    //use this path instead
-    return data.contentPath.path;
+  //check if there is a cached path for this element present
+  if (typeof pathId !== "undefined" && String(pathId) in pathCache) {
+    //use cached path instead
+    return pathCache[String(pathId)];
   }
 
   //path elements in order from deepest to top
@@ -507,12 +561,16 @@ $.fn.getContentPath = function() {
   if (elem.is("input,textarea")) {
     //first specifier in path is the role of the field in the clause
     var elemClasses = elem.attr("class");
-    ["phrase-input", "clause-content-text", "clause-content-ext-text"]
-      .forEach(function(classValue) {
+
+    //map to structure format name
+    [{ from: "phrase-input", to: "phrase" },
+     { from: "clause-content-text", to: "content" },
+     { from: "clause-content-ext-text", to: "contentExt" }]
+    .forEach(function(classValue) {
       //check if element has current class
-      if (elemClasses.indexOf(classValue) !== -1) {
-        //use as first path specifier, we expect this only to happen once
-        path[0] = classValue;
+      if (elemClasses.indexOf(classValue.from) !== -1) {
+        //use mapped string as first path specifier, we expect this only to happen once
+        path[0] = classValue.to;
       }
     });
   } else {
@@ -521,22 +579,25 @@ $.fn.getContentPath = function() {
   }
 
   //for parent clauses
-  elem.parents(".clause").each(function() {
+  var parentClauses = elem.parents(".clause");
+  parentClauses.each(function(reversedDepth) {
     //add index of each clause in its list to path
     path.push($(this).indexInParent());
+
+    //add "sub" property path element if we're not in a top clause
+    if (parentClauses.length - 1 > reversedDepth) {
+      path.push("sub");
+    }
   });
 
   //no parent found, we are at the top level: specify what type of clause (op or preamb)
-  path.push(elem.closest("#preamb-clauses") ? "preamb" : "op");
+  path.push(elem.closest("#preamb-clauses").length ? "preambulatory" : "operative");
 
-  //reverse path so it starts with the topmost element
-  path.reverse();
+  //set the path id as the current id number and increment
+  elem.attr("data-path-id", nextPathId);
 
-  //put path into data to reuse
-  data.contentPath = {
-    path: path,
-    structureIndex: structureChangeIndex
-  };
+  //cache the path and increment for next path cache operation
+  pathCache[nextPathId++] = path;
 
   //return calculated path
   return path;
@@ -554,8 +615,8 @@ function sendLVUpdate(type, elem) {
   //sends a structure update to server
   switch(type) {
     case "structure":
-      //increment structure index with change happened
-      structureChangeIndex ++;
+      //empty path cache
+      pathCache = {};
 
       //send as structure update
       sendJsonLV({

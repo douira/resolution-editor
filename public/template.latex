@@ -1,6 +1,7 @@
 \documentclass[12pt, a4paper]{scrartcl}
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
+\usepackage{mathptmx}
 \usepackage[T1]{fontenc}
 \usepackage{lastpage}
 \usepackage{fancyhdr}
@@ -10,9 +11,13 @@
 \usepackage{soul}
 \usepackage{mfirstuc}
 \usepackage{xstring}
+\usepackage{csquotes}
+\usepackage{fontspec}
+\defaultfontfeatures{Ligatures=TeX}
+\MakeOuterQuote{"}
 \pagestyle{fancy}
 \fancyhf{}
-\rhead{Page \thepage\ of \pageref{LastPage}}
+\rfoot{Page \thepage\ of \pageref{LastPage}}
 \renewcommand{\headrulewidth}{0pt}
 \setlength\parindent{0pt}
 \newenvironment{preamb}[2]{
@@ -20,23 +25,22 @@
 \StrLeft{#1}{1}[\firstletter]%
 \StrBehind{#1}{\firstletter}[\rest]%
 \StrRight{#2}{1}[\lastletter] %
-~\\
+%~\\
 \emph{\capitalisewords{\firstletter}\rest}
 #2%
 }{%
-\IfStrEq{\lastletter}{:}{}{, \\}%
+\par ~\newline
 }
 \newenvironment{oc}[2]{\item %
 \StrLeft{#1}{1}[\firstletter]%
 \StrBehind{#1}{\firstletter}[\rest]%
 \StrRight{#2}{1}[\lastletter]%
-\underline{\capitalisewords{\firstletter}\rest}
+\underline{\smash{\capitalisewords{\firstletter}\rest}}
 #2%
 }
 {%
-\IfStrEq{\lastletter}{.}{}{;}%
 }
-\newenvironment{preambsubclause}{ \begin{itemize}[leftmargin=*,labelindent=2.5em,labelsep=2em,topsep=0pt] {} %
+\newenvironment{preambsubclause}{ \begin{itemize}[leftmargin=*,labelindent=2.5em,labelsep=2em,topsep=0pt,after=\vspace{0cm}] {} %
 \renewcommand\labelitemi{-}
 \setlength{\itemsep}{0pt}%
 \setlength{\parskip}{0pt}%
@@ -46,7 +50,7 @@
 }
 
 %OC Subclause 1. Level
-\newenvironment{ocsubclause}{ \begin {enumerate} [a),nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm, topsep=0pt]{}%
+\newenvironment{ocsubclause}{ \begin {enumerate} [a),nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm, topsep=-6pt]{}%
 }{%
 \end{enumerate}%
 }
