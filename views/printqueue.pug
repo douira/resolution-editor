@@ -9,7 +9,8 @@ block styles
 block content
   .container
     #code-preset.hide-this=code
-    h4 Print Queue
+    +icon("print", "large left blue-text")
+    h3 Print Queue
     .divider
     p.justify This is a queue of all resolutions that are in stage #[a(href="/help#rstage4") 4] and need to be printed. After printing the generated PDF file, you can advance the resolution to the next stage. Once the resolution has been advanced to the next stage, it cannot be brought back into this list. Resolutions that cannot be advanced (or are static) will not appear on this list. The time a particular resolution has been waiting to print is displayed in the upper right corner of the item list.
     mixin item-core-inner
@@ -32,7 +33,7 @@ block content
         +item-core(true)
         br
         | Submitted to #[b.item-forum ffff] by #[b.item-sponsor ssss]
-        span.right Print #[span.item-print-copies ?] copies
+        span.right Print #[b.item-print-copies ?] copies, #[span.item-print-length ?] pages each
       li.collection-item.hide-this.list-item#item-template
         +item-core
           |  in #[b.item-forum ffff] by #[b.item-sponsor ssss]
@@ -40,7 +41,7 @@ block content
     p.center.hide-this#error-msg There was an error with getting the data from from the server. Contact IT-Management if this problem persists after reloading the page.
     .center
       span.grey-text Automatically checking the server for new data every 30 seconds.
-      a#update-data-now(href="#!")  Check now
+      a#update-data-now(href="#")  Check now
     br
 block scripts
   script(src="/js/printQueueInit.js")

@@ -9,6 +9,12 @@ var allowCheckNow = true;
 //the template element for the list
 var templateItem;
 
+//the last time the server was asked for an update
+var lastUpdateTime = Date.now();
+
+//how often the data is fetched, 30 seconds by default
+var updateIntervalTime = 30000;
+
 //removes the topmost element from the list and updates the list
 function removeTopItem() {
   //remove top item
@@ -125,6 +131,27 @@ function updateList() {
     //show error message, request went wrong
     errorMsg.show();
   });
+
+  //reset timer
+  lastUpdateTime = Date.now();
+}
+
+//does a list update if the last one was more than 30 seconds ago
+function updateTimer() {
+  //get time since last update
+  var timeDiff = Date.now() - lastUpdateTime;
+
+  //was long enough ago
+  if (timeDiff > updateIntervalTime) {
+    //update now, will reset timer
+    updateList();
+
+    //set to start again in 30 seconds
+    setTimeout(updateTimer, updateIntervalTime);
+  } else {
+    //try again in how much time is left until 30 seconds is reached
+    setTimeout(updateTimer, updateIntervalTime - timeDiff);
+  }
 }
 
 //on document ready
@@ -158,4 +185,7 @@ $(document).ready(function() {
       }, 3000);
     }
   });
+
+  //start first, will queue itself to run updateList in 30 seconds
+  updateTimer();
 });
