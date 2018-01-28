@@ -60,6 +60,9 @@ function setFirstItemStage(newStage) {
       $("#pdf-wait-spinner").addClass("hide-this");
       $("#advance-btn").addClass("disabled");
 
+      //set to be rendered
+      firstItem.unrenderedChanges = false;
+
       //setup button
       $("#print-btn")
         .attr("href", "/resolution/rendered/" + firstItem.token + ".pdf")
