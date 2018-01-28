@@ -248,7 +248,6 @@ function serverLoad(token, doToast, callback) {
 
 //sends the current json of to the server and calls back with the url to the generated pdf
 function generatePdf() {
-  console.log("gen pdf");
   //start the spinner to indicate activity
   var spinner = $("#pdf-wait-spinner").removeClass("hide-this");
 

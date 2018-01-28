@@ -6,3 +6,11 @@ h5.item-token-wrapper {
 .item-token-wrapper {
   display: inline;
 }
+
+.btn, .btn-flat {
+  margin-top: 7px;
+}
+
+#print-btn.btn-flat {
+  border: 1px lightgrey solid;
+}

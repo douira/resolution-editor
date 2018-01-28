@@ -48,7 +48,8 @@ router.post("/print/getitems", function(req, res) {
       resolutionId: 1,
       idYear: 1,
       "content.resolution.address": 1,
-      _id: 0
+      _id: 0,
+      unrenderedChanges: 1
     }).sort({
       //sort by time in stage 4 (most necessary first), index 4 becase 0 is also a stage
       "stageHistory.4": -1
