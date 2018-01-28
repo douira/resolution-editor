@@ -1,6 +1,7 @@
 /*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
 /*global
-makeAlertMessage*/
+makeAlertMessage,
+displayToast*/
 
 //preset code
 var presetCode;
@@ -23,15 +24,6 @@ var firstItemPdfStage;
 
 //the current first item
 var firstItem;
-
-//removes the topmost element from the list and updates the list
-function removeTopItem() {
-  //remove top item
-  $("#queue li").first().remove();
-
-  //update list to make new top item
-  updateList();
-}
 
 //updates the buttons and spinner acording to the view stage
 function setFirstItemStage(newStage) {
@@ -283,6 +275,32 @@ $(document).ready(function() {
       //move into viewed stage
       setFirstItemStage("viewed");
     }
+  });
+
+  //on click of advance button
+  $("#advance-btn")
+  .on("click", function(e) {
+    //prevent default following of link (doesn't have a proper href anyways)
+    e.preventDefault();
+
+    //send an advance request to the server
+    $.post("/resolution/advance/" + firstItem.token + "?noui=1", {
+      //include code for auth
+      code: presetCode
+    }).done(function() {
+      //make a toast to notify
+      displayToast("Advanced Resolution");
+
+      //update list to make new top item
+      updateList();
+    }).fail(function() {
+      //display error message
+      makeAlertMessage(
+        "error_outline", "Error Advancing Resolution", "ok",
+        "The server encountered an error while trying to advance this resolution." +
+        " If the error persists after reloading the page, ask IT-Management for help.",
+        "pdf_gen");
+    });
   });
 
   //start first, will queue itself to run updateList in 30 seconds

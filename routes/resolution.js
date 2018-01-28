@@ -360,18 +360,32 @@ router.post("/advance/:token", function(req, res) {
     )
 
     //redirect to editor without code, prevent form resubmission
-    .then(() => res.redirect("/resolution/editor/" + token),
-          err => issueError(res, 500, "advance db error", err));
+    .then(
+      () => {
+        //don't redirect if correct param set
+        if (req.query.noui) {
+          res.send("ok");
+        } else {
+          //regular redirect
+          res.redirect("/resolution/editor/" + token);
+        }
+      },
+      err => issueError(res, 500, "advance db error", err));
   }, {
     //error/warning page on fail
     permissionMissmatch: (token, resolutionDoc, codeDoc) => {
-      //display error page
-      res.render("weakperm", {
-        type: "advance",
-        token: resolutionDoc.token,
-        stage: resolutionDoc.stage,
-        accessLevel: codeDoc.level
-      });
+      //issue error if no ui, error page if user is viewing
+      if (req.query.noui) {
+        issueError(res, 400, "insufficient permission to advance");
+      } else {
+        //display error page
+        res.render("weakperm", {
+          type: "advance",
+          token: resolutionDoc.token,
+          stage: resolutionDoc.stage,
+          accessLevel: codeDoc.level
+        });
+      }
     },
     //use advance match mode because advancement has specific permission requirements
     matchMode: "advance"
