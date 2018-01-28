@@ -159,6 +159,14 @@ html(lang="en")
 
     //-specific page contents
     main
+      block modal
+        .modal#alert-message-modal
+          .modal-content
+            h4.modal-content-title Message
+            span.error-code.grey-text
+            p.modal-content-body Text content placeholder!
+          .modal-footer
+            a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
       block content
 
     //-general footer
