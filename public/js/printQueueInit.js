@@ -257,6 +257,11 @@ $(document).ready(function() {
       $.get("/resolution/renderpdf/" + firstItem.token).done(function() {
         //finished rendering, sets url
         setFirstItemStage("rendered");
+
+        //if page amount was not known previously, update list to fetch and display
+        if (! firstItem.pageAmount) {
+          updateList();
+        }
       }).fail(function() {
         //finished rendering
         setFirstItemStage("rendered");
