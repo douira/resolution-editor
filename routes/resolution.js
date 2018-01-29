@@ -291,6 +291,15 @@ router.get("/load/:token", function(req, res) {
   });
 });
 
+//pads with leading zeros (returns a string)
+function padNumber(number, amount) {
+  //convert to string
+  number = "" + number;
+
+  //return 0 repeated until the right length
+  return amount < number.length ? number : "0".repeat(amount - number.length) + number;
+}
+
 //POST (no view) to advance resolution, redirect to editor without code after completion
 router.post("/advance/:token", function(req, res) {
   //authorize, absence of code is detected in fullAuth
@@ -344,7 +353,7 @@ router.post("/advance/:token", function(req, res) {
         }
 
         //add id and year to update query
-        query.$set.resolutionId = yearDoc.value.counter;
+        query.$set.resolutionId = padNumber(yearDoc.value.counter, 3);
         query.$set.idYear = yearDoc.value.year;
 
         //as this changes the pdf generated from this resolution, flag must be set
