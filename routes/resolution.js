@@ -1,8 +1,8 @@
 /*jshint esversion: 6, node: true */
 const express = require("express");
 const router = module.exports = express.Router();
-const pandoc = require("node-pandoc");
-const latexGenerator = require("../lib/latexGenerator");
+
+const generatePdf = require("../lib/generatePdf");
 const databaseInterface = require("../lib/database");
 const tokenProcessor = require("../lib/token");
 const resUtil = require("../lib/resUtil");
@@ -80,25 +80,25 @@ router.get("/renderpdf/:token", function(req, res) {
       return;
     }
 
-    //make a promise that wraps the pandoc call
-    new Promise((resolve, reject) => {
-      //start render with pandoc
-      pandoc(
-        latexGenerator(document),
-        "-o public/rendered/" + token +
-
-        //set xelatex engine for unicode support
-        ".pdf --latex-engine=xelatex --template=public/template.latex",
-
-        //handle error if occured
-        err => err ? reject(err) : resolve()
-      );
-    }).then(
+    //generate pdf
+    generatePdf(document).then(
       //send url to rendered pdf
-      () => res.send(pdfUrl),
+      pageAmount => {
+        //send url to confirm render
+        res.send(pdfUrl);
+
+        //check if the page amount could be determined
+        if (pageAmount) {
+          //put in database for work queue display
+          resolutions.updateOne({ token: token }, { pageAmount: pageAmount }).catch(
+            //not interested in result
+            err => console.err("could not update page amount", err)
+          );
+        }
+      },
 
       //print and notify of error
-      (err) => issueError(res, 500, "render problem pandoc", err)
+      err => issueError(res, 500, "render problem", err)
     );
   });
 });
