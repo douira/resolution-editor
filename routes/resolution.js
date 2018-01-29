@@ -90,7 +90,9 @@ router.get("/renderpdf/:token", function(req, res) {
         //check if the page amount could be determined
         if (pageAmount) {
           //put in database for work queue display
-          resolutions.updateOne({ token: token }, { pageAmount: pageAmount }).catch(
+          resolutions.updateOne({ token: token }, {
+            $set: { pageAmount: pageAmount }
+          }).catch(
             //not interested in result
             err => console.err("could not update page amount", err)
           );
