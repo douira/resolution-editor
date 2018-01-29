@@ -157,6 +157,9 @@ function updateList() {
       //set basic attribs for first element
       setBasicAttribs(firstItem, firstElem);
 
+      //set print amount of pages per document, question mark if not given
+      $("#item-print-length").text(firstItem.pageAmount || "?");
+
       //remove all list items that exceed the amount of items in the list
       list.children(".list-item").slice(data.length).remove();
 
