@@ -15,15 +15,15 @@
     "express": "^4.16.2",
     "extend": "^3.0.1",
     "fast-deep-equal": "^1.0.0",
-    "mongodb": "^2.2.33",
+    "mongodb": "^2.2.34",
     "morgan": "~1.8.1",
     "node-pandoc": "^0.3.0",
     "pug": "^2.0.0-rc.4",
     "roman-numerals": "^0.3.2",
     "serve-favicon": "^2.4.5",
-    "uuid": "^3.1.0",
+    "uuid": "^3.2.1",
     "ws": "^3.3.3",
-    "xxhashjs": "^0.2.1"
+    "xxhashjs": "^0.2.2"
   },
   "description": "Guides the creation of a correctly formatted resolution document",
   "main": "app.js",
