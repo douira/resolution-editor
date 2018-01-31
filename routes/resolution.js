@@ -94,7 +94,7 @@ router.get("/renderpdf/:token", function(req, res) {
             $set: { pageAmount: pageAmount }
           }).catch(
             //not interested in result
-            err => console.err("could not update page amount", err)
+            err => console.error("could not update page amount", err)
           );
         }
       },

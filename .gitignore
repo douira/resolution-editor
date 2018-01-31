@@ -147,6 +147,7 @@ render_out
 
 #database and render cache with all it's ever changing files, empty but present
 data/*
+render/*
 public/rendered/*
 !*.gitkeep
 
