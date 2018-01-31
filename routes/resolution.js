@@ -71,7 +71,7 @@ router.get("/renderpdf/:token", function(req, res) {
     }
 
     //url to pdf
-    const pdfUrl = "/resolution/rendered/" + token + ".pdf";
+    const pdfUrl = "/rendered/" + token + ".pdf";
 
     //don't render if there hasn't been a save since the last render
     if (! document.unrenderedChanges) {

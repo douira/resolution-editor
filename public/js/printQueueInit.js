@@ -57,7 +57,7 @@ function setFirstItemStage(newStage) {
 
       //setup button
       $("#print-btn")
-        .attr("href", "/resolution/rendered/" + firstItem.token + ".pdf")
+        .attr("href", "/rendered/" + firstItem.token + ".pdf")
         .removeClass("btn-flat")
         .addClass("btn")
         .find("i").text("print");
