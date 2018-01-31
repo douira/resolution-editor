@@ -139,12 +139,6 @@ $RECYCLE.BIN/
 
 # End of https://www.gitignore.io/api/osx,git,node,linux,windows (truncated and de-duped)
 
-#rending output folder for extensions that render TeX
-render_out
-
-#settings file
-#.brackets.json
-
 #database and render cache with all it's ever changing files, empty but present
 data/*
 render/*
