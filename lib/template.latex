@@ -1,6 +1,5 @@
 \documentclass[12pt, a4paper]{scrartcl}
 \usepackage[english]{babel}
-\usepackage[utf8]{inputenc}
 \usepackage{mathptmx}
 \usepackage[T1]{fontenc}
 \usepackage{lastpage}
@@ -48,19 +47,16 @@
 }{
     \end{itemize}
 }
-
 %OC Subclause 1. Level
 \newenvironment{ocsubclause}{ \begin {enumerate} [a),nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm, topsep=-6pt]{}%
 }{%
 \end{enumerate}%
 }
-
 %OC Subclause 2. Level
 \newenvironment{ocsubsubclause}{ \begin {enumerate} [i.,nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm, topsep=0pt] {} %
 }{
 \end{enumerate}
 }
-
 \begin{document}
 $body$
 \end{document}

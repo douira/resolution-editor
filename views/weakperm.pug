@@ -17,7 +17,7 @@ block content
         .divider
         p.justify LiveView could not be started for the resolution with token #[b=token]
           if stage !== 6
-            |  because the resolution has to be in stage #{stageData[6].title}
+            |  because the resolution has to be in stage #[b=stageData[6].title]
             a(href="/help#rstage6"): b.text-lighten-1.grey-text  #6
             | .
           else

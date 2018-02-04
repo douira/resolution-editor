@@ -14,3 +14,7 @@ h5.item-token-wrapper {
 #print-btn.btn-flat {
   border: 1px lightgrey solid;
 }
+
+.item-sponsor {
+  margin-right: 0.5em;
+}

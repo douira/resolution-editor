@@ -57,7 +57,7 @@ function setFirstItemStage(newStage) {
 
       //setup button
       $("#print-btn")
-        .attr("href", "/resolution/rendered/" + firstItem.token + ".pdf")
+        .attr("href", "/rendered/" + firstItem.token + ".pdf")
         .removeClass("btn-flat")
         .addClass("btn")
         .find("i").text("print");
@@ -157,6 +157,9 @@ function updateList() {
       //set basic attribs for first element
       setBasicAttribs(firstItem, firstElem);
 
+      //set print amount of pages per document, question mark if not given
+      $("#item-print-length").text(firstItem.pageAmount || "?");
+
       //remove all list items that exceed the amount of items in the list
       list.children(".list-item").slice(data.length).remove();
 
@@ -254,6 +257,11 @@ $(document).ready(function() {
       $.get("/resolution/renderpdf/" + firstItem.token).done(function() {
         //finished rendering, sets url
         setFirstItemStage("rendered");
+
+        //if page amount was not known previously, update list to fetch and display
+        if (! firstItem.pageAmount) {
+          updateList();
+        }
       }).fail(function() {
         //finished rendering
         setFirstItemStage("rendered");
