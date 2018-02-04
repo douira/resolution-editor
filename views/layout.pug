@@ -136,6 +136,8 @@ html(lang="en")
       li: a(href="/handytextbox") Handy Textbox
       li: a(href="/help/impressum") Impressum
       li: a(href="http://munol.org" target="_blank") MUNOL
+    ul#lists-dropdown.dropdown-content
+      li: a(href="/list/print") Print Queue
     nav.lighten-2(class=pri role="navigation"): .nav-wrapper
       .container
         mixin navList
@@ -143,6 +145,8 @@ html(lang="en")
           li: a(href="/resolution/new") New Resolution
           li: a(href="/resolution") Editor
           li: a(href="/about") About
+          li: a.dropdown-button(href="#" data-activates="lists-dropdown") Lists
+            +icon("arrow_drop_down", "right")
           li: a.dropdown-button(href="#" data-activates="help-dropdown") Help
             +icon("arrow_drop_down", "right")
         ul.right.hide-on-small-and-down
@@ -156,6 +160,7 @@ html(lang="en")
 
     //-necessary for dropdown to work, idk why. removing this prevents the dropdown from apearing
     a.dropdown-button(href="#" data-activates="help-dropdown")
+    a.dropdown-button(href="#" data-activates="lists-dropdown")
 
     //-specific page contents
     main
