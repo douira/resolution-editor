@@ -11,6 +11,7 @@ const index = require("./routes/index");
 const help = require("./routes/help");
 const resolution = require("./routes/resolution");
 const handytextbox = require("./routes/handytextbox");
+const list = require("./routes/list");
 
 //start database connection
 require("./lib/database");
@@ -29,13 +30,14 @@ app.use(favicon(path.join(__dirname, "public/favicon", "favicon.ico")));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use("/resolution", express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "public")));
 
+//attach routes
 app.use("/", index);
 app.use("/help", help);
 app.use("/resolution", resolution);
 app.use("/handytextbox", handytextbox);
+app.use("/list", list);
 
 //catch 404 and forward to error handler
 app.use(function(req, res, next) {

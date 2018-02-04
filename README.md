@@ -13,7 +13,7 @@ Install the package after cloning the repo with
 npm install
 ```
 (I can try to help you to set this up if you run into problems unsolvable with google)  
-You will also have to install the full distributions of LaTeX and pandoc on your system. These are only required for rendering PDFs though. The server expects these binaries to be present and will crash otherwise. Start the server with
+You will also have to install the full distribution of (XeLa)TeX on your system. This is only required for rendering PDFs though. Pandoc used to be the interface between the renderer itslf and the server but the server handles moving the files and the latex code now, so pandoc and the accompanying npm package node-pandoc are not dependencies anymore. The server expects thes binar to be present and will crash otherwise. Start the server with
 ```
 npm start
 ```
@@ -39,6 +39,10 @@ db.createUser(
     roles: [ { role: "userAdminAnyDatabase", db: "admin" } ]
   }
 )
+
+//run this before the next command to auth and be able to add users
+use admin
+db.auth("adminUser", "xyz")
 
 use resolution-editor
 db.createUser(

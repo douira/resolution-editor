@@ -1,6 +1,0 @@
-{
-    "brackets-latex.compiler": "pdflatex",
-    "brackets-latex.mainFile": "tex-templates/complete.tex",
-    "brackets-latex.texBinDirectory": "/Library/TeX/texbin",
-    "brackets-latex.outputDirectory": "render_out"
-}

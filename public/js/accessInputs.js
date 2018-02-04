@@ -7,6 +7,8 @@
   return true when either validation is ok or nothing to validate
   return false if user should be hindered from using the access button
   first argument passed is function that adds/removes invalid and valid classes for input fields
+  set an empty string as the presetToken if no token needs to be passed
+  the action field of the form is automatically set and doesn't need to have a specfic value
 */
 function registerAccessInputs(submitOptions, formSelector, inputOpts) {
   //formSelector must resolve to elment

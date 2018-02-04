@@ -69,3 +69,8 @@
 #res-id {
   font-family: monospace;
 }
+
+/*additional to the main style rule*/
+.inline-spinner-wrapper {
+  margin-left: 0.7em;
+}

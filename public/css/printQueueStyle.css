@@ -1,0 +1,20 @@
+h5.item-token-wrapper {
+  display: inline-block;
+  margin-top: 0.23em;
+}
+
+.item-token-wrapper {
+  display: inline;
+}
+
+.btn, .btn-flat {
+  margin-top: 7px;
+}
+
+#print-btn.btn-flat {
+  border: 1px lightgrey solid;
+}
+
+.item-sponsor {
+  margin-right: 0.5em;
+}

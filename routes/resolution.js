@@ -1,8 +1,8 @@
 /*jshint esversion: 6, node: true */
 const express = require("express");
 const router = module.exports = express.Router();
-const pandoc = require("node-pandoc");
-const latexGenerator = require("../lib/latexGenerator");
+
+const generatePdf = require("../lib/generatePdf");
 const databaseInterface = require("../lib/database");
 const tokenProcessor = require("../lib/token");
 const resUtil = require("../lib/resUtil");
@@ -71,8 +71,8 @@ router.get("/renderpdf/:token", function(req, res) {
     }
 
     //url to pdf
-    const pdfUrl = "/resolution/rendered/" + token + ".pdf";
-    console.log(document);
+    const pdfUrl = "/rendered/" + token + ".pdf";
+
     //don't render if there hasn't been a save since the last render
     if (! document.unrenderedChanges) {
       //just send url and stop
@@ -80,25 +80,27 @@ router.get("/renderpdf/:token", function(req, res) {
       return;
     }
 
-    //make a promise that wraps the pandoc call
-    new Promise((resolve, reject) => {
-      //start render with pandoc
-      pandoc(
-        latexGenerator(document),
-        "-o public/rendered/" + token +
-
-        //set xelatex engine for unicode support
-        ".pdf --latex-engine=xelatex --template=public/template.latex",
-
-        //handle error if occured
-        err => err ? reject(err) : resolve()
-      );
-    }).then(
+    //generate pdf
+    generatePdf(document).then(
       //send url to rendered pdf
-      () => res.send(pdfUrl),
+      pageAmount => {
+        //send url to confirm render
+        res.send(pdfUrl);
+
+        //check if the page amount could be determined
+        if (pageAmount) {
+          //put in database for work queue display
+          resolutions.updateOne({ token: token }, {
+            $set: { pageAmount: pageAmount }
+          }).catch(
+            //not interested in result
+            err => console.error("could not update page amount", err)
+          );
+        }
+      },
 
       //print and notify of error
-      (err) => issueError(res, 500, "render problem pandoc", err)
+      err => issueError(res, 500, "render problem", err)
     );
   });
 });
@@ -291,6 +293,15 @@ router.get("/load/:token", function(req, res) {
   });
 });
 
+//pads with leading zeros (returns a string)
+function padNumber(number, amount) {
+  //convert to string
+  number = "" + number;
+
+  //return 0 repeated until the right length
+  return amount < number.length ? number : "0".repeat(amount - number.length) + number;
+}
+
 //POST (no view) to advance resolution, redirect to editor without code after completion
 router.post("/advance/:token", function(req, res) {
   //authorize, absence of code is detected in fullAuth
@@ -344,7 +355,7 @@ router.post("/advance/:token", function(req, res) {
         }
 
         //add id and year to update query
-        query.$set.resolutionId = yearDoc.value.counter;
+        query.$set.resolutionId = padNumber(yearDoc.value.counter, 3);
         query.$set.idYear = yearDoc.value.year;
 
         //as this changes the pdf generated from this resolution, flag must be set
@@ -360,17 +371,32 @@ router.post("/advance/:token", function(req, res) {
     )
 
     //redirect to editor without code, prevent form resubmission
-    .then(() => res.redirect("/resolution/editor/" + token),
-          err => issueError(res, 500, "advance db error", err));
+    .then(
+      () => {
+        //don't redirect if correct param set
+        if (req.query.noui) {
+          res.send("ok");
+        } else {
+          //regular redirect
+          res.redirect("/resolution/editor/" + token);
+        }
+      },
+      err => issueError(res, 500, "advance db error", err));
   }, {
     //error/warning page on fail
     permissionMissmatch: (token, resolutionDoc, codeDoc) => {
-      //display error page
-      res.render("weakperm-advance", {
-        token: resolutionDoc.token,
-        stage: resolutionDoc.stage,
-        accessLevel: codeDoc.level
-      });
+      //issue error if no ui, error page if user is viewing
+      if (req.query.noui) {
+        issueError(res, 400, "insufficient permission to advance");
+      } else {
+        //display error page
+        res.render("weakperm", {
+          type: "advance",
+          token: resolutionDoc.token,
+          stage: resolutionDoc.stage,
+          accessLevel: codeDoc.level
+        });
+      }
     },
     //use advance match mode because advancement has specific permission requirements
     matchMode: "advance"

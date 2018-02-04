@@ -6,6 +6,23 @@ block title
 block styles
   link(href="/css/editorStyle.css" type="text/css" rel="stylesheet")
 
+block modal
+  //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
+  .modal#alert-message-modal
+    .modal-content
+      h4.modal-content-title Message
+      span.error-code.grey-text
+      p.modal-content-body Text content placeholder!
+      .file-field.input-field#file-selector.hide-this
+        .btn&attributes(tooltip("Opens the native open file dialog", "right"))
+          span Select file
+          input.file-input(type="file")
+        .file-path-wrapper
+          input.file-path.validate(type="text" placeholder="File Path" pattern="^.*\.rso")
+    .modal-footer
+      a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
+      a#delete-action-confirm.red-text.modal-action.modal-close.waves-effect.btn-flat.hide-this(class=priwaves) Delete forever
+
 block content
   .section: .container
     if code
@@ -222,21 +239,6 @@ block content
         .col.s12.m6: .input-field
           input.not-editor.autocomplete#amd-spon(type="text")
           label(for="amd-spon") Sponsor
-    //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
-    .modal#alert-message-modal
-      .modal-content
-        h4.modal-content-title Message
-        span.error-code.grey-text
-        p.modal-content-body Text content placeholder!
-        .file-field.input-field#file-selector.hide-this
-          .btn&attributes(tooltip("Opens the native open file dialog", "right"))
-            span Select file
-            input.file-input(type="file")
-          .file-path-wrapper
-            input.file-path.validate(type="text" placeholder="File Path" pattern="^.*\.rso")
-      .modal-footer
-        a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
-        a#delete-action-confirm.red-text.modal-action.modal-close.waves-effect.btn-flat.hide-this(class=priwaves) Delete forever
     if doLoad
       mixin floating-sm-btn(color, type, icon, tooltipText)
         a.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)

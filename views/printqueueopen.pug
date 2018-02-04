@@ -1,0 +1,20 @@
+extends layout
+
+block title
+  title Print Queue
+
+block content
+  .container
+    h4.center Enter your access code to open the print queue
+    br
+    .row#access-input
+      .input-field.col.xl6.l5.s12: form(method="POST" action="/")#code-form
+        +icon(codeIcon, "prefix")
+        input#code-input(name="code" type="text" placeholder=codePlaceholder)
+        label(for="code-input") Enter access code
+      .col.xl6.l7.m12#queue-info.justify A work queue with pending resolutions for your permission and processing stage will be displayed. The resolutions to work through are organised in a compact queue list. You need an access code with an #[a(href="/help#access-levels") access level] that permits you to advance this resolution.
+    .center: a.btn-large.waves-effect.waves-light#open-queue-btn(href="#" class=pri) Open Queue
+    br
+block scripts
+  script(src="/js/accessInputs.js")
+  script(src="/js/printQueueOpenInit.js")
