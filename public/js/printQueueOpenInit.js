@@ -7,7 +7,7 @@
 $(document).ready(function() {
   //register an access input group for the code input
   registerAccessInputs({
-      url: "/queue/print/list",
+      url: "/list/print/queue",
       selector: "#open-queue-btn"
     }, "#code-form", {
 

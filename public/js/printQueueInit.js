@@ -126,7 +126,7 @@ function updateList() {
   var noItems = $("#no-items-msg");
 
   //get new list from server
-  $.post("/queue/print/getitems", { code: presetCode }).done(function(data) {
+  $.post("/list/print/getitems", { code: presetCode }).done(function(data) {
     //hide error message, we got some data
     errorMsg.hide();
 

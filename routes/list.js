@@ -19,7 +19,7 @@ router.get("/print", function(req, res) {
 });
 
 //POST secreteriat print queue page, gets code from post
-router.post("/print/list", function(req, res) {
+router.post("/print/queue", function(req, res) {
   //do code auth and permission check
   routingUtil.checkCodeStaticPerm(req, res, "printqueue",
     //render the list page
