@@ -3,7 +3,7 @@ const express = require("express");
 const router = module.exports = express.Router();
 const resUtil = require("../lib/resUtil");
 const routingUtil = require("../lib/routingUtil");
-const databaseInterface = require("../lib/database");
+const databaseInterface = require("../lib/database").callback;
 
 const issueError = resUtil.issueError;
 
