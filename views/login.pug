@@ -13,6 +13,8 @@ block content
         input#code-input(name="code" type="text" placeholder=codePlaceholder)
         label(for="code-input") Enter access code
       .col.xl6.l7.m12#queue-info.justify Enter your MA access code to login and go back to where this permission session was necessary.
+        if loggedIn
+          span.red-text  You are already logged in.
     .center: a.btn-large.waves-effect.waves-light#login-btn(href="#" class=pri) Login
     br
 block scripts
