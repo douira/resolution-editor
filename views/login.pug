@@ -1,0 +1,20 @@
+extends layout
+
+block title
+  title Admin Login
+
+block content
+  .container
+    h4.center Enter your MA access code to login
+    br
+    .row#access-input
+      .input-field.col.xl6.l5.s12: form(method="POST" action="/")#code-form
+        +icon(codeIcon, "prefix")
+        input#code-input(name="code" type="text" placeholder=codePlaceholder)
+        label(for="code-input") Enter access code
+      .col.xl6.l7.m12#queue-info.justify Enter your MA access code to login and go back to where this permission session was necessary.
+    .center: a.btn-large.waves-effect.waves-light#login-btn(href="#" class=pri) Login
+    br
+block scripts
+  script(src="/js/accessInputs.js")
+  script(src="/js/loginInit.js")

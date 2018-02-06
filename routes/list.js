@@ -38,7 +38,7 @@ router.get("/overview", function(req, res) {
       }}
     ]).toArray().then(items => {
       //send data to client
-      res.send(items);
+      res.render("overview", { items: items });
     }, err => issueError(res, 500, "could not query print queue items", err));
   });
 });
