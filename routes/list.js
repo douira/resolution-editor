@@ -13,6 +13,36 @@ databaseInterface(collections => {
   resolutions = collections.resolutions;
 });
 
+//GET display overview o all resolutions
+router.get("/overview", function(req, res) {
+  //require session admin right
+  routingUtil.requireAdminSession(req, res, () => {
+    //aggregate resolutions
+    resolutions.aggregate([
+      //query for saved resolutions
+      { $match: {
+        stage: { $gt: 0 }
+      }},
+
+      //project to only transmit token, current stage and committee
+      { $project: {
+        token: 1,
+        stage: 1,
+        "content.resolution.address.forum": "forum",
+        _id: 0
+      }},
+
+      //finally sort by stage
+      { $sort: {
+        stage: 1
+      }}
+    ]).toArray().then(items => {
+      //send data to client
+      res.send(items);
+    }, err => issueError(res, 500, "could not query print queue items", err));
+  });
+});
+
 //GET display enter access code page
 router.get("/print", function(req, res) {
   res.render("printqueueopen");
