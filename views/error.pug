@@ -6,9 +6,9 @@ block title
 block content
   .container
     h4.center: +icon("gesture", "large " + weakpermColor)
-    h3=error
-    h5.grey-text.text-lighten-1 Status #{error.status}
-    if message
-      p=message
+    h3=error.message
+    h5.grey-text.text-lighten-1 Status #{error.status || "?"}
     .divider
-    pre=error.stack
+    if devEnv && error.stack
+      pre=error.stack
+    br

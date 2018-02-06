@@ -103,19 +103,27 @@ app.use("/list", list);
 app.use("/session", sessionRoute);
 
 //catch 404 and forward to error handler
-app.use((req, res, next) => {
-  const err = new Error("Not Found");
+app.use((req, res) => {
+  //make an error
+  const err = Error("Not Found");
   err.status = 404;
-  next(err);
+
+  //send the error page
+  res.status(err.status);
+  res.render("error", {
+    error: err,
+    devEnv: devEnv
+  });
 });
 
-//error handler
-app.use((err, req, res) => {
+//general error handler, express needs the error handler signature to be exactly like this!
+//the default error page is displayed too sometimes though, when worse errors happen
+app.use((err, req, res, next) => { //jshint ignore: line
   //render the error page
   res.status(err.status || 500);
   res.render("error", {
-    error: devEnv ? err : {}, //only provide error detail in dev
-    message: devEnv && err.message
+    error: err,
+    devEnv: devEnv
   });
 
   //also log error to console
