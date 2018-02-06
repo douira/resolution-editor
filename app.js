@@ -11,6 +11,7 @@ const credentials = require("./lib/credentials");
 const dbPromise = require("./lib/database").promise;
 const fs = require("fs-extra");
 const rfs = require("rotating-file-stream");
+const mongoSanitize = require("express-mongo-sanitize");
 
 //require route controllers
 const index = require("./routes/index");
@@ -35,6 +36,11 @@ const devEnv = ! process.env.NODE_ENV;
 
 //register express middleware
 app.use(compression()); //use compression to make it faster
+
+//prevent mongodb query injection
+app.use(mongoSanitize({
+  replaceWith: "___" //something that can be easily found
+}));
 
 //complete console logging when in dev env
 app.use(morgan("dev", {
@@ -63,6 +69,8 @@ const accessLogStream = rfs("access.log", {
   size: "10M", //also rotate when the file reaches 10 megabytes
   initialRotation: true //make sure log writes go in the right file
 });
+
+//give logger fiel stream to access logger middleware
 app.use(morgan("common", { stream: accessLogStream }));
 
 //static favicon serve
