@@ -13,17 +13,12 @@ databaseInterface(collections => {
   resolutions = collections.resolutions;
 });
 
-//GET display overview o all resolutions
+//GET display overview of all resolutions
 router.get("/overview", function(req, res) {
   //require session admin right
   routingUtil.requireAdminSession(req, res, () => {
     //aggregate resolutions
     resolutions.aggregate([
-      //query for saved resolutions
-      { $match: {
-        stage: { $gt: 0 }
-      }},
-
       //project to only transmit token, current stage and committee
       { $project: {
         token: 1,
@@ -32,13 +27,14 @@ router.get("/overview", function(req, res) {
         _id: 0
       }},
 
-      //finally sort by stage
-      { $sort: {
-        stage: 1
+      //group into stages
+      { $group: {
+        _id: "$stage",
+        list: { $push: "$$ROOT" } //append whole object to list
       }}
     ]).toArray().then(items => {
       //send data to client
-      res.render("overview", { items: items });
+      res.render("listoverview", { items: items });
     }, err => issueError(res, 500, "could not query print queue items", err));
   });
 });

@@ -1,0 +1,22 @@
+extends layout
+
+block title
+  title Resolutions Overview
+
+block styles
+  //link(href="/css/listOverviewStyle.css" type="text/css" rel="stylesheet")
+
+block content
+  include stages
+  .container
+    +icon("description", "large left blue-text")
+    h3 List of Resolutions Overview
+    .divider
+    p.justify This is a list of all resolutions grouped by stage.
+    each stage in items
+      +stage-info-index(stage._id, false, true)
+      each res in stage.list
+        a(href="/resolution/editor/" + res.token)=res.token
+    br
+block scripts
+  //script(src="/js/listOverviewInit.js")
