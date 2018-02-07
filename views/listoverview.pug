@@ -3,9 +3,6 @@ extends layout
 block title
   title Resolutions Overview
 
-block styles
-  //link(href="/css/listOverviewStyle.css" type="text/css" rel="stylesheet")
-
 block content
   include stages
   .container
@@ -37,5 +34,3 @@ block content
                     span.sponsor(class=res.sponsor ? "" : "grey-text text-darken-1")=" " + res.sponsor
     else
       p.center: em.grey-text.text-darken-1 No resolutions to display.
-block scripts
-  //script(src="/js/listOverviewInit.js")
