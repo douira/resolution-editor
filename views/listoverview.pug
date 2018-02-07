@@ -12,11 +12,30 @@ block content
     +icon("description", "large left blue-text")
     h3 List of Resolutions Overview
     .divider
-    p.justify This is a list of all resolutions grouped by stage.
-    each stage in items
-      +stage-info-index(stage._id, false, true)
-      each res in stage.list
-        a(href="/resolution/editor/" + res.token)=res.token
-    br
+    p.justify This is a list of all resolutions of this year grouped by stage.
+      if isArchive
+        |  Go back to the #[a(href="?") list] of regular resolutions.
+      else
+        |  View the #[a(href="?archive=1") list] of archived (deleted) resolutions.
+    if items.length
+      .row
+        each stage in items
+          .col.l6.s12
+            +stage-info-index(stage._id, false, true)
+            ul.collection
+              each res in stage.list
+                li.collection-item
+                  a(href="/resolution/editor/" + res.token)=res.token
+                  if res.resolutionId && res.idYear
+                    span.res-id  [MUNOL/#{res.idYear}/#{res.resolutionId}]
+                  if ! res.forum
+                    span.grey-text  (not saved)
+                  else
+                    span.grey-text  in
+                    span.forum(class=res.forum ? "" : "grey-text text-darken-1")=" " + res.forum
+                    span.grey-text  by
+                    span.sponsor(class=res.sponsor ? "" : "grey-text text-darken-1")=" " + res.sponsor
+    else
+      p.center: em.grey-text.text-darken-1 No resolutions to display.
 block scripts
   //script(src="/js/listOverviewInit.js")

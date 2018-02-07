@@ -8,44 +8,63 @@ const databaseInterface = require("../lib/database").callback;
 const issueError = resUtil.issueError;
 
 //get resolutions collection
-let resolutions;
+let resolutions, resolutionArchive;
 databaseInterface(collections => {
   resolutions = collections.resolutions;
+  resolutionArchive = collections.resolutionArchive;
 });
 
 //GET display overview of all resolutions
 router.get("/overview", function(req, res) {
   //require session admin right
   routingUtil.requireAdminSession(req, res, () => {
-    //aggregate resolutions
-    resolutions.aggregate([
+    //check if the archive was requested
+    const useArchive = req.query.archive == "1"; //jshint ignore: line
+
+    //aggregate resolutions, use archive if get flag set
+    (useArchive ? resolutionArchive : resolutions).aggregate([
       //project to only transmit token, current stage and committee
       { $project: {
         token: 1,
         stage: 1,
-        "content.resolution.address.forum": "forum",
-        _id: 0
+        forum: "$content.resolution.address.forum",
+        sponsor: "$content.resolution.address.sponsor.main",
+        _id: 0,
+        resolutionId: 1,
+        idYear: 1
       }},
 
       //group into stages
       { $group: {
         _id: "$stage",
         list: { $push: "$$ROOT" } //append whole object to list
+      }},
+
+      //sort by stage
+      { $sort: {
+        _id: 1
       }}
     ]).toArray().then(items => {
       //send data to client
-      res.render("listoverview", { items: items });
+      res.render("listoverview", { items: items, isArchive: useArchive });
     }, err => issueError(res, 500, "could not query print queue items", err));
   });
 });
 
 //GET display enter access code page
 router.get("/print", function(req, res) {
-  res.render("printqueueopen");
+  //check if a session is open
+  if (req.session.code) {
+    //redirect to queue
+    res.redirect("/list/print/queue");
+  } else {
+    //render entry page
+    res.render("printqueueopen");
+  }
 });
 
 //POST secreteriat print queue page, gets code from post
-router.post("/print/queue", function(req, res) {
+routingUtil.getAndPost(router, "/print/queue", function(req, res) {
   //do code auth and permission check
   routingUtil.checkCodeStaticPerm(req, res, "printqueue",
     //render the list page
