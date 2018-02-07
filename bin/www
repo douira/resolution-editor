@@ -22,7 +22,7 @@ app.set("port", port);
 const server = http.createServer(app);
 
 //give server to liveview to attach websockets
-require("../lib/liveView").giveHttpServer(server);
+require("../routes/liveview").giveHttpServer(server);
 
 /**
  * Listen on provided port, on all network interfaces.
