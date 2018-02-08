@@ -9,12 +9,13 @@ block content
     +icon("description", "large left blue-text")
     h3 List of Resolutions Overview
     .divider
-    p.justify This is a list of all resolutions of this year grouped by stage.
+    p.justify
       if isArchive
-        |  Go back to the #[a(href="?") list] of regular resolutions.
+        | This is a list of archived(deleted) resolutions grouped by stage. Go back to the #[a(href="?") list] of regular resolutions.
       else
-        |  View the #[a(href="?archive=1") list] of archived (deleted) resolutions.
+        | This is a list of all resolutions grouped by stage. View the #[a(href="?archive=1") list] of archived (deleted) resolutions.
     if items.length
+      - console.log(items);
       .row
         each stage in items
           .col.l6.s12

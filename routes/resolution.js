@@ -253,8 +253,8 @@ router.post("/delete/:token", function(req, res) {
   routingUtil.fullAuth(req, res, token => {
     //remove resolution with that token by moving to the archive
     resolutions.findOneAndDelete( { token: token } ).then(resDoc => {
-      //insert into archive collection
-      resolutionArchive.insertOne(resDoc).then(() => {
+      //insert into archive collection, unpack returned object with .value!
+      resolutionArchive.insertOne(resDoc.value).then(() => {
         //acknowledge
         res.send("ok. deleted " + token);
       }, err => issueError(res, 500, "can't insert into archive", err));
