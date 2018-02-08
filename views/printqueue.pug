@@ -4,7 +4,7 @@ block title
   title Print Queue
 
 block styles
-  link(href="/css/printQueueStyle.css" type="text/css" rel="stylesheet")
+  +static("css", "/css/printQueueStyle.css")
 
 block content
   .container
@@ -54,5 +54,5 @@ block content
       a#update-data-now(href="#")  Check now
     br
 block scripts
-  script(src="/js/dialogs.js")
-  script(src="/js/printQueueInit.js")
+  +static("js", "/js/dialogs.js")
+  +static("js", "/js/printQueueInit.js")

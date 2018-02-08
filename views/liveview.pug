@@ -1,7 +1,7 @@
 extends layout
 
 block styles
-  link(href="/css/liveviewStyle.css" type="text/css" rel="stylesheet")
+  +static("css", "/css/liveviewStyle.css")
 
 block content
   .container
@@ -49,7 +49,7 @@ block content
     a.btn-floating.btn-large#enter-fullscreen(class=pri)&attributes(tooltip("Enter Fullscreen mode", "left"))
       +icon("fullscreen", "mediumsmall-i")
 block scripts
-  script(src="/js/scrollintoview.js")
-  script(src="/js/dialogs.js")
-  script(src="/js/liveviewWS.js")
-  script(src="/js/liveviewInit.js")
+  +static("js", "/js/scrollintoview.js")
+  +static("js", "/js/dialogs.js")
+  +static("js", "/js/liveviewWS.js")
+  +static("js", "/js/liveviewInit.js")

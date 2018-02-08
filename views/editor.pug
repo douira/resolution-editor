@@ -4,7 +4,7 @@ block title
   title Resolution #{token}
 
 block styles
-  link(href="/css/editorStyle.css" type="text/css" rel="stylesheet")
+  +static("css", "/css/editorStyle.css")
 
 block modal
   //-modal is to be used with the makeAlertMessage function which will then populate all of these fields
@@ -331,9 +331,9 @@ block content
           |  or #[em MA]. See #[a(href="/help#access-levels") here] for a detailed description of all access levels.
       .center: a.btn.waves-effect.waves-light#unlock-submit-btn(href="#" class=pri)&attributes(tooltip("Tries to open editor with the given code", "right")) Unlock
 block scripts
-  script(src="/js/accessInputs.js")
-  script(src="/js/resolutionFormat.js")
-  script(src="/js/dialogs.js")
-  script(src="/js/liveviewWS.js")
-  script(src="/js/dataInteraction.js")
-  script(src="/js/editorInit.js")
+  +static("js", "/js/accessInputs.js")
+  +static("js", "/js/resolutionFormat.js")
+  +static("js", "/js/dialogs.js")
+  +static("js", "/js/liveviewWS.js")
+  +static("js", "/js/dataInteraction.js")
+  +static("js", "/js/editorInit.js")

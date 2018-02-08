@@ -3,7 +3,7 @@ const express = require("express");
 const router = module.exports = express.Router();
 
 const generatePdf = require("../lib/generatePdf");
-const databaseInterface = require("../lib/database");
+const databaseInterface = require("../lib/database").callback;
 const tokenProcessor = require("../lib/token");
 const resUtil = require("../lib/resUtil");
 const routingUtil = require("../lib/routingUtil");
@@ -253,8 +253,8 @@ router.post("/delete/:token", function(req, res) {
   routingUtil.fullAuth(req, res, token => {
     //remove resolution with that token by moving to the archive
     resolutions.findOneAndDelete( { token: token } ).then(resDoc => {
-      //insert into archive collection
-      resolutionArchive.insertOne(resDoc).then(() => {
+      //insert into archive collection, unpack returned object with .value!
+      resolutionArchive.insertOne(resDoc.value).then(() => {
         //acknowledge
         res.send("ok. deleted " + token);
       }, err => issueError(res, 500, "can't insert into archive", err));

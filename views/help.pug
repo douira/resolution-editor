@@ -4,11 +4,11 @@ block title
   title Help Page - Resolution Editor
 
 block styles
-  link(href="/css/helpStyle.css" type="text/css" rel="stylesheet")
+  +static("css", "/css/helpStyle.css")
 
 block content
+  include stages
   .container
-    include stages
     h4.center: +icon("help", "large text-darken-1 " + sectext)
     h3.center Help and Information Page
     .divider
