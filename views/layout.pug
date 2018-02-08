@@ -49,6 +49,15 @@
   const tokenPlaceholder = "@ 12345EFGH";
   const codePlaceholder = "! ABCD5678";
 
+//-static file serve with cache control, other args are normally appended
+mixin static(type, url)
+  - url += "?v=2" //add version to url
+  case type
+    when "css"
+      link(href=url type="text/css" rel="stylesheet")
+    when "js"
+      script(src=url)
+
 //-icon maker, more icons here if necessary: https://materialdesignicons.com/
 mixin icon(name, classes, id)
   i.material-icons(class=classes id=id)= name
@@ -93,7 +102,7 @@ html(lang="en")
     link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
     //-link(href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700" rel="stylesheet")
     link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css")
-    link(href="/css/mainStyle.css" type="text/css" rel="stylesheet")
+    +static("css", "/css/mainStyle.css")
 
     //-critical styles are inlined
     style
@@ -209,7 +218,7 @@ html(lang="en")
     //-general scripts
     script(src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous")
     script(src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js")
-    script(src="/js/mainInit.js")
+    +static("js", "/js/mainInit.js")
 
     //-specific scripts
     block scripts

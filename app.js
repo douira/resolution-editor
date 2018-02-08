@@ -99,8 +99,15 @@ app.use(session({
   //non-persistent session
 }));
 
-//static serve on anything in /public
-app.use(express.static(path.join(__dirname, "public")));
+
+//set specific caching params if in production mode
+if (! devEnv) {
+  //cache regular content for a week, see pug mixin static for cache busting
+  app.use(express.static(path.join(__dirname, "public"), { maxage: "7d" }));
+} else {
+  //static serve on anything in public with no caching in dev mode
+  app.use(express.static(path.join(__dirname, "public")));
+}
 
 //attach routes
 app.use("/", index);
