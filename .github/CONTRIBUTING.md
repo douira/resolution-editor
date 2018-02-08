@@ -22,3 +22,6 @@ Typo fixes or small bugs are worthy of an issue too. So, if you find any bug tha
 
 ## How to file a bug
 Make a screenshot of the bug as soon as it occurs. Also make screenshots of any subsequent variations on the bug if there are any. Please try to provide as much helpful information as possible. See the template file or the filled in template text when you create a new issue. 
+
+## Note on using git with this repo
+Please run `git fetch -p` after having deleted a branch from a merged PR. This will actually delete the branch on the remote git servers instead of just "fake" deleting it.
