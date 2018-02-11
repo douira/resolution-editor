@@ -53,7 +53,7 @@ app.use(session({
   saveUninitialized: false,
   store: new MongoStore({
     dbPromise: dbPromise, //pass the already created mongodb connection promise
-    autoRemove: "disabled", //we implement our own removal index
+    autoRemove: "disabled", //we implement our own removal index in database.js
     collection: "sessions", //make sure this collection is used
 
     //more efficient if not stringyfied for every save, mongodb can handle nested objects!
