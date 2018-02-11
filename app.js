@@ -12,6 +12,8 @@ const dbPromise = require("./lib/database").promise;
 const fs = require("fs-extra");
 const rfs = require("rotating-file-stream");
 const mongoSanitize = require("express-mongo-sanitize");
+const uuidv4 = require("uuid/v4");
+const bunyan = require("bunyan");
 
 //require route controllers
 const index = require("./routes/index");
@@ -21,11 +23,13 @@ const handytextbox = require("./routes/handytextbox");
 const list = require("./routes/list");
 const sessionRoute = require("./routes/session");
 
-//start database connection
-require("./lib/database");
-
 //make express app
-const app = module.exports = express();
+const app = express();
+
+//expose object with app router
+module.exports = {
+  router: app
+};
 
 //view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -43,10 +47,12 @@ app.use(mongoSanitize({
 }));
 
 //complete console logging when in dev env
-app.use(morgan("dev", {
-  //only log errors to console if in production
-  skip: (req, res) => devEnv || res.statusCode < 400
-}));
+if (devEnv) {
+  app.use(morgan("dev", {
+    //only log errors to console if in production
+    skip: (req, res) => devEnv || res.statusCode < 400
+  }));
+}
 
 //logging dir paths
 const loggingDir =  {
@@ -62,16 +68,62 @@ try {
   console.error("failed to init logging directory");
 }
 
-//rotating logger that makes a new file after a while
-const accessLogStream = rfs("access.log", {
+//rotating logger config
+const logStreamConfig = {
   interval: "1d", //rotate daily
-  path: loggingDir.access,
   size: "10M", //also rotate when the file reaches 10 megabytes
   initialRotation: true //make sure log writes go in the right file
+};
+
+//rotating logger that makes a new file after a while
+const accessLogStream = rfs("access.log", Object.assign(
+  { path: loggingDir.access }, logStreamConfig
+));
+
+//give logger file stream to access logger middleware
+app.use(morgan("common", { stream: accessLogStream }));
+
+//events logger stream
+const eventsLogStream = rfs("access.log", Object.assign(
+  { path: loggingDir.events }, logStreamConfig
+));
+
+//array of logger streams
+const loggerStreams = [
+  {
+    //regular log to event file
+    level: "info",
+    stream: eventsLogStream
+  }
+];
+
+//add console output stream in dev mode
+if (devEnv) {
+  loggerStreams.push({
+    //dev stream to console
+    level: "debug",
+    stream: process.stdout
+  });
+}
+
+//setup bunyan event logger
+const logger = bunyan.createLogger({
+  name: "resolution-editor",
+  streams: loggerStreams,
+  serializers: bunyan.stdSerializers
 });
 
-//give logger fiel stream to access logger middleware
-app.use(morgan("common", { stream: accessLogStream }));
+//add logger to exported object
+module.exports.logger = logger;
+
+//add child logger as middleware to express
+app.use(function(req, res, next) {
+  //add bound field reqId to chain all log entries for a single request
+  req.log = logger.child({ req_id: uuidv4() });
+
+  //continue app stack
+  next();
+});
 
 //static favicon serve
 app.use(favicon(path.join(__dirname, "public/favicon", "favicon.ico")));
@@ -98,7 +150,6 @@ app.use(session({
   })
   //non-persistent session
 }));
-
 
 //set specific caching params if in production mode
 if (! devEnv) {
@@ -142,5 +193,5 @@ app.use((err, req, res, next) => { //jshint ignore: line
   });
 
   //also log error to console
-  console.error(err);
+  logger.error(err);
 });
