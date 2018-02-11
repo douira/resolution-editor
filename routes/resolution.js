@@ -92,9 +92,8 @@ router.get("/renderpdf/:token", function(req, res) {
           //put in database for work queue display
           resolutions.updateOne({ token: token }, {
             $set: { pageAmount: pageAmount }
-          }).catch(
-            //not interested in result
-            err => console.error("could not update page amount", err)
+          }).catch( //not interested in result
+            err => req.log.error(err, "could not update page amount")
           );
         }
       },

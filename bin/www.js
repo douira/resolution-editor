@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /*jshint esversion: 6, node: true */
-const { router: app, logger } = require("../app");
+const app = require("../app");
 const http = require("http");
+const { logger } = require("../lib/logger");
 
 //Get port from environment and store in Express.
 const port = normalizePort(process.env.PORT || "3000");
