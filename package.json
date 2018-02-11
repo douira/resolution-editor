@@ -43,7 +43,8 @@
     "resolution",
     "munol",
     "editor",
-    "latex"
+    "latex",
+    "mongodb"
   ],
   "author": "douira",
   "license": "MIT",
