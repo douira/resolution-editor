@@ -79,3 +79,7 @@
 #amd-clause-wrapper > .clause-list > .clause > .divider {
   display: none;
 }
+
+#amd-select-group {
+  margin-top: 0.7em;
+}

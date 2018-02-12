@@ -677,6 +677,9 @@ function registerEventHandlers(loadedData) {
         //update the selected clause object
         amdOrigClause = clause;
 
+        //move the amendment display into view
+        $("#amd-info").scrollIntoView();
+
         //reset amendment display with new clause
         updateAmd();
       }

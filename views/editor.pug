@@ -223,9 +223,9 @@ block content
           +meta-button("action-delete", "Delete resolution", "delete_forever", "Deletes the resolution permanently", "red-text text-lighten-1")
     - const allowAmendments = doLoad && allowSave && (meta.stage === 6 && accessLevel === "CH" || accessLevel === "MA");
     if allowAmendments
-      h5.light Amendment
+      h5.light#amd-info Amendment
       .justify Using this feature only makes sense if a #[a(href="#liveview-heading") LiveView ] client is connected. It will display the amendments you create integrated into the resolution and visually emphasise changes. Click the amendment button in an operative clause to display it here. You can then choose what type of amendment should be performed. #[br]The #[b add] type requires the creation of a new clause and needs no prior selection of an existing clause. Selecting this type will allow you to formulate a new operative clause here and append it to the end of the resolution. #[br]The #[b change] type creates a copy of the selected clause here and will display a detailed view of the changes you make in the LiveView client. #[br]The #[b replace] type is similar to #[b change] but implies a complete change of the clause content. It doesn't create a copy of the selected clause here, but rather allows you to write a new clause that will replace the selected clause. #[br]The #[b strike out] type will mark the selected clause for removal.
-      .row
+      .row.no-bottom-mrg#amd-select-group
         .col.s12.m6: .input-field.not-editor#amd-type-select-box
           select
             mixin state-option(value, descr, first)
@@ -336,6 +336,7 @@ block content
           |  or #[em MA]. See #[a(href="/help#access-levels") here] for a detailed description of all access levels.
       .center: a.btn.waves-effect.waves-light#unlock-submit-btn(href="#" class=pri)&attributes(tooltip("Tries to open editor with the given code", "right")) Unlock
 block scripts
+  script(src="/js/scrollintoview.js")
   script(src="/js/accessInputs.js")
   script(src="/js/resolutionFormat.js")
   script(src="/js/dialogs.js")
