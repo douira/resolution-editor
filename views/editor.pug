@@ -236,9 +236,14 @@ block content
             +state-option("replace", "Replace")
             +state-option("remove", "Strike Out")
           label Action Type
-        .col.s12.m6: .input-field
+        .col.s12.m6: .input-field.not-editor
           input.not-editor.autocomplete#amd-spon(type="text")
           label(for="amd-spon") Sponsor
+      p.center.grey-text#amd-no-selection Select a clause with the
+        =" "
+        +icon("rate_review", "lime-text text-darken-1")
+        |  button or choose the action type "Add".
+      #amd-clause-wrapper
     if doLoad
       mixin floating-sm-btn(color, type, icon, tooltipText)
         a.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)
