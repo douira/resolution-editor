@@ -75,8 +75,12 @@
   margin-left: 0.7em;
 }
 
-/*hide the top level divider of the amendment display clause*/
+/*hide the top level divider and add clause button of the amendment display clause*/
 #amd-clause-wrapper > .clause-list > .clause > .divider {
+  display: none;
+}
+
+#amd-clause-wrapper > .clause-list > .add-clause-container {
   display: none;
 }
 

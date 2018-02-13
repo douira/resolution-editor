@@ -574,9 +574,11 @@ function registerEventHandlers(loadedData) {
       //get amd clause wrapper element
       var amdClauseWrapper = $("#amd-clause-wrapper");
 
+      //trigger edit inactive on the current selection to avoid removing the eabs
+      amdClauseListSelection.find(".clause").trigger("editInactive");
+
       //empty clause wrapper to remove any leftover from last amd display
       amdClauseWrapper.empty();
-      amdClauseListSelection = $();
 
       //show no selection message if no clause is selected
       if (! amdOrigClause.length) {
@@ -595,18 +597,6 @@ function registerEventHandlers(loadedData) {
       //show clause container
       amdClauseWrapper.show();
 
-      //attach handler to move into none selected state if original clause is removed
-      //but not when in add mode, we don't care about the original in that case
-      if (amdActionType !== "add") {
-        amdOrigClause.on("removedClause", function() {
-          //reset to empty
-          amdOrigClause = $();
-          console.log("removed source clause trigger");
-          //reset display
-          updateAmd();
-        });
-      }
-
       //move into amendment display section
       amdClauseListSelection = amdOrigClause
         //prevent cloning of eabs
@@ -616,19 +606,47 @@ function registerEventHandlers(loadedData) {
         .parent(".clause-list")
 
         //clone clause list
-        .clone(true, true)
+        .clone(true, true);
 
-        //and empty
+      //extract add clause container
+      var addClauseContainer = amdClauseListSelection
+        .children(".add-clause-container")
+        .clone(true, true);
+
+      //and empty
+      amdClauseListSelection
         .empty()
 
         //re-add the single clause we want
-        .append(amdOrigClause.clone(true, true));
+        .append(amdOrigClause.clone(true, true))
 
-      //insert prepared list into wrapper
-      amdClauseListSelection.appendTo(amdClauseWrapper);
+        //re-add clause container
+        .append(addClauseContainer)
 
-      //remove add clause button
-      amdClauseListSelection.children(".add-clause-container").remove();
+        //insert prepared list into wrapper
+        .appendTo(amdClauseWrapper);
+
+      //attach handler to move into none selected state if original clause is removed
+      //but not when in add mode, we don't care about the original in that case
+      if (amdActionType !== "add") {
+        amdOrigClause.one("removedClause", function() {
+          //reset to empty
+          amdOrigClause = $();
+          console.log("removed source clause trigger");
+          //reset display
+          updateAmd();
+        });
+      }
+
+      console.log(amdActionType);
+      //disable if in remove mode to prevent editing, only display what will be removed
+      if (amdActionType === "remove") {
+        //by adding the disabled class the all contained input fields and textarea inputs
+        amdClauseListSelection.find("input,textarea").attr("disabled", "");
+      } else {
+        //reset to normal state if not remove type
+        amdClauseListSelection.find("input,textarea").removeAttr("disabled");
+      }
 
       //reset (and thereby empty) if add or replace type
       if (amdActionType === "add" || amdActionType === "replace") {
@@ -643,10 +661,6 @@ function registerEventHandlers(loadedData) {
             .find(".clause-number")
             .text($("#op-clauses").children(".clause-list").children(".clause").length + 1);
         }
-      } //disable if in remove mode to prevent editing, only display what will be removed
-      else if (amdActionType === "remove") {
-        //by adding the disabled class the all contained input fields and textarea inputs
-        amdClauseListSelection.find(".input-field").addClass("disabled");
       }
     };
 
