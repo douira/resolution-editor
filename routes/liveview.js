@@ -373,6 +373,14 @@ function receiveServer(httpServer) {
       });
     }
 
+    //forwards data to all clients listening this token
+    function dataToAllViewers() {
+      tokenEntry.viewersForEach(v => sendJson(v.socket, {
+        type: data.type,
+        update: data.update
+      }));
+    }
+
     //on type of message
     switch (data.type) {
       case "initViewer": //first message sent by liveview client for registration
@@ -418,91 +426,93 @@ function receiveServer(httpServer) {
         //send ack to start connection
         sendAck(ws, accessToken, tokenEntry, viewerAmount);
         break;
-      case "updateStructure": //update messages
-      case "updateContent":
-      case "amendment":
-        //is an amendment message
-        if (data.type === "amendment") {
-          //get amendment object
-          const currentAmd = data.update.amendment;
+      case "amendment": //amendment message
+        //get amendment object
+        const currentAmd = data.update.amendment;
 
-          //create object for amendment data in token entry
-          if ("amd" in tokenEntry) {//amd already present in token entry
-            //last was recorded
-            if (tokenEntry.amd.last) {
-              //check if the structure changed significantly
-              //and send to clients to make them do a structure update
-              const lastAmd = tokenEntry.amd.last;
-              currentAmd.structureChanged =
-                lastAmd.type !== currentAmd.type || //change of type
-                lastAmd.clauseIndex !== currentAmd.clauseIndex || //change of target clause
-                //given that there are newClauses, check if they are the same
-                ! (lastAmd.newClause && currentAmd.newClause &&
-                   deepEqual(lastAmd.newClause, currentAmd.newClause));
-            } else {
-              //structure "changed" because it is the first amendment update
-              currentAmd.structureChanged = true;
-            }
+        //create object for amendment data in token entry
+        if ("amd" in tokenEntry) {//amd already present in token entry
+          //last was recorded
+          if (tokenEntry.amd.last) {
+            //check if the structure changed significantly
+            //and send to clients to make them do a structure update
+            const lastAmd = tokenEntry.amd.last;
+            currentAmd.structureChanged =
+              lastAmd.type !== currentAmd.type || //change of type
+              lastAmd.clauseIndex !== currentAmd.clauseIndex || //change of target clause
+              //given that there are newClauses, check if they are the same
+              ! (lastAmd.newClause && currentAmd.newClause &&
+                 deepEqual(lastAmd.newClause, currentAmd.newClause));
           } else {
-            //create new, no clearing necessary
-            tokenEntry.amd = {};
-
-            //mark as changed as there is no reference that this amendment could be similar to
+            //structure "changed" because it is the first amendment update
             currentAmd.structureChanged = true;
           }
+        } else {
+          //create new, no clearing necessary
+          tokenEntry.amd = {};
 
-          //if amendment structure changed a re-render will be done by the clients
-          if (currentAmd.structureChanged) {
-            //attach the current (content updates applied) structure
-            //for the new amendment to be applied to by the clients
-            currentAmd.latestStructure = tokenEntry.latestStructure;
-
-            //is change type amendment, requires newClause and oldClause to be present
-            if (currentAmd.type === "change" && currentAmd.oldClause && currentAmd.newClause) {
-              //remove arrays from both clauses
-              currentAmd.oldClause = deepConvertToObjects(currentAmd.oldClause);
-              currentAmd.newClause = deepConvertToObjects(currentAmd.newClause);
-
-              //calculate a detailed group of diffs bewteen old and new clause
-              const diffs = detailedDiff(currentAmd.oldClause, currentAmd.newClause);
-
-              //for all three part (added, deleted and changed),
-              //add color markers to the new clause for diff rendering
-              ["updated", "added", "deleted"].forEach(diffType => {
-                //process this diff type and thereby apply marking to the new clause
-                processDiff(diffType, diffs[diffType], currentAmd.oldClause, currentAmd.newClause);
-              });
-
-              //traverse the now value-marked new clause again to find consistent objects
-              //that can be marked as a whole because they were changed as a whole
-              markConsistentDiffs(currentAmd.newClause);
-            }
-          }
-
-          //save amendment
-          tokenEntry.amd.last = currentAmd;
-        } else if (data.type === "updateContent") {
-          //apply content update to structure
-          resolveChangePath(
-            //the current structure as saved by the server
-            tokenEntry.latestStructure.resolution.clauses,
-            data.update.contentPath.slice(), //the path and content in the update sent by the editor
-            data.update.content,
-            tokenEntry.pathCache); //the cache built in previous content updates
-        } //save structure update data to send to joining viewer clients
-        else if (data.type === "updateStructure") {
-          //save structure from editor as current
-          tokenEntry.latestStructure = data.update;
-
-          //reset path cache
-          tokenEntry.pathCache = {};
+          //mark as changed as there is no reference that this amendment could be similar to
+          currentAmd.structureChanged = true;
         }
 
-        //forward to clients listening on this token
-        tokenEntry.viewersForEach((v) => sendJson(v.socket, {
-          type: data.type,
-          update: data.update
-        }));
+        //if amendment structure changed a re-render will be done by the clients
+        if (currentAmd.structureChanged) {
+          //attach the current (content updates applied) structure
+          //for the new amendment to be applied to by the clients
+          currentAmd.latestStructure = tokenEntry.latestStructure;
+
+          //is change type amendment, requires newClause and oldClause to be present
+          if (currentAmd.type === "change" && currentAmd.oldClause && currentAmd.newClause) {
+            //remove arrays from both clauses
+            currentAmd.oldClause = deepConvertToObjects(currentAmd.oldClause);
+            currentAmd.newClause = deepConvertToObjects(currentAmd.newClause);
+
+            //calculate a detailed group of diffs bewteen old and new clause
+            const diffs = detailedDiff(currentAmd.oldClause, currentAmd.newClause);
+
+            //for all three part (added, deleted and changed),
+            //add color markers to the new clause for diff rendering
+            ["updated", "added", "deleted"].forEach(diffType => {
+              //process this diff type and thereby apply marking to the new clause
+              processDiff(diffType, diffs[diffType], currentAmd.oldClause, currentAmd.newClause);
+            });
+
+            //traverse the now value-marked new clause again to find consistent objects
+            //that can be marked as a whole because they were changed as a whole
+            markConsistentDiffs(currentAmd.newClause);
+          }
+        }
+
+        //save amendment
+        tokenEntry.amd.last = currentAmd;
+
+        //forward to all viewers
+        dataToAllViewers();
+
+        break;
+      case "updateContent":
+        //apply content update to structure
+        resolveChangePath(
+          //the current structure as saved by the server
+          tokenEntry.latestStructure.resolution.clauses,
+          data.update.contentPath.slice(), //the path and content in the update sent by the editor
+          data.update.content,
+          tokenEntry.pathCache); //the cache built in previous content updates
+
+        //forward to all viewers
+        dataToAllViewers();
+
+        break;
+      case "updateStructure": //save structure update data to send to joining viewer clients
+        //save structure from editor as current
+        tokenEntry.latestStructure = data.update;
+
+        //reset path cache
+        tokenEntry.pathCache = {};
+
+        //forward to all viewers
+        dataToAllViewers();
+
         break;
       default:
         console.log("unrecognised message type", data);
