@@ -643,9 +643,13 @@ function registerEventHandlers(loadedData) {
       if (amdActionType === "remove") {
         //by adding the disabled class the all contained input fields and textarea inputs
         amdClauseListSelection.find("input,textarea").attr("disabled", "");
+
+        //mark clause as a whole as disabled, flag for event handlers of clause
+        amdClauseListSelection.children(".clause").addClass("disabled-clause");
       } else {
         //reset to normal state if not remove type
         amdClauseListSelection.find("input,textarea").removeAttr("disabled");
+        amdClauseListSelection.children(".clause").removeClass("disabled-clause");
       }
 
       //reset (and thereby empty) if add or replace type
@@ -1101,6 +1105,14 @@ function registerEventHandlers(loadedData) {
   })
   .on("editActive", function(e) {
     e.stopPropagation();
+    var elem = $(this);
+
+    //prevent activation of disabled clauses or their children
+    if (elem.closest(".disabled-clause").length) {
+      //do not activate clause edit mode
+      return;
+    }
+
     //save to server if meta changes are unsaved (note that this is ativation of the cause)
     if (! metaChangesSaved && autosaveEnabled) {
       //do autosave
@@ -1111,7 +1123,6 @@ function registerEventHandlers(loadedData) {
     $(".clause").not(this).trigger("editInactive");
 
     //find the edit mode button for this clause (not descendants!)
-    var elem = $(this);
     var editModeBtn = elem.find(".edit-mode-btn").first();
 
     //hide edit button
@@ -1120,7 +1131,7 @@ function registerEventHandlers(loadedData) {
       .before($("#eab-wrapper").show()); //show edit action buttons and move to clause
 
     //update eab button disable
-    $(this)
+    elem
       .find("#eab-wrapper")
       .children()
       .trigger("updateDisabled");

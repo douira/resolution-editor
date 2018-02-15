@@ -87,3 +87,17 @@
 #amd-select-group {
   margin-top: 0.7em;
 }
+
+/*hide edit mode button in disabled clauses*/
+.disabled-clause .edit-mode-btn {
+  display: none;
+}
+
+.disabled-clause .add-clause-container {
+  display: none;
+}
+
+.disabled-clause input:disabled, .disabled-clause textarea:disabled {
+  color: rgba(0, 0, 0, 0.65) !important;
+  border-bottom-width: 2px !important;
+}
