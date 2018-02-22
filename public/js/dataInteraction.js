@@ -10,7 +10,8 @@
   sendJsonLV,
   sendLVUpdates,
   resolutionStage,
-  resolutionAttributes*/
+  resolutionAttributes,
+  getAmendmentUpdate*/
 /* exported loadFilePick,
   serverLoad,
   generatePdf,
@@ -589,8 +590,16 @@ $.fn.getContentPath = function() {
     }
   });
 
-  //no parent found, we are at the top level: specify what type of clause (op or preamb)
-  path.push(elem.closest("#preamb-clauses").length ? "preambulatory" : "operative");
+  //no parent found, we are at the top level: check if in amendment
+  var inAmendment = elem.closest("#amd-clause-wrapper").length;
+
+  //add amendment path segment if in amendment
+  if (inAmendment) {
+    path.push("amendment");
+  } else {
+    //specify what type of clause (op or preamb)
+    path.push(elem.closest("#preamb-clauses").length ? "preambulatory" : "operative");
+  }
 
   //set the path id as the current id number and increment
   elem.attr("data-path-id", nextPathId);
@@ -602,38 +611,100 @@ $.fn.getContentPath = function() {
   return path;
 };
 
-//the liveview socket, if present is in currentWS (var in liveviewWS.js)
+//the liveview socket, if present, is in currentWS (var in liveviewWS.js)
 
-//sends edit updates
-function sendLVUpdate(type, elem) {
-  //don't send if not necessary
-  if (! sendLVUpdates) {
+//send/do the actual amendment update
+function doAmdUpdate() {
+  //update amd display indexes and get the amendment descriptor object
+  var amdUpdate = getAmendmentUpdate(! sendLVUpdates);
+
+  //do not send update if it cannot be displayed in this state
+  if (! amdUpdate) {
     return;
   }
 
-  //sends a structure update to server
-  switch(type) {
-    case "structure":
-      //empty path cache
-      pathCache = {};
+  //send amendment update
+  sendJsonLV({
+    type: "amendment",
+    update: amdUpdate
+  });
+}
 
-      //send as structure update
+//sends edit updates or handles them through another part
+//given elem can also be enclosing clause list on structure update,
+//elem must be given if not in catchup event type
+/* eventTypes, there apply to all types of clauses (mostly)
+type: content
+  type,
+  autocomplete,
+type: structure
+  catchup, called when a viewed joined and previously no lv updates were being sent
+  remove, clause is removed (and maybe extcontent also removed)
+  add, clause is added with "add clause"
+  move, clause order is changed
+  makesub, subclause is added with the subclause EAB
+  addext, ext content field is created
+  clear, content cleared, ext content removed but subclauses stay
+*/
+function sendLVUpdate(type, eventType, elem) {
+  //sends a structure update to server
+  if (type === "structure") {
+    //empty path cache as structure has changed and cache of paths is invalid now
+    pathCache = {};
+
+    //check if given element is in the amendment display
+    var inAmd = elem && elem.closest("#amd-clause-wrapper").length;
+
+    //send regular structure update if change didn't happen in amendment
+    if ((! inAmd || eventType === "catchup") && sendLVUpdates) {
+      //send regular structure update
       sendJsonLV({
         type: "updateStructure",
         //just send the whole editor content for rerender after structure change
         update: getEditorObj(true) //true to also get empty fields
       });
-      break;
-    case "content":
-      //send as structure update
-      sendJsonLV({
-        type: "updateContent",
-        update: {
-          contentPath: elem.getContentPath(),
-          content: elem.val().trim()
-        }
-      });
-      break;
+    }
+
+    //calculate with elem if given
+    var isTopLevelOp;
+    if (elem) {
+      //elem is a clause list
+      var isClauseList = elem.is(".clause-list");
+
+      //parent clause list
+      var clauseList = isClauseList ? elem : elem.parent();
+
+      //check if clause is top level and op type, check type of parent list
+      isTopLevelOp = clauseList.is(".clause-list:not(.clause-list-sub)") &&
+        (isClauseList ? elem : elem.parent()).children(".clause").attr("data-clause-type") === "op";
+    }
+
+    //need index update on amd display for always catchup and for top level clauses
+    //on remove, add, move or in amendment
+    if (eventType === "catchup" || inAmd ||
+        isTopLevelOp && (eventType === "remove" || eventType === "add" || eventType === "move")) {
+      //send/update index
+      doAmdUpdate();
+    }
+  } else if (type === "amendment") {
+    //process amendment update directly
+    doAmdUpdate();
+  } else if (type === "content") {
+    //don't send if not necessary
+    if (! sendLVUpdates) {
+      return;
+    }
+
+    //send as structure update
+    sendJsonLV({
+      type: "updateContent",
+      update: {
+        contentPath: elem.getContentPath(),
+        content: elem.val().trim()
+      }
+    });
+  } else {
+    console.error("bad lv event type", type);
   }
 }
 

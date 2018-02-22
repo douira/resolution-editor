@@ -205,7 +205,7 @@ function render(resolution, amd) {
 
         //if it's an actual clause that receives content updates, add class to signify
         //otherwise color green as replacement clause in amendment
-        clauseWrapper.addClass(clauseData.isReplacement ? "mark-green": "op-clause");
+        clauseWrapper.addClass(clauseData.isReplacement ? "mark-green" : "op-clause");
 
         //set replacement clause (for scroll)
         //this is always called after displayAmendment has run,
@@ -515,7 +515,7 @@ $(document).ready(function() {
         }
         break;
       case "amendment":
-        amendmentMessage(data.update.amendment);
+        amendmentMessage(data.update);
         break;
     }
   });

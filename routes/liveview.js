@@ -126,7 +126,7 @@ function makeForEach(obj) {
   };
 }
 
-//sends an object json encoded to the server
+//sends an object json encoded to a websocket client
 function sendJson(ws, obj) {
   //send prepared object after stringify
   ws.send(JSON.stringify(obj));
@@ -428,10 +428,10 @@ function receiveServer(httpServer) {
         break;
       case "amendment": //amendment message
         //get amendment object
-        const currentAmd = data.update.amendment;
+        const currentAmd = data.update;
 
         //create object for amendment data in token entry
-        if ("amd" in tokenEntry) {//amd already present in token entry
+        if ("amd" in tokenEntry) { //amd already present in token entry
           //last was recorded
           if (tokenEntry.amd.last) {
             //check if the structure changed significantly
@@ -461,24 +461,28 @@ function receiveServer(httpServer) {
           //for the new amendment to be applied to by the clients
           currentAmd.latestStructure = tokenEntry.latestStructure;
 
-          //is change type amendment, requires newClause and oldClause to be present
-          if (currentAmd.type === "change" && currentAmd.oldClause && currentAmd.newClause) {
+          //old clause can be gotten by index from the resolution structure
+          const oldClause =
+            tokenEntry.latestStructure.resolution.clauses.operative[currentAmd.clauseIndex];
+
+          //is change type amendment, requires newClause to be present
+          if (currentAmd.type === "change" && currentAmd.newClause) {
             //remove arrays from both clauses
-            currentAmd.oldClause = deepConvertToObjects(currentAmd.oldClause);
+            currentAmd.oldClause = deepConvertToObjects(oldClause);
             currentAmd.newClause = deepConvertToObjects(currentAmd.newClause);
 
             //calculate a detailed group of diffs bewteen old and new clause
-            const diffs = detailedDiff(currentAmd.oldClause, currentAmd.newClause);
+            const diffs = detailedDiff(oldClause, currentAmd.newClause);
 
             //for all three part (added, deleted and changed),
             //add color markers to the new clause for diff rendering
             ["updated", "added", "deleted"].forEach(diffType => {
               //process this diff type and thereby apply marking to the new clause
-              processDiff(diffType, diffs[diffType], currentAmd.oldClause, currentAmd.newClause);
+              processDiff(diffType, diffs[diffType], oldClause, currentAmd.newClause);
             });
 
             //traverse the now value-marked new clause again to find consistent objects
-            //that can be marked as a whole because they were changed as a whole
+            //that can be marked as a whole because they were changed (updated, added...) as a whole
             markConsistentDiffs(currentAmd.newClause);
           }
         }
@@ -526,7 +530,10 @@ function receiveServer(httpServer) {
       //then update the liveview timestamp in the database for this resolution
       resolutions.updateOne(
         { token: clientEntry.token }, { $set: { lastLiveview: Date.now() } }
-      ).then(() => {});
+      ).catch(
+        //TODO: proper logging in liveview.js (where not implemented yet)
+        () => console.error("could not update last lievview timestamp")
+      );
     }
   }
 
