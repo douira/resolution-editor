@@ -582,9 +582,6 @@ function registerEventHandlers(loadedData) {
   //if chair or master access, amendments allowed
   if (accessLevel === "MA" ||
       ! resolutionAttributes.readonly && accessLevel === "CH" && resolutionStage === 6) {
-    /*TODO:
-    cloned clauses when not in add mode don't have working autocomplete
-    */
     //the current amendment action type
     var amdActionType = "noselection";
 
@@ -771,6 +768,10 @@ function registerEventHandlers(loadedData) {
       if (amdActionType === "add" || amdActionType === "replace") {
         //by triggering the reset event
         amdClauseElem.trigger("reset");
+      } //change is the only other action type that doesn't reset the clause
+      else if (amdActionType === "change") {
+        //re-init the autocompleting phrase field
+        amdClauseElem.find(".phrase-input").trigger("init");
       }
 
       //send amendment update
@@ -970,7 +971,7 @@ function registerEventHandlers(loadedData) {
       }
 
       //init with prepared data and predefined settings
-      $(this).autocomplete($.extend(autoOpts, autofillSettings));
+      elem.autocomplete($.extend(autoOpts, autofillSettings));
     } else { //there was no data for this element, error
       console.error("no autocomplete data found for field", this);
     }
@@ -1211,18 +1212,19 @@ function registerEventHandlers(loadedData) {
   .on("clear", function(e) {
     //clears field content
     e.stopPropagation();
+    var elem = $(this);
 
     //clear fields
-    $(this)
+    elem
       .children(".phrase-input-wrapper,.clause-content,.clause-content-ext")
       .find("textarea,input")
       .trigger("reset");
 
     //re-hide extended clause content
-    $(this).children(".clause-content-ext").hide();
+    elem.children(".clause-content-ext").hide();
 
     //update add-ext disabled state of eab in this clause
-    $(this)
+    elem
       .find("#eab-add-ext")
       .not(".clause-list-sub #eab-add-ext")
       .trigger("updateDisabled");
