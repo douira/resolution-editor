@@ -584,7 +584,6 @@ function registerEventHandlers(loadedData) {
       ! resolutionAttributes.readonly && accessLevel === "CH" && resolutionStage === 6) {
     /*TODO:
     cloned clauses when not in add mode don't have working autocomplete
-    bug: cant set first clause as amendment clause when preselected add mode
     */
     //the current amendment action type
     var amdActionType = "noselection";
@@ -808,7 +807,8 @@ function registerEventHandlers(loadedData) {
 
       //only change if a different clause was chosen than the already selected clause
       //we need to compare the actual com objects here because the jquery object isn't persistent
-      if (amdOrigClause.get(0) !== clause.get(0)) {
+      //doesn't aply in add mode, need to copy new in any case then
+      if (amdActionType === "add" || amdOrigClause.get(0) !== clause.get(0)) {
         //remove handler from old clause
         //to prevent amd display reset occuring when that clause isn't selected anymore
         amdOrigClause.off("removeClause");
