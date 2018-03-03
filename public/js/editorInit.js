@@ -381,9 +381,7 @@ function queueDisallowedCharInfo() {
     //display message
     makeAlertMessage("font_download", "Invalid characters were modified", "OK",
       "Some characters were removed or changed from the text you entered into an input field." +
-      " In general, certain special characters and line breaks are removed." +
-      " Unclosed quotes are completed by appending a quotation mark," +
-      " but you such occurences should be attended to." +
+      " In general, unnecessary special characters and line breaks are removed." +
       " Please check the detailed <a href='/help#formatting'>help page section</a> on allowed" +
       " characters and formatting advice. This message will only be displayed once.");
 
@@ -401,6 +399,9 @@ $.fn.filterIllegalContent = function() {
     //get field content
     var content = elem.val();
 
+    //extra flag without modyfing content
+    var contentInvalid = false;
+
     //run cleansing regexp replacements over the content
     //see lib/latexGenerator.js for the server version of this and explanations
     var newContent = content
@@ -410,14 +411,20 @@ $.fn.filterIllegalContent = function() {
       //normalize quotes
       .replace(/[“”‹›«»]/g, "\"")
 
-      //filter characters
-      .replace(/[^a-zA-Z0-9*_^|&’"\-.,()/+\u00c0-\u024F ]+/g, "")
-
       //remove bad whitespace
       .replace(/\s*[^\S ]+\s*/g, " ")
 
+      //replace newlines with spaces
+      .replace(/\n+/g, " ")
+
       //remove padding whitespace
-      .trim();
+      .trim()
+
+      //remove trailing _ and ^ (produce latex error)
+      .replace(/[_^]$/g, "")
+
+      //filter characters
+      .replace(/[^a-zA-Z0-9*_^|&’"\-.,()/+\u00c0-\u024F ]+/g, "");
 
     //append final " if there is an odd amount
     if ((newContent.match(/"/g) || []).length % 2) {
@@ -426,13 +433,22 @@ $.fn.filterIllegalContent = function() {
       newContent += "\"";
     }
 
+    //check for too long words
+    if (content.match(/\b[^\s ]{45,}/g)) {
+      //set flag to notify
+      contentInvalid = true;
+    }
+
     //if something changed
-    if (content !== newContent) {
+    if (content !== newContent || contentInvalid) {
       //make notification
       queueDisallowedCharInfo();
 
       //apply by setting the content in the elemement
       elem.val(newContent);
+
+      //trigger autoresize to correct textarea size
+      elem.trigger("autoresize");
     }
   });
 };
@@ -1106,7 +1122,7 @@ function registerEventHandlers(loadedData) {
           .show()
           .children("textarea")
           .val(data.contentExt)
-          .triggerAll("activateLabel keyup");
+          .triggerAll("activateLabel autoresize");
       }
     }
   });
