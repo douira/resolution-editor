@@ -262,6 +262,11 @@ $.fn.amountAbove = function(selector) {
   return this.parents(selector).length;
 };
 
+//cleans up cloned tooltips by reiniting them
+$.fn.cleanupClonedTooltips = function() {
+  this.find(".tooltipped").removeAttr("data-tooltip-id").tooltip();
+};
+
 //adds a subclause for given clause (and makes list if necessary),
 //expects inactivation to have been performed if activationStateChanges is falsy
 //(and won't activate created first subclause either)
@@ -308,6 +313,9 @@ $.fn.addSubClause = function(activationStateChanges) {
     .trigger("reset") //trigger reset to make it like a new clause
     .appendTo(subList) //add it to the end of the subclause list
     .trigger("updateTreeDepth"); //update the info texts on it
+
+  //re-init tooltip after clone, DOESN'T WORK
+  strippedClause.cleanupClonedTooltips();
 
   //move button to bottom of list
   subList.children(".add-clause-container").appendTo(subList);
@@ -360,6 +368,9 @@ $.fn.addClause = function(amount, activationStateChanges) {
       //trigger reset after inserting into main document because
       //the autofill init needs to know in what kind of clause it is to get the correct data
       .triggerAll("reset updateId");
+
+    //re-init tooltip after clone
+    addedClause.cleanupClonedTooltips();
   }
 
   //make last added clause active if enabled
