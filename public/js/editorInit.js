@@ -379,7 +379,7 @@ function queueDisallowedCharInfo() {
   //show only once
   if (! showedDisallowedCharModal) {
     //display message
-    makeAlertMessage("font_download", "Invalid characters were modified", "OK",
+    makeAlertMessage("font_download", "Resolution content was modified", "OK",
       "Some characters were removed or changed from the text you entered into an input field." +
       " In general, unnecessary special characters and line breaks are removed." +
       " Please check the detailed <a href='/help#formatting'>help page section</a> on allowed" +
@@ -433,8 +433,8 @@ $.fn.filterIllegalContent = function() {
       newContent += "\"";
     }
 
-    //check for too long words
-    if (content.match(/\b[^\s ]{45,}/g)) {
+    //check for too long content and too long words
+    if (content.length > 2500 || content.match(/\b[^\s ]{46,}/g)) {
       //set flag to notify
       contentInvalid = true;
     }
