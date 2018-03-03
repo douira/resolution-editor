@@ -38,6 +38,8 @@ block content
         p.justify The resolution with token #[b=token] could not be advanced to stage #[a(href="/help#rstage" + (stage + 1))="#" + (stage + 1)] with the provided valid access code because it did not have the required permission level. You entered a code with the permission level #[a(href="/help#" + accessLevel)=accessLevel].
           br
           | #[a(href="/resolution/editor/" + token) Return] to the editor page.
-        h4 Current Stage:
-        +stage-info-index(stage, false)
+        +stage-info-index(stage, true)
+        include stages
+        +attribute-descr(attributes, true)
+        br
       default: p This page has a problem. #[span.grey-text Surprise!]

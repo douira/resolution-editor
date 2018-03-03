@@ -394,7 +394,8 @@ router.post("/advance/:token", function(req, res) {
           type: "advance",
           token: resolutionDoc.token,
           stage: resolutionDoc.stage,
-          accessLevel: codeDoc.level
+          accessLevel: codeDoc.level,
+          attributes: resolutionDoc.attributes
         });
       }
     },
