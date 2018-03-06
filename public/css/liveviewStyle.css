@@ -10,6 +10,7 @@
   font-family: TimesNewRoman, "Times New Roman", Times, Baskerville, Georgia, serif;
   font-size: 16px;
   line-height: 1.3em;
+  text-align: justify;
 }
 
 #viewcontent:-webkit-full-screen {
@@ -130,9 +131,7 @@ Use .mark- for all other elements that need to be colored
 #amd-container + .op-wrapper, .op-wrapper.mark-green {
   margin-left: -2rem;
   margin-right: -2rem;
-  padding-left: 2rem;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+  padding: 1rem 2rem;
 }
 
 /*materialize .grey.lighten-2 */
