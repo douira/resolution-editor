@@ -231,7 +231,7 @@ function markConsistentDiffs(obj) {
         if (propDiffType) {
           obj.diff[prop] = propDiffType;
         }
-      } else if (prop in obj.diff) {
+      } else if (obj.diff && prop in obj.diff) {
         //get from diff list
         propDiffType = obj.diff[prop];
       } else {

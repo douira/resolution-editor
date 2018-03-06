@@ -45,17 +45,30 @@ function applyDocumentChange(resolution, path, content) {
 
     //insert a op-wrapper unwrapping path segment
     //to expose the inner li in op clauses that are wrapped
-    if (pathProp === "operative") {
+    if (pathProp === "operative" || pathProp === "amendment") {
       path.splice(-1, 0, "unwrapOp");
     }
 
-    //get object for first step
-    var structureObj = resolution.clauses[pathProp];
+    //structure to modify with the update
+    var structureObj;
 
-    //the current element we are searching in, start off with preamb/op seperation
-    currentElem = $(pathProp === "operative" ? "#op-clauses" : "#preamb-clauses")
-      //count using only the real clause elements
-      .children("div.op-clause, div.preamb-clause");
+    //for amendment content update
+    if (pathProp === "amendment") {
+      //element is amendment clause
+      currentElem = amendmentElements.replacementClause.length ?
+        amendmentElements.replacementClause : amendmentElements.clause;
+
+      //use new clause as object to modify
+      structureObj = currentAmendment.newClause;
+    } else {
+      //the current element we are searching in, start off with preamb/op seperation
+      currentElem = $(pathProp === "operative" ? "#op-clauses" : "#preamb-clauses")
+        //count using only the real clause elements
+        .children("div.op-clause, div.preamb-clause");
+
+      //get object for first step from resolution
+      structureObj = resolution.clauses[pathProp];
+    }
 
     //until we get to the element specified by the whole path
     while (path.length && currentElem.length) {
@@ -382,7 +395,8 @@ function updateAmendmentContents(amd, amdElem) {
   }
 
   //fill clone with info
-  amdElem.find("span.amd-sponsor").text(amd.sponsor);
+  amdElem.find("span.amd-sponsor")
+    .html(amd.sponsor || "<em class='grey-text text-darken-1'>Sponsor</em>");
   amdElem.find("span.amd-action-text").text(actionText);
   //convert to 1 indexed counting
   amdElem.find("span.amd-target").text("OC" + (amd.clauseIndex + 1));
