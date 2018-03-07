@@ -591,8 +591,9 @@ function registerEventHandlers(loadedData) {
   });
 
   //if chair or master access, amendments allowed
-  if (accessLevel === "MA" ||
-      ! resolutionAttributes.readonly && accessLevel === "CH" && resolutionStage === 6) {
+  var doAmendments = accessLevel === "MA" ||
+      ! resolutionAttributes.readonly && accessLevel === "CH" && resolutionStage === 6;
+  if (doAmendments) {
     //the current amendment action type
     var amdActionType = "noselection";
 
@@ -859,6 +860,15 @@ function registerEventHandlers(loadedData) {
         clause.parent().hasClass("clause-list-sub")
       );
     });
+
+    //sponsor field change
+    //TODO: chaneg event is fired twice and causes double amendment update,
+    //removing materialize venet handlers from #amd-spon solves this...
+    $("#amd-spon")
+    .on("change", function() { //not on single keystrokes, not necessary
+      //send amendment update
+      sendLVUpdate("amendment");
+    });
   }
 
   //the attribute selector, only allow one handler to be set
@@ -974,7 +984,7 @@ function registerEventHandlers(loadedData) {
 
       //if this is a editor-relevant field that tracks changes and must be in a clause
       //do not send content updates for amendment display clauses, those are handled seperately
-      if (elem.not("#amd-clause-wrapper .autocomplete").is(".clause .autocomplete")) {
+      if (elem.is(".clause .autocomplete")) {
         //attach a handler that makes a content update happen when a autocomplete field changes
         autoOpts.onAutocomplete = function() {
           sendLVUpdate("content", "autocomplete", elem);

@@ -25,7 +25,7 @@ const tokenProcessor = require("../lib/token");
 const databaseInterface = require("../lib/database");
 const uuidv4 = require("uuid/v4");
 const detailedDiff = require("deep-object-diff").detailedDiff;
-const deepEqual = require("fast-deep-equal");
+//const deepEqual = require("fast-deep-equal");
 
 //const inspect = require("../lib/inspect");
 
@@ -277,7 +277,7 @@ function resolveChangePath(prevObj, remainingPath, setValue, cache, dontReadCach
 
   //error if property not present
   if (! (prop in prevObj)) {
-    console.error("invalid path property segement:", prop, "in", prevObj);
+    console.error("invalid path property segment:", prop, "in", prevObj);
 
     //stop, will actually throw error otherwise
     return;
@@ -427,79 +427,67 @@ function receiveServer(httpServer) {
         sendAck(ws, accessToken, tokenEntry, viewerAmount);
         break;
       case "amendment": //amendment message
-        //get amendment object
+        //get amendment object, we expect the structure to have changed significantly
+        //if a client sends an amendment update, content is updated through content updates
         const currentAmd = data.update;
 
-        //create object for amendment data in token entry
-        if ("amd" in tokenEntry) { //amd already present in token entry
-          //last was recorded
-          if (tokenEntry.amd.last) {
-            //check if the structure changed significantly
-            //and send to clients to make them do a structure update
-            const lastAmd = tokenEntry.amd.last;
-            currentAmd.structureChanged =
-              lastAmd.type !== currentAmd.type || //change of type
-              lastAmd.clauseIndex !== currentAmd.clauseIndex || //change of target clause
-              //given that there are newClauses, check if they are the same
-              ! (lastAmd.newClause && currentAmd.newClause &&
-                 deepEqual(lastAmd.newClause, currentAmd.newClause));
-          } else {
-            //structure "changed" because it is the first amendment update
-            currentAmd.structureChanged = true;
-          }
-        } else {
-          //create new, no clearing necessary
-          tokenEntry.amd = {};
+        //amendment structure changed and a re-render will be done by the clients
 
-          //mark as changed as there is no reference that this amendment could be similar to
-          currentAmd.structureChanged = true;
-        }
+        //attach the current (content updates applied) structure
+        //for the new amendment to be applied to by the clients
+        //currentAmd.latestStructure = tokenEntry.latestStructure;
 
-        //if amendment structure changed a re-render will be done by the clients
-        if (currentAmd.structureChanged) {
-          //attach the current (content updates applied) structure
-          //for the new amendment to be applied to by the clients
-          currentAmd.latestStructure = tokenEntry.latestStructure;
+        //old clause can be gotten by index from the resolution structure
+        const oldClause =
+          tokenEntry.latestStructure.resolution.clauses.operative[currentAmd.clauseIndex];
 
-          //old clause can be gotten by index from the resolution structure
-          const oldClause =
-            tokenEntry.latestStructure.resolution.clauses.operative[currentAmd.clauseIndex];
+        //is change type amendment, requires newClause to be present
+        if (currentAmd.type === "change" && currentAmd.newClause) {
+          //remove arrays from both clauses
+          currentAmd.oldClause = deepConvertToObjects(oldClause);
+          currentAmd.newClause = deepConvertToObjects(currentAmd.newClause);
 
-          //is change type amendment, requires newClause to be present
-          if (currentAmd.type === "change" && currentAmd.newClause) {
-            //remove arrays from both clauses
-            currentAmd.oldClause = deepConvertToObjects(oldClause);
-            currentAmd.newClause = deepConvertToObjects(currentAmd.newClause);
+          //calculate a detailed group of diffs bewteen old and new clause
+          const diffs = detailedDiff(oldClause, currentAmd.newClause);
 
-            //calculate a detailed group of diffs bewteen old and new clause
-            const diffs = detailedDiff(oldClause, currentAmd.newClause);
+          //for all three part (added, deleted and changed),
+          //add color markers to the new clause for diff rendering
+          ["updated", "added", "deleted"].forEach(diffType => {
+            //process this diff type and thereby apply marking to the new clause
+            processDiff(diffType, diffs[diffType], oldClause, currentAmd.newClause);
+          });
 
-            //for all three part (added, deleted and changed),
-            //add color markers to the new clause for diff rendering
-            ["updated", "added", "deleted"].forEach(diffType => {
-              //process this diff type and thereby apply marking to the new clause
-              processDiff(diffType, diffs[diffType], oldClause, currentAmd.newClause);
-            });
-
-            //traverse the now value-marked new clause again to find consistent objects
-            //that can be marked as a whole because they were changed (updated, added...) as a whole
-            markConsistentDiffs(currentAmd.newClause);
-          }
+          //traverse the now value-marked new clause again to find consistent objects
+          //that can be marked as a whole because they were changed (updated, added...) as a whole
+          markConsistentDiffs(currentAmd.newClause);
         }
 
         //save amendment
-        tokenEntry.amd.last = currentAmd;
+        tokenEntry.amd = currentAmd;
 
         //forward to all viewers
         dataToAllViewers();
 
         break;
       case "updateContent":
+        //what object the update should be applied to
+        let applyUpdateTo = tokenEntry.latestStructure.resolution.clauses;
+
+        //the path to the property to change
+        const updatePath = data.update.contentPath.slice();
+
+        //is amendment content update
+        if (updatePath[updatePath.length - 1] === "amendment") {
+          //remove amendment flag and remove index and set amendment as object to be modified
+          updatePath.pop();
+          updatePath.pop();
+          applyUpdateTo = tokenEntry.amd.newClause;
+        }
         //apply content update to structure
         resolveChangePath(
           //the current structure as saved by the server
-          tokenEntry.latestStructure.resolution.clauses,
-          data.update.contentPath.slice(), //the path and content in the update sent by the editor
+          applyUpdateTo,
+          updatePath, //the path and content in the update sent by the editor
           data.update.content,
           tokenEntry.pathCache); //the cache built in previous content updates
 
