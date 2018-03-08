@@ -621,15 +621,8 @@ function registerEventHandlers(loadedData) {
     //the sponsor input field element
     var sponsorInputElem = $("#amd-spon");
 
-    //sets the index of the current amendment clause element to one more than the current
-    //amount of clauses, for use in add mode
-    var updateAddModeClauseIndex = function() {
-      if (amdClauseElem.length === 1) {
-        amdClauseElem
-          .children("h6").children(".clause-number")
-          .text($("#op-clauses > .clause-list > .clause").length + 1);
-      }
-    };
+    //define here for satisfaction of declaraton order prettiness
+    var updateAmd;
 
     //called by sendLVUpdate in dataInteraction.js to generate the object that is sent to the server
     //and the liveview clients containing all information describing the current amendment
@@ -643,10 +636,27 @@ function registerEventHandlers(loadedData) {
       var clauseIndex;
       if (amdActionType === "add") {
         //update index of clause in add mode
-        updateAddModeClauseIndex();
+        if (amdClauseElem.length === 1) {
+          //sets the index of the current amendment clause element to one more than the current
+          //amount of clauses
+          amdClauseElem
+            .children("h6").children(".clause-number")
+            .text($("#op-clauses > .clause-list > .clause").length + 1);
+        }
       } else {
         //use index of the original clause
         clauseIndex = amdOrigClause.index();
+
+        //orig was removed if index is -1, the original clause was removed
+        if (clauseIndex === -1) {
+          //empty the orig clause to properly reset
+          amdOrigClause = $();
+
+          //call updateAmd to make clause look right
+          updateAmd();
+
+          //stop rocessing, will be called again once update is processed
+        }
 
         //set index in amendment display, +1 for natural (non 0 index) counting
         amdClauseElem.children("h6").find(".clause-number").text(clauseIndex + 1);
@@ -676,7 +686,7 @@ function registerEventHandlers(loadedData) {
         amdUpdate.newClause = amdClauseElem.clauseAsObject(true);
 
         //change type doesn't need to specify oldClause (now obsolete) because the old clause can be
-        //deducted from the resolution the server keeps track of and the passed clause index
+        //deducted from the passed clause index and the resolution the server keeps track of
       }
 
       //return object
@@ -686,7 +696,7 @@ function registerEventHandlers(loadedData) {
     //resets the amendment display with the current type and selected clause
     //also shows the no selection message if no clause is selected or the
     //selected clause has been removed in the mean time
-    var updateAmd = function() {
+    updateAmd = function() {
       //get amd clause wrapper element
       var amdClauseWrapper = $("#amd-clause-wrapper");
 
@@ -754,20 +764,6 @@ function registerEventHandlers(loadedData) {
         //insert prepared list into wrapper
         .appendTo(amdClauseWrapper);
 
-      //attach handler to move into none selected state if original clause is removed
-      //but not when in add mode, we don't care about the original in that case
-      if (amdActionType !== "add") {
-        amdOrigClause.one("removedClause", function(e) {
-          e.stopPropagation();
-
-          //reset to empty
-          amdOrigClause = $();
-
-          //reset display
-          updateAmd();
-        });
-      }
-
       //preselect main clause
       amdClauseElem = amdClauseListSelection.children(".clause");
       console.log(amdActionType);
@@ -830,10 +826,6 @@ function registerEventHandlers(loadedData) {
       //we need to compare the actual com objects here because the jquery object isn't persistent
       //doesn't aply in add mode, need to copy new in any case then
       if (amdActionType === "add" || amdOrigClause.get(0) !== clause.get(0)) {
-        //remove handler from old clause
-        //to prevent amd display reset occuring when that clause isn't selected anymore
-        amdOrigClause.off("removeClause");
-
         //update the selected clause object
         amdOrigClause = clause;
 
@@ -1408,9 +1400,6 @@ function registerEventHandlers(loadedData) {
         //clear ext field
         extField.trigger("reset");
       }
-
-      //trigger removedClause event to alert amendment display if any handler attached
-      elem.trigger("removedClause");
 
       //remove this clause
       elem.remove();
