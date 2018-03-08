@@ -16,7 +16,7 @@
 \usepackage{microtype}
 %\usepackage{fontspec}
 %\defaultfontfeatures{Ligatures=TeX}
-%\MakeOuterQuote{"}
+\MakeOuterQuote{"}
 \pagestyle{fancy}
 \fancyhf{}
 \rfoot{Page \thepage\ of \pageref{LastPage}}
