@@ -11,9 +11,9 @@
 \usepackage{mfirstuc}
 \usepackage{xstring}
 \usepackage{csquotes}
-\usepackage{fontspec}
-\defaultfontfeatures{Ligatures=TeX}
-\MakeOuterQuote{"}
+%\usepackage{fontspec}
+%\defaultfontfeatures{Ligatures=TeX}
+%\MakeOuterQuote{"}
 \pagestyle{fancy}
 \fancyhf{}
 \rfoot{Page \thepage\ of \pageref{LastPage}}
