@@ -202,14 +202,16 @@ function render() {
   $("#question-of-info").text(renderStructure.resolution.address.questionOf);
   $("#sponsor-info").text(renderStructure.resolution.address.sponsor.main);
 
-  //if there are co-sponsors fill i nthat field as well
+  //if there are co-sponsors fill in that field as well
   var coSponsors = renderStructure.resolution.address.sponsor.co;
   if (coSponsors && coSponsors.length) {
     //insert content
     $("#co-sponsor-info").text(coSponsors.join(", "));
 
     //show enclosing row
-    $("#address > .hide-this").show();
+    $("#co-sponsor-row").removeClass("hide-this");
+  } else {
+    $("#co-sponsor-row").addClass("hide-this");
   }
 
   //get clause content template and prepare for use
@@ -455,6 +457,11 @@ $(document).ready(function() {
   startLiveviewWS(true, null, null, function(type, data) { //given type and update data
     //switch to update type
     switch (type) {
+      case "editorJoined":
+        //remove amendment and re-render
+        amendment = null;
+        render();
+        break;
       case "updateStructure": //whole resolution content is resent because structure has changed
       case "initStructure": //handle init the same way for now
         //prepare if not prepared yet (first)
