@@ -11,6 +11,7 @@
 \usepackage{mfirstuc}
 \usepackage{xstring}
 \usepackage{csquotes}
+\usepackage{microtype}
 %\usepackage{fontspec}
 %\defaultfontfeatures{Ligatures=TeX}
 %\MakeOuterQuote{"}
