@@ -595,6 +595,10 @@ $.fn.getContentPath = function() {
 
   //add amendment path segment if in amendment
   if (inAmendment) {
+    //remove first index, doesn't mean anything
+    path.pop();
+
+    //add amendment sign
     path.push("amendment");
   } else {
     //specify what type of clause (op or preamb)

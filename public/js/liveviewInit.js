@@ -15,8 +15,7 @@ var pathSegmentMapping = {
   sub: function(e) { return e.children(".subs").children(); },
   phrase: function(e) { return e.children("div.clause-content").children("span.phrase"); },
   content: function(e) { return e.children("div.clause-content").children("span.main-content"); },
-  contentExt: function(e) { return e.children("span.ext-content"); },
-  unwrapOp: function(e) { return e.children(); }
+  contentExt: function(e) { return e.children("span.ext-content"); }
 };
 
 //cache paths and the elements they result in
@@ -48,14 +47,8 @@ function applyDocumentChange(resolution, path, content) {
     //change in already found place in structure
     cacheResult.clause[path[0]] = content;
   } else {
-    //pop of the first element from the path stack
+    //pop off the first element from the path stack as the type sign
     var pathProp = path.pop();
-
-    //insert a op-wrapper unwrapping path segment
-    //to expose the inner li in op clauses that are wrapped
-    if (pathProp === "operative" || pathProp === "amendment") {
-      path.splice(-1, 0, "unwrapOp");
-    }
 
     //structure to modify with the update
     var structureObj;
@@ -63,16 +56,15 @@ function applyDocumentChange(resolution, path, content) {
     //for amendment content update
     if (pathProp === "amendment") {
       //element is amendment clause
-      currentElem = amendmentElements.replacementClause.length ?
-        amendmentElements.replacementClause : amendmentElements.clause;
+      currentElem = (amendmentElements.replacementClause.length ?
+        amendmentElements.replacementClause : amendmentElements.clause).children("li");
 
       //use new clause as object to modify
       structureObj = amendment.newClause;
     } else {
       //the current element we are searching in, start off with preamb/op seperation
-      currentElem = $(pathProp === "operative" ? "#op-clauses" : "#preamb-clauses")
-        //count using only the real clause elements
-        .children("div.op-clause, div.preamb-clause");
+      currentElem = $(pathProp === "operative" ?
+        "#op-clauses > .op-wrapper > li" : "#preamb-clauses > div.preamb-clause");
 
       //get object for first step from resolution
       structureObj = resolution.clauses[pathProp];
@@ -107,7 +99,7 @@ function applyDocumentChange(resolution, path, content) {
 
       //for the structure object: continue down if it results in an object
       var pathStepResult = structureObj[pathProp];
-      if (pathProp !== "unwrapOp" && typeof pathStepResult === "object") {
+      if (typeof pathStepResult === "object") {
         //use as next structureObj
         structureObj = pathStepResult;
       }
@@ -253,9 +245,10 @@ function render() {
         //create a wrapper and add op-wrapper for layout and styling
         clauseWrapper = $("<div/>").addClass("op-wrapper");
 
-        //if it's an actual clause that receives content updates, add class to signify
-        //otherwise color green as replacement clause in amendment
-        clauseWrapper.addClass(clauseData.isReplacement ? "mark-green" : "op-clause");
+        //color green as replacement clause in amendment
+        if (clauseData.isReplacement) {
+          clauseWrapper.addClass("mark-green");
+        }
 
         //set replacement clause (for scroll)
         //this is always called after displayAmendment has run,
@@ -416,6 +409,7 @@ function render() {
         amdContainer.find("span.amd-sponsor")
           .html(amendment.sponsor || "<em class='grey-text text-darken-1'>Sponsor</em>");
         amdContainer.find("span.amd-action-text").text(actionText);
+
         //convert to 1 indexed counting
         amdContainer.find("span.amd-target").text("OC" + (amendment.clauseIndex + 1));
 

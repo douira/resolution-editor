@@ -438,13 +438,13 @@ function receiveServer(httpServer) {
         //currentAmd.latestStructure = tokenEntry.latestStructure;
 
         //old clause can be gotten by index from the resolution structure
-        const oldClause =
+        let oldClause =
           tokenEntry.latestStructure.resolution.clauses.operative[currentAmd.clauseIndex];
 
         //is change type amendment, requires newClause to be present
         if (currentAmd.type === "change" && currentAmd.newClause) {
           //remove arrays from both clauses
-          currentAmd.oldClause = deepConvertToObjects(oldClause);
+          oldClause = deepConvertToObjects(oldClause); //currentAmd.oldClause =
           currentAmd.newClause = deepConvertToObjects(currentAmd.newClause);
 
           //calculate a detailed group of diffs bewteen old and new clause
