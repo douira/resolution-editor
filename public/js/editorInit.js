@@ -416,6 +416,11 @@ $.fn.filterIllegalContent = function() {
     //get field content
     var content = elem.val();
 
+    //stop if there is no content, handled by validity checker
+    if (! content.trim().length) {
+      return;
+    }
+
     //run cleansing regexp replacements over the content
     //see lib/latexGenerator.js for the server version of this and explanations
     var newContent = content
@@ -429,10 +434,7 @@ $.fn.filterIllegalContent = function() {
       .replace(/[^a-zA-Z0-9*_^|&’"\-.,()/+\u00c0-\u024F ]+/g, "")
 
       //remove bad whitespace
-      .replace(/\s*[^\S ]+\s*/g, " ")
-
-      //remove padding whitespace
-      .trim();
+      .replace(/\s*[^\S ]+\s*/g, " ");
 
     //append final " if there is an odd amount
     if ((newContent.match(/"/g) || []).length % 2) {
@@ -445,7 +447,13 @@ $.fn.filterIllegalContent = function() {
     if (content !== newContent) {
       //make notification
       queueDisallowedCharInfo();
+    }
 
+    //trim now, trim shouldn't trigger message
+    newContent = newContent.trim();
+
+    //if there was any change, apply back to element
+    if (content !== newContent) {
       //apply by setting the content in the elemement
       elem.val(newContent);
     }
