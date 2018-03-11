@@ -2,11 +2,13 @@ extends layout
 
 block styles
   link(href="/css/liveviewStyle.css" type="text/css" rel="stylesheet")
+  link(href="/css/liveviewColors.css" type="text/css" rel="stylesheet")
 
 block content
   .container
     +icon(liveviewIcon, "large left " + liveviewColor)
     h3#lv-title Resolution LiveView
+    a.right(href="/help#liveview") Help Page Section for LiveView
     h5.light#token-preset=token
     #code-preset.hide-this=code
     .z-depth-2#viewcontent
@@ -17,8 +19,9 @@ block content
         +spinner("blue", "small")
       #resolution.hide-this
         #amd-container.hide-this: h5#amd-text
+          ="Proposal by "
           span.amd-sponsor
-          =" wants to "
+          =" to "
           u
             span.amd-action-text
             =" "

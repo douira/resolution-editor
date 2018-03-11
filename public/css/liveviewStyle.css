@@ -138,26 +138,6 @@ Use .mark- for all other elements that need to be colored
   padding: 1rem 2rem;
 }
 
-/*materialize .grey.lighten-2 */
-#amd-container.mark-amd-grey + .op-wrapper, .mark-grey {
-  background-color: #eee;
-}
-
-/*materialize .green.lighten-3 */
-#amd-container.mark-amd-green + .op-wrapper, .mark-green {
-  background-color: #a5d6a7;
-}
-
-/*materialize .red.lighten-3 */
-#amd-container.mark-amd-red + .op-wrapper, .mark-red {
-  background-color: #ef9a9a;
-}
-
-/*materialize .yellow.lighten-3 */
-.mark-yellow {
-  background-color: #fff59d;
-}
-
 .op-wrapper.mark-green {
   margin-top: -0.5em;
 }
