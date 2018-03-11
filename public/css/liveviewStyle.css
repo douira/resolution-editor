@@ -36,11 +36,15 @@ p#address-line {
   text-transform: uppercase;
 }
 
-#preamb-clauses span.phrase {
+.phrase {
+  display: inline-block;
+}
+
+#preamb-clauses .phrase {
   font-style: italic;
 }
 
-#op-clauses span.phrase {
+#op-clauses .phrase {
   text-decoration: underline;
 }
 
@@ -135,7 +139,7 @@ Use .mark- for all other elements that need to be colored
 }
 
 /*materialize .grey.lighten-2 */
-#amd-container + .op-wrapper, .mark-grey {
+#amd-container.mark-amd-grey + .op-wrapper, .mark-grey {
   background-color: #eee;
 }
 

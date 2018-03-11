@@ -137,6 +137,12 @@ used on clauses because we can't put a .diff property into an array in json.
 if they are supposed to be arrays or not can still be determined by the property the arrays are in.
 .sub is always filled with an array, all others are objects or strings*/
 function deepConvertToObjects(obj) {
+  //must be object
+  if (typeof obj !== "object") {
+    //return unmodified
+    return obj;
+  }
+
   //create object to put in
   const newObj = {};
 
@@ -152,6 +158,11 @@ function deepConvertToObjects(obj) {
 
       //simply copy literal value
       value;
+  }
+
+  //add length property if this is an array
+  if (obj instanceof Array) {
+    newObj.length = obj.length;
   }
 
   //return created object
@@ -249,6 +260,11 @@ function markConsistentDiffs(obj) {
         changeType = false;
       }
     }
+  }
+
+  //remove diff property if it has no contents
+  if (obj.diff && ! Object.keys(obj.diff).length) {
+    delete obj.diff;
   }
 
   //return consistent diff type (or false if it is inconsistent)

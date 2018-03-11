@@ -15,7 +15,9 @@ var pathSegmentMapping = {
   sub: function(e) { return e.children(".subs").children(); },
   phrase: function(e) { return e.children("div.clause-content").children("span.phrase"); },
   content: function(e) { return e.children("div.clause-content").children("span.main-content"); },
-  contentExt: function(e) { return e.children("span.ext-content"); }
+  contentExt: function(e) {
+    return e.children("div.ext-content").children("span.ext-text-content");
+  }
 };
 
 //cache paths and the elements they result in
@@ -147,6 +149,39 @@ function getPunctuation(subPresent, lastInClause, lastInDoc) {
   return subPresent ? ":" : lastInDoc ? "." : lastInClause ? ";" : ",";
 }
 
+//iterates over an object like forEach, but deals with the diff property
+function diffForEach(obj, callback) {
+  //needs to have length property and above 0
+  if (! obj.length) {
+    return;
+  }
+
+  //for all numeric of obj
+  for (var i = 0; i < obj.length; i ++) {
+    //call callback with value at property, property itself, the whole object, diff for this prop
+    callback(obj[i], i, obj, obj.diff && obj.diff[i]);
+  }
+}
+
+//diff type color class map converts between diff types and color marking classes
+var diffTypeColorMap = {
+  "updated": "mark-yellow",
+  "added": "mark-green",
+  "deleted": "mark-red",
+  "none": "mark-grey"
+};
+
+//marks an element with diff colors according to the passed diff type
+$.fn.colorDiff = function(type) {
+  //con't do anything if falsy
+  if (! type) {
+    return;
+  }
+
+  //add marking class corresponding to diff type, or grey if no match found
+  this.addClass(diffTypeColorMap[type] || "mark-grey");
+};
+
 //fucntion that renders the given structure to the liveview display,
 //updates completely: do not use for content update
 function render() {
@@ -160,8 +195,8 @@ function render() {
     amdContainer = $("#amd-container").clone();
 
     //if the structure will be modified
-    if (amendment.type === "add" || amendment.type === "replace") {
-      //make a copy for rendering with amendment
+    if (amendment.type === "add" || amendment.type === "replace" || amendment.type === "change") {
+      //make a copy for rendering with amendment, these change types modify the structure
       renderStructure = $.extend(true, {}, structure);
     }
 
@@ -180,8 +215,11 @@ function render() {
       //make the new clause a replacement clause so it's rendered as one
       amendment.newClause.isReplacement = true;
 
-      //splice into clauses
+      //splice into clauses (for replace and change)
       opClauses.splice(amendment.clauseIndex + 1, 0, amendment.newClause);
+    } else if (amendment.type === "change") {
+      //replace clause that is to be changed
+      opClauses.splice(amendment.clauseIndex, 1, amendment.newClause);
     }
   }
 
@@ -291,6 +329,15 @@ function render() {
       //add punctuation
       content.append(getPunctuation(subsPresent, isOps && ! subsPresent, lastClause));
 
+      //apply diff colors if given
+      if (clauseData.diff) {
+        //add coloring on content body
+        content.colorDiff(clauseData.diff.content);
+
+        //add coloring on phrase if there is any, otherwise mark as grey clause background
+        content.children(".phrase").colorDiff(clauseData.diff.phrase || "none");
+      }
+
       //process subclauses if any specified in data
       if (subsPresent) {
         //add list for subclauses, choose type according to type of clause
@@ -298,13 +345,27 @@ function render() {
           .addClass("subs")
           .appendTo(clause); //add clause list to clause
 
+        //color whole sublist if specified
+        if (clauseData.diff) {
+          subList.colorDiff(clauseData.diff.sub);
+        }
+
         //add subclauses
-        clauseData.sub.forEach(function(subClauseData, subIndex, subArr) {
+        diffForEach(clauseData.sub, function(subClauseData, subIndex, subArr, subDiffType) {
           //make the subclause
           var subContent = clauseContentTemplate.clone();
           var subClause = $("<li/>")
             .append(subContent)
             .appendTo(subList); //add subclause to its sub list
+
+          //color whole subclause with diff
+          subClause.colorDiff(subDiffType);
+
+          //if there are diff specs for the things in this subclause
+          if (subClauseData.diff) {
+            //color content
+            subContent.colorDiff(subClauseData.diff.content);
+          }
 
           //check if a sub list is specified
           var subsubsPresent = "sub" in subClauseData;
@@ -337,13 +398,22 @@ function render() {
               .addClass("subs subsubs")
               .appendTo(subClause); //add sub list to clause
 
+            //color whole subsublist if specified
+            if (subClauseData.diff) {
+              subsubList.colorDiff(subClauseData.diff.sub);
+            }
+
             //add all subsub clauses
-            subClauseData.sub.forEach(function(subsubClauseData, subsubIndex, subsubArr) {
+            diffForEach(subClauseData.sub,
+              function(subsubClauseData, subsubIndex, subsubArr, subsubDiffType) {
               //make the subclause
               var subsubContent = clauseContentTemplate.clone();
               $("<li/>")
                 .append(subsubContent)
                 .appendTo(subsubList); //add subsubclause to its sub list
+
+              //color subsubclause
+              subsubContent.colorDiff(subsubDiffType);
 
               //add data to content
               subsubContent.children("span.main-content").text(subsubClauseData.content);
@@ -361,16 +431,26 @@ function render() {
           //append ext content if specified
           if (subContentExtPresent) {
             //create another span with the text
-            subClause.append($("<span/>", {
-              "class": "ext-content",
+            var subContentExt = $("<div/>", {
+              "class": "ext-content"
+            }).appendTo(subClause);
+
+            //add text inside
+            subContentExt.append($("<span/>", {
+              "class": "ext-text-content",
               text: subClauseData.contentExt
             }));
+
+            //color ext content
+            if (subClauseData.diff) {
+              subContentExt.colorDiff(subClauseData.diff.contentExt);
+            }
 
             //update wether or not this is the last piece of the clause
             lastPieceOfClause = ! contentExtPresent && lastSubClause;
 
             //add extra punctuation for ext content
-            subClause.append(getPunctuation(
+            subContentExt.append(getPunctuation(
               false, lastPieceOfClause, lastPieceOfClause && lastClause));
           }
         });
@@ -379,13 +459,23 @@ function render() {
       //append ext content if specified
       if (contentExtPresent) {
         //create another span with the text
-        clause.append($("<span/>", {
-          "class": "ext-content",
+        var contentExt = $("<div/>", {
+          "class": "ext-content"
+        }).appendTo(clause);
+
+        //add text inside
+        contentExt.append($("<span/>", {
+          "class": "ext-text-content",
           text: clauseData.contentExt
         }));
 
+        //color ext content
+        if (clauseData.diff) {
+          contentExt.colorDiff(clauseData.diff.contentExt);
+        }
+
         //add extra punctuation for ext content
-        clause.append(getPunctuation(false, isOps, lastClause));
+        contentExt.append(getPunctuation(false, isOps, lastClause));
       }
 
       //add the newly created clause to the document and make it visible
@@ -429,13 +519,15 @@ function render() {
   //if there is an amendment to display
   if (amendment) {
     //reset color classes
-    amendmentElements.amd.removeClass("mark-amd-green mark-amd-red");
+    amendmentElements.amd.removeClass("mark-amd-green mark-amd-red mark-amd-grey");
 
     //set the color of the amendment according to type
     if (amendment.type === "add") {
       amendmentElements.amd.addClass("mark-amd-green");
     } else if (amendment.type === "remove" || amendment.type === "replace") {
       amendmentElements.amd.addClass("mark-amd-red");
+    } else if (amendment.type === "change") {
+      amendmentElements.amd.addClass("mark-amd-grey");
     }
   }
 }
