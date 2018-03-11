@@ -542,7 +542,7 @@ $.fn.getContentPath = function() {
   //get path id of this element
   /*we use an element specific attribute because modifying it won't change the attribute in
   other elements (.data() in jquery only copies the reference apparently when elements are
-  cloned and thereby causes two elements to have the same data object)*/
+  cloned and thereby causes two elements to have the same exact data object)*/
   var pathId = this.attr("data-path-id");
 
   //check if there is a cached path for this element present
@@ -643,7 +643,7 @@ type: content
   autocomplete,
 type: structure
   catchup, called when a viewed joined and previously no lv updates were being sent
-  remove, clause is removed (and maybe extcontent also removed)
+  remove, clause is removed (and maybe contentExt also removed)
   add, clause is added with "add clause"
   move, clause order is changed
   makesub, subclause is added with the subclause EAB
