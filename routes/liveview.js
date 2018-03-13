@@ -293,7 +293,7 @@ function resolveChangePath(prevObj, remainingPath, setValue, cache, dontReadCach
 
   //error if property not present
   if (! (prop in prevObj)) {
-    console.error("invalid path property segment:", prop, "in", prevObj);
+    console.error("invalid path property segment:", prop, "in", prevObj, "path:", pathString);
 
     //stop, will actually throw error otherwise
     return;
@@ -494,11 +494,11 @@ function receiveServer(httpServer) {
 
         //is amendment content update
         if (updatePath[updatePath.length - 1] === "amendment") {
-          //remove amendment flag and remove index and set amendment as object to be modified
-          updatePath.pop();
+          //remove amendment flag and set amendment as object to be modified
           updatePath.pop();
           applyUpdateTo = tokenEntry.amd.newClause;
         }
+
         //apply content update to structure
         resolveChangePath(
           //the current structure as saved by the server

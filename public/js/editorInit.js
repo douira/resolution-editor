@@ -19,7 +19,8 @@
   resolutionStage,
   resolutionToken,
   resolutionAttributes,
-  getAmendmentUpdate*/
+  getAmendmentUpdate,
+  amdActionType*/
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -67,6 +68,9 @@ var displayedPhraseContentMessage;
 
 //filled by amendment handler to generate an amendment descriptor object
 var getAmendmentUpdate;
+
+//the current amendment action type
+var amdActionType;
 
 //transforms arrays containign a certain flag in an object and array json structure
 function transformMarkedArrays(structure, flag, propValue, depth) {
@@ -527,6 +531,7 @@ function registerEssentialEventHandlers(doLoad) {
 
     //finalize editing on all fields
     $(".clause").trigger("editInactive");
+
     //save first if anything changed
     if (changesSaved) {
       //no saving necessary, register to run after save completes
@@ -603,7 +608,7 @@ function registerEventHandlers(loadedData) {
       ! resolutionAttributes.readonly && accessLevel === "CH" && resolutionStage === 6;
   if (doAmendments) {
     //the current amendment action type
-    var amdActionType = "noselection";
+    amdActionType = "noselection";
 
     //flag is set to true when an amendment can be displayed properly (clause and type selected)
     var amdDisplayable = false;
@@ -1270,10 +1275,10 @@ function registerEventHandlers(loadedData) {
     }
 
     //make all other clauses inactive
-    $(".clause").not(this).trigger("editInactive");
+    $(".clause").not(this).trigger("editInactive", true);
 
     //find the edit mode button for this clause (not descendants!)
-    var editModeBtn = elem.find(".edit-mode-btn").first();
+    var editModeBtn = elem.children("h6").children(".edit-mode-btn");
 
     //hide edit button
     editModeBtn
@@ -1291,13 +1296,24 @@ function registerEventHandlers(loadedData) {
       elem.siblings(".add-clause-container").show();
     }
   })
-  .on("editInactive", function(e) {
+  .on("editInactive", function(e, amdUpdatePossible) {
     e.stopPropagation();
     var elem = $(this);
 
-    //hide edit action buttons
-    var eab = elem.find("#eab-wrapper");
-    eab.hide().insertAfter($("#eab-inactive-anchor"));
+    //get EABs
+    var eabs = elem.find("#eab-wrapper");
+
+    //if they are present, we were in edit just now
+    if (eabs.length) {
+      //hide edit action buttons andm ove to resting place
+      eabs.hide().insertAfter($("#eab-inactive-anchor"));
+
+      //trigger amd update on real inactivation, (not on just-making-sure inactivation)
+      //amd diff update is too costly for server and clients to do for every keypress
+      if (amdUpdatePossible && elem.closest("#amd-clause-wrapper").length) {
+        sendLVUpdate("amendment", "inactivation");
+      }
+    }
 
     //show edit button to make switch to edit mode possible again
     elem.find(".edit-mode-btn").removeClass("hide-this");
@@ -1619,7 +1635,7 @@ function registerEventHandlers(loadedData) {
   $("#eab-done")
   .on("click", function(e) {
     e.stopPropagation();
-    $(this).closest(".clause").trigger("editInactive");
+    $(this).closest(".clause").trigger("editInactive", true);
   });
   $("#legacy-action-load")
   .on("click", function(e) {

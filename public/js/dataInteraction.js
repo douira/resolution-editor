@@ -11,7 +11,8 @@
   sendLVUpdates,
   resolutionStage,
   resolutionAttributes,
-  getAmendmentUpdate*/
+  getAmendmentUpdate,
+  amdActionType*/
 /* exported loadFilePick,
   serverLoad,
   generatePdf,
@@ -691,8 +692,12 @@ function sendLVUpdate(type, eventType, elem) {
       doAmdUpdate();
     }
   } else if (type === "amendment") {
-    //process amendment update directly
-    doAmdUpdate();
+    //no not update if type inactivation and not type change,
+    //inactivation updates only make sense for change action type
+    if (eventType !== "inactivation" || amdActionType === "change") {
+      //process amendment update directly
+      doAmdUpdate();
+    }
   } else if (type === "content") {
     //don't send if not necessary
     if (! sendLVUpdates) {
