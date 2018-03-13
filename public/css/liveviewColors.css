@@ -14,6 +14,6 @@
   background-color: #fff59d;
 }
 
-.mark-yellow, .mark-red, .mark-green, .mark-grey {
+.mark-yellow, .mark-red, .mark-green:not(.op-wrapper), .mark-grey {
   border-radius: 7px;
 }
