@@ -1413,6 +1413,9 @@ function registerEventHandlers(loadedData) {
         var contentField = clause.children(".clause-content").children("textarea");
         contentField.val(contentField.val().trim() + " " + extField.val().trim());
 
+        //trigger autoresize on modified field
+        contentField.trigger("autoresize");
+
         //clear ext field
         extField.trigger("reset");
       }
