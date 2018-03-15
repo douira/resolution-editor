@@ -8,10 +8,11 @@ const databaseInterface = require("../lib/database").callback;
 const issueError = resUtil.issueError;
 
 //get resolutions collection
-let resolutions, resolutionArchive;
+let resolutions, resolutionArchive, access;
 databaseInterface(collections => {
   resolutions = collections.resolutions;
   resolutionArchive = collections.resolutionArchive;
+  access = collections.access;
 });
 
 //GET display overview of all resolutions
@@ -47,7 +48,35 @@ router.get("/overview", function(req, res) {
     ]).toArray().then(items => {
       //send data to client
       res.render("listoverview", { items: items, isArchive: useArchive });
-    }, err => issueError(res, 500, "could not query print queue items", err));
+    }, err => issueError(res, 500, "could not query resolution in overview", err));
+  });
+});
+
+//GET display overview of all codes and associated information
+router.get("/codes", function(req, res) {
+  //require session admin right
+  routingUtil.requireAdminSession(req, res, () => {
+    //aggregate codes from access collection of codes
+    access.aggregate([
+      //sort by code alphabetically
+      { $sort: {
+        code: 1
+      }},
+
+      //group into levels
+      { $group: {
+        _id: "$level",
+        list: { $push: "$$ROOT" } //append whole object to list
+      }},
+
+      //sort by group level
+      { $sort: {
+        _id: 1
+      }}
+    ]).toArray().then(codes => {
+      //display code overview page
+      res.render("codeoverview", { codes: codes});
+    }, err => issueError(res, 500, "could not query codes for overview", err));
   });
 });
 

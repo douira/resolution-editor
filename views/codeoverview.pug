@@ -1,0 +1,32 @@
+extends layout
+
+block title
+  title Codes Overview
+
+block styles
+  +static("css", "/css/codeOverviewStyle.css")
+
+block content
+  .container
+    +icon("supervisor_account", "large left text-darken-3 amber-text")
+    h3 List of Access Codes
+    .divider
+    p.justify This is a list of all access codes grouped by level. Look at the #[a(href="/help#access-levels") Help Page section] for more information on the permissions of the different levels.
+    h5.light Search Codes
+    .input-field
+      +icon("search", "prefix")
+      input#search-field(type="text")
+      label(for="search-field")
+    if codes.length
+      .row
+        each level in codes
+          .col.l6.s12
+            h5.light=level._id
+            ul.collection
+              each code in level.list
+                li.collection-item
+                  =code.code
+    else
+      p.center: em.grey-text.text-darken-1 No codes to display.
+block scripts
+  +static("js", "/js/codeOverviewInit.js")
