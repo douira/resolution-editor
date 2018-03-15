@@ -15,10 +15,10 @@ block content
     h5.light Search Codes
     .input-field
       +icon("search", "prefix")
-      input#search-field(type="text")
-      label(for="search-field")
+      input#search-field(type="search")
+      label(for="search-field") Filter Query
     if codes.length
-      .row
+      .row#list-container
         each level in codes
           .col.l6.s12
             h5.light=level._id
