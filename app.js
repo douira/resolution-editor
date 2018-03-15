@@ -3,15 +3,15 @@ const express = require("express");
 const path = require("path");
 const compression = require("compression");
 const favicon = require("serve-favicon");
-const morgan = require("morgan");
 const session = require("express-session");
 const MongoStore = require("connect-mongo")(session);
 const bodyParser = require("body-parser");
 const credentials = require("./lib/credentials");
 const dbPromise = require("./lib/database").promise;
-const fs = require("fs-extra");
-const rfs = require("rotating-file-stream");
 const mongoSanitize = require("express-mongo-sanitize");
+
+const devEnv = require("./lib/devEnv");
+const { logger, applyLoggerMiddleware } = require("./lib/logger");
 
 //require route controllers
 const index = require("./routes/index");
@@ -21,18 +21,12 @@ const handytextbox = require("./routes/handytextbox");
 const list = require("./routes/list");
 const sessionRoute = require("./routes/session");
 
-//start database connection
-require("./lib/database");
-
 //make express app
 const app = module.exports = express();
 
 //view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
-
-//check if we are in a dev environment, unefined if not set and in dev env
-const devEnv = ! process.env.NODE_ENV;
 
 //register express middleware
 app.use(compression()); //use compression to make it faster
@@ -42,36 +36,8 @@ app.use(mongoSanitize({
   replaceWith: "___" //something that can be easily found
 }));
 
-//complete console logging when in dev env
-app.use(morgan("dev", {
-  //only log errors to console if in production
-  skip: (req, res) => devEnv || res.statusCode < 400
-}));
-
-//logging dir paths
-const loggingDir =  {
-  root: path.join(__dirname, "log")
-};
-loggingDir.access = path.join(loggingDir.root, "access");
-loggingDir.events = path.join(loggingDir.root, "events");
-
-//setup directory for logging
-try {
-  fs.ensureDirSync(loggingDir.access);
-} catch (err) {
-  console.error("failed to init logging directory");
-}
-
-//rotating logger that makes a new file after a while
-const accessLogStream = rfs("access.log", {
-  interval: "1d", //rotate daily
-  path: loggingDir.access,
-  size: "10M", //also rotate when the file reaches 10 megabytes
-  initialRotation: true //make sure log writes go in the right file
-});
-
-//give logger fiel stream to access logger middleware
-app.use(morgan("common", { stream: accessLogStream }));
+//apply logger middlewares to app
+applyLoggerMiddleware(app);
 
 //static favicon serve
 app.use(favicon(path.join(__dirname, "public/favicon", "favicon.ico")));
@@ -87,7 +53,7 @@ app.use(session({
   saveUninitialized: false,
   store: new MongoStore({
     dbPromise: dbPromise, //pass the already created mongodb connection promise
-    autoRemove: "disabled", //we implement our own removal index
+    autoRemove: "disabled", //we implement our own removal index in database.js
     collection: "sessions", //make sure this collection is used
 
     //more efficient if not stringyfied for every save, mongodb can handle nested objects!
@@ -98,7 +64,6 @@ app.use(session({
   })
   //non-persistent session
 }));
-
 
 //set specific caching params if in production mode
 if (! devEnv) {
@@ -142,5 +107,5 @@ app.use((err, req, res, next) => { //jshint ignore: line
   });
 
   //also log error to console
-  console.error(err);
+  logger.error(err);
 });
