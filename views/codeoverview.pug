@@ -12,16 +12,35 @@ block content
     h3 List of Access Codes
     .divider
     p.justify This is a list of all access codes grouped by level. Look at the #[a(href="/help#access-levels") Help Page section] for more information on the permissions of the different levels.
-    h5.light Search Codes
-    .input-field
-      +icon("search", "prefix")
-      input#search-field(type="search")
-      +icon("clear", "", "clear-icon")
-      label(for="search-field") Filter Query
     if codes.length
+      h5.light Modify
+      .row
+        .col.s12.m7
+          p.justify Change the access level of the selected codes to the specified level. Instead of trying to assign the access level DE, remove codes from the system that should have no privileges.
+          .input-field
+              select#level-select
+                option(value="" disabled selected) Choose Level
+                mixin opt(value)
+                  option(value=value)=value
+                +opt("AP")
+                +opt("FC")
+                +opt("SC")
+                +opt("CH")
+                +opt("MA")
+              label(for="level-select") New Access Level
+          a.btn.waves-effect.waves-light.orange Change Level
+        .col.s12.m5
+          p.justify Remove the selected codes from the system. They may be generated again at random though. You can't remove the code you are logged in with.
+          a.btn.waves-effect.waves-light.red Revoke Selected
+      h5.light Search
+      .input-field
+        +icon("search", "prefix")
+        input#search-field(type="search")
+        +icon("clear", "", "clear-icon")
+        label(for="search-field") Filter Query
       .row#list-container
         each level in codes
-          .col.l6.s12
+          .col.m6.s12
             h5.light=level._id
             ul.collection
               each code in level.list

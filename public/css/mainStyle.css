@@ -38,3 +38,7 @@
 .btn-spacing-right {
   margin-right: 2rem;
 }
+
+.no-bottom-mrg {
+  margin-bottom: 0;
+}

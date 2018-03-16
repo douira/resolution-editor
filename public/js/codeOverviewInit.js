@@ -67,4 +67,7 @@ $(document).ready(function() {
     //trigger label blur
     searchField.trigger("blur");
   });
+
+  //init the select field
+  $("select").material_select();
 });
