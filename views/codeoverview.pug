@@ -16,6 +16,7 @@ block content
     .input-field
       +icon("search", "prefix")
       input#search-field(type="search")
+      +icon("clear", "", "clear-icon")
       label(for="search-field") Filter Query
     if codes.length
       .row#list-container
@@ -24,8 +25,7 @@ block content
             h5.light=level._id
             ul.collection
               each code in level.list
-                li.collection-item
-                  =code.code
+                li.collection-item=code.code
     else
       p.center: em.grey-text.text-darken-1 No codes to display.
 block scripts

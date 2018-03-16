@@ -2,7 +2,7 @@
 
 //includes polyfill from
 //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/includes
-if (!String.prototype.includes) {
+if (! String.prototype.includes) {
   String.prototype.includes = function(search, start) { //jshint ignore:line
     'use strict';
     if (typeof start !== 'number') {
@@ -19,21 +19,21 @@ if (!String.prototype.includes) {
 
 //on document ready
 $(document).ready(function() {
-  //get the main list container item
-  var listContainer = $("#list-container");
+  //find search field element
+  var searchField = $("#search-field");
 
-  //on keypresses in the search field
-  $("#search-field").on("paste keyup", function() {
-    //the search field element
-    var elem = $(this);
+  //hides and shows code list items by wether or not they include the search query
+  function searchUpdate() {
+    //get the main list container item
+    var listContainer = $("#list-container");
 
     //get trimmed and capitalized value from input
-    var query = elem.val();
+    var query = searchField.val();
     var newQuery = query.trim().toUpperCase();
 
     //reapply if changed
     if (query !== newQuery) {
-      elem.val(newQuery);
+      searchField.val(newQuery);
       query = newQuery;
     }
 
@@ -52,5 +52,19 @@ $(document).ready(function() {
       //show all again
       codeElements.removeClass("hide-this");
     }
+  }
+  //on keypresses in the search field
+  searchField.on("paste keyup", searchUpdate);
+
+  //clear on clicking clear icon button
+  $("#clear-icon").on("click", function() {
+    //clear field
+    searchField.val("");
+
+    //trigger search update
+    searchUpdate();
+
+    //trigger label blur
+    searchField.trigger("blur");
   });
 });
