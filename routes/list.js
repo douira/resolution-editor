@@ -4,6 +4,7 @@ const router = module.exports = express.Router();
 const resUtil = require("../lib/resUtil");
 const routingUtil = require("../lib/routingUtil");
 const databaseInterface = require("../lib/database").callback;
+const validateCode = require("../lib/token").check;
 
 const issueError = resUtil.issueError;
 
@@ -52,38 +53,95 @@ router.get("/overview", function(req, res) {
   });
 });
 
+//regular dispaly of codes page
+function codesPage(req, res) {
+  //aggregate codes from access collection of codes
+  access.aggregate([
+    //sort by code alphabetically
+    { $sort: {
+      code: 1
+    }},
+
+    //group into levels
+    { $group: {
+      _id: "$level",
+      list: { $push: "$$ROOT" } //append whole object to list
+    }},
+
+    //sort by group level
+    { $sort: {
+      _id: 1
+    }}
+  ]).toArray().then(codes => {
+    //display code overview page
+    res.render("codeoverview", { codes: codes});
+  }, err => issueError(res, 500, "could not query codes for overview", err));
+}
+
 //GET display overview of all codes and associated information
 router.get("/codes", function(req, res) {
   //require session admin right
   routingUtil.requireAdminSession(req, res, () => {
-    //aggregate codes from access collection of codes
-    access.aggregate([
-      //sort by code alphabetically
-      { $sort: {
-        code: 1
-      }},
+    //display codes page
+    codesPage(req, res);
+  });
+});
 
-      //group into levels
-      { $group: {
-        _id: "$level",
-        list: { $push: "$$ROOT" } //append whole object to list
-      }},
+//post to codes page performs action and then displays page like normal
+router.post("/codes/:action", function(req, res) {
+  //require session admin right
+  routingUtil.requireAdminSession(req, res, () => {
+    //get the list of codes to process
+    if (req.body && req.body.codes && req.body.codes.length && req.body.codes instanceof Array) {
+      //remove the current session code and codes that are no valid codes
+      const sessionCode = req.session.code;
+      const codes = req.body.codes.filter(code => code !== sessionCode && validateCode(code));
 
-      //sort by group level
-      { $sort: {
-        _id: 1
-      }}
-    ]).toArray().then(codes => {
-      //display code overview page
-      res.render("codeoverview", { codes: codes});
-    }, err => issueError(res, 500, "could not query codes for overview", err));
+      //if there are codes
+      if (codes.length) {
+        //check for valid action
+        switch(req.params.action) {
+          //revoke codes
+          case "revoke":
+            //remove all codes that were given
+            access.deleteMany({ code: { "$in": codes }}).then(() => codesPage(req, res), err => {
+              issueError(res, 500, "couldn't remove specified codes", err);
+            });
+            break;
+
+          //change codes
+          case "change":
+            //require correct new level to be set
+            const setLevel = req.body.level;
+            if (["FC", "AP", "SC", "MA", "CH"].includes(setLevel)) {
+              //change level for all codes
+              access.deleteMany(
+                { code: { $in: codes }},
+                { $set: { level: setLevel }}
+              ).then(() => codesPage(req, res), err => {
+                issueError(res, 500, "couldn't change specified codes to " + setLevel, err);
+              });
+            } else {
+              issueError(res, 400, "invalid code level set " + req.body.level);
+            }
+            break;
+
+          //error if not handled
+          default:
+            issueError(res, 404, "no such code action " + req.params.action);
+        }
+      } else {
+        //render normally
+        codesPage();
+      }
+    }
   });
 });
 
 //GET display enter access code page
 router.get("/print", function(req, res) {
-  //check if a session is open
-  if (req.session.code) {
+  //check if a session is open to display without entering code for admin
+  if (req.session.code && req.session.doc.level === "MA") {
     //redirect to queue
     res.redirect("/list/print/queue");
   } else {

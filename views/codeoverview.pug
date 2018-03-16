@@ -13,10 +13,10 @@ block content
     .divider
     p.justify This is a list of all access codes grouped by level. Look at the #[a(href="/help#access-levels") Help Page section] for more information on the permissions of the different levels.
     if codes.length
-      h5.light Modify
+      h5.light Modify or Add
       .row
         .col.s12.m7
-          p.justify Change the access level of the selected codes to the specified level. Instead of trying to assign the access level DE, remove codes from the system that should have no privileges.
+          p.justify Change the access level of the selected codes to the specified level. Instead of trying to assign the access level DE, remove codes from the system that should have no privileges. You can't change the code you are logged in with.
           .input-field
               select#level-select
                 option(value="" disabled selected) Choose Level
