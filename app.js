@@ -105,6 +105,6 @@ app.use((err, req, res, next) => { //jshint ignore: line
     devEnv: devEnv
   });
 
-  //also log error to console
+  //log error with logger
   logger.error(err);
 });
