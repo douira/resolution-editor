@@ -27,13 +27,13 @@ $.fn.getSelectValue = function() {
   }
 
   //internal container
-  var selectBoxContainer = selectBox.find(".select-wrapper");
+  var selectBoxContainer = selectBox.parent(".select-wrapper");
 
   //get the input element to set validation classes
   var selectBoxInput = selectBoxContainer.children("input");
 
   //check which li element of the select wrapper is active
-  var activeOption = selectBoxContainer.find("li.active");
+  var activeOption = selectBoxContainer.children("ul").children("li.active");
 
   //any must be active
   if (! activeOption.length) {
@@ -41,20 +41,20 @@ $.fn.getSelectValue = function() {
     selectBoxInput.removeClass("invalid valid");
 
     //none selected
-    return "inactive";
+    return false;
   }
 
   //get text of that option and get id for it
-  var activeId = selectBoxContainer.find("option:contains(" +
+  var activeId = selectBox.children("option:contains(" +
     activeOption.children("span").text() + ")").val();
 
   //must be one of the possible states and not the current one
-  if (["none", "readonly", "noadvance", "static"].indexOf(activeId) === -1) {
+  if (["AP", "FC", "MA", "CH", "SC"].indexOf(activeId) === -1) {
     //disable button and invalidate field
     selectBoxInput.removeClass("valid").addClass("invalid");
 
     //bad value
-    return "invalid";
+    return false;
   }
 
   //all is ok, display input field as valid
@@ -158,13 +158,62 @@ $(document).ready(function() {
   //init select fields
   $("select").material_select();
 
-  //change access level button
-  $("#change-level-btn")
-  .on("mouseover", function() {
+  //the level selector for changing the level of the selected codes
+  var changeLevelSelector = $("#change-level-select");
 
+  //the button to apply the level change on the selected codes
+  var changeLevelButton = $("#change-level-btn");
+
+  //updates the disabled state of the change level button
+  function updateChangeLevelButton() {
+    //get select value from select structure
+    var selectValue = changeLevelSelector.getSelectValue();
+
+    //update button with selection state
+    changeLevelButton[
+      selectValue ? "removeClass" : "addClass"]("disabled");
+
+    //return value for further use
+    return selectValue;
+  }
+
+  //change access level button
+  changeLevelButton
+  .on("mouseover", function() {
+    //update button appearance
+    updateChangeLevelButton();
   })
   .on("click", function() {
+    //only if any codes were selected
+    if (selectedCodeAmount) {
+      //update button state and get select value
+      var selectValue = updateChangeLevelButton();
 
+      //stop on invalid value
+      if (! selectValue) {
+        return;
+      }
+
+      //send request to server to change access level for selected clauses
+      $.post("/list/codes/change", { codes: getSelectedCodes(), level: selectValue })
+      .done(function() {
+        //reload page to reflect changes
+        location.reload();
+      })
+      .fail(function() {
+        //display error message
+        makeAlertMessage("error", "Error revoking codes", "OK",
+          "The server reported an error for the request to change the access level of" +
+          " the selected codes. Please get into contact with IT-Managagement.",
+          "change_level_codes_fail");
+      });
+    }
+  });
+
+  //on change of selection value, update button again
+  changeLevelSelector.on("change", function() {
+    //update button disabled state
+    updateChangeLevelButton();
   });
 
   //revoke button

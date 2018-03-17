@@ -107,7 +107,7 @@ router.post("/codes/:action", function(req, res) {
             const setLevel = req.body.level;
             if (["FC", "AP", "SC", "MA", "CH"].includes(setLevel)) {
               //change level for all codes
-              access.deleteMany(
+              access.updateMany(
                 { code: { $in: codes }},
                 { $set: { level: setLevel }}
               ).then(() => res.send("ok"), err => {

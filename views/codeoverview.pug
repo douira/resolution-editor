@@ -46,7 +46,7 @@ block content
             textarea.materialize-textarea#code-name-field
             label(for="code-name-field") List of names
         .col.s12.m6
-          | Or specify the amount of new codes to generate
+          | Or specify the number of new codes to generate
           .input-field
             input#new-code-amount(type="number")
             label(for="new-code-amount") Number of New Codes
@@ -64,7 +64,7 @@ block content
       .row#list-container
         each level in codes
           .col.m6.s12
-            h5.light=level._id
+            h5.light(id=level._id)=level._id
             ul.collection
               each code in level.list
                 - const immutable = sessionCode === code.code;
