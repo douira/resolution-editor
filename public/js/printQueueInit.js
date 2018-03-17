@@ -219,7 +219,7 @@ $(document).ready(function() {
   presetCode = $("#code-preset").text();
 
   //detach the template element from the list
-  templateItem = $("#item-template").detach().removeClass("hide-this");
+  templateItem = $("#item-template").detach().removeClass("hide-this").removeAttr("id");
 
   //do initial list update
   updateList();
