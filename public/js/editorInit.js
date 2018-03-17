@@ -527,9 +527,6 @@ function registerEventHandlers(loadedData) {
       //init select box
       $(this).material_select();
     });
-    $("#amd-type-select-box > select").one("init", function() {
-
-    });
     $("#attribute-select-box > select").one("init", function() {
       //container for all of this
       var selectBox = $("#attribute-select-box");
