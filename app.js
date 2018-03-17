@@ -42,8 +42,8 @@ applyLoggerMiddleware(app);
 app.use(favicon(path.join(__dirname, "public/favicon", "favicon.ico")));
 
 //parse post bodies
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
 //register session parser
 app.use(session({
