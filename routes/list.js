@@ -3,7 +3,7 @@ const express = require("express");
 const router = module.exports = express.Router();
 const routingUtil = require("../lib/routingUtil");
 const databaseInterface = require("../lib/database").callback;
-const validateCode = require("../lib/token").check;
+const token = require("../lib/token");
 const { issueError } = require("../lib/logger");
 
 //get resolutions collection
@@ -87,7 +87,7 @@ router.post("/codes/:action", function(req, res) {
     if (req.body && req.body.codes && req.body.codes instanceof Array && req.body.codes.length) {
       //remove the current session code and codes that are no valid codes
       const sessionCode = req.session.code;
-      const codes = req.body.codes.filter(code => code !== sessionCode && validateCode(code));
+      const codes = req.body.codes.filter(code => code !== sessionCode && token.check(code));
 
       //if there are codes
       if (codes.length) {

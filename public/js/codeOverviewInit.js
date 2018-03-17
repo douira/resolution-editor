@@ -1,4 +1,5 @@
 /*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
+/*global makeAlertMessage*/
 
 //includes polyfill from
 //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/includes
@@ -135,8 +136,24 @@ $(document).ready(function() {
     selectedCodeAmount += isSelected ? -1 : 1;
 
     //update text in modify header
-    selectedCodesDisplayElem.text(selectedCodeAmount);
+    selectedCodesDisplayElem.text(
+      selectedCodeAmount + " code" + (selectedCodeAmount === 1 ? "" : "s")); //proper plural s
   });
+
+  //returns list of all currently selected codes
+  function getSelectedCodes() {
+    //the selected codes, plain strings
+    var selectedCodes = [];
+
+    //get all selected code spans
+    $("#list-container .selected-code span").each(function() {
+      //add text content as code to list
+      selectedCodes.push($(this).text());
+    });
+
+    //return generated list
+    return selectedCodes;
+  }
 
   //init select fields
   $("select").material_select();
@@ -152,6 +169,20 @@ $(document).ready(function() {
 
   //revoke button
   $("#revoke-btn").on("click", function() {
-
+    //only if any codes were selected
+    if (selectedCodeAmount) {
+      //send list of codes to server endpoint
+      $.post("/list/codes/revoke", { codes: getSelectedCodes() })
+      .done(function() {
+        //reload page to reflect changes
+        location.reload();
+      })
+      .fail(function() {
+        //display error message
+        makeAlertMessage("error", "Error revoking codes", "OK",
+          "The server reported an error for the request to revoke the selected codes." +
+          " Please get into contact with IT-Managagement.", "revoke_codes_fail");
+      });
+    }
   });
 });
