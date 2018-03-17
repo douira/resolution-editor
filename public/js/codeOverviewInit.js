@@ -197,7 +197,7 @@ $(document).ready(function() {
       //send request to server to change access level for selected clauses
       $.post("/list/codes/change", { codes: getSelectedCodes(), level: selectValue })
       .done(function() {
-        //reload page to reflect changes
+        //reload page to show changes
         location.reload();
       })
       .fail(function() {
@@ -223,15 +223,83 @@ $(document).ready(function() {
       //send list of codes to server endpoint
       $.post("/list/codes/revoke", { codes: getSelectedCodes() })
       .done(function() {
-        //reload page to reflect changes
+        //reload page to show changes
         location.reload();
       })
       .fail(function() {
         //display error message
-        makeAlertMessage("error", "Error revoking codes", "OK",
+        makeAlertMessage("error", "Error changing codes", "OK",
           "The server reported an error for the request to revoke the selected codes." +
           " Please get into contact with IT-Managagement.", "revoke_codes_fail");
       });
     }
+  });
+
+  //button for creating new codes
+  var genCodesButton = $("#gen-codes-btn");
+
+  //level selector for code generation
+  var genCodesLevelSelector = $("#gen-code-level-select");
+
+  //textarea for list of names
+  var genCodesNameField = $("#code-name-field");
+
+  //alternative to the above, specify how many codes should be generated
+  var genCodesNumberField = $("#new-code-amount");
+
+  //on click of gen codes button
+  genCodesButton.on("click", function() {
+    //get select value of level selector
+    var selectValue = genCodesLevelSelector.getSelectValue();
+
+    //require a valid select value
+    if (! selectValue) {
+      return;
+    }
+
+    //get value of names field
+    var codeNames = genCodesNameField.val().trim().split(/[,\n]+/g);
+
+    //get number from number field
+    var codeAmount = parseInt(genCodesNumberField.val(), 10);
+
+    //settings for the server for generating the new codes
+    var genCodeSettings = {
+      accessLevel: selectValue
+    };
+
+    //if there are names in the list
+    if (codeNames.length) {
+      //use the names as given
+      genCodeSettings.names = codeNames;
+
+      //if there is a positive number larger than the amount of names given as well
+      if (codeAmount > codeNames.length) {
+        //add amount as well
+        genCodeSettings.amount = codeAmount;
+      }
+    }
+
+    //require amount to be specified
+    if (codeAmount > 0) {
+      //use only amount
+      genCodeSettings.amount = codeAmount;
+    } else {
+      //no code amount of names specified
+      return;
+    }
+
+    //send request to server with settings
+    $.post("/list/codes/new", genCodeSettings)
+    .done(function() {
+      //reload page to show changes
+      location.reload();
+    })
+    .fail(function() {
+      //display error message
+      makeAlertMessage("error", "Error generating codes", "OK",
+        "The server reported an error for the request to generate new codes." +
+        " Please get into contact with IT-Managagement.", "gen_codes_fail");
+    });
   });
 });

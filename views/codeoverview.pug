@@ -39,7 +39,7 @@ block content
       h5.light Add New
       p.justify You can add new codes by specifying an amount or entering a list of shorthand names. For codes with specified shorthand names you can query the code later with a given name if you enter is exactly. However, because of data protection policies the names themselves aren't saved directly, but rather a hash is generated.
       .row
-        .col.s12: +level-select("change-level-select", "Access Level")
+        .col.s12: +level-select("gen-code-level-select", "Access Level")
         .col.s12.m6
           | Enter a list of (shorthand) names to assign codes to seperated by newlines and/or commas.
           .input-field
@@ -50,7 +50,7 @@ block content
           .input-field
             input#new-code-amount(type="number")
             label(for="new-code-amount") Number of New Codes
-        .col.s12.center: a.btn.waves-effect.waves-light(class=pri) Generate Codes
+        .col.s12.center: a.btn.waves-effect.waves-light#gen-codes-btn(class=pri) Generate Codes
       #new-codes.hide-this
         p Copy these codes and distribute them to (associated) users.
         li.collection-item.hide-this#code-entry-template Template
