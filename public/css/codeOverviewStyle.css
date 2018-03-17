@@ -1,0 +1,9 @@
+#list-container .collection-item:not(.selected-code) i.selected-icon {
+  display: none;
+}
+#list-container .collection-item i.add-icon {
+  display: none;
+}
+#list-container .collection-item:not(.selected-code):hover i.add-icon {
+  display: inline-block;
+}

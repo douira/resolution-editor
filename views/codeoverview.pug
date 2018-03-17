@@ -11,40 +11,72 @@ block content
     +icon("supervisor_account", "large left text-darken-3 amber-text")
     h3 List of Access Codes
     .divider
-    p.justify This is a list of all access codes grouped by level. Look at the #[a(href="/help#access-levels") Help Page section] for more information on the permissions of the different levels.
+    p.justify This is a list of all access codes grouped by level. Look at the #[a(href="/help#access-levels") Help Page section] for more information on the permissions of the different levels. You can't change or remvoke the code you are logged in with. Codes are selected and deselected by clicking them.
     if codes.length
-      h5.light Modify or Add
+      mixin level-select(id, label)
+        .input-field
+          select(id=id)
+            option(value="" disabled selected) Choose Level
+            mixin opt(value)
+              option(value=value)=value
+            +opt("AP")
+            +opt("FC")
+            +opt("SC")
+            +opt("CH")
+            +opt("MA")
+          label(for=id)=label
+      h5.light
+        ="Modify "
+        span.grey-text
+          span#selected-codes-count 0
+          |  codes
       .row
         .col.s12.m7
-          p.justify Change the access level of the selected codes to the specified level. Instead of trying to assign the access level DE, remove codes from the system that should have no privileges. You can't change the code you are logged in with.
-          .input-field
-              select#level-select
-                option(value="" disabled selected) Choose Level
-                mixin opt(value)
-                  option(value=value)=value
-                +opt("AP")
-                +opt("FC")
-                +opt("SC")
-                +opt("CH")
-                +opt("MA")
-              label(for="level-select") New Access Level
-          a.btn.waves-effect.waves-light.orange Change Level
+          p.justify Change the access level of the selected codes to the specified level. Instead of trying to assign the access level DE, remove codes from the system that should have no privileges.
+          +level-select("change-level-select", "New Access Level")
+          a.btn.waves-effect.waves-light.orange#change-level-btn Change Level
         .col.s12.m5
-          p.justify Remove the selected codes from the system. They may be generated again at random though. You can't remove the code you are logged in with.
-          a.btn.waves-effect.waves-light.red Revoke Selected
+          p.justify Remove the selected codes from the system. They may be generated again at random though.
+          a.btn.waves-effect.waves-light.red#revoke-btn Revoke Selected
+      h5.light Add New
+      p.justify You can add new codes by specifying an amount or entering a list of shorthand names. For codes with specified shorthand names you can query the code later with a given name if you enter is exactly. However, because of data protection policies the names themselves aren't saved directly, but rather a hash is generated.
+      .row
+        .col.s12: +level-select("change-level-select", "Access Level")
+        .col.s12.m6
+          | Enter a list of (shorthand) names to assign codes to seperated by newlines and/or commas.
+          .input-field
+            textarea.materialize-textarea#code-name-field
+            label(for="code-name-field") List of names
+        .col.s12.m6
+          | Or specify the amount of new codes to generate
+          .input-field
+            input#new-code-amount(type="number")
+            label(for="new-code-amount") Number of New Codes
+        .col.s12.center: a.btn.waves-effect.waves-light(class=pri) Generate Codes
+      #new-codes.hide-this
+        p Copy these codes and distribute them to (associated) users.
+        li.collection-item.hide-this#code-entry-template Template
+        ul.collection#new-codes-list
       h5.light Search
       .input-field
         +icon("search", "prefix")
         input#search-field(type="search")
         +icon("clear", "", "clear-icon")
-        label(for="search-field") Filter Query
+        label(for="search-field") Code or registered Name
       .row#list-container
         each level in codes
           .col.m6.s12
             h5.light=level._id
             ul.collection
               each code in level.list
-                li.collection-item=code.code
+                - const immutable = sessionCode === code.code;
+                li.collection-item(class=immutable ? "immutable-code" : "")
+                  =code.code
+                  if immutable
+                    +icon("clear", "right red-text")
+                  else
+                    +icon("check", "right green-text text-darken-1 selected-icon")
+                    +icon("add", "right grey-text add-icon")
     else
       p.center: em.grey-text.text-darken-1 No codes to display.
 block scripts

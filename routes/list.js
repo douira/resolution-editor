@@ -53,46 +53,40 @@ router.get("/overview", function(req, res) {
   });
 });
 
-//regular dispaly of codes page
-function codesPage(req, res) {
-  //aggregate codes from access collection of codes
-  access.aggregate([
-    //sort by code alphabetically
-    { $sort: {
-      code: 1
-    }},
-
-    //group into levels
-    { $group: {
-      _id: "$level",
-      list: { $push: "$$ROOT" } //append whole object to list
-    }},
-
-    //sort by group level
-    { $sort: {
-      _id: 1
-    }}
-  ]).toArray().then(codes => {
-    //display code overview page
-    res.render("codeoverview", { codes: codes});
-  }, err => issueError(res, 500, "could not query codes for overview", err));
-}
-
 //GET display overview of all codes and associated information
 router.get("/codes", function(req, res) {
   //require session admin right
   routingUtil.requireAdminSession(req, res, () => {
-    //display codes page
-    codesPage(req, res);
+    //aggregate codes from access collection of codes
+    access.aggregate([
+      //sort by code alphabetically
+      { $sort: {
+        code: 1
+      }},
+
+      //group into levels
+      { $group: {
+        _id: "$level",
+        list: { $push: "$$ROOT" } //append whole object to list
+      }},
+
+      //sort by group level
+      { $sort: {
+        _id: 1
+      }}
+    ]).toArray().then(codes => {
+      //display code overview page
+      res.render("codeoverview", { codes: codes, sessionCode: req.session.code });
+    }, err => issueError(res, 500, "could not query codes for overview", err));
   });
 });
 
-//post to codes page performs action and then displays page like normal
+//post to codes page performs action and then sends ok message for page reload
 router.post("/codes/:action", function(req, res) {
   //require session admin right
   routingUtil.requireAdminSession(req, res, () => {
     //get the list of codes to process
-    if (req.body && req.body.codes && req.body.codes.length && req.body.codes instanceof Array) {
+    if (req.body && req.body.codes && req.body.codes instanceof Array && req.body.codes.length) {
       //remove the current session code and codes that are no valid codes
       const sessionCode = req.session.code;
       const codes = req.body.codes.filter(code => code !== sessionCode && validateCode(code));
@@ -104,7 +98,7 @@ router.post("/codes/:action", function(req, res) {
           //revoke codes
           case "revoke":
             //remove all codes that were given
-            access.deleteMany({ code: { "$in": codes }}).then(() => codesPage(req, res), err => {
+            access.deleteMany({ code: { "$in": codes }}).then(() => res.send("ok"), err => {
               issueError(res, 500, "couldn't remove specified codes", err);
             });
             break;
@@ -118,7 +112,7 @@ router.post("/codes/:action", function(req, res) {
               access.deleteMany(
                 { code: { $in: codes }},
                 { $set: { level: setLevel }}
-              ).then(() => codesPage(req, res), err => {
+              ).then(() => res.send("ok"), err => {
                 issueError(res, 500, "couldn't change specified codes to " + setLevel, err);
               });
             } else {
@@ -131,8 +125,8 @@ router.post("/codes/:action", function(req, res) {
             issueError(res, 404, "no such code action " + req.params.action);
         }
       } else {
-        //render normally
-        codesPage();
+        //send error
+        issueError(res, 404, "no valid codes given");
       }
     }
   });
