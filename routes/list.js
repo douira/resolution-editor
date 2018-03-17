@@ -1,12 +1,10 @@
 /*jshint esversion: 6, node: true */
 const express = require("express");
 const router = module.exports = express.Router();
-const resUtil = require("../lib/resUtil");
 const routingUtil = require("../lib/routingUtil");
 const databaseInterface = require("../lib/database").callback;
 const validateCode = require("../lib/token").check;
-
-const issueError = resUtil.issueError;
+const { issueError } = require("../lib/logger");
 
 //get resolutions collection
 let resolutions, resolutionArchive, access;
@@ -128,6 +126,9 @@ router.post("/codes/:action", function(req, res) {
         //send error
         issueError(res, 404, "no valid codes given");
       }
+    } else {
+      //send error
+      issueError(res, 400, "no valid body for codes endpoint given");
     }
   });
 });

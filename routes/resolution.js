@@ -9,8 +9,7 @@ const resUtil = require("../lib/resUtil");
 const routingUtil = require("../lib/routingUtil");
 const liveView = require("../lib/liveView").router;
 const credentials = require("../lib/credentials");
-
-const issueError = resUtil.issueError;
+const { issueError } = require("../lib/logger");
 
 //register callback to get collections on load
 let resolutions, access, resolutionArchive, collections;

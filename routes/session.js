@@ -3,7 +3,7 @@ const express = require("express");
 const router = module.exports = express.Router();
 const routingUtil = require("../lib/routingUtil");
 
-//const issueError = resUtil.issueError;
+//const { issueError } = require("../lib/logger");
 
 //GET display enter access code page
 router.get("/login", function(req, res) {
