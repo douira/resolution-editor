@@ -25,3 +25,7 @@ Make a screenshot of the bug as soon as it occurs. Also make screenshots of any 
 
 ## Note on using git with this repo
 Please run `git fetch -p` after having deleted a branch from a merged PR. This will actually delete the branch on the remote git servers instead of just "fake" deleting it.
+
+## Tags
+- The `bug` tag can be used on issues that describe a bug or on PRs that fix bugs.
+- The `do not merge` tag may be added to a PR in order to show that the PR is still being worked on and should ot be merged yet because it's a WIP.
