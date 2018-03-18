@@ -1,0 +1,81 @@
+\documentclass[12pt, a4paper]{scrartcl}
+\usepackage[english]{babel}
+\usepackage{mathptmx}
+\usepackage{lastpage}
+\usepackage{geometry}
+\geometry{headheight=14pt,headsep=12pt, footskip=24pt, vmargin=2cm, includeheadfoot}
+\usepackage{fancyhdr}
+\usepackage{paralist}
+\usepackage{enumerate}
+\usepackage[shortlabels]{enumitem}
+\usepackage{soul}
+\usepackage{mfirstuc}
+\usepackage{xstring}
+\usepackage{csquotes}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{tikz}
+
+%\usepackage{fontspec}
+%\defaultfontfeatures{Ligatures=TeX}
+\MakeOuterQuote{"}
+\fancyhf{}
+\fancyfoot[RE ,LO]{Page \thepage\ of \pageref{LastPage}}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+\pagestyle{fancy}
+
+%own commands need to be defined before renewing them below in every resolution
+\newcommand{\forum}{}
+\newcommand{\issue}{}
+\newcommand{\sponsor}{}
+
+\setlength\parindent{0pt}
+\newenvironment{preamb}[2]{
+%\vspace*{1em}
+\StrLeft{#1}{1}[\firstletter]%
+\StrBehind{#1}{\firstletter}[\rest]%
+\StrRight{#2}{1}[\lastletter] %
+%~\\
+\emph{\capitalisewords{\firstletter}\rest}
+#2%
+}{%
+\par ~\newline
+}
+\newenvironment{oc}[2]{\item %
+\StrLeft{#1}{1}[\firstletter]%
+\StrBehind{#1}{\firstletter}[\rest]%
+\StrRight{#2}{1}[\lastletter]%
+\underline{\smash{\capitalisewords{\firstletter}\rest}}
+#2%
+}
+{%
+}
+\newenvironment{preambsubclause}{ \begin{itemize}[leftmargin=*,labelindent=2.5em,labelsep=2em,topsep=0pt,after=\vspace{0cm}] {} %
+\renewcommand\labelitemi{-}
+\setlength{\itemsep}{0pt}%
+\setlength{\parskip}{0pt}%
+\setlength{\parsep}{0pt}%
+}{
+    \end{itemize}
+}
+%OC Subclause 1. Level
+\newenvironment{ocsubclause}{ \begin {enumerate} [a),nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm, topsep=-6pt]{}%
+}{%
+\end{enumerate}%
+}
+%OC Subclause 2. Level
+\newenvironment{ocsubsubclause}{ \begin {enumerate} [i.,nosep, align = left, leftmargin =* , widest* = 8, labelindent=1cm, labelsep=1cm, topsep=0pt] {} %
+}{
+\end{enumerate}
+}
+%Resolutions
+\newenvironment{resolution}{\bgroup{} %
+}{
+\egroup \pagebreak
+}
+\begin{document}
+$body$
+\end{document}
