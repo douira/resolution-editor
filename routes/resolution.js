@@ -40,10 +40,9 @@ function makeNewThing(res, isToken) {
         resolve(thing);
       }
     }, () => {
-      issueError(res, 500, "db read error");
       reject("db read error");
     });
-  });
+  }).catch(() => issueError(res, 500, "db read error"));
 }
 
 //GET (view) to /resolution displays front page (token and code input) without promo
