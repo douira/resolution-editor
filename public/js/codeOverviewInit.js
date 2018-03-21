@@ -258,7 +258,10 @@ $(document).ready(function() {
     }
 
     //get value of names field
-    var codeNames = genCodesNameField.val().trim().split(/[,\n]+/g);
+    var codeNames = genCodesNameField.val().trim();
+
+    //if there are any names, split on delimiter
+    codeNames = codeNames.length && codeNames.split(/[,\n]+/g);
 
     //get number from number field
     var codeAmount = parseInt(genCodesNumberField.val(), 10);
