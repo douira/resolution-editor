@@ -3,7 +3,7 @@ const express = require("express");
 const router = module.exports = express.Router();
 const routingUtil = require("../lib/routingUtil");
 const databaseInterface = require("../lib/database").callback;
-const token = require("../lib/token");
+const tokenProcessor = require("../lib/token");
 const { issueError } = require("../lib/logger");
 
 //get resolutions collection
@@ -79,56 +79,142 @@ router.get("/codes", function(req, res) {
   });
 });
 
+//checks that level is given and is valid
+function validatePostedAccessLevel(level) {
+  //need to be a string and one of the allowed level names
+  return typeof level === "string" && ["FC", "AP", "SC", "MA", "CH"].includes(level);
+}
+
 //post to codes page performs action and then sends ok message for page reload
 router.post("/codes/:action", function(req, res) {
   //require session admin right
   routingUtil.requireAdminSession(req, res, () => {
-    //get the list of codes to process
-    if (req.body && req.body.codes && req.body.codes instanceof Array && req.body.codes.length) {
-      //remove the current session code and codes that are no valid codes
-      const sessionCode = req.session.code;
-      const codes = req.body.codes.filter(code => code !== sessionCode && token.check(code));
+    //for revoke and change action type
+    if (req.params.action === "change" || req.params.action === "revoke") {
+      //get the list of codes to process
+      if (req.body && req.body.codes && req.body.codes instanceof Array && req.body.codes.length) {
+        //remove the current session code and codes that are no valid codes
+        const sessionCode = req.session.code;
+        const codes = req.body.codes.filter(
+          code => code !== sessionCode && tokenProcessor.check(code));
 
-      //if there are codes
-      if (codes.length) {
-        //check for valid action
-        switch(req.params.action) {
-          //revoke codes
-          case "revoke":
-            //remove all codes that were given
-            access.deleteMany({ code: { "$in": codes }}).then(() => res.send("ok"), err => {
-              issueError(res, 500, "couldn't remove specified codes", err);
+        //if there are codes
+        if (! codes.length) {
+          //send error
+          issueError(res, 404, "no valid codes given");
+          return;
+        }
+
+        //for specified action
+        if (req.params.action === "revoke") {
+          //remove all codes that were given
+          access.deleteMany({ code: { "$in": codes }}).then(() => res.send("ok"), err => {
+            issueError(res, 500, "couldn't remove specified codes", err);
+          });
+        } else { //change action
+          //require correct new level to be set
+          const setLevel = req.body.level;
+          if (validatePostedAccessLevel(setLevel)) {
+            //change level for all codes
+            access.updateMany(
+              { code: { $in: codes }},
+              { $set: { level: setLevel }}
+            ).then(() => res.send("ok"), err => {
+              issueError(res, 500, "couldn't change specified codes to " + setLevel, err);
             });
-            break;
-
-          //change codes
-          case "change":
-            //require correct new level to be set
-            const setLevel = req.body.level;
-            if (["FC", "AP", "SC", "MA", "CH"].includes(setLevel)) {
-              //change level for all codes
-              access.updateMany(
-                { code: { $in: codes }},
-                { $set: { level: setLevel }}
-              ).then(() => res.send("ok"), err => {
-                issueError(res, 500, "couldn't change specified codes to " + setLevel, err);
-              });
-            } else {
-              issueError(res, 400, "invalid code level set " + req.body.level);
-            }
-            break;
-
-          //error if not handled
-          default:
-            issueError(res, 404, "no such code action " + req.params.action);
+          } else {
+            issueError(res, 400, "invalid code level set " + setLevel + " for change op");
+          }
         }
       } else {
         //send error
-        issueError(res, 404, "no valid codes given");
+        issueError(res, 400, "no valid codes for endpoint given");
+      }
+    } else if (req.params.action === "new") {
+      //require list of names and/or number of codes
+      if (req.body) {
+        //require valid level to be specified
+        const useLevel = req.body.accessLevel;
+        if (! validatePostedAccessLevel(useLevel)) {
+          //complain and stop
+          issueError(res, 400, "invalid code level set " + useLevel + " for new codes op");
+          return;
+        }
+
+        //add names if given
+        let codesArr = req.body.names;
+        if (codesArr && codesArr instanceof Array && codesArr.length) {
+          //use names a already given objects in codes
+          codesArr = codesArr
+            .filter(name => typeof name === "string")
+            .map(name => ({ name: name }));
+        } else {
+          //init empty
+          codesArr = [];
+        }
+
+        //number of codes specified
+        const amountSpecified = parseInt(req.body.amount);
+
+        //normalize to number and cap at max value
+        const codeAmount = Math.min(100, Math.max(codesArr.length, amountSpecified || 0));
+
+        //fill with empty objects until amount reached
+        for (let i = codesArr.length; i < codeAmount; i ++) {
+          //add empty
+          codesArr[i] = { };
+        }
+
+        //insert codes until all codes are inserted
+        Promise.resolve(codesArr).then(function handleRemaining(remainingCodes) {
+          //object of codes to be generated
+          const codesObj = {};
+
+          //generate codes for entries
+          for (let i = 0; i < remainingCodes.length; i ++) {
+            //generate new codes until it hasn't been generated yet
+            let newCode;
+            do {
+              //generate random unverified code for this entry
+              newCode = tokenProcessor.makeCode();
+            } while (codesObj[newCode]);
+
+            //code holding object for this index
+            const currentCodeObj = remainingCodes[i];
+
+            //add new unique code to object with name
+            codesObj[newCode] = currentCodeObj.name || true;
+
+            //add code to code object
+            currentCodeObj.code = newCode;
+
+            //set level to that specified
+            currentCodeObj.level = useLevel;
+          }
+
+          //insert all into collection
+          access.insertMany(remainingCodes, {
+            //continue inserting if one fails
+            ordered: false
+          }).then(result => {
+            console.log(result.insertedIds, result.ops);
+            //if there were not inserted codes
+            if (result.insertedCount < remainingCodes.length) {
+              //construct array of remaining codes (some of which may have name properties)
+
+
+              //handle the remaining codes again, that were not inserted
+
+            } else {
+              //done inserting all codes, send client ok
+              res.send("ok");
+            }
+          }, err => issueError(res, 500, "error while inserting new codes (inner)", err));
+        }, err => issueError(res, 500, "error while inserting new codes", err));
       }
     } else {
-      //send error
-      issueError(res, 400, "no valid body for codes endpoint given");
+      //error for unhandled (invalid) action type
+      issueError(res, 404, "no such code action " + req.params.action);
     }
   });
 });
