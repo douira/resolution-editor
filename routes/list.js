@@ -85,6 +85,11 @@ function validatePostedAccessLevel(level) {
   return typeof level === "string" && ["FC", "AP", "SC", "MA", "CH"].includes(level);
 }
 
+//maximum number of times codes are generated and sent to the database
+//50 makes it extremely unlikely that an error is produced,
+//although there are still plenty of codes left
+const maximumCodeGenerationTries = 50;
+
 //post to codes page performs action and then sends ok message for page reload
 router.post("/codes/:action", function(req, res) {
   //require session admin right
@@ -93,10 +98,9 @@ router.post("/codes/:action", function(req, res) {
     if (req.params.action === "change" || req.params.action === "revoke") {
       //get the list of codes to process
       if (req.body && req.body.codes && req.body.codes instanceof Array && req.body.codes.length) {
-        //remove the current session code and codes that are no valid codes
+        //remove the current session code
         const sessionCode = req.session.code;
-        const codes = req.body.codes.filter(
-          code => code !== sessionCode && tokenProcessor.check(code));
+        const codes = req.body.codes.filter(code => code !== sessionCode);
 
         //if there are codes
         if (! codes.length) {
@@ -166,7 +170,13 @@ router.post("/codes/:action", function(req, res) {
         }
 
         //insert codes until all codes are inserted
-        Promise.resolve(codesArr).then(function handleRemaining(remainingCodes) {
+        Promise.resolve({
+          remainingCodes: codesArr,
+          depth: 0 //init with depth 0
+        }).then(function handleRemaining(opts) {
+          //remaining codes are in opts
+          const remainingCodes = opts.remainingCodes;
+
           //object of codes to be generated
           const codesObj = {};
 
@@ -196,20 +206,45 @@ router.post("/codes/:action", function(req, res) {
           access.insertMany(remainingCodes, {
             //continue inserting if one fails
             ordered: false
-          }).then(result => {
-            console.log(result.insertedIds, result.ops);
-            //if there were not inserted codes
-            if (result.insertedCount < remainingCodes.length) {
-              //construct array of remaining codes (some of which may have name properties)
-
-
-              //handle the remaining codes again, that were not inserted
-
-            } else {
-              //done inserting all codes, send client ok
-              res.send("ok");
+          }).then(() => {
+            //no duplicate codes need to be handled, send ok
+            res.send("ok");
+          }, err => {
+            //stop at maximum depth, in case of code space exhaustion
+            if (opts.depth > maximumCodeGenerationTries) {
+              issueError(res, 500, "most likely no codes left to give out, too many tries", err);
+              return;
             }
-          }, err => issueError(res, 500, "error while inserting new codes (inner)", err));
+
+            //get the write errors, if the error has .writeErrors there is an array
+            //otherwise the given error is an write error
+            const writeErrors = err.writeErrors ? err.writeErrors : [err];
+
+            //construct array of remaining codes (some of which may have name properties)
+            //and handle as remaining
+            handleRemaining({
+              remainingCodes: writeErrors.map(err => {
+                //get the not inserted object
+                const doc = err.getOperation();
+
+                //construct object with level
+                const newCodeObj = {
+                  level: doc.level
+                };
+
+                //add name if there is one
+                if (doc.name) {
+                  newCodeObj.name = doc.name;
+                }
+
+                //return to be inserted again with new code
+                return newCodeObj;
+              }),
+
+              //increment recursion depth
+              depth: opts.depth + 1
+            });
+          });
         }, err => issueError(res, 500, "error while inserting new codes", err));
       }
     } else {
