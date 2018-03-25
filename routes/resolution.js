@@ -3,7 +3,6 @@ const express = require("express");
 const router = module.exports = express.Router();
 
 const generatePdf = require("../lib/generatePdf");
-const databaseInterface = require("../lib/database").callback;
 const tokenProcessor = require("../lib/token");
 const resUtil = require("../lib/resUtil");
 const routingUtil = require("../lib/routingUtil");
@@ -13,7 +12,7 @@ const { issueError } = require("../lib/logger");
 
 //register callback to get collections on load
 let resolutions, access, resolutionArchive, collections;
-databaseInterface(c => {
+require("../lib/database").fullInit.then(c => {
   //get collections in vars for easier use
   resolutions = c.resolutions;
   resolutionArchive = c.resolutionArchive;

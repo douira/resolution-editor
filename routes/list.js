@@ -2,16 +2,16 @@
 const express = require("express");
 const router = module.exports = express.Router();
 const routingUtil = require("../lib/routingUtil");
-const databaseInterface = require("../lib/database").callback;
 const tokenProcessor = require("../lib/token");
 const { issueError } = require("../lib/logger");
 
 //get resolutions collection
-let resolutions, resolutionArchive, access;
-databaseInterface(collections => {
+let resolutions, resolutionArchive, access, metadata;
+require("../lib/database").fullInit.then(collections => {
   resolutions = collections.resolutions;
   resolutionArchive = collections.resolutionArchive;
   access = collections.access;
+  metadata = collections.metadata;
 });
 
 //GET display overview of all resolutions
@@ -169,11 +169,19 @@ router.post("/codes/:action", function(req, res) {
           codesArr[i] = { };
         }
 
-        //insert codes until all codes are inserted
-        Promise.resolve({
-          remainingCodes: codesArr,
-          depth: 0 //init with depth 0
-        }).then(function handleRemaining(opts) {
+        //get the current value of the insertion group counter
+        metadata.findOneAndUpdate({
+          _id: "codeInsertGroupCounter"
+        }, {
+          $inc: { value: 1 }
+        }, { returnOriginal: false }).then(result => {
+          //pass gotten counter value to next step
+          return Promise.resolve({
+            remainingCodes: codesArr,
+            depth: 0, //init with depth 0
+            insertGroupId: result.value
+          });
+        }).then(function handleRemaining(opts) { //insert codes until all codes are inserted
           //remaining codes are in opts
           const remainingCodes = opts.remainingCodes;
 
@@ -198,8 +206,9 @@ router.post("/codes/:action", function(req, res) {
             //add code to code object
             currentCodeObj.code = newCode;
 
-            //set level to that specified
+            //set level to that specified and set recent insert counter value
             currentCodeObj.level = useLevel;
+            currentCodeObj.insertGroup = opts.insertGroupId;
           }
 
           //insert all into collection

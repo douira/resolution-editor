@@ -6,7 +6,7 @@ const favicon = require("serve-favicon");
 const session = require("express-session");
 const MongoStore = require("connect-mongo")(session);
 const credentials = require("./lib/credentials");
-const dbPromise = require("./lib/database").promise;
+const dbPromise = require("./lib/database").dbPromise;
 const mongoSanitize = require("express-mongo-sanitize");
 
 const devEnv = require("./lib/devEnv");
