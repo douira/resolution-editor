@@ -62,6 +62,18 @@ block content
         +icon("clear", "", "clear-icon")
         label(for="search-field") Code or registered Name
       .row#list-container
+        mixin codeInfo(code)
+          span=code.code
+          if code.name
+            span.grey-text.light.code-name=code.name
+        if latestCodes.length
+          .col.m6.s12
+            h5.light Codes added last in
+              =" " + latestCodes[0].level
+            ul.collection
+              each code in latestCodes
+                li.collection-item.light-green.lighten-5
+                  +codeInfo(code)
         each level in codes
           .col.m6.s12
             h5.light(id=level._id)=level._id
@@ -69,7 +81,7 @@ block content
               each code in level.list
                 - const immutable = sessionCode === code.code;
                 li.collection-item(class=immutable ? "immutable-code" : "")
-                  span=code.code
+                  +codeInfo(code)
                   if immutable
                     +icon("clear", "right red-text")
                   else

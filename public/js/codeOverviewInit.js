@@ -276,14 +276,11 @@ $(document).ready(function() {
       //use the names as given
       genCodeSettings.names = codeNames;
 
-      //if there is a positive number larger than the amount of names given as well
-      if (codeAmount > codeNames.length) {
-        //add amount as well
-        genCodeSettings.amount = codeAmount;
-      }
+      //amount is larger one of number of names and specified amount
+      codeAmount = Math.max(codeAmount || 0, codeNames.length);
     }
 
-    //require amount to be specified
+    //require amount to be positive
     if (codeAmount > 0) {
       //use only amount
       genCodeSettings.amount = codeAmount;

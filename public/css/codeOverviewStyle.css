@@ -7,3 +7,7 @@
 #list-container .collection-item:not(.selected-code):hover i.add-icon {
   display: inline-block;
 }
+
+.code-name {
+  margin-left: 0.7em;
+}
