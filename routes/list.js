@@ -55,27 +55,48 @@ router.get("/overview", function(req, res) {
 router.get("/codes", function(req, res) {
   //require session admin right
   routingUtil.requireAdminSession(req, res, () => {
-    //aggregate codes from access collection of codes
-    access.aggregate([
-      //sort by code alphabetically
-      { $sort: {
-        code: 1
-      }},
+    Promise.all([
+      //get current insert group counter
+      metadata.findOne({ _id: "codeInsertGroupCounter" }),
 
-      //group into levels
-      { $group: {
-        _id: "$level",
-        list: { $push: "$$ROOT" } //append whole object to list
-      }},
+      //aggregate codes from access collection of codes
+      access.aggregate([
+        //sort by code alphabetically
+        { $sort: {
+          code: 1
+        }},
 
-      //sort by group level
-      { $sort: {
-        _id: 1
-      }}
-    ]).toArray().then(codes => {
+        //group into levels
+        { $group: {
+          _id: "$level",
+          list: { $push: "$$ROOT" } //append whole object to list
+        }},
+
+        //sort by group level
+        { $sort: {
+          _id: 1
+        }}
+      ]).toArray()
+    ]).then(results => {
+      //codes are in the second result
+      const codes = results[1];
+
+      //the first result is the current insert group id
+      const insertGroupId = results[0].value;
+
+      //list of the recently added codes, they have the current insert group counter
+      const latestCodes = codes.reduce(
+        //append all codes thatmatch the current insert group index
+        (acc, group) => acc.concat(
+          group.list.filter(codeObj => codeObj.insertGroupId === insertGroupId)), []);
+
       //display code overview page
-      res.render("codeoverview", { codes: codes, sessionCode: req.session.code });
-    }, err => issueError(res, 500, "could not query codes for overview", err));
+      res.render("codeoverview", {
+        codes: codes,
+        latestCodes: latestCodes,
+        sessionCode: req.session.code
+      });
+    }, err => issueError(res, 500, "could not query codes or insert group id for overview", err));
   });
 });
 
@@ -179,7 +200,7 @@ router.post("/codes/:action", function(req, res) {
           return Promise.resolve({
             remainingCodes: codesArr,
             depth: 0, //init with depth 0
-            insertGroupId: result.value
+            insertGroupId: result.value.value
           });
         }).then(function handleRemaining(opts) { //insert codes until all codes are inserted
           //remaining codes are in opts
@@ -208,7 +229,7 @@ router.post("/codes/:action", function(req, res) {
 
             //set level to that specified and set recent insert counter value
             currentCodeObj.level = useLevel;
-            currentCodeObj.insertGroup = opts.insertGroupId;
+            currentCodeObj.insertGroupId = opts.insertGroupId;
           }
 
           //insert all into collection
