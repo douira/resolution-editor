@@ -57,7 +57,7 @@ function makeAlertMessage(icon, title, buttonText, callbackOrMessage, errorCode)
     buttonText: buttonText,
     callbackOrMessage: callbackOrMessage,
     hasErrorCode: typeof errorCode !== "undefined",
-    errorCode: errorCode.split(" ").join("_")
+    errorCode: errorCode && errorCode.split(" ").join("_")
   });
 
   //check immediately

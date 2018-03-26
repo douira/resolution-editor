@@ -8,10 +8,11 @@ block styles
 
 block content
   .container
-    +icon("supervisor_account", "large left text-darken-3 amber-text")
-    h3 List of Access Codes
-    .divider
-    p.justify This is a list of all access codes grouped by level. Look at the #[a(href="/help#access-levels") Help Page section] for more information on the permissions of the different levels. You can't change or remvoke the code you are logged in with. Codes are selected and deselected by clicking them.
+    #title-info-header
+      +icon("supervisor_account", "large left text-darken-3 amber-text")
+      h3 List of Access Codes
+      .divider
+      p.justify This is a list of all access codes grouped by level. Look at the #[a(href="/help#access-levels") Help Page section] for more information on the permissions of the different levels. You can't change or remvoke the code you are logged in with. Codes are selected and deselected by clicking them. #[a(href="/list/codes/print/all") Print all codes]
     if codes.length
       mixin level-select(id, label)
         .input-field
@@ -62,21 +63,28 @@ block content
         +icon("clear", "", "clear-icon")
         label(for="search-field") Code or registered Name
       .row#list-container
+        mixin codeGroupPrint(group)
+          a.left.print-group-icon(href="/list/codes/print/" + group target="_blank")
+            +icon("print", "grey-text text-darken-2")
         mixin codeInfo(code)
           span.code-text-content
             span=code.code
             if code.name
-              span.grey-text.light.code-name=code.name
+              span.grey-text.code-name=code.name
         if latestCodes.length
           .col.m6.s12
-            h5.light Codes added last in
+            h5.light
+              | Codes added last in
               =" " + latestCodes[0].level
+              +codeGroupPrint("latest")
             ul.collection
               each code in latestCodes
                 li.collection-item.light-green.lighten-5: +codeInfo(code)
         each level in codes
           .col.m6.s12
-            h5.light(id=level._id)=level._id
+            h5.light(id=level._id)
+              =level._id
+              +codeGroupPrint("latest")
             ul.collection
               each code in level.list
                 - const immutable = sessionCode === code.code;
