@@ -73,7 +73,7 @@ $(document).ready(function() {
   var listContainer = $("#list-container");
 
   //all code items
-  var codeElements = listContainer.find(".collection-item");
+  var codeElements = listContainer.find(".code-text-content");
 
   //hides and shows code list items by wether or not they include the search query
   function searchUpdate() {
