@@ -15,7 +15,8 @@ require("../lib/database").fullInit.then(collections => {
 });
 
 //require admin session for overview and code management
-router.use(["/overview", "/codes"], routingUtil.requireAdminSession);
+router.use(["/overview", "/codes"], (req, res, next) =>
+  routingUtil.requireAdminSession(req, res, () => next()));
 
 //GET display overview of all resolutions
 router.get("/overview", function(req, res) {
@@ -51,11 +52,16 @@ router.get("/overview", function(req, res) {
   }, err => issueError(res, 500, "could not query resolution in overview", err));
 });
 
+//gets the current insert group counter
+function getInsertGroupCounter() {
+  return metadata.findOne({ _id: "codeInsertGroupCounter" });
+}
+
 //GET display overview of all codes and associated information
 router.get("/codes", function(req, res) {
   Promise.all([
     //get current insert group counter
-    metadata.findOne({ _id: "codeInsertGroupCounter" }),
+    getInsertGroupCounter(),
 
     //aggregate codes from access collection of codes
     access.aggregate([
@@ -102,6 +108,47 @@ function validatePostedAccessLevel(level) {
   //need to be a string and one of the allowed level names
   return typeof level === "string" && ["FC", "AP", "SC", "MA", "CH"].includes(level);
 }
+
+//GET print codes displays items in a plaintext table view that can be easily printed
+router.get("/codes/print/:group", function(req, res, next) {
+  //the given print group type
+  const printGroupType = req.params.group;
+
+  //query to perform
+  let query;
+
+  //for the all group, prepare query for all codes
+  if (printGroupType === "all") {
+    //query all codes
+    query = Promise.resolve({ });
+  } else if (printGroupType === "latest") {
+    //get insert group counter
+    query = getInsertGroupCounter().then(counterResult => ({
+      insertGroupId: counterResult.value
+    }), err => issueError(res, 500, "could not query insert group id for code print table", err));
+  } else if (validatePostedAccessLevel(printGroupType)) {
+    //query for codes with this access level
+    query = Promise.resolve({
+      level: printGroupType
+    });
+  } else {
+    //no correct action
+    next();
+    return;
+  }
+
+  //resolve promise for query
+  query.then(
+    //query codes
+    query => access.find(query, { sort: ["level", "code"] }).toArray().then(
+      //render result
+      result => res.render("codetable", {
+        codes: result,
+        groupType: printGroupType
+      }),
+      err => issueError(res, 500, "could not query codes for print table", err))
+  );
+});
 
 //maximum number of times codes are generated and sent to the database
 //50 makes it extremely unlikely that an error is produced,
