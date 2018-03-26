@@ -79,7 +79,7 @@ $(document).ready(function() {
   function searchUpdate() {
     //get trimmed and capitalized value from input
     var query = searchField.val();
-    var newQuery = query.trim().toUpperCase();
+    var newQuery = query.trim();
 
     //reapply if changed
     if (query !== newQuery) {
@@ -87,13 +87,16 @@ $(document).ready(function() {
       query = newQuery;
     }
 
+    //compare both as upper case
+    query = query.toUpperCase();
+
     //if there is anything in the search box
     if (query.length) {
       //show/hide all that (don't) match the string
       codeElements.each(function() {
         //check if it contains the search string
         var e = $(this);
-        e[e.text().includes(query) ? "removeClass" : "addClass"]("hide-this");
+        e[e.text().toUpperCase().includes(query) ? "removeClass" : "addClass"]("hide-this");
       });
     } else {
       //show all again
