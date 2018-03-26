@@ -3,18 +3,16 @@ const express = require("express");
 const router = module.exports = express.Router();
 
 const generatePdf = require("../lib/generatePdf");
-const databaseInterface = require("../lib/database").callback;
 const tokenProcessor = require("../lib/token");
 const resUtil = require("../lib/resUtil");
 const routingUtil = require("../lib/routingUtil");
 const liveView = require("../lib/liveView").router;
 const credentials = require("../lib/credentials");
-
-const issueError = resUtil.issueError;
+const { issueError } = require("../lib/logger");
 
 //register callback to get collections on load
 let resolutions, access, resolutionArchive, collections;
-databaseInterface(c => {
+require("../lib/database").fullInit.then(c => {
   //get collections in vars for easier use
   resolutions = c.resolutions;
   resolutionArchive = c.resolutionArchive;
@@ -41,10 +39,9 @@ function makeNewThing(res, isToken) {
         resolve(thing);
       }
     }, () => {
-      issueError(res, 500, "db read error");
       reject("db read error");
     });
-  });
+  }).catch(() => issueError(res, 500, "db read error"));
 }
 
 //GET (view) to /resolution displays front page (token and code input) without promo

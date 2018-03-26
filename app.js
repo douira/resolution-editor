@@ -5,9 +5,8 @@ const compression = require("compression");
 const favicon = require("serve-favicon");
 const session = require("express-session");
 const MongoStore = require("connect-mongo")(session);
-const bodyParser = require("body-parser");
 const credentials = require("./lib/credentials");
-const dbPromise = require("./lib/database").promise;
+const dbPromise = require("./lib/database").dbPromise;
 const mongoSanitize = require("express-mongo-sanitize");
 
 const devEnv = require("./lib/devEnv");
@@ -43,8 +42,8 @@ applyLoggerMiddleware(app);
 app.use(favicon(path.join(__dirname, "public/favicon", "favicon.ico")));
 
 //parse post bodies
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 //register session parser
 app.use(session({
@@ -106,6 +105,6 @@ app.use((err, req, res, next) => { //jshint ignore: line
     devEnv: devEnv
   });
 
-  //also log error to console
+  //log error with logger
   logger.error(err);
 });

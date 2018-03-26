@@ -1,0 +1,102 @@
+extends layout
+
+block title
+  title Codes Overview
+
+block styles
+  +static("css", "/css/codeOverviewStyle.css")
+
+block content
+  .container
+    #title-info-header
+      +icon("supervisor_account", "large left text-darken-3 amber-text")
+      h3 List of Access Codes
+      .divider
+      p.justify This is a list of all access codes grouped by level. Look at the #[a(href="/help#access-levels") Help Page section] for more information on the permissions of the different levels. You can't change or remvoke the code you are logged in with. Codes are selected and deselected by clicking them. #[a(href="/list/codes/print/all") Print all codes]
+    if codes.length
+      mixin level-select(id, label)
+        .input-field
+          select(id=id)
+            option(value="" disabled selected) Choose Level
+            mixin opt(value)
+              option(value=value)=value
+            +opt("AP")
+            +opt("FC")
+            +opt("SC")
+            +opt("CH")
+            +opt("MA")
+          label(for=id)=label
+      h5.light
+        ="Modify "
+        span.grey-text#selected-codes-count 0 codes
+      .row
+        .col.s12.m7
+          p.justify Change the access level of the selected codes to the specified level. Instead of trying to assign the access level DE, remove codes from the system that should have no privileges.
+          +level-select("change-level-select", "New Access Level")
+          a.btn.waves-effect.waves-light.orange#change-level-btn Change Level
+        .col.s12.m5
+          p.justify Remove the selected codes from the system. They may be generated again at random though.
+          a.btn.waves-effect.waves-light.red#revoke-btn Revoke Selected
+      h5.light Add New
+      p.justify You can add new codes by specifying an amount or entering a list of shorthand names. For codes with specified shorthand names you can query the code later with a given name if you enter is exactly. However, because of data protection policies the names themselves aren't saved directly, but rather a hash is generated.
+      .row
+        .col.s12: +level-select("gen-code-level-select", "Access Level")
+        .col.s12.m6
+          | Enter a list of (shorthand) names to assign codes to seperated by newlines and/or commas.
+          .input-field
+            textarea.materialize-textarea#code-name-field
+            label(for="code-name-field") List of names
+        .col.s12.m6
+          | Or specify the number of new codes to generate
+          .input-field
+            input#new-code-amount(type="number")
+            label(for="new-code-amount") Number of New Codes
+        .col.s12.center: a.btn.waves-effect.waves-light#gen-codes-btn(class=pri) Generate Codes
+      #new-codes.hide-this
+        p Copy these codes and distribute them to (associated) users.
+        li.collection-item.hide-this#code-entry-template Template
+        ul.collection#new-codes-list
+      h5.light Search
+      .input-field
+        +icon("search", "prefix")
+        input#search-field(type="search")
+        +icon("clear", "", "clear-icon")
+        label(for="search-field") Code or registered Name
+      .row#list-container
+        mixin codeGroupPrint(group)
+          a.left.print-group-icon(href="/list/codes/print/" + group target="_blank")
+            +icon("print", "grey-text text-darken-2")
+        mixin codeInfo(code)
+          span.code-text-content
+            span=code.code
+            if code.name
+              span.grey-text.code-name=code.name
+        if latestCodes.length
+          .col.m6.s12
+            h5.light
+              | Codes added last in
+              =" " + latestCodes[0].level
+              +codeGroupPrint("latest")
+            ul.collection
+              each code in latestCodes
+                li.collection-item.light-green.lighten-5: +codeInfo(code)
+        each level in codes
+          .col.m6.s12
+            h5.light(id=level._id)
+              =level._id
+              +codeGroupPrint("latest")
+            ul.collection
+              each code in level.list
+                - const immutable = sessionCode === code.code;
+                li.collection-item(class=immutable ? "immutable-code" : "")
+                  if immutable
+                    +icon("clear", "right red-text")
+                  else
+                    +icon("check", "right green-text text-darken-1 selected-icon")
+                    +icon("add", "right grey-text add-icon")
+                  +codeInfo(code)
+    else
+      p.center: em.grey-text.text-darken-1 No codes to display.
+block scripts
+  +static("js", "/js/dialogs.js")
+  +static("js", "/js/codeOverviewInit.js")

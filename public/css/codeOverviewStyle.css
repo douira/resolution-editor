@@ -1,0 +1,22 @@
+#list-container .collection-item:not(.selected-code) i.selected-icon {
+  display: none;
+}
+#list-container .collection-item i.add-icon {
+  display: none;
+}
+#list-container .collection-item:not(.selected-code) i.add-icon {
+  display: inline-block;
+  visibility: hidden;
+}
+#list-container .collection-item:not(.selected-code):hover i.add-icon {
+  display: inline-block;
+  visibility: visible;
+}
+
+.code-name {
+  margin-left: 0.7em;
+}
+
+.print-group-icon {
+  margin-right: 0.2em;
+}

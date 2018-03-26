@@ -51,7 +51,7 @@
 
 //-static file serve with cache control, other args are normally appended
 mixin static(type, url)
-  - url += "?v=2" //add version to url
+  - url += "?v=0" //add version to url
   case type
     when "css"
       link(href=url type="text/css" rel="stylesheet")
@@ -147,7 +147,8 @@ html(lang="en")
       li: a(href="http://munol.org" target="_blank") MUNOL
     ul#lists-dropdown.dropdown-content
       li: a(href="/list/print") Print Queue
-      li: a(href="/list/overview") Admin Overview
+      li: a(href="/list/overview") Resolutions
+      li: a(href="/list/codes") Codes
     nav.lighten-2(class=pri role="navigation"): .nav-wrapper
       .container
         mixin navList
@@ -159,7 +160,7 @@ html(lang="en")
             +icon("arrow_drop_down", "right")
           li: a.dropdown-button(href="#" data-activates="help-dropdown") Help
             +icon("arrow_drop_down", "right")
-        ul.right.hide-on-small-and-down
+        ul.right.hide-on-med-and-down
           +navList(navElements)
         ul.side-nav#nav-mobile
           li(class=pritext)
