@@ -1,0 +1,40 @@
+extends layout
+
+block title
+  title Important - Please Read
+
+block styles
+  //+static("css", "/css/codeOverviewStyle.css")
+
+block content
+  .container
+    .center
+      h4 Please read before making a new resolution
+      p: em.grey-text You will regret it if you don't.
+    .divider
+    mixin icon-box(iconName, iconColor, title)
+      .col.s12.m6
+        h4.center: +icon(iconName, "medium " + iconColor)
+        h5.center=title
+        p.justify
+          block
+    .row.no-bottom-mrg
+      +icon-box(helpIcon, helpColor, "Use the Help Page")
+        | If you have a question, consult the #[a(href="/help") Help Page] first. Most questions have already been asked and answers are available.
+      +icon-box(contentguidelinesIcon, weakpermColor, "Follow the Content Guidelines")
+        | What content is allowed in the editor is regulated with the #[a(href="/help/contentguidelines") Content Guidelines]. The guidelines essentially represent common sense.
+    .row.no-bottom-mrg
+      +icon-box("visibility", "green-text", "Read Hint Texts")
+        | The Editor is full of helpful hints to guide you along the way. Often problems can be solves by carefully reading the hints on the page itself. Some buttons have additional information in tooltips.
+      +icon-box("bug_report", "red-text", "Report Bugs")
+        | Please #[a(href=bugReportLink) report all problems] concerning this website. Including but not limited to software bugs, security issues, unexpected/unhelpful behavior and typos/grammar mistakes.
+    .row
+      +icon-box("lock", "cyan-text", "Secure your Credentials")
+        | Keep all credentials you are given by the staff or the editor safe and secure. You are responsible for any data loss resulting from handling credentials unsecurely.
+      +icon-box(codeIcon, "indigo-text", "Contact IT-Management")
+        | If you still can't solve your problems after reading hint texts, the Help Page and asking your Chair or fellow Delegates/Participants, talk to IT-Management for final advice.
+    if ! noNew
+      .center: a.btn.btn-large.waves-effect.waves-light(class=pri href="/resolution/new") I understand
+      br
+      .center: a.btn.btn.red.lighten-1.waves-effect.waves-light(href="/") Go back
+    br
