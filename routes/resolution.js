@@ -305,7 +305,7 @@ function padNumber(number, amount) {
 }
 
 //POST (no view) to advance resolution, redirect to editor without code after completion
-router.post("/advance/:token", function(req, res) {
+routingUtil.getAndPost(router, "/advance/:token", function(req, res) {
   //authorize, absence of code is detected in fullAuth
   routingUtil.fullAuth(req, res, (token, resDoc) => {
     //query object to be possibly extended by a vote result setter

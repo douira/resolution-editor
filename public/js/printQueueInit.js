@@ -3,9 +3,6 @@
 makeAlertMessage,
 displayToast*/
 
-//preset code
-var presetCode;
-
 //true when the check now link is alowed to work, prevents click spamming
 var allowCheckNow = true;
 
@@ -126,7 +123,7 @@ function updateList() {
   var noItems = $("#no-items-msg");
 
   //get new list from server
-  $.post("/list/print/getitems", { code: presetCode }).done(function(data) {
+  $.get("/list/print/getitems").done(function(data) {
     //hide error message, we got some data
     errorMsg.hide();
 
@@ -215,9 +212,6 @@ function updateTimer() {
 
 //on document ready
 $(document).ready(function() {
-  //get code from document
-  presetCode = $("#code-preset").text();
-
   //detach the template element from the list
   templateItem = $("#item-template").detach().removeClass("hide-this").removeAttr("id");
 
@@ -292,10 +286,7 @@ $(document).ready(function() {
     e.preventDefault();
 
     //send an advance request to the server
-    $.post("/resolution/advance/" + firstItem.token + "?noui=1", {
-      //include code for auth
-      code: presetCode
-    }).done(function() {
+    $.get("/resolution/advance/" + firstItem.token + "?noui=1").done(function() {
       //make a toast to notify
       displayToast("Advanced Resolution");
 
