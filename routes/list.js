@@ -349,6 +349,28 @@ routingUtil.getAndPost(router, "/print/queue", function(req, res) {
   );
 });
 
+//maps the stage history entry from it's nexted form to a property
+//also moves the address to a top level property
+function mapListItems(items, stageHistoryIndex) {
+  //map items and return modified
+  return items.map(i => {
+    //set new property with value at index
+    i.waitTime = i.stageHistory[stageHistoryIndex];
+
+    //remove stageHistory
+    delete i.stageHistory;
+
+    //unwrap address
+    i.address = i.content.resolution.address;
+
+    //remove old property
+    delete i.content;
+
+    //return original object
+    return i;
+  });
+}
+
 //POST return list of items to be printed
 router.post("/print/getitems", function(req, res) {
   //do code auth and permission check
@@ -374,25 +396,42 @@ router.post("/print/getitems", function(req, res) {
       //sort by time in stage 4 (most necessary first), index 4 becase 0 is also a stage
       "stageHistory.4": -1
     }).toArray().then(items => {
-      //send data to client, rewrite stageHistory
-      res.send(items.map(i => {
-        //set new property with value at index 4
-        i.waitTime = i.stageHistory[4];
-
-        //remove stageHistory
-        delete i.stageHistory;
-
-        //return original object
-        return i;
-      }));
+      //send data to client, rewrite and address
+      res.send(mapListItems(items, 4));
     }, err => issueError(res, 500, "could not query print queue items", err));
   });
 });
 
-//GET the formal clearing work queue, uses session auth for FC
-router.get("/fcqueue", function(req, res) {
+//uses session auth for FC wor queue
+router.use("/fcqueue", function(req, res, next) {
   //require FC session
-  routingUtil.requireSession("FC", req, res, () => {
+  routingUtil.requireSession("FC", req, res, () => next());
+});
 
-  });
+//GET fc work queue display
+
+//GET fc work queue data
+router.get("/fcqueue/getitems", function(req, res) {
+  //query resolutions thart are in stage 3 and can be advanced
+  resolutions.find({
+    stage: 3,
+    $nor: [
+      { attributes: "noadvance" },
+      { attributes: "static" },
+    ]
+  }).project({
+    //only need some data
+    token: 1,
+    stageHistory: 1,
+    resolutionId: 1,
+    idYear: 1,
+    "content.resolution.address": 1,
+    _id: 0
+  }).sort({
+    //sort by time in stage 3, most necessary first
+    "stageHistory.3": -1
+  }).toArray().then(items => {
+    //send data to client, rewrite stageHistory and address
+    res.send(mapListItems(items, 3));
+  }, err => issueError(res, 500, "could not query fc work queue items", err));
 });
