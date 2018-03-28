@@ -5,6 +5,7 @@ block title
 
 block styles
   +static("css", "/css/helpStyle.css")
+  +static("css", "/css/liveviewColors.css")
 
 block content
   include stages
@@ -125,6 +126,20 @@ block content
     h4: +icon(handytextboxIcon, "mediumsmall left" + handytextboxColor)
     h4#handytextbox Handy Textbox
     p Use this #[a(href="/handytextbox") handy textbox] for whatever you want. It's meant to be used as a temporary text area in which you can type amendments before copying them into editor's amendment interface to debate them.
+    h4: +icon(liveviewIcon, "mediumsmall left " + liveviewColor)
+    h4#liveview LiveView
+    h5#amdcolors Colors in Amendments
+    p Amendments change the resolution by adding, removing or changing content. In order to better display these changes, the affected sections are colorized according to what's happening with them.
+    ul
+      li
+        span.mark-red Text marked Red
+        |  is being removed or replaced and will be gone completely if the Amendment is accepted.
+      li
+        span.mark-green Text marked Green
+        |  is being added and will be part of the resolution if the Amendment is accepted.
+      li
+        span.mark-yellow Text marked Yellow
+        |  is being changed and will be modified as proposed if the Amendment is accepted. The section this applies to may be changed completely but will remain at the same position.
     h4: +icon("lock", "mediumsmall left text-lighten-1 indigo-text")
     h4#attribute-states Attribute States
     mixin attrib-display(name)

@@ -10,6 +10,7 @@
   font-family: TimesNewRoman, "Times New Roman", Times, Baskerville, Georgia, serif;
   font-size: 16px;
   line-height: 1.3em;
+  text-align: justify;
 }
 
 #viewcontent:-webkit-full-screen {
@@ -35,11 +36,15 @@ p#address-line {
   text-transform: uppercase;
 }
 
-#preamb-clauses span.phrase {
+.phrase {
+  display: inline-block;
+}
+
+#preamb-clauses .phrase {
   font-style: italic;
 }
 
-#op-clauses span.phrase {
+#op-clauses .phrase {
   text-decoration: underline;
 }
 
@@ -130,29 +135,7 @@ Use .mark- for all other elements that need to be colored
 #amd-container + .op-wrapper, .op-wrapper.mark-green {
   margin-left: -2rem;
   margin-right: -2rem;
-  padding-left: 2rem;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-}
-
-/*materialize .grey.lighten-2 */
-#amd-container + .op-wrapper, .mark-grey {
-  background-color: #eee;
-}
-
-/*materialize .green.lighten-3 */
-#amd-container.mark-amd-green + .op-wrapper, .mark-green {
-  background-color: #a5d6a7;
-}
-
-/*materialize .red.lighten-3 */
-#amd-container.mark-amd-red + .op-wrapper, .mark-red {
-  background-color: #ef9a9a;
-}
-
-/*materialize .yellow.lighten-3 */
-.mark-yellow {
-  background-color: #fff59d;
+  padding: 1rem 2rem;
 }
 
 .op-wrapper.mark-green {

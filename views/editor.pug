@@ -62,14 +62,14 @@ block content
       h5.light#liveview-heading LiveView available
         +icon(liveviewIcon, "mediumsmall left blue-text text-darken-1")
       .justify
-        p To open LiveView on another device open the resolution by entering the resolution token and your access code on the #[a(href="/resolution" target="_blank") Resoluion Page] and clicking the "LiveView" button. LiveView will display a mock version of the rendered resolution document that will update in real time and colorize any changes you make while LiveView is active.
+        p To open LiveView on another device open the resolution by entering the resolution token and your access code on the #[a(href="/resolution" target="_blank") Resoluion Page] and clicking the "LiveView" button. LiveView will display a mock version of the rendered resolution document that will update in real time and colorize amendments you make while LiveView is active.
         p
           a#hide-lieview-hint.grey-text(href="#") [Hide hint]
-          span#liveview-hint  The following procedure is recommended: Retype amendments somehwere into your computer. This can be any texteditor or this #[a(href="/handytextbox" target="_blank") handy textbox]. When you want to discuss the resolution apply the changes that the amendment suggests to the resolution in the editor. LiveView will then display any changes you make to the resolution with colorized difference markings. Removed text will be colored #[span(class=redMarker) red] and added text will be colored #[span(class=greenMarker) green]. When it has been decided wether or not these changes will be kept in the resolution you press "#[em Keep Changes]" to use the current state of the editor as the new base state or "#[em Discard Changes]" to go back to the last point at which "#[em Keep Changes]" was pressed or the resolution saved with the save button.
+          span#liveview-hint  The following procedure is recommended: Retype amendments somehwere into your computer. This can be any text editor or this #[a(href="/handytextbox" target="_blank") handy textbox]. When you want to discuss the amendment, paste it into the amendment field and select the appropriate sponsor and action type. This will update it on the LiveView client. The LiveView client marks removed text #[span(class=redMarker) red] and added text #[span(class=greenMarker) green]. After discussing and voting in favour or against the amendment, click the keep or reject button below the amendment field to either apply the proposed changes to the resolution or remove them from the display.
     if doLoad
-      h5.light Important Note
+      h5.light Important: Concurrent Editing
         +icon("announcement", "mediumsmall left red-text")
-      p.justify Please be aware of the fact that #[b opening the same resolution on multiple devices can have adverse effects on the integrity of the resolution] because the changes aren't updated on other devices until the page is reloaded and all local changes are thereby deleted.
+      p.justify Please be aware of the fact that #[b opening the same resolution on multiple devices can have adverse effects on the integrity of the resolution] because the changes aren't updated on other devices until the page is reloaded and all unsaved local changes are thereby deleted.
     h5.light Meta-Information
     mixin collapsible-item(title, icon)
       li
@@ -223,9 +223,9 @@ block content
           +meta-button("action-delete", "Delete resolution", "delete_forever", "Deletes the resolution permanently", "red-text text-lighten-1")
     - const allowAmendments = doLoad && allowSave && (meta.stage === 6 && accessLevel === "CH" || accessLevel === "MA");
     if allowAmendments
-      h5.light Amendment
-      .justify Using this feature only makes sense if a #[a(href="#liveview-heading") LiveView ] client is connected. It will display the amendments you create integrated into the resolution and visually emphasise changes. Click the amendment button in an operative clause to display it here. You can then choose what type of amendment should be performed. #[br]The #[b add] type requires the creation of a new clause and needs no prior selection of an existing clause. Selecting this type will allow you to formulate a new operative clause here and append it to the end of the resolution. #[br]The #[b change] type creates a copy of the selected clause here and will display a detailed view of the changes you make in the LiveView client. #[br]The #[b replace] type is similar to #[b change] but implies a complete change of the clause content. It doesn't create a copy of the selected clause here, but rather allows you to write a new clause that will replace the selected clause. #[br]The #[b strike out] type will mark the selected clause for removal.
-      .row
+      h5.light#amd-info Amendment
+      .justify Using this feature only makes sense if a #[a(href="#liveview-heading") LiveView ] client is connected. It will display the amendments you create integrated into the resolution and visually emphasise changes. Click the amendment button in an operative clause to display it here. You can then choose what type of amendment should be performed. The resolution can be edited while in amendment mode but certain structural changes can cause unexpected behavior. #[br]The #[b add] type requires the creation of a new clause and needs no prior selection of an existing clause. Selecting this type will allow you to formulate a new operative clause here and append it to the end of the resolution. #[br]The #[b change] type creates a copy of the selected clause here and will display a detailed view of the changes you make in the LiveView client. #[br]The #[b replace] type is similar to #[b change] but implies a complete change of the clause content. It doesn't create a copy of the selected clause here, but rather allows you to write a new clause that will replace the selected clause. #[br]The #[b strike out] type will mark the selected clause for removal.
+      .row.no-bottom-mrg#amd-select-group
         .col.s12.m6: .input-field.not-editor#amd-type-select-box
           select
             mixin state-option(value, descr, first)
@@ -236,9 +236,14 @@ block content
             +state-option("replace", "Replace")
             +state-option("remove", "Strike Out")
           label Action Type
-        .col.s12.m6: .input-field
+        .col.s12.m6: .input-field.not-editor
           input.not-editor.autocomplete#amd-spon(type="text")
           label(for="amd-spon") Sponsor
+      p.center.grey-text#amd-no-selection Select a clause with the
+        =" "
+        +icon("rate_review", "lime-text text-darken-1")
+        |  button or choose the action type "Add".
+      #amd-clause-wrapper
     if doLoad
       mixin floating-sm-btn(color, type, icon, tooltipText)
         a.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)
@@ -331,6 +336,7 @@ block content
           |  or #[em MA]. See #[a(href="/help#access-levels") here] for a detailed description of all access levels.
       .center: a.btn.waves-effect.waves-light#unlock-submit-btn(href="#" class=pri)&attributes(tooltip("Tries to open editor with the given code", "right")) Unlock
 block scripts
+  +static("js", "/js/scrollintoview.js")
   +static("js", "/js/accessInputs.js")
   +static("js", "/js/resolutionFormat.js")
   +static("js", "/js/dialogs.js")

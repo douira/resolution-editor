@@ -1,11 +1,11 @@
 /*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
 /*global startLiveviewWS*/
 
-//keep a copy of the current structure
-var currentStructure;
+//the current structure
+var structure;
 
 //keep a copy of the current amendment
-var currentAmendment;
+var amendment;
 
 //the current amendment and clause elements
 var amendmentElements;
@@ -15,12 +15,21 @@ var pathSegmentMapping = {
   sub: function(e) { return e.children(".subs").children(); },
   phrase: function(e) { return e.children("div.clause-content").children("span.phrase"); },
   content: function(e) { return e.children("div.clause-content").children("span.main-content"); },
-  contentExt: function(e) { return e.children("span.ext-content"); },
-  unwrapOp: function(e) { return e.children(); }
+  contentExt: function(e) {
+    return e.children("div.ext-content").children("span.ext-text-content");
+  }
 };
 
 //cache paths and the elements they result in
 var changeCache = {};
+
+//preset strings for action message in amendments
+var amdActionTexts = {
+  change: "change",
+  replace: "replace",
+  add: "append",
+  remove: "strike out"
+};
 
 //applies a change to the resolution document in html given a path and a new content
 //basically does a translation between the resolution docuement and the dom version of it
@@ -40,22 +49,28 @@ function applyDocumentChange(resolution, path, content) {
     //change in already found place in structure
     cacheResult.clause[path[0]] = content;
   } else {
-    //pop of the first element from the path stack
+    //pop off the first element from the path stack as the type sign
     var pathProp = path.pop();
 
-    //insert a op-wrapper unwrapping path segment
-    //to expose the inner li in op clauses that are wrapped
-    if (pathProp === "operative") {
-      path.splice(-1, 0, "unwrapOp");
+    //structure to modify with the update
+    var structureObj;
+
+    //for amendment content update
+    if (pathProp === "amendment") {
+      //element is amendment clause
+      currentElem = (amendmentElements.replacementClause.length ?
+        amendmentElements.replacementClause : amendmentElements.clause).children("li");
+
+      //use new clause as object to modify
+      structureObj = amendment.newClause;
+    } else {
+      //the current element we are searching in, start off with preamb/op seperation
+      currentElem = $(pathProp === "operative" ?
+        "#op-clauses > .op-wrapper > li" : "#preamb-clauses > div.preamb-clause");
+
+      //get object for first step from resolution
+      structureObj = resolution.clauses[pathProp];
     }
-
-    //get object for first step
-    var structureObj = resolution.clauses[pathProp];
-
-    //the current element we are searching in, start off with preamb/op seperation
-    currentElem = $(pathProp === "operative" ? "#op-clauses" : "#preamb-clauses")
-      //count using only the real clause elements
-      .children("div.op-clause, div.preamb-clause");
 
     //until we get to the element specified by the whole path
     while (path.length && currentElem.length) {
@@ -86,7 +101,7 @@ function applyDocumentChange(resolution, path, content) {
 
       //for the structure object: continue down if it results in an object
       var pathStepResult = structureObj[pathProp];
-      if (pathProp !== "unwrapOp" && typeof pathStepResult === "object") {
+      if (typeof pathStepResult === "object") {
         //use as next structureObj
         structureObj = pathStepResult;
       }
@@ -128,40 +143,105 @@ function makeFullScreen(elem) {
   }
 }
 
-//preps the diplay for resolution render
-function prepareResolutionRender() {
-  //show content container and hide the spinner and no-content warning
-  $("#resolution").show();
-  $("#spinner-wrapper").hide();
-  $("#no-content-msg").hide();
-}
-
 //returns the correct punctuation for a given (op) clause context
 function getPunctuation(subPresent, lastInClause, lastInDoc) {
   //essentially a precendence waterfall
   return subPresent ? ":" : lastInDoc ? "." : lastInClause ? ";" : ",";
 }
 
+//iterates over an object like forEach, but deals with the diff property
+function diffForEach(obj, callback) {
+  //needs to have length property and above 0
+  if (! obj.length) {
+    return;
+  }
+
+  //for all numeric of obj
+  for (var i = 0; i < obj.length; i ++) {
+    //call callback with value at property, property itself, the whole object, diff for this prop
+    callback(obj[i], i, obj, obj.diff && obj.diff[i]);
+  }
+}
+
+//diff type color class map converts between diff types and color marking classes
+var diffTypeColorMap = {
+  "updated": "mark-yellow",
+  "added": "mark-green",
+  "deleted": "mark-red",
+  "none": "mark-grey"
+};
+
+//marks an element with diff colors according to the passed diff type
+$.fn.colorDiff = function(type) {
+  //con't do anything if falsy
+  if (! type) {
+    return;
+  }
+
+  //add marking class corresponding to diff type, or grey if no match found
+  this.addClass(diffTypeColorMap[type] || "mark-grey");
+};
+
 //fucntion that renders the given structure to the liveview display,
 //updates completely: do not use for content update
-function render(resolution, amd) {
+function render() {
+  //the structure to render
+  var renderStructure = structure;
+
+  //apply amendment if present
+  var amdContainer;
+  if (amendment) {
+    //get a clone of the template amendment container
+    amdContainer = $("#amd-container").clone();
+
+    //if the structure will be modified
+    if (amendment.type === "add" || amendment.type === "replace" || amendment.type === "change") {
+      //make a copy for rendering with amendment, these change types modify the structure
+      renderStructure = $.extend(true, {}, structure);
+    }
+
+    //get the array of op clauses in the resolution
+    var opClauses = renderStructure.resolution.clauses.operative;
+
+    //if it's adding a clause
+    if (amendment.type === "add") {
+      //set the index to point to the newly added clause
+      amendment.clauseIndex = opClauses.length;
+
+      //add it the end of the resolution
+      opClauses.push(amendment.newClause);
+    } //add new clause after index of targeted clause as replacement
+    else if (amendment.type === "replace") {
+      //make the new clause a replacement clause so it's rendered as one
+      amendment.newClause.isReplacement = true;
+
+      //splice into clauses (for replace and change)
+      opClauses.splice(amendment.clauseIndex + 1, 0, amendment.newClause);
+    } else if (amendment.type === "change") {
+      //replace clause that is to be changed
+      opClauses.splice(amendment.clauseIndex, 1, amendment.newClause);
+    }
+  }
+
   //clear change cache because we are generating new elements
   //that aren't referenced in the cache
   changeCache = {};
 
   //update header
-  $(".forum-info").text(resolution.address.forum);
-  $("#question-of-info").text(resolution.address.questionOf);
-  $("#sponsor-info").text(resolution.address.sponsor.main);
+  $(".forum-info").text(renderStructure.resolution.address.forum);
+  $("#question-of-info").text(renderStructure.resolution.address.questionOf);
+  $("#sponsor-info").text(renderStructure.resolution.address.sponsor.main);
 
-  //if there are co-sponsors fill i nthat field as well
-  var coSponsors = resolution.address.sponsor.co;
+  //if there are co-sponsors fill in that field as well
+  var coSponsors = renderStructure.resolution.address.sponsor.co;
   if (coSponsors && coSponsors.length) {
     //insert content
     $("#co-sponsor-info").text(coSponsors.join(", "));
 
     //show enclosing row
-    $("#address > .hide-this").show();
+    $("#co-sponsor-row").removeClass("hide-this");
+  } else {
+    $("#co-sponsor-row").addClass("hide-this");
   }
 
   //get clause content template and prepare for use
@@ -190,7 +270,7 @@ function render(resolution, amd) {
     var isOps = clauseType.name === "operative";
 
     //for all clauses of this type, get clauses from structure
-    resolution.clauses[clauseType.name].forEach(function(clauseData, index, arr) {
+    renderStructure.resolution.clauses[clauseType.name].forEach(function(clauseData, index, arr) {
       //create a clause object by cloning the template
       var content = clauseContentTemplate.clone();
       var clause = $("<" + clauseType.elementType + "/>").append(content);
@@ -203,9 +283,10 @@ function render(resolution, amd) {
         //create a wrapper and add op-wrapper for layout and styling
         clauseWrapper = $("<div/>").addClass("op-wrapper");
 
-        //if it's an actual clause that receives content updates, add class to signify
-        //otherwise color green as replacement clause in amendment
-        clauseWrapper.addClass(clauseData.isReplacement ? "mark-green": "op-clause");
+        //color green as replacement clause in amendment
+        if (clauseData.isReplacement) {
+          clauseWrapper.addClass("mark-green");
+        }
 
         //set replacement clause (for scroll)
         //this is always called after displayAmendment has run,
@@ -248,6 +329,15 @@ function render(resolution, amd) {
       //add punctuation
       content.append(getPunctuation(subsPresent, isOps && ! subsPresent, lastClause));
 
+      //apply diff colors if given
+      if (clauseData.diff) {
+        //add coloring on content body
+        content.colorDiff(clauseData.diff.content);
+
+        //add coloring on phrase if there is any, otherwise mark as grey clause background
+        content.children(".phrase").colorDiff(clauseData.diff.phrase || "none");
+      }
+
       //process subclauses if any specified in data
       if (subsPresent) {
         //add list for subclauses, choose type according to type of clause
@@ -255,13 +345,27 @@ function render(resolution, amd) {
           .addClass("subs")
           .appendTo(clause); //add clause list to clause
 
+        //color whole sublist if specified
+        if (clauseData.diff) {
+          subList.colorDiff(clauseData.diff.sub);
+        }
+
         //add subclauses
-        clauseData.sub.forEach(function(subClauseData, subIndex, subArr) {
+        diffForEach(clauseData.sub, function(subClauseData, subIndex, subArr, subDiffType) {
           //make the subclause
           var subContent = clauseContentTemplate.clone();
           var subClause = $("<li/>")
             .append(subContent)
             .appendTo(subList); //add subclause to its sub list
+
+          //color whole subclause with diff
+          subClause.colorDiff(subDiffType);
+
+          //if there are diff specs for the things in this subclause
+          if (subClauseData.diff) {
+            //color content
+            subContent.colorDiff(subClauseData.diff.content);
+          }
 
           //check if a sub list is specified
           var subsubsPresent = "sub" in subClauseData;
@@ -294,13 +398,22 @@ function render(resolution, amd) {
               .addClass("subs subsubs")
               .appendTo(subClause); //add sub list to clause
 
+            //color whole subsublist if specified
+            if (subClauseData.diff) {
+              subsubList.colorDiff(subClauseData.diff.sub);
+            }
+
             //add all subsub clauses
-            subClauseData.sub.forEach(function(subsubClauseData, subsubIndex, subsubArr) {
+            diffForEach(subClauseData.sub,
+              function(subsubClauseData, subsubIndex, subsubArr, subsubDiffType) {
               //make the subclause
               var subsubContent = clauseContentTemplate.clone();
               $("<li/>")
                 .append(subsubContent)
                 .appendTo(subsubList); //add subsubclause to its sub list
+
+              //color subsubclause
+              subsubContent.colorDiff(subsubDiffType);
 
               //add data to content
               subsubContent.children("span.main-content").text(subsubClauseData.content);
@@ -318,16 +431,26 @@ function render(resolution, amd) {
           //append ext content if specified
           if (subContentExtPresent) {
             //create another span with the text
-            subClause.append($("<span/>", {
-              "class": "ext-content",
+            var subContentExt = $("<div/>", {
+              "class": "ext-content"
+            }).appendTo(subClause);
+
+            //add text inside
+            subContentExt.append($("<span/>", {
+              "class": "ext-text-content",
               text: subClauseData.contentExt
             }));
+
+            //color ext content
+            if (subClauseData.diff) {
+              subContentExt.colorDiff(subClauseData.diff.contentExt);
+            }
 
             //update wether or not this is the last piece of the clause
             lastPieceOfClause = ! contentExtPresent && lastSubClause;
 
             //add extra punctuation for ext content
-            subClause.append(getPunctuation(
+            subContentExt.append(getPunctuation(
               false, lastPieceOfClause, lastPieceOfClause && lastClause));
           }
         });
@@ -336,150 +459,82 @@ function render(resolution, amd) {
       //append ext content if specified
       if (contentExtPresent) {
         //create another span with the text
-        clause.append($("<span/>", {
-          "class": "ext-content",
+        var contentExt = $("<div/>", {
+          "class": "ext-content"
+        }).appendTo(clause);
+
+        //add text inside
+        contentExt.append($("<span/>", {
+          "class": "ext-text-content",
           text: clauseData.contentExt
         }));
 
+        //color ext content
+        if (clauseData.diff) {
+          contentExt.colorDiff(clauseData.diff.contentExt);
+        }
+
         //add extra punctuation for ext content
-        clause.append(getPunctuation(false, isOps, lastClause));
+        contentExt.append(getPunctuation(false, isOps, lastClause));
       }
 
       //add the newly created clause to the document and make it visible
       clauseWrapper.appendTo(container).show();
 
       //check if the clause is subject of the amendment
-      if (isOps && amd && amd.clauseIndex === index) {
-        //add amendment box before clause wrapper
-        displayAmendment(amd, clauseWrapper);
+      if (isOps && amendment && amendment.clauseIndex === index) {
+        //sets an amendment to be displayed inline in the resolution
+        //clauseWrapper must have a parent element that we can put the amendment element in
+
+        //error and stop if no such type exists
+        var actionText;
+        if (amendment.type in amdActionTexts) {
+          //get action string for this type of amendment
+          actionText = amdActionTexts[amendment.type];
+        } else {
+          throw invalidAmdTypeError(amendment.type);
+        }
+
+        //fill clone with info
+        amdContainer.find("span.amd-sponsor")
+          .html(amendment.sponsor || "<em class='grey-text text-darken-1'>Sponsor</em>");
+        amdContainer.find("span.amd-action-text").text(actionText);
+
+        //convert to 1 indexed counting
+        amdContainer.find("span.amd-target").text("OC" + (amendment.clauseIndex + 1));
+
+        //set the dom elements
+        amendmentElements = {
+          amd: amdContainer,
+          clause: clauseWrapper,
+          replacementClause: $() //empty set
+        };
+
+        //prepend before the given clause element and make visible
+        amdContainer.insertBefore(clauseWrapper).show();
       }
     });
   });
-}
 
-//preset strings for action message in amendments
-var amdActionTexts = {
-  change: "change",
-  replace: "replace",
-  add: "append",
-  remove: "strike out"
-};
+  //if there is an amendment to display
+  if (amendment) {
+    //reset color classes
+    amendmentElements.amd.removeClass("mark-amd-green mark-amd-red mark-amd-grey");
+
+    //set the color of the amendment according to type
+    if (amendment.type === "add") {
+      amendmentElements.amd.addClass("mark-amd-green");
+    } else if (amendment.type === "remove" || amendment.type === "replace") {
+      amendmentElements.amd.addClass("mark-amd-red");
+    } else if (amendment.type === "change") {
+      amendmentElements.amd.addClass("mark-amd-grey");
+    }
+  }
+}
 
 //error that means the amendment type is invalid
 function invalidAmdTypeError(type) {
   return Error("no amendment action type '" + type + "' exists.");
-}
-
-//updates the text content of a given amendment box element
-function updateAmendmentContents(amd, amdElem) {
-  //error and stop if no such type exists
-  var actionText;
-  if (amd.type in amdActionTexts) {
-    //get action string for this type of amendment
-    actionText = amdActionTexts[amd.type];
-  } else {
-    throw invalidAmdTypeError(amd.type);
-  }
-
-  //fill clone with info
-  amdElem.find("span.amd-sponsor").text(amd.sponsor);
-  amdElem.find("span.amd-action-text").text(actionText);
-  //convert to 1 indexed counting
-  amdElem.find("span.amd-target").text("OC" + (amd.clauseIndex + 1));
-}
-
-//sets an amendment to be displayed inline in the resolution
-//clause elem must have a prenent element that we can put the amendment element in
-function displayAmendment(amd, clauseElem) {
-  //get a clone of the template amendment container
-  var amdContainer = $("#amd-container").clone();
-
-  //update the contents of the new element
-  updateAmendmentContents(amd, amdContainer);
-
-  //set the dom elements
-  amendmentElements = {
-    amd: amdContainer,
-    clause: clauseElem,
-    replacementClause: $() //empty set
-  };
-
-  //prepend before the given clause element and make visible
-  amdContainer.insertBefore(clauseElem).show();
-}
-
-//for triggering and amendment message manually (function break-out)
-function amendmentMessage(amd) {
-  //changed significantly if server says so or this is the first amendment update we receive
-  if (! currentAmendment || amd.structureChanged) {
-    //save the amendment
-    currentAmendment = amd;
-
-    //console.log("structure");
-
-    //new current structure to apply amdendment to is given by server,
-    //which gets it from the editor and applies content updates to it on its own
-    currentStructure = amd.latestStructure;
-
-    //require new clause to be specified with types add and replace
-    if ((amd.type === "add" || amd.type === "replace") &&
-        ! amd.newClause) {
-      //error if not present
-      throw Error("a new clause has to be specified with the amendment " +
-                    "type 'add', but was not.");
-    }
-
-    //get the array of op clauses in the resolution
-    var opClauses = currentStructure.resolution.clauses.operative;
-
-    //if it's adding a clause
-    if (amd.type === "add") {
-      //set the index to point to the newly added clause
-      amd.clauseIndex = opClauses.length;
-
-      //add it the end of the resolution
-      opClauses.push(amd.newClause);
-    }
-
-    //add new clause after index of targeted clause as replacement
-    if (amd.type === "replace") {
-      //make the new clause a replacement clause so it's rendered as one
-      amd.newClause.isReplacement = true;
-
-      //splice into clauses
-      opClauses.splice(amd.clauseIndex + 1, 0, amd.newClause);
-    }
-
-    //render all
-    render(currentStructure.resolution, amd);
-
-    //reset color classes
-    amendmentElements.amd.removeClass("mark-amd-green mark-amd-red");
-
-    //set the color of the amendment according to type
-    if (amd.type === "add") {
-      amendmentElements.amd.addClass("mark-amd-green");
-    } else if (amd.type === "remove" || amd.type === "replace") {
-      amendmentElements.amd.addClass("mark-amd-red");
-    }
-  } else {
-    //save the amendment
-    currentAmendment = amd;
-
-    //do a content update on the amendment
-    updateAmendmentContents(currentAmendment, amendmentElements.amd);
-  }
-
-  //scroll the amendment elements and the clause into view
-  amendmentElements.amd
-    .add(amendmentElements.clause)
-    //will do nothing if it is a empty set because the amendment isn't type replace
-    .add(amendmentElements.replacementClause)
-    .scrollIntoView();
-
-  //TODO: do structure update when contained structure of clause changes
-  //TODO: handle "change" type amendments
-  //TODO: allow changing the replacement clause in "replace" amendments
 }
 
 //start liveview as viewer on document load
@@ -488,34 +543,59 @@ $(document).ready(function() {
   startLiveviewWS(true, null, null, function(type, data) { //given type and update data
     //switch to update type
     switch (type) {
+      case "editorJoined":
+        //remove amendment and re-render
+        amendment = null;
+        render();
+        break;
       case "updateStructure": //whole resolution content is resent because structure has changed
       case "initStructure": //handle init the same way for now
         //prepare if not prepared yet (first)
-        if (! currentStructure) {
-          prepareResolutionRender();
+        if (! structure) {
+          //show content container and hide the spinner and no-content warning
+          $("#resolution").show();
+          $("#spinner-wrapper").hide();
+          $("#no-content-msg").hide();
         }
 
         //copy given resolution to current structure
-        currentStructure = data.update;
+        structure = data.update;
 
-        //render fully
-        render(currentStructure.resolution, currentAmendment);
+        //render everything
+        render();
         break;
       case "updateContent": //the content of one clause changed and only that is sent
         //if we've got some structure at all
-        if (currentStructure) {
-          //console.log(data.update.contentPath.join(","), data.update.content);
-
+        if (structure) {
           //apply the change to the document
           applyDocumentChange(
-            currentStructure.resolution, data.update.contentPath, data.update.content);
+            structure.resolution, data.update.contentPath, data.update.content);
         } else {
           //bad, no content update should arrive before the init or updateStructure messages
           console.error("no content update should arrive before structure is received");
         }
         break;
       case "amendment":
-        amendmentMessage(data.update.amendment);
+        //save the amendment
+        amendment = data.update;
+
+        //require new clause to be specified with types add and replace
+        if ((amendment.type === "add" || amendment.type === "replace") &&
+            ! amendment.newClause) {
+          //error if not present
+          throw Error("a new clause has to be specified with the amendment " +
+                        "types add and replace, but was not.");
+        }
+
+        //render everything
+        render();
+
+        //scroll the amendment elements and the clause into view
+        amendmentElements.amd
+          .add(amendmentElements.clause)
+          //will do nothing if it is a empty set because the amendment isn't type replace
+          .add(amendmentElements.replacementClause)
+          .scrollIntoView();
         break;
     }
   });

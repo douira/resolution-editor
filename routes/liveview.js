@@ -24,7 +24,7 @@ const WebSocketServer = require("ws").Server;
 const tokenProcessor = require("../lib/token");
 const uuidv4 = require("uuid/v4");
 const detailedDiff = require("deep-object-diff").detailedDiff;
-const deepEqual = require("fast-deep-equal");
+//const deepEqual = require("fast-deep-equal");
 const { logger } = require("../lib/logger");
 
 //const inspect = require("../lib/inspect");
@@ -126,7 +126,7 @@ function makeForEach(obj) {
   };
 }
 
-//sends an object json encoded to the server
+//sends an object json encoded to a websocket client
 function sendJson(ws, obj) {
   //send prepared object after stringify
   ws.send(JSON.stringify(obj));
@@ -137,6 +137,12 @@ used on clauses because we can't put a .diff property into an array in json.
 if they are supposed to be arrays or not can still be determined by the property the arrays are in.
 .sub is always filled with an array, all others are objects or strings*/
 function deepConvertToObjects(obj) {
+  //must be object
+  if (typeof obj !== "object") {
+    //return unmodified
+    return obj;
+  }
+
   //create object to put in
   const newObj = {};
 
@@ -152,6 +158,11 @@ function deepConvertToObjects(obj) {
 
       //simply copy literal value
       value;
+  }
+
+  //add length property if this is an array
+  if (obj instanceof Array) {
+    newObj.length = obj.length;
   }
 
   //return created object
@@ -231,7 +242,7 @@ function markConsistentDiffs(obj) {
         if (propDiffType) {
           obj.diff[prop] = propDiffType;
         }
-      } else if (prop in obj.diff) {
+      } else if (obj.diff && prop in obj.diff) {
         //get from diff list
         propDiffType = obj.diff[prop];
       } else {
@@ -249,6 +260,11 @@ function markConsistentDiffs(obj) {
         changeType = false;
       }
     }
+  }
+
+  //remove diff property if it has no contents
+  if (obj.diff && ! Object.keys(obj.diff).length) {
+    delete obj.diff;
   }
 
   //return consistent diff type (or false if it is inconsistent)
@@ -373,6 +389,14 @@ function receiveServer(httpServer) {
       });
     }
 
+    //forwards data to all clients listening this token
+    function dataToAllViewers() {
+      tokenEntry.viewersForEach(v => sendJson(v.socket, {
+        type: data.type,
+        update: data.update
+      }));
+    }
+
     //on type of message
     switch (data.type) {
       case "initViewer": //first message sent by liveview client for registration
@@ -418,91 +442,85 @@ function receiveServer(httpServer) {
         //send ack to start connection
         sendAck(ws, accessToken, tokenEntry, viewerAmount);
         break;
-      case "updateStructure": //update messages
-      case "updateContent":
-      case "amendment":
-        //is an amendment message
-        if (data.type === "amendment") {
-          //get amendment object
-          const currentAmd = data.update.amendment;
+      case "amendment": //amendment message
+        //get amendment object, we expect the structure to have changed significantly
+        //if a client sends an amendment update, content is updated through content updates
+        const currentAmd = data.update;
 
-          //create object for amendment data in token entry
-          if ("amd" in tokenEntry) {//amd already present in token entry
-            //last was recorded
-            if (tokenEntry.amd.last) {
-              //check if the structure changed significantly
-              //and send to clients to make them do a structure update
-              const lastAmd = tokenEntry.amd.last;
-              currentAmd.structureChanged =
-                lastAmd.type !== currentAmd.type || //change of type
-                lastAmd.clauseIndex !== currentAmd.clauseIndex || //change of target clause
-                //given that there are newClauses, check if they are the same
-                ! (lastAmd.newClause && currentAmd.newClause &&
-                   deepEqual(lastAmd.newClause, currentAmd.newClause));
-            } else {
-              //structure "changed" because it is the first amendment update
-              currentAmd.structureChanged = true;
-            }
-          } else {
-            //create new, no clearing necessary
-            tokenEntry.amd = {};
+        //amendment structure changed and a re-render will be done by the clients
 
-            //mark as changed as there is no reference that this amendment could be similar to
-            currentAmd.structureChanged = true;
-          }
+        //attach the current (content updates applied) structure
+        //for the new amendment to be applied to by the clients
+        //currentAmd.latestStructure = tokenEntry.latestStructure;
 
-          //if amendment structure changed a re-render will be done by the clients
-          if (currentAmd.structureChanged) {
-            //attach the current (content updates applied) structure
-            //for the new amendment to be applied to by the clients
-            currentAmd.latestStructure = tokenEntry.latestStructure;
+        //old clause can be gotten by index from the resolution structure
+        let oldClause =
+          tokenEntry.latestStructure.resolution.clauses.operative[currentAmd.clauseIndex];
 
-            //is change type amendment, requires newClause and oldClause to be present
-            if (currentAmd.type === "change" && currentAmd.oldClause && currentAmd.newClause) {
-              //remove arrays from both clauses
-              currentAmd.oldClause = deepConvertToObjects(currentAmd.oldClause);
-              currentAmd.newClause = deepConvertToObjects(currentAmd.newClause);
+        //is change type amendment, requires newClause to be present
+        if (currentAmd.type === "change" && currentAmd.newClause) {
+          //remove arrays from both clauses
+          oldClause = deepConvertToObjects(oldClause); //currentAmd.oldClause =
+          currentAmd.newClause = deepConvertToObjects(currentAmd.newClause);
 
-              //calculate a detailed group of diffs bewteen old and new clause
-              const diffs = detailedDiff(currentAmd.oldClause, currentAmd.newClause);
+          //calculate a detailed group of diffs bewteen old and new clause
+          const diffs = detailedDiff(oldClause, currentAmd.newClause);
 
-              //for all three part (added, deleted and changed),
-              //add color markers to the new clause for diff rendering
-              ["updated", "added", "deleted"].forEach(diffType => {
-                //process this diff type and thereby apply marking to the new clause
-                processDiff(diffType, diffs[diffType], currentAmd.oldClause, currentAmd.newClause);
-              });
+          //for all three part (added, deleted and changed),
+          //add color markers to the new clause for diff rendering
+          ["updated", "added", "deleted"].forEach(diffType => {
+            //process this diff type and thereby apply marking to the new clause
+            processDiff(diffType, diffs[diffType], oldClause, currentAmd.newClause);
+          });
 
-              //traverse the now value-marked new clause again to find consistent objects
-              //that can be marked as a whole because they were changed as a whole
-              markConsistentDiffs(currentAmd.newClause);
-            }
-          }
-
-          //save amendment
-          tokenEntry.amd.last = currentAmd;
-        } else if (data.type === "updateContent") {
-          //apply content update to structure
-          resolveChangePath(
-            //the current structure as saved by the server
-            tokenEntry.latestStructure.resolution.clauses,
-            data.update.contentPath.slice(), //the path and content in the update sent by the editor
-            data.update.content,
-            tokenEntry.pathCache); //the cache built in previous content updates
-        } //save structure update data to send to joining viewer clients
-        else if (data.type === "updateStructure") {
-          //save structure from editor as current
-          tokenEntry.latestStructure = data.update;
-
-          //reset path cache
-          tokenEntry.pathCache = {};
+          //traverse the now value-marked new clause again to find consistent objects
+          //that can be marked as a whole because they were changed (updated, added...) as a whole
+          markConsistentDiffs(currentAmd.newClause);
         }
 
-        //forward to clients listening on this token
-        tokenEntry.viewersForEach((v) => sendJson(v.socket, {
-          type: data.type,
-          update: data.update
-        }));
+        //save amendment
+        tokenEntry.amd = currentAmd;
+
+        //forward to all viewers
+        dataToAllViewers();
+
+        break;
+      case "updateContent":
+        //what object the update should be applied to
+        let applyUpdateTo = tokenEntry.latestStructure.resolution.clauses;
+
+        //the path to the property to change
+        const updatePath = data.update.contentPath.slice();
+
+        //is amendment content update
+        if (updatePath[updatePath.length - 1] === "amendment") {
+          //remove amendment flag and set amendment as object to be modified
+          updatePath.pop();
+          applyUpdateTo = tokenEntry.amd.newClause;
+        }
+
+        //apply content update to structure
+        resolveChangePath(
+          //the current structure as saved by the server
+          applyUpdateTo,
+          updatePath, //the path and content in the update sent by the editor
+          data.update.content,
+          tokenEntry.pathCache); //the cache built in previous content updates
+
+        //forward to all viewers
+        dataToAllViewers();
+
+        break;
+      case "updateStructure": //save structure update data to send to joining viewer clients
+        //save structure from editor as current
+        tokenEntry.latestStructure = data.update;
+
+        //reset path cache
+        tokenEntry.pathCache = {};
+
+        //forward to all viewers
+        dataToAllViewers();
+
         break;
       default:
         logger.warn({ data: data }, "unrecognised message type");
@@ -516,7 +534,10 @@ function receiveServer(httpServer) {
       //then update the liveview timestamp in the database for this resolution
       resolutions.updateOne(
         { token: clientEntry.token }, { $set: { lastLiveview: Date.now() } }
-      ).then(() => {});
+      ).catch(
+        //TODO: proper logging in liveview.js (where not implemented yet)
+        () => console.error("could not update last lievview timestamp")
+      );
     }
   }
 

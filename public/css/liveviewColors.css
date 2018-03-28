@@ -1,0 +1,19 @@
+#amd-container.mark-amd-grey + .op-wrapper, .mark-grey {
+  background-color: #eee;
+}
+
+#amd-container.mark-amd-green + .op-wrapper, .mark-green {
+  background-color: #acdeae;
+}
+
+#amd-container.mark-amd-red + .op-wrapper, .mark-red {
+  background-color: #f5b6b6;
+}
+
+.mark-yellow {
+  background-color: #fff59d;
+}
+
+.mark-yellow, .mark-red, .mark-green:not(.op-wrapper), .mark-grey {
+  border-radius: 7px;
+}

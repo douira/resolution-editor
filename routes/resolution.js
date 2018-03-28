@@ -6,7 +6,7 @@ const generatePdf = require("../lib/generatePdf");
 const tokenProcessor = require("../lib/token");
 const resUtil = require("../lib/resUtil");
 const routingUtil = require("../lib/routingUtil");
-const liveView = require("../lib/liveView").router;
+const liveView = require("./liveview").router;
 const credentials = require("../lib/credentials");
 const { issueError } = require("../lib/logger");
 
