@@ -16,7 +16,7 @@ require("../lib/database").fullInit.then(collections => {
 
 //require admin session for overview and code management
 router.use(["/overview", "/codes"], (req, res, next) =>
-  routingUtil.requireAdminSession(req, res, () => next()));
+  routingUtil.requireSession("MA", req, res, () => next()));
 
 //GET display overview of all resolutions
 router.get("/overview", function(req, res) {
@@ -386,5 +386,13 @@ router.post("/print/getitems", function(req, res) {
         return i;
       }));
     }, err => issueError(res, 500, "could not query print queue items", err));
+  });
+});
+
+//GET the formal clearing work queue, uses session auth for FC
+router.get("/fcqueue", function(req, res) {
+  //require FC session
+  routingUtil.requireSession("FC", req, res, () => {
+
   });
 });
