@@ -214,29 +214,15 @@ routingUtil.getAndPost(router, "/editor/:token", function(req, res) {
   );
 });
 
-//POST (no view) update attributes and redirect back to editor page
-router.post("/setattribs/:token", function(req, res) {
-  //authorize, must have code matching MA access level
+//both admin actions setattribs and delete need the same admin full auth
+router.use(["/setattribs/:token", "/delete/:token"], (req, res, next) =>
+  //do full auth
   routingUtil.fullAuth(req, res, token => {
-    //check for present post body property and must be a ok value
-    if (req.body && req.body.attrib &&
-        ["none", "noadvance", "readonly", "static"].includes(req.body.attrib)) {
-      //set to new value in database
-      resolutions.updateOne(
-        { token: token },
-        {
-          $set: {
-            //set attrib string as found in post body
-            attributes: req.body.attrib
-          }
-        }
-      ).then(() => {
-        //redirect back to editor page
-        res.redirect("/resolution/editor/" + token);
-      }, err => issueError(res, 500, "can't set attribute", err));
-    } else {
-      issueError(res, 400, "missing or incorrect fields");
-    }
+    //attach token to req
+    req.resToken = token;
+
+    //proceed to individual routes
+    next();
   }, {
     //just make no db query on auth fail
     permissionMissmatch: token => {
@@ -246,48 +232,55 @@ router.post("/setattribs/:token", function(req, res) {
 
     //use attribute setting permission set (resticted to MA level)
     matchMode: "admin"
-  });
+  })
+);
+
+//POST (no view) update attributes and redirect back to editor page
+router.post("/setattribs/:token", function(req, res) {
+  //get token from req as it was attached in the middleware for setattribs and delete
+  const token = req.resToken;
+
+  //check for present post body property and must be a ok value
+  if (req.body && req.body.attrib &&
+      ["none", "noadvance", "readonly", "static"].includes(req.body.attrib)) {
+    //set to new value in database
+    resolutions.updateOne(
+      { token: token },
+      {
+        $set: {
+          //set attrib string as found in post body
+          attributes: req.body.attrib
+        }
+      }
+    ).then(() => {
+      //redirect back to editor page
+      res.redirect("/resolution/editor/" + token);
+    }, err => issueError(res, 500, "can't set attribute", err));
+  } else {
+    issueError(res, 400, "missing or incorrect fields");
+  }
 });
 
 //POST (no view) delete a resolution
 router.post("/delete/:token", function(req, res) {
-  //authorize, must have code matching MA access level
-  routingUtil.fullAuth(req, res, token => {
-    //remove resolution with that token by moving to the archive
-    resolutions.findOneAndDelete( { token: token } ).then(resDoc => {
-      //insert into archive collection, unpack returned object with .value!
-      resolutionArchive.insertOne(resDoc.value).then(() => {
-        //acknowledge
-        res.send("ok. deleted " + token);
-      }, err => issueError(res, 500, "can't insert into archive", err));
-    }, err => issueError(res, 500, "can't delete", err));
-  }, {
-    //just make no db query on auth fail
-    permissionMissmatch: token => {
-      //just go back to editor
-      res.redirect("/resolution/editor/" + token);
-    },
+  //get token from req (see above)
+  const token = req.token;
 
-    //use master setting permission set (resticted to MA level)
-    matchMode: "admin"
-  });
+  //remove resolution with that token by moving to the archive
+  resolutions.findOneAndDelete( { token: token } ).then(resDoc => {
+    //insert into archive collection, unpack returned object with .value!
+    resolutionArchive.insertOne(resDoc.value).then(() => {
+      //acknowledge
+      res.send("ok. deleted " + token);
+    }, err => issueError(res, 500, "can't insert into archive", err));
+  }, err => issueError(res, 500, "can't delete", err));
 });
 
 //pass liveview stuff on to that module
 router.use("/liveview", liveView);
 
-//POST (no view) (request from editor after being started with set token) send resolution data
-router.post("/load/:token", function(req, res) {
-  //authorize
-  routingUtil.fullAuth(req, res, (token, resolutionDoc) => {
-    //send resolution to client, remove database wrapper
-    res.send(resolutionDoc.content);
-  });
-});
-
-//GET (no view) (request from editor after being started with set token) send resolution data
-//same as above just with node special code
-router.get("/load/:token", function(req, res) {
+//GET and POST (no view) to send resolution data
+routingUtil.getAndPost(router, "/load/:token", function(req, res) {
   //authorize, absence of code is detected in fullAuth
   routingUtil.fullAuth(req, res, (token, resolutionDoc) => {
     //send resolution to client, remove database wrapper
@@ -419,7 +412,7 @@ router.get("/checkinput/:thing", function(req, res) {
     });
   } else {
     //bad, strange thing sent
-    issueError(400, "sent content unreadable");
+    issueError(400, "sent thing unreadable, code/token?");
   }
 });
 
