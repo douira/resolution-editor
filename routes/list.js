@@ -16,7 +16,7 @@ require("../lib/database").fullInit.then(collections => {
 
 //require admin session for overview and code management
 router.use(["/overview", "/codes"], (req, res, next) =>
-  routingUtil.requireSession("MA", req, res, () => next()));
+  routingUtil.requireSession("admin", req, res, () => next()));
 
 //GET display overview of all resolutions
 router.get("/overview", function(req, res) {
@@ -325,28 +325,14 @@ router.post("/codes/:action", function(req, res) {
   }
 });
 
-//GET display enter access code page
-router.get("/print", function(req, res) {
-  //check if a session is open to display without entering code for admin
-  if (req.session.code && req.session.doc.level === "MA") {
-    //redirect to queue
-    res.redirect("/list/print/queue");
-  } else {
-    //render entry page
-    res.render("printqueueopen");
-  }
-});
+//print queue needs SC access
+router.use("/print", (req, res, next) =>
+  routingUtil.requireSession("printqueue", req, res, () => next()));
 
 //POST secreteriat print queue page, gets code from post
-routingUtil.getAndPost(router, "/print/queue", function(req, res) {
-  //do code auth and permission check
-  routingUtil.checkCodeStaticPerm(req, res, "printqueue",
-    //render the list page
-    codeDoc => res.render("printqueue", { code: codeDoc.code }),
-
-    //show the weakperm page for work queues
-    () => res.render("weakperm", { type: "workqueue" })
-  );
+router.get("/print", function(req, res) {
+  //render the list page
+  res.render("printqueue");
 });
 
 //maps the stage history entry from it's nexted form to a property
@@ -372,41 +358,36 @@ function mapListItems(items, stageHistoryIndex) {
 }
 
 //POST return list of items to be printed
-router.post("/print/getitems", function(req, res) {
-  //do code auth and permission check
-  routingUtil.checkCodeStaticPerm(req, res, "printqueue", () => {
-    //query resolutions in stage 4 that are advanceable (and thereby non-static)
-    resolutions.find({
-      stage: 4,
-      $nor: [
-        { attributes: "noadvance" },
-        { attributes: "static" },
-      ]
-    }).project({
-      //project to only transmit necessary data, basically only want meta data
-      token: 1,
-      stageHistory: 1,
-      resolutionId: 1,
-      idYear: 1,
-      "content.resolution.address": 1,
-      _id: 0,
-      unrenderedChanges: 1,
-      pageAmount: 1
-    }).sort({
-      //sort by time in stage 4 (most necessary first), index 4 becase 0 is also a stage
-      "stageHistory.4": -1
-    }).toArray().then(items => {
-      //send data to client, rewrite and address
-      res.send(mapListItems(items, 4));
-    }, err => issueError(res, 500, "could not query print queue items", err));
-  });
+router.get("/print/getitems", function(req, res) {
+  //query resolutions in stage 4 that are advanceable (and thereby non-static)
+  resolutions.find({
+    stage: 4,
+    $nor: [
+      { attributes: "noadvance" },
+      { attributes: "static" },
+    ]
+  }).project({
+    //project to only transmit necessary data, basically only want meta data
+    token: 1,
+    stageHistory: 1,
+    resolutionId: 1,
+    idYear: 1,
+    "content.resolution.address": 1,
+    _id: 0,
+    unrenderedChanges: 1,
+    pageAmount: 1
+  }).sort({
+    //sort by time in stage 4 (most necessary first), index 4 becase 0 is also a stage
+    "stageHistory.4": -1
+  }).toArray().then(items => {
+    //send data to client, rewrite and address
+    res.send(mapListItems(items, 4));
+  }, err => issueError(res, 500, "could not query print queue items", err));
 });
 
-//uses session auth for FC wor queue
-router.use("/fcqueue", function(req, res, next) {
-  //require FC session
-  routingUtil.requireSession("FC", req, res, () => next());
-});
+//uses session auth for FC queue
+router.use("/fcqueue", (req, res, next) =>
+  routingUtil.requireSession("fcqueue", req, res, () => next()));
 
 //GET fc work queue display
 router.get("/fcqueue", function(req, res) {
