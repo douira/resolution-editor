@@ -409,6 +409,10 @@ router.use("/fcqueue", function(req, res, next) {
 });
 
 //GET fc work queue display
+router.get("/fcqueue", function(req, res) {
+  //render fc work queue page
+  res.render("fcqueue");
+});
 
 //GET fc work queue data
 router.get("/fcqueue/getitems", function(req, res) {
