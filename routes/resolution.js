@@ -119,6 +119,12 @@ router.get("/renderplain/:token", function(req, res) {
   });
 });
 
+//landing page is displayed statically and only displays information for the user to read
+router.get("/prenew", function(req, res) {
+  //render landing page, no new resolution button if accessed from menu
+  res.render("newreslanding", { noNew: req.query.nonew === "1" });
+});
+
 //GET (no view, processor) redirects to editor page with new registered token
 router.get("/new", function(req, res) {
   //make a new unique token, true flag for being a token

@@ -29,21 +29,25 @@
     return obj;
   }
 
+  const bugReportLink = "https://github.com/douira/resolution-editor/issues/new?&labels[]=user%20bug%20report";
+
   //icons
   const resetIcon = "clear";
   const codeIcon = "supervisor_account";
   const tokenIcon = "my_location";
   const liveviewIcon = "dvr";
   const handytextboxIcon = "format_size";
-  //other liveview icon options:
-  //present_to_all, add_to_queue, unarchive, dvr, settings_system_daydream, cast_connected
+  const helpIcon = "help";
   const weakpermIcon = "block";
   const plaintextIcon = "receipt";
+  const contentguidelinesIcon = "gavel";
 
   //colors for icons
   const liveviewColor = " text-darken-1 blue-text";
   const weakpermColor = " text-darken-1 grey-text";
   const handytextboxColor = " text-lighten-1 brown-text";
+  const helpColor = " text-darken-1 amber-text";
+  const plaintextColor = " text-darken-1 purple-text";
 
   //placeholders, for adjusting length
   const tokenPlaceholder = "@ 12345EFGH";
@@ -143,6 +147,7 @@ html(lang="en")
       li: a(href="/help/contentguidelines") Content Guidelines
       li: a(href="/help/support") Support
       li: a(href="/handytextbox") Handy Textbox
+      li: a(href="/resolution/prenew?nonew=1") Please Read Page
       li: a(href="/help/impressum") Impressum
       li: a(href="http://munol.org" target="_blank") MUNOL
     ul#lists-dropdown.dropdown-content
@@ -153,7 +158,7 @@ html(lang="en")
       .container
         mixin navList
           li: a(href="/") Front Page
-          li: a(href="/resolution/new") New Resolution
+          li: a(href="/resolution/prenew") New Resolution
           li: a(href="/resolution") Editor
           li: a(href="/about") About
           li: a.dropdown-button(href="#" data-activates="lists-dropdown") Lists
@@ -197,7 +202,7 @@ html(lang="en")
               h5.white-text Contact
               ul
                 li: a.white-text(href="https://github.com/douira/resolution-editor") Repository
-                li: a.white-text(href="https://github.com/douira/resolution-editor/issues/new?&labels[]=user%20bug%20report") File a Bug
+                li: a.white-text(href=bugReportLink) File a Bug
                 li: a.white-text(href="https://github.com/douira/resolution-editor/pulls") Contribute
                 li: a.white-text(href="http://munol.org") MUNOL
                 li: a.white-text(href="http://app.munol.org") MUNOL-App
