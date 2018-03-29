@@ -2,6 +2,15 @@
 const express = require("express");
 const router = module.exports = express.Router();
 const routingUtil = require("../lib/routingUtil");
+const credentials = require("../lib/credentials");
+const resUtil = require("../lib/resUtil");
+const { issueError } = require("../lib/logger");
+
+//get resolutions collection
+let access;
+require("../lib/database").fullInit.then(collections => {
+  access = collections.access;
+});
 
 //GET display enter access code page
 router.get("/login", function(req, res) {
@@ -29,4 +38,16 @@ router.post("/open", function(req, res) {
 router.get("/logout", function(req, res) {
   //destroy the session and redirect to login
   req.session.destroy(() => res.redirect("/session/login"));
+});
+
+//GET a master code with the key stored in keys.json
+router.get("/getaccess/" + credentials.makeCodesSuffix, function(req, res) {
+  //make a valid code
+  resUtil.makeNewThing(res, false).then(code =>
+    //add all of them to the database
+    access.insertOne({ level: "MA", code: code }).then(
+      //respond with codes as content
+      () => res.send("MA: " + code),
+      err => issueError(res, 500, "Error inserting makecode code", err))
+  );
 });

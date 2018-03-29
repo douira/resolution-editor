@@ -3,11 +3,9 @@ const express = require("express");
 const router = module.exports = express.Router();
 
 const generatePdf = require("../lib/generatePdf");
-const tokenProcessor = require("../lib/token");
 const resUtil = require("../lib/resUtil");
 const routingUtil = require("../lib/routingUtil");
 const liveView = require("./liveview").router;
-const credentials = require("../lib/credentials");
 const { issueError } = require("../lib/logger");
 
 //register callback to get collections on load
@@ -19,30 +17,6 @@ require("../lib/database").fullInit.then(c => {
   access = c.access;
   collections = c;
 });
-
-//generates a token/code and queries the database to see if it's already present (recursive)
-function makeNewThing(res, isToken) {
-  //return promise, pass recursive function
-  return new Promise(function attempt(resolve, reject) {
-    //make new token or code
-    const thing = tokenProcessor[isToken ? "makeToken" : "makeCode"]();
-
-    //query if it exists in db
-    (isToken ? resolutions.findOne({ token: thing }) :
-     access.findOne({ code: thing })).then(document => {
-      //if it exists
-      if (document) {
-        //try again randomly
-        attempt(resolve, reject);
-      } else {
-        //doesn't exist yet, call callback with found thing
-        resolve(thing);
-      }
-    }, () => {
-      reject("db read error");
-    });
-  }).catch(() => issueError(res, 500, "db read error"));
-}
 
 //GET (view) to /resolution displays front page (token and code input) without promo
 router.get("/", function(req, res) {
@@ -128,7 +102,7 @@ router.get("/prenew", function(req, res) {
 //GET (no view, processor) redirects to editor page with new registered token
 router.get("/new", function(req, res) {
   //make a new unique token, true flag for being a token
-  makeNewThing(res, true).then(token => {
+  resUtil.makeNewThing(res, true).then(token => {
     //get now (consistent)
     const timeNow = Date.now();
 
@@ -414,20 +388,4 @@ router.get("/checkinput/:thing", function(req, res) {
     //bad, strange thing sent
     issueError(400, "sent thing unreadable, code/token?");
   }
-});
-
-//GET no view, creates and outputs a bunch of access codes
-router.get("/makecodes/" + credentials.makeCodesSuffix, function(req, res) {
-  //for every level make a new code doc
-  Promise.all(["AP", "FC", "SC", "CH", "MA"].map(
-    level => makeNewThing(res, false).then(code => ({ level: level, code: code }))
-  )).then(newCodes =>
-    //add all of them to the database
-    access.insertMany(newCodes).then(
-      //respond with codes as content
-      () => res.send(newCodes
-        .map(code => code.level + " " + code.code)
-        .join("<br>")),
-      err => issueError(res, 500, "Error inserting codes", err))
-  );
 });

@@ -5,7 +5,7 @@ const routingUtil = require("../lib/routingUtil");
 const tokenProcessor = require("../lib/token");
 const { issueError } = require("../lib/logger");
 
-//get resolutions collection
+//get collections
 let resolutions, resolutionArchive, access, metadata;
 require("../lib/database").fullInit.then(collections => {
   resolutions = collections.resolutions;
