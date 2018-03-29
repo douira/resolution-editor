@@ -1,7 +1,7 @@
 /*jshint esversion: 5, browser: false, varstmt: false, jquery: false */
 /*global module */
 
-//string used to identify files saved by this website (mild protection for now)
+//string used to identify files saved by this website, mild effect
 var magicIdentifier = "PG52QE1AM4LACMX9";
 
 //debugging logger
