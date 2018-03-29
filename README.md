@@ -1,7 +1,7 @@
 # resolution-editor
 [![Dependency Status](https://david-dm.org/douira/resolution-editor.svg)](https://david-dm.org/douira/resolution-editor)  
 This editor guides the creation of a correctly formatted resolution document. It was created in need of a better way of formatting and distributing resolutions for MUNOL.
-feel free to make a pull request if you have something you'd like to contribute to this project
+Feel free to make a pull request if you have something you'd like to contribute to this project
 
 ## How to Install
 The app can be downloaded by cloning the repo with
