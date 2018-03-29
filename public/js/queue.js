@@ -1,5 +1,8 @@
 /*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
-/*exported*/
+/*exported
+firstItem,
+updateList,
+updateListConfig*/
 
 //the template dom element for the list
 var templateItem;
@@ -57,10 +60,14 @@ function getTimeText(time) {
 
 //sets the basic attributes of a list item with a given data object
 function setBasicAttribs(data, elem) {
-  //set content in subelements
+  //set token
   elem.find(".item-token").text(data.token).attr("href", "/resolution/editor/" + data.token);
-  elem.find(".item-year").text(data.idYear);
-  elem.find(".item-id").text(data.resolutionId);
+
+  //id and year only if present in data
+  if (data.idYear && data.resolutionId) {
+    elem.find(".item-year").text(data.idYear);
+    elem.find(".item-id").text(data.resolutionId);
+  }
 
   //set forum and main sponsor
   elem.find(".item-forum").text(data.address.forum);

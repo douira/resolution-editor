@@ -407,9 +407,7 @@ router.get("/fcqueue/getitems", function(req, res) {
   }).project({
     //only need some data
     token: 1,
-    stageHistory: 1,
-    resolutionId: 1,
-    idYear: 1,
+    stageHistory: 1, //id and year are assigned with advance to stage 4
     "content.resolution.address": 1,
     _id: 0
   }).sort({
