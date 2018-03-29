@@ -3,6 +3,9 @@
 firstItem,
 updateList,
 updateListConfig*/
+/*global
+displayToast,
+makeAlertMessage*/
 
 //the template dom element for the list
 var templateItem;
@@ -20,7 +23,7 @@ var updateIntervalTime = 30000;
 var firstItem;
 
 //message and list elements
-var list, errorMsg, noItems;
+var list, errorMsg, noItems, advanceButton;
 
 //config is set by specific page code
 var updateListConfig = { };
@@ -173,10 +176,11 @@ $(document).ready(function() {
   //detach the template element from the list
   templateItem = $("#item-template").detach().removeClass("hide-this").removeAttr("id");
 
-  //get queue elements
+  //get elements
   list = $("#queue");
   errorMsg = $("#error-msg");
   noItems = $("#no-items-msg");
+  advanceButton = $("#advance-btn");
 
   //register handler on link to update the list
   var checkNow = $("#update-data-now");
@@ -197,6 +201,29 @@ $(document).ready(function() {
         checkNow.removeClass("grey-text");
       }, 3000);
     }
+  });
+
+  //on click of advance button
+  advanceButton
+  .on("click", function(e) {
+    //prevent default following of link (doesn't have a proper href anyways)
+    e.preventDefault();
+
+    //send an advance request to the server
+    $.get("/resolution/advance/" + firstItem.token + "?noui=1").done(function() {
+      //make a toast to notify
+      displayToast("Advanced Resolution");
+
+      //update list to make new top item
+      updateList();
+    }).fail(function() {
+      //display error message
+      makeAlertMessage(
+        "error_outline", "Error Advancing Resolution", "ok",
+        "The server encountered an error while trying to advance this resolution." +
+        " If the error persists after reloading the page, ask IT-Management for help.",
+        "pdf_gen");
+    });
   });
 
   //start first, will queue itself to run updateList in 30 seconds

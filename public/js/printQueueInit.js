@@ -4,7 +4,7 @@ firstItem,
 updateList,
 updateListConfig,
 makeAlertMessage,
-displayToast*/
+advanceButton*/
 
 //current state of the buttons for the first item
 //can be: unrendered, rendering, rendered, viewed (in that order)
@@ -15,10 +15,8 @@ function setFirstItemStage(newStage, useItem) {
   //use given item is present
   useItem = useItem || firstItem;
 
-  //set to new stage if given
-  if (typeof newStage === "string") {
-    firstItemPdfStage = newStage;
-  }
+  //set to new stage
+  firstItemPdfStage = newStage;
 
   //switch to stage
   switch(firstItemPdfStage) {
@@ -29,7 +27,7 @@ function setFirstItemStage(newStage, useItem) {
         .attr("href", "#")
         .removeClass("btn")
         .addClass("btn-flat");
-      $("#advance-btn").addClass("disabled");
+      advanceButton.addClass("disabled");
       break;
     case "rendering":
       $("#print-btn-inner").addClass("hide-this");
@@ -38,7 +36,7 @@ function setFirstItemStage(newStage, useItem) {
     case "rendered":
       $("#print-btn-inner").removeClass("hide-this");
       $("#pdf-wait-spinner").addClass("hide-this");
-      $("#advance-btn").addClass("disabled");
+      advanceButton.addClass("disabled");
 
       //set to be rendered
       useItem.unrenderedChanges = false;
@@ -52,7 +50,7 @@ function setFirstItemStage(newStage, useItem) {
       $("#print-btn-text").text("View PDF");
       break;
     case "viewed":
-      $("#advance-btn").removeClass("disabled");
+      advanceButton.removeClass("disabled");
       break;
   }
 }
@@ -113,28 +111,5 @@ $(document).ready(function() {
       //move into viewed stage
       setFirstItemStage("viewed");
     }
-  });
-
-  //on click of advance button
-  $("#advance-btn")
-  .on("click", function(e) {
-    //prevent default following of link (doesn't have a proper href anyways)
-    e.preventDefault();
-
-    //send an advance request to the server
-    $.get("/resolution/advance/" + firstItem.token + "?noui=1").done(function() {
-      //make a toast to notify
-      displayToast("Advanced Resolution");
-
-      //update list to make new top item
-      updateList();
-    }).fail(function() {
-      //display error message
-      makeAlertMessage(
-        "error_outline", "Error Advancing Resolution", "ok",
-        "The server encountered an error while trying to advance this resolution." +
-        " If the error persists after reloading the page, ask IT-Management for help.",
-        "pdf_gen");
-    });
   });
 });

@@ -12,7 +12,7 @@ block content
     +icon("playlist_add_check", "large left blue-text")
     h3 Formal Clearing Work-Queue
     .divider
-    p.justify This is a queue of all resolutions that are in stage #[a(href="/help#rstage4") 3] and need to be reviewed by the Formal Clearing. After reviewing the resolution, you can advance the resolution to the next stage. Once the resolution has been advanced to the next stage, it cannot be brought back into this list. Resolutions that cannot be advanced (or are static) will not appear on this list. The time a particular resolution has been waiting to print is displayed in the upper right corner of the item list. There will be a link back to this page once a resolution is advanced to the next stage.
+    p.justify This is a queue of all resolutions that are in stage #[a(href="/help#rstage4") 3] and need to be reviewed by the Formal Clearing. After reviewing the resolution, you can advance the resolution to the next stage. Once the resolution has been advanced to the next stage, it cannot be brought back into this list. Resolutions that cannot be advanced (or are static) will not appear on this list. The time a particular resolution has been waiting to print is displayed in the upper right corner of the item list.
     mixin item-core-inner
       a.item-token(href="#" target="_blank") @ABCD1234
     mixin item-core(header)
@@ -22,16 +22,16 @@ block content
       else
         .item-token-wrapper
           +item-core-inner
-          block
+      |  in #[b.item-forum ffff] by #[b.item-sponsor ssss]
       span.item-age.grey-text.right ? minutes
     ul.collection#queue
       li.collection-item#first-item
         +item-core(true)
         br
-        | Submitted to #[b.item-forum ffff] by #[b.item-sponsor ssss]
+        a.waves-effect.waves-light.btn.disabled#advance-btn(href="#") Advance Resolution
+          +icon("forward", "left")
       li.collection-item.hide-this.list-item#item-template
         +item-core
-          |  in #[b.item-forum ffff] by #[b.item-sponsor ssss]
     .center.hide-this#no-items-msg There currently are no documents waiting to be reviewed by the FC.
     p.center.hide-this#error-msg There was an error with getting the data from from the server. Contact IT-Management if this problem persists after reloading the page.
     .center
