@@ -33,7 +33,7 @@ block content
           | #[b Tip:] Hover over buttons to display a helpful tool tip!
         +icon-box("flash_on", "Fast Editing and Approval")
           | Shorter waiting, approval and printing times. You won't have to look for the right Word setting or wait for the Formal Clearing Office to correct your formatting. Making new clauses and subclauses is easier than ever.
-        +icon-box(liveviewIcon, "Debate with LiveView")
+        +icon-box(icons.liveview, "Debate with LiveView")
           | Open a rendered and live updated version of your resolution on a different device for viewing it on a projector. Local devices connected to the projector can serve as output devices to reduce cable troubles. Changes are automatically color coded in LiveView.
       .divider
       br
@@ -45,13 +45,13 @@ block content
       row
         .row.col.xl6.l5.s12
           .input-field.col.l12.m6.s12
-            +icon(tokenIcon, "prefix")
-            input#token-input(type="text" placeholder=tokenPlaceholder)
+            +icon(icons.token, "prefix")
+            input#token-input(type="text" placeholder=placeholder.token)
             label(for="token-input") Enter resolution token
           .input-field.col.l12.m6.s12
             form(method="POST" action="/")#code-form
-              +icon(codeIcon, "prefix")
-              input#code-input(name="code" type="text" placeholder=codePlaceholder)
+              +icon(icons.code, "prefix")
+              input#code-input(name="code" type="text" placeholder=placeholders.code)
               label(for="code-input") (optional) Enter access code
         .col.xl6.l7.m12#token-info.justify Talk to your Chair if you've #[b forgotten] your resolution token. (Looking at your browser's history can be helpful too.) You're only required to enter an access code if editing access to the resolution has been #[b restricted] and you're granted elevated editing privileges with a personal access code. It's still possible to view a #[b read-only] version and metadata about a resolution if you don't have editing privileges. If you've forgotten your access code or have any other problems accessing the editor, please #[b contact IT-Management].
     .center

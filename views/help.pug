@@ -10,10 +10,10 @@ block styles
 block content
   include stages
   .container
-    h4.center: +icon(helpIcon, "large" + helpColor)
+    h4.center: +icon(icons.help, "large" + color.help)
     h3.center Help and Information Page
     .divider
-    h4: +icon(codeIcon, "mediumsmall left" + sessionColor)
+    h4: +icon(icons.code, "mediumsmall left" + colors.session)
     h4#access-levels Access Levels
     | These are the access levels of access codes that are displayed on the editor page of each resolution.
     table.striped
@@ -123,10 +123,10 @@ block content
             | 0123456789
             br
             | *_^|&’"-.,()/+
-    h4: +icon(handytextboxIcon, "mediumsmall left" + handytextboxColor)
+    h4: +icon(icons.handytextbox, "mediumsmall left" + colors.handytextbox)
     h4#handytextbox Handy Textbox
     p Use this #[a(href="/handytextbox") handy textbox] for whatever you want. It's meant to be used as a temporary text area in which you can type amendments before copying them into editor's amendment interface to debate them.
-    h4: +icon(liveviewIcon, "mediumsmall left " + liveviewColor)
+    h4: +icon(icons.liveview, "mediumsmall left " + colors.liveview)
     h4#liveview LiveView
     h5#amdcolors Colors in Amendments
     p Amendments change the resolution by adding, removing or changing content. In order to better display these changes, the affected sections are colorized according to what's happening with them.
