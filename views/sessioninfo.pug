@@ -1,0 +1,12 @@
+extends layout
+
+block title
+  title Session Info
+
+block content
+  .container
+    +icon("person", "large left" + sessionColor)
+    h3 Session Info
+    p You are logged in with #[b level #{level}] and #[b code #{code}]. Do not log in on devices that you don't trust or don't always have secure access to.
+    .center: a.btn-large.waves-effect.waves-light.red.lighten-1(href="/session/logout") Logout
+    br
