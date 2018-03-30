@@ -12,15 +12,34 @@ require("../lib/database").fullInit.then(collections => {
   access = collections.access;
 });
 
+//GET session display info
+router.get("/", function(req, res) {
+  //require session auth
+  routingUtil.requireSession("any", req, res, codeDoc => {
+    //render info page
+    res.render("sessioninfo", codeDoc);
+  });
+});
+
 //GET display enter access code page
 router.get("/login", function(req, res) {
+  //wether or not there is an existing session
+  const renderOpts = { loggedIn: typeof req.session.code === "string" };
+
+  //add code doc if logged in
+  if (renderOpts.loggedIn) {
+    //add code doc (code and level)
+    renderOpts.code = req.session.code;
+    renderOpts.level = req.session.doc.level;
+  }
+
   //render login page with code input, notfiy if already logged in
-  res.render("login", { loggedIn: typeof req.session.code === "string" });
+  res.render("login", renderOpts);
 });
 
 //POST access code to auth
 router.post("/open", function(req, res) {
-  //code musrt be valid, any valid code can create a session
+  //code must be valid, any valid code can create a session
   routingUtil.checkCode(req, res, codeDoc => {
     //register permission in session
     req.session.doc = codeDoc;

@@ -19,9 +19,9 @@ block content
         p.justify
           block
     .row.no-bottom-mrg
-      +icon-box(helpIcon, helpColor, "Use the Help Page")
+      +icon-box(icons.help, color.help, "Use the Help Page")
         | If you have a question, consult the #[a(href="/help") Help Page] first. Most questions have already been asked and answers are available.
-      +icon-box(contentguidelinesIcon, weakpermColor, "Follow the Content Guidelines")
+      +icon-box(icons.contentguidelines, colors.weakperm, "Follow the Content Guidelines")
         | What content is allowed in the editor is regulated with the #[a(href="/help/contentguidelines") Content Guidelines]. The guidelines essentially represent common sense.
     .row.no-bottom-mrg
       +icon-box("visibility", "green-text", "Read Hint Texts")
@@ -31,7 +31,7 @@ block content
     .row
       +icon-box("lock", "cyan-text", "Secure your Credentials")
         | Keep all credentials you are given by the staff or the editor safe and secure. You are responsible for any data loss resulting from handling credentials unsecurely.
-      +icon-box(codeIcon, "indigo-text", "Contact IT-Management")
+      +icon-box(icons.code, "indigo-text", "Contact IT-Management")
         | If you still can't solve your problems after reading hint texts, the Help Page and asking your Chair or fellow Delegates/Participants, talk to IT-Management for final advice.
     if ! noNew
       .center: a.btn.btn-large.waves-effect.waves-light(class=pri href="/resolution/new") I understand
