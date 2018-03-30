@@ -1,7 +1,7 @@
 extends layout
 
 block title
-  title Admin Login
+  title Session Login
 
 block content
   .container
@@ -14,7 +14,9 @@ block content
         label(for="code-input") Enter access code
       .col.xl6.l7.m12#queue-info.justify Enter your access code to login and go back to where this permission session was necessary.
         if loggedIn
-          span.red-text  You are already logged in.
+          span.red-text  You are already logged in with level #{level} and code #{code}.
+        else
+          | You are not logged in.
     .center: a.btn-large.waves-effect.waves-light#login-btn(href="#" class=pri) Login
     br
 block scripts

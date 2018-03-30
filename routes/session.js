@@ -14,8 +14,18 @@ require("../lib/database").fullInit.then(collections => {
 
 //GET display enter access code page
 router.get("/login", function(req, res) {
+  //wether or not there is an existing session
+  const renderOpts = { loggedIn: typeof req.session.code === "string" };
+
+  //add code doc if logged in
+  if (renderOpts.loggedIn) {
+    //add code doc (code and level)
+    renderOpts.code = req.session.code;
+    renderOpts.level = req.session.doc.level;
+  }
+
   //render login page with code input, notfiy if already logged in
-  res.render("login", { loggedIn: typeof req.session.code === "string" });
+  res.render("login", renderOpts);
 });
 
 //POST access code to auth
