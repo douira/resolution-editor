@@ -175,10 +175,11 @@ function loadJson(json, callbackOnSuccess) {
   elem.trigger("init");
 
   //parse clauses
-  parseClauseList(res.clauses.preambulatory,
-                  $("#preamb-clauses").children(".clause-list"));
-  parseClauseList(res.clauses.operative,
-                  $("#op-clauses").children(".clause-list"));
+  parseClauseList(res.clauses.preambulatory, $("#preamb-clauses").children(".clause-list"));
+  parseClauseList(res.clauses.operative, $("#op-clauses").children(".clause-list"));
+
+  //prepare all clauses for condensed display
+  $(".clause").trigger("editInactive");
 
   //call success callback
   if (typeof callbackOnSuccess === "function") {
@@ -226,7 +227,7 @@ function serverLoad(token, doToast, callback) {
   .done(function(response) {
     //attempt to load json into editor
     loadJson(response, function() {
-        //display toast
+      //display toast
       if (doToast) {
         displayToast("Successfully loaded");
       }
@@ -330,8 +331,9 @@ $.fn.clauseAsObject = function(allowEmpty) {
   }
 
   //check for visible extended clause content
-  if (this.children(".clause-content-ext:visible").length) {
-    clauseData.contentExt = this.children(".clause-content-ext").find("textarea").val().trim();
+  var contentExtVal = this.children(".clause-content-ext").find("textarea").val().trim();
+  if (contentExtVal.length) {
+    clauseData.contentExt = contentExtVal;
   }
 
   //get subclauses and add if not empty list
