@@ -1980,6 +1980,9 @@ $(document).ready(function() {
         //trigger init on all
         $("*").trigger("init");
 
+        //activate the first preamb clause as a starting point
+        $("#preamb-clauses").find(".clause").trigger("editActive");
+
         //start timer for save reminder
         setTimeout(function() {
           //display alert modal with alert message
