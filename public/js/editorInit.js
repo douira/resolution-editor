@@ -142,10 +142,7 @@ function makeEabMoveUpdateDisabledHandler(isUpButton) {
     var clauseIndex = clauses.index(enclosingClause);
 
     //depending on direction flag, decide wether or not to disable
-    $(this)[
-      (isUpButton ? ! clauseIndex : clauseIndex === clauses.length - 1) ?
-      "addClass" : "removeClass"
-    ]("disabled");
+    $(this).disabledState(isUpButton ? ! clauseIndex : clauseIndex === clauses.length - 1);
   };
 }
 
@@ -234,11 +231,18 @@ $.fn.isSubClause = function() {
   return this.closest(".clause-list").is(".clause-list-sub");
 };
 
+//sets the state of a class (adding or removing)
+$.fn.classState = function(state, className) {
+  //add or remove class depending on flag value
+  this.each(function() {
+    $(this)[state ? "addClass" : "removeClass"](className);
+  });
+};
+
 //sets the disabled state for element by adding or removing the .disabled class
 $.fn.disabledState = function(makeDisabled) {
-  return this.each(function() {
-    $(this)[makeDisabled ? "addClass" : "removeClass"]("disabled");
-  });
+  //set class state for .disabled
+  this.classState(makeDisabled, "disabled");
 };
 
 //triggers several events in order
@@ -1105,7 +1109,7 @@ function registerEventHandlers(loadedData) {
 
     //change validation state to wether or not this field contains a correct value
     var valueOk = this.checkAutoCompValue(loadedData);
-    elem[valueOk ? "addClass" : "removeClass"]("invalid");
+    elem.classState(valueOk, "invalid");
 
     //apply to global flag
     badFieldPresent = badFieldPresent || ! valueOk;
@@ -1247,8 +1251,7 @@ function registerEventHandlers(loadedData) {
     valueBad = ! (value && value.length);
 
     //color label according to status
-    elem.siblings("label")
-      [valueBad ? "addClass" : "removeClass"]("red-text");
+    elem.siblings("label").classState(valueBad, "red-text");
 
     //check that all entries are ok sponsors in autofill data
     if (! valueBad) {
@@ -1270,8 +1273,7 @@ function registerEventHandlers(loadedData) {
           var isOk = matchData.includes(value) && $("#main-spon").val().trim() !== value;
 
           //color-mark tag object
-          elem.children(".chip:eq(" + index + ")")
-            [isOk ? "removeClass" : "addClass"]("red white-text");
+          elem.children(".chip:eq(" + index + ")").classState(! isOk, "red white-text");
 
           //return for validation of whole array
           return allOk && isOk;
