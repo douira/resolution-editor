@@ -97,3 +97,7 @@
   color: rgba(0, 0, 0, 0.65) !important;
   border-bottom-width: 2px !important;
 }
+
+#amd-apply-btn {
+  pointer-events: all;
+}

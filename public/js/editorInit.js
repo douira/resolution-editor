@@ -216,9 +216,9 @@ $.fn.indexInParent = function() {
 //triggers updateId on all clauses of parent
 $.fn.triggerAllIdUpdate = function() {
   return this
-      .parent()
-      .children(".clause")
-      .trigger("updateId");
+    .parent()
+    .children(".clause")
+    .trigger("updateId");
 };
 
 //checks if clause can be removed
@@ -532,6 +532,38 @@ $.fn.setSelectValueId = function(setValueId) {
   select.material_select();
 };
 
+//checks if a input field has a autocompletable value
+$.fn.checkAutoCompValue = function(loadedData) {
+  var elem = this;
+
+  //get value of required field
+  var value = this.val().trim();
+
+  //keep track if value ok
+  var valueOk = true;
+
+  //check for presence of value
+  valueOk = value && value.length;
+
+  //check for presence in autofill data mapping and require value to be in data if so
+  if (valueOk) {
+    //get the data we have to match to
+    var matchDataSelector = Object.keys(loadedData.autofillDataMapping)
+      .find(function(selector) {
+        //check if element matches this selector
+        return elem.is(selector);
+      });
+
+    //only if there actually is a selector for this element in the data mappings
+    if (matchDataSelector) {
+      valueOk = loadedData.autofillDataMapping[matchDataSelector].includes(value);
+    }
+  }
+
+  //return determined state
+  return valueOk;
+};
+
 //registers event handlers that are essential for the general function of the page
 function registerEssentialEventHandlers(doLoad) {
   //we can only load from file or delete if we loaded the resolution
@@ -648,6 +680,15 @@ function registerEventHandlers(loadedData) {
     //define here for satisfaction of declaraton order prettiness
     var updateAmd;
 
+    //apply amendment button
+    var applyAmdBtn = $("#amd-apply-btn");
+
+    //updates the state of the amendment apply button
+    var updateApplyBtnState;
+
+    //if it is ok to apply the amendment right now
+    var amdApplyOk = false;
+
     //called by sendLVUpdate in dataInteraction.js to generate the object that is sent to the server
     //and the liveview clients containing all information describing the current amendment
     getAmendmentUpdate = function(noData) {
@@ -679,7 +720,7 @@ function registerEventHandlers(loadedData) {
           //call updateAmd to make clause look right
           updateAmd();
 
-          //stop rocessing, will be called again once update is processed
+          //stop processing, will be called again once update is processed
         }
 
         //set index in amendment display, +1 for natural (non 0 index) counting
@@ -744,14 +785,19 @@ function registerEventHandlers(loadedData) {
 
           //cannot be displayed in lv without clause
           amdDisplayable = false;
-
-          //stop, only show message
-          return;
         }
       }
 
       //at this point the displayability is determined by the selected type
       amdDisplayable = amdActionType !== "noselection";
+
+      //update apply amd button state (sponsor didn't change though)
+      updateApplyBtnState();
+
+      //stop if not displayable
+      if (! amdDisplayable) {
+        return;
+      }
 
       //hide select message
       $("#amd-no-selection").hide();
@@ -816,6 +862,21 @@ function registerEventHandlers(loadedData) {
 
       //send amendment update
       sendLVUpdate("amendment");
+    };
+
+    //updates the amd apply button state
+    updateApplyBtnState = function() {
+      //ok if amd is displayable
+      amdApplyOk = amdDisplayable;
+
+      //if a new sponsor was selected
+      if (amdApplyOk) {
+        //check that the sponsor is one of the sponsors allowed for that autocomplete field
+        amdApplyOk = sponsorInputElem.checkAutoCompValue(loadedData);
+      }
+
+      //update the disabled state of the button
+      applyAmdBtn.disabledState(! amdApplyOk);
     };
 
     //amendment action type selection
@@ -886,12 +947,28 @@ function registerEventHandlers(loadedData) {
     });
 
     //sponsor field change
-    //TODO: chaneg event is fired twice and causes double amendment update,
-    //removing materialize venet handlers from #amd-spon solves this...
-    $("#amd-spon")
-    .on("change", function() { //not on single keystrokes, not necessary
-      //send amendment update
-      sendLVUpdate("amendment");
+    sponsorInputElem.on("change", function(e) {
+      //only use the event that has .originalEvent and was not triggered by materialize
+      if (e.originalEvent) {
+        //send amendment update
+        sendLVUpdate("amendment");
+
+        //update the apply button state
+        updateApplyBtnState();
+      }
+    });
+
+    //on clicking apply amendment button
+    applyAmdBtn.on("click", function(e) {
+      e.stopPropagation();
+
+      //needs to be ok
+      if (! amdApplyOk) {
+        //illegal click
+        return;
+      }
+
+      console.log("apply amd");
     });
   }
 
@@ -1026,36 +1103,12 @@ function registerEventHandlers(loadedData) {
     e.stopPropagation();
     var elem = $(this);
 
-    //get value of required field
-    var value = elem.val().trim();
-
-    //keep track if value invalid
-    var valueBad = false;
-
-    //check for presence of value
-    valueBad = ! (value && value.length);
-
-    //check for presence in autofill data mapping and require value to be in data if so
-    if (! valueBad) {
-      //get the data we have to match to
-      var matchDataSelector = Object.keys(loadedData.autofillDataMapping)
-        .find(function(selector) {
-          //check if element matches this selector
-          return elem.is(selector);
-        });
-
-      //only if there actually is a selector for this element in the data mappings
-      if (matchDataSelector) {
-        valueBad = valueBad || ! loadedData
-          .autofillDataMapping[matchDataSelector].includes(value);
-      }
-    }
-
-    //change validation state accordingly
-    elem[valueBad ? "addClass" : "removeClass"]("invalid");
+    //change validation state to wether or not this field contains a correct value
+    var valueOk = this.checkAutoCompValue(loadedData);
+    elem[valueOk ? "addClass" : "removeClass"]("invalid");
 
     //apply to global flag
-    badFieldPresent = badFieldPresent || valueBad;
+    badFieldPresent = badFieldPresent || ! valueOk;
   })
   .on("change", function() {
     //check again on changed value
