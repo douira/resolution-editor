@@ -19,7 +19,7 @@
     "express-session": "^1.15.6",
     "extend": "^3.0.1",
     "fs-extra": "^5.0.0",
-    "mongodb": "^2.2.35",
+    "mongodb": "^3.0.5",
     "morgan": "~1.9.0",
     "pug": "^2.0.3",
     "roman-numerals": "^0.3.2",
