@@ -49,7 +49,7 @@ $.fn.getSelectValue = function() {
     activeOption.children("span").text() + ")").val();
 
   //must be one of the possible states and not the current one
-  if (["AP", "FC", "MA", "CH", "SC"].indexOf(activeId) === -1) {
+  if (["SC", "AP", "FC", "CH", "SG", "MA"].indexOf(activeId) === -1) {
     //disable button and invalidate field
     selectBoxInput.removeClass("valid").addClass("invalid");
 

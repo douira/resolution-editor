@@ -4,6 +4,7 @@ const router = module.exports = express.Router();
 const routingUtil = require("../lib/routingUtil");
 const tokenProcessor = require("../lib/token");
 const { issueError } = require("../lib/logger");
+const { validateAccessLevel } = require("../lib/resUtil");
 
 //get resolutions collection
 let resolutions, resolutionArchive, access, metadata;
@@ -103,12 +104,6 @@ router.get("/codes", function(req, res) {
   }, err => issueError(res, 500, "could not query codes or insert group id for overview", err));
 });
 
-//checks that level is given and is valid
-function validatePostedAccessLevel(level) {
-  //need to be a string and one of the allowed level names
-  return typeof level === "string" && ["FC", "AP", "SC", "MA", "CH"].includes(level);
-}
-
 //GET print codes displays items in a plaintext table view that can be easily printed
 router.get("/codes/print/:group", function(req, res, next) {
   //the given print group type
@@ -126,7 +121,7 @@ router.get("/codes/print/:group", function(req, res, next) {
     query = getInsertGroupCounter().then(counterResult => ({
       insertGroupId: counterResult.value
     }), err => issueError(res, 500, "could not query insert group id for code print table", err));
-  } else if (validatePostedAccessLevel(printGroupType)) {
+  } else if (validateAccessLevel(printGroupType)) {
     //query for codes with this access level
     query = Promise.resolve({
       level: printGroupType
@@ -181,7 +176,7 @@ router.post("/codes/:action", function(req, res) {
       } else { //change action
         //require correct new level to be set
         const setLevel = req.body.level;
-        if (validatePostedAccessLevel(setLevel)) {
+        if (validateAccessLevel(setLevel)) {
           //change level for all codes
           access.updateMany(
             { code: { $in: codes }},
@@ -202,7 +197,7 @@ router.post("/codes/:action", function(req, res) {
     if (req.body) {
       //require valid level to be specified
       const useLevel = req.body.accessLevel;
-      if (! validatePostedAccessLevel(useLevel)) {
+      if (! validateAccessLevel(useLevel)) {
         //complain and stop
         issueError(res, 400, "invalid code level set " + useLevel + " for new codes op");
         return;

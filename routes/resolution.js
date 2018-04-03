@@ -426,7 +426,7 @@ router.get("/checkinput/:thing", function(req, res) {
 //GET no view, creates and outputs a bunch of access codes
 router.get("/makecodes/" + credentials.makeCodesSuffix, function(req, res) {
   //for every level make a new code doc
-  Promise.all(["AP", "FC", "SC", "CH", "MA"].map(
+  Promise.all(resUtil.validAccessLevels.map(
     level => makeNewThing(res, false).then(code => ({ level: level, code: code }))
   )).then(newCodes =>
     //add all of them to the database
