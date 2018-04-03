@@ -1743,12 +1743,13 @@ $(document).ready(function() {
     codeElement.remove();
   }
 
-  //check for chair or admin access
-  accessLevel = $("#code-access-level").text();
-  chairMode = accessLevel === "MA" || accessLevel === "CH";
-
   //get stage of resolution
   resolutionStage = parseInt($("#resolution-stage").text(), 10);
+
+  //check for chair or admin access
+  accessLevel = $("#code-access-level").text();
+  chairMode = accessLevel === "MA" || accessLevel === "CH" && resolutionStage < 7 ||
+    accessLevel === "SG" && resolutionStage < 11;
 
   //autosave is aenabled if at non 0 stage
   autosaveEnabled = resolutionStage > 0;
@@ -1784,7 +1785,7 @@ $(document).ready(function() {
     //additional validation to check for vote field values
     additionalValidation: function(setFieldState) {
       //return true right away if we're not at stage 6
-      if (resolutionStage !== 6) {
+      if (! (resolutionStage === 6 || resolutionStage === 10)) {
         return true;
       }
 
@@ -1949,8 +1950,9 @@ $(document).ready(function() {
         }, 1000 * 60 * 5); //5 minutes
       }
 
-      //if as MA or at stage 6 and authorized as CH, start liveview editor websocket
-      if (resolutionStage === 6 && accessLevel === "CH" ||
+      //if as MA or at stage 6/10 and authorized as CH/SG, start liveview editor websocket
+      if (resolutionStage === 6 && (accessLevel === "CH" || accessLevel === "SG") ||
+          resolutionStage === 10 && accessLevel === "SG" ||
           resolutionStage && accessLevel === "MA") { //MA access to LV needs at least once saved
         //disable autosave for liveview, we don't want to be accidenatlly saving undesired states
         autosaveEnabled = false;
