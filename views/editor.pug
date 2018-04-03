@@ -38,7 +38,7 @@ block content
     h3 Resolution Editor
     .divider
     h5.light
-      +icon(tokenIcon, "mediumsmall left text-darken-3 amber-text")
+      +icon(icons.token, "mediumsmall left text-darken-3 amber-text")
       if doLoad
         | Your Token:
       else
@@ -61,12 +61,12 @@ block content
     +stage-info-index(meta.stage, true)
     if lvEnabled && doLoad
       h5.light#liveview-heading LiveView available
-        +icon(liveviewIcon, "mediumsmall left blue-text text-darken-1")
+        +icon(icons.liveview, "mediumsmall left blue-text text-darken-1")
       .justify
         p To open LiveView on another device open the resolution by entering the resolution token and your access code on the #[a(href="/resolution" target="_blank") Resoluion Page] and clicking the "LiveView" button. LiveView will display a mock version of the rendered resolution document that will update in real time and colorize amendments you make while LiveView is active.
         p
           a#hide-lieview-hint.grey-text(href="#") [Hide hint]
-          span#liveview-hint  The following procedure is recommended: Retype amendments somehwere into your computer. This can be any text editor or this #[a(href="/handytextbox" target="_blank") handy textbox]. When you want to discuss the amendment, paste it into the amendment field and select the appropriate sponsor and action type. This will update it on the LiveView client. The LiveView client marks removed text #[span(class=redMarker) red] and added text #[span(class=greenMarker) green]. After discussing and voting in favour or against the amendment, click the keep or reject button below the amendment field to either apply the proposed changes to the resolution or remove them from the display.
+          span#liveview-hint  The following procedure is recommended: Retype amendments somehwere into your computer. This can be any text editor or this #[a(href="/handytextbox" target="_blank") handy textbox]. When you want to discuss the amendment, paste it into the amendment field and select the appropriate sponsor and action type. This will update it on the LiveView client. The LiveView client marks removed text #[span(class=marker.red) red] and added text #[span(class=markers.green) green]. After discussing and voting in favour or against the amendment, click the keep or reject button below the amendment field to either apply the proposed changes to the resolution or remove them from the display.
     if doLoad
       h5.light Important: Concurrent Editing
         +icon("announcement", "mediumsmall left red-text")
@@ -191,7 +191,7 @@ block content
                     label(for="important-question-checkbox") Declared an important question
             .input-field(class=lvEnabled ? "xl6 m6 s12 col" : "")
               +icon(codeIcon, "prefix")
-              input#advance-code-input(name="code" type="text" placeholder=codePlaceholder)
+              input#advance-code-input(name="code" type="text" placeholder=placeholders.code)
               label(for="advance-code-input") Enter access code
         mixin input-field-wrapper
           if meta.stage
@@ -223,7 +223,7 @@ block content
         .inline-spinner-wrapper.hide-this.blue-text#pdf-wait-spinner
           +spinner("blue", "inline-spinner")
           |  Rendering...
-      +meta-button("action-plaintext", "View Plaintext (fallback)", plaintextIcon, "Generates a plain text version of the resolution: Only use in case of problems", "grey-text")
+      +meta-button("action-plaintext", "View Plaintext (fallback)", icons.plaintext, "Generates a plain text version of the resolution: Only use in case of problems", "grey-text")
       if doLoad
         +meta-button("legacy-action-save", "Save to file (deprecated)", "file_download", "Downloads the resolution in a reusable format", "grey-text")
         +meta-button("legacy-action-load", "Open from file (deprecated)", "file_upload", "Loads a resolution from a previously saved file", "grey-text")
@@ -264,7 +264,7 @@ block content
         +floating-sm-btn("cyan", "eab-add-ext", "playlist_add", "Adds a continuation text field under these subclauses")
         if allowAmendments
           +floating-sm-btn("lime darken-1", "eab-amd", "rate_review", "Selects this clause for an amendment")
-        +floating-sm-btn("deep-orange", "eab-clear", resetIcon, "Resets the fields in this clause and removes the content continuation field")
+        +floating-sm-btn("deep-orange", "eab-clear", icons.reset, "Resets the fields in this clause and removes the content continuation field")
         +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
         +floating-sm-btn("green", "eab-done", "done", "Finishes editing and deactivates edit mode")
       mixin content-card(cardId)
@@ -302,7 +302,7 @@ block content
       +content-card("meta-data")
         .meta-input-wrapper
           .right.btn-floating.btn-large.waves-effect.waves-light.deep-orange.reset-button(for="meta-data")&attributes(tooltip("Resets these fields", "left"))
-            +icon(resetIcon)
+            +icon(icons.reset)
           h5 General Data
           .divider.reduced-width-divider
           .input-field
@@ -332,8 +332,8 @@ block content
       .row
         .input-field.col.xl3.l4.m5.s12
           form(method="POST" action="/").not-editor#unlock-code-form
-            +icon(codeIcon, "prefix")
-            input#unlock-code-input(name="code" type="text" placeholder=codePlaceholder)
+            +icon(icons.code, "prefix")
+            input#unlock-code-input(name="code" type="text" placeholder=placeholders.code)
             label(for="unlock-code-input") Enter access code
         .col.xl9.l8.m7.s12.justify#no-load-mode Editing access to this resolution is restricted beyond your access level (#[a(href="/help#" + accessLevel)=accessLevel]). You can still view meta information and read-only versions of it however. The editor for this resolution can be opened by entering an access code with the levels
           em=meta.stage < 7 ? " Chair-like" : " SG"

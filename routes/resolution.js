@@ -3,11 +3,9 @@ const express = require("express");
 const router = module.exports = express.Router();
 
 const generatePdf = require("../lib/generatePdf");
-const tokenProcessor = require("../lib/token");
 const resUtil = require("../lib/resUtil");
 const routingUtil = require("../lib/routingUtil");
 const liveView = require("./liveview").router;
-const credentials = require("../lib/credentials");
 const { issueError } = require("../lib/logger");
 
 //register callback to get collections on load
@@ -19,30 +17,6 @@ require("../lib/database").fullInit.then(c => {
   access = c.access;
   collections = c;
 });
-
-//generates a token/code and queries the database to see if it's already present (recursive)
-function makeNewThing(res, isToken) {
-  //return promise, pass recursive function
-  return new Promise(function attempt(resolve, reject) {
-    //make new token or code
-    const thing = tokenProcessor[isToken ? "makeToken" : "makeCode"]();
-
-    //query if it exists in db
-    (isToken ? resolutions.findOne({ token: thing }) :
-     access.findOne({ code: thing })).then(document => {
-      //if it exists
-      if (document) {
-        //try again randomly
-        attempt(resolve, reject);
-      } else {
-        //doesn't exist yet, call callback with found thing
-        resolve(thing);
-      }
-    }, () => {
-      reject("db read error");
-    });
-  }).catch(() => issueError(res, 500, "db read error"));
-}
 
 //GET (view) to /resolution displays front page (token and code input) without promo
 router.get("/", function(req, res) {
@@ -128,7 +102,7 @@ router.get("/prenew", function(req, res) {
 //GET (no view, processor) redirects to editor page with new registered token
 router.get("/new", function(req, res) {
   //make a new unique token, true flag for being a token
-  makeNewThing(res, true).then(token => {
+  resUtil.makeNewThing(res, true).then(token => {
     //get now (consistent)
     const timeNow = Date.now();
 
@@ -214,29 +188,15 @@ routingUtil.getAndPost(router, "/editor/:token", function(req, res) {
   );
 });
 
-//POST (no view) update attributes and redirect back to editor page
-router.post("/setattribs/:token", function(req, res) {
-  //authorize, must have code matching MA access level
+//both admin actions setattribs and delete need the same admin full auth
+router.use(["/setattribs/:token", "/delete/:token"], (req, res, next) =>
+  //do full auth
   routingUtil.fullAuth(req, res, token => {
-    //check for present post body property and must be a ok value
-    if (req.body && req.body.attrib &&
-        ["none", "noadvance", "readonly", "static"].includes(req.body.attrib)) {
-      //set to new value in database
-      resolutions.updateOne(
-        { token: token },
-        {
-          $set: {
-            //set attrib string as found in post body
-            attributes: req.body.attrib
-          }
-        }
-      ).then(() => {
-        //redirect back to editor page
-        res.redirect("/resolution/editor/" + token);
-      }, err => issueError(res, 500, "can't set attribute", err));
-    } else {
-      issueError(res, 400, "missing or incorrect fields");
-    }
+    //attach token to req
+    req.resToken = token;
+
+    //proceed to individual routes
+    next();
   }, {
     //just make no db query on auth fail
     permissionMissmatch: token => {
@@ -246,48 +206,55 @@ router.post("/setattribs/:token", function(req, res) {
 
     //use attribute setting permission set (resticted to MA level)
     matchMode: "admin"
-  });
+  })
+);
+
+//POST (no view) update attributes and redirect back to editor page
+router.post("/setattribs/:token", function(req, res) {
+  //get token from req as it was attached in the middleware for setattribs and delete
+  const token = req.resToken;
+
+  //check for present post body property and must be a ok value
+  if (req.body && req.body.attrib &&
+      ["none", "noadvance", "readonly", "static"].includes(req.body.attrib)) {
+    //set to new value in database
+    resolutions.updateOne(
+      { token: token },
+      {
+        $set: {
+          //set attrib string as found in post body
+          attributes: req.body.attrib
+        }
+      }
+    ).then(() => {
+      //redirect back to editor page
+      res.redirect("/resolution/editor/" + token);
+    }, err => issueError(res, 500, "can't set attribute", err));
+  } else {
+    issueError(res, 400, "missing or incorrect fields");
+  }
 });
 
 //POST (no view) delete a resolution
 router.post("/delete/:token", function(req, res) {
-  //authorize, must have code matching MA access level
-  routingUtil.fullAuth(req, res, token => {
-    //remove resolution with that token by moving to the archive
-    resolutions.findOneAndDelete( { token: token } ).then(resDoc => {
-      //insert into archive collection, unpack returned object with .value!
-      resolutionArchive.insertOne(resDoc.value).then(() => {
-        //acknowledge
-        res.send("ok. deleted " + token);
-      }, err => issueError(res, 500, "can't insert into archive", err));
-    }, err => issueError(res, 500, "can't delete", err));
-  }, {
-    //just make no db query on auth fail
-    permissionMissmatch: token => {
-      //just go back to editor
-      res.redirect("/resolution/editor/" + token);
-    },
+  //get token from req (see above)
+  const token = req.token;
 
-    //use master setting permission set (resticted to MA level)
-    matchMode: "admin"
-  });
+  //remove resolution with that token by moving to the archive
+  resolutions.findOneAndDelete( { token: token } ).then(resDoc => {
+    //insert into archive collection, unpack returned object with .value!
+    resolutionArchive.insertOne(resDoc.value).then(() => {
+      //acknowledge
+      res.send("ok. deleted " + token);
+    }, err => issueError(res, 500, "can't insert into archive", err));
+  }, err => issueError(res, 500, "can't delete", err));
 });
 
 //pass liveview stuff on to that module
 router.use("/liveview", liveView);
 
-//POST (no view) (request from editor after being started with set token) send resolution data
-router.post("/load/:token", function(req, res) {
-  //authorize
-  routingUtil.fullAuth(req, res, (token, resolutionDoc) => {
-    //send resolution to client, remove database wrapper
-    res.send(resolutionDoc.content);
-  });
-});
-
-//GET (no view) (request from editor after being started with set token) send resolution data
-//same as above just with node special code
-router.get("/load/:token", function(req, res) {
+//GET and POST (no view) to send resolution data
+routingUtil.getAndPost(router, "/load/:token", function(req, res) {
   //authorize, absence of code is detected in fullAuth
   routingUtil.fullAuth(req, res, (token, resolutionDoc) => {
     //send resolution to client, remove database wrapper
@@ -305,7 +272,7 @@ function padNumber(number, amount) {
 }
 
 //POST (no view) to advance resolution, redirect to editor without code after completion
-router.post("/advance/:token", function(req, res) {
+routingUtil.getAndPost(router, "/advance/:token", function(req, res) {
   //authorize, absence of code is detected in fullAuth
   routingUtil.fullAuth(req, res, (token, resDoc) => {
     //query object to be possibly extended by a vote result setter
@@ -419,22 +386,6 @@ router.get("/checkinput/:thing", function(req, res) {
     });
   } else {
     //bad, strange thing sent
-    issueError(400, "sent content unreadable");
+    issueError(400, "sent thing unreadable, code/token?");
   }
-});
-
-//GET no view, creates and outputs a bunch of access codes
-router.get("/makecodes/" + credentials.makeCodesSuffix, function(req, res) {
-  //for every level make a new code doc
-  Promise.all(resUtil.validAccessLevels.map(
-    level => makeNewThing(res, false).then(code => ({ level: level, code: code }))
-  )).then(newCodes =>
-    //add all of them to the database
-    access.insertMany(newCodes).then(
-      //respond with codes as content
-      () => res.send(newCodes
-        .map(code => code.level + " " + code.code)
-        .join("<br>")),
-      err => issueError(res, 500, "Error inserting codes", err))
-  );
 });

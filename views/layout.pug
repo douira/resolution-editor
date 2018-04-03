@@ -11,8 +11,10 @@
   const secwaves = wavesPrefix + sec;
 
   //marker colors
-  const redMarker = "red lighten-4";
-  const greenMarker = "green lighten-4";
+  const markers = {
+    red: "red lighten-4",
+    green: "green lighten-4"
+  };
 
   //function that generates tooltip attribute data, use: &attributes(tooltip("blah", "left"))
   function tooltip(msg, position) {
@@ -32,28 +34,35 @@
   const bugReportLink = "https://github.com/douira/resolution-editor/issues/new?&labels[]=user%20bug%20report";
 
   //icons
-  const resetIcon = "clear";
-  const codeIcon = "supervisor_account";
-  const tokenIcon = "my_location";
-  const liveviewIcon = "dvr";
-  const handytextboxIcon = "format_size";
-  const helpIcon = "help";
-  const weakpermIcon = "block";
-  const plaintextIcon = "receipt";
-  const contentguidelinesIcon = "gavel";
+  const icons = {
+    reset: "clear",
+    code: "supervisor_account",
+    token: "my_location",
+    liveview: "dvr",
+    handytextbox: "format_size",
+    help: "help",
+    weakperm: "block",
+    plaintext: "receipt",
+    contentguidelines: "gavel"
+  };
 
   //colors for icons
-  const liveviewColor = " text-darken-1 blue-text";
-  const weakpermColor = " text-darken-1 grey-text";
-  const handytextboxColor = " text-lighten-1 brown-text";
-  const helpColor = " text-darken-1 amber-text";
-  const plaintextColor = " text-darken-1 purple-text";
+  const colors = {
+    liveview: " text-darken-1 blue-text",
+    weakperm: " text-darken-1 grey-text",
+    handytextbox: " text-lighten-1 brown-text",
+    help: " text-darken-1 amber-text",
+    plaintext: " text-darken-1 purple-text",
+    session: " text-darken-3 amber-text"
+  };
 
   //placeholders, for adjusting length
-  const tokenPlaceholder = "@ 12345EFGH";
-  const codePlaceholder = "! ABCD5678";
+  const placeholders = {
+    token: "@ 12345EFGH",
+    code: "! ABCD5678"
+  };
 
-//-static file serve with cache control, other args are normally appended
+//-static file serve with cache control
 mixin static(type, url)
   - url += "?v=0" //add version to url
   case type
@@ -148,10 +157,12 @@ html(lang="en")
       li: a(href="/help/support") Support
       li: a(href="/handytextbox") Handy Textbox
       li: a(href="/resolution/prenew?nonew=1") Please Read Page
+      li: a(href="/session") Session Info
       li: a(href="/help/impressum") Impressum
       li: a(href="http://munol.org" target="_blank") MUNOL
     ul#lists-dropdown.dropdown-content
       li: a(href="/list/print") Print Queue
+      li: a(href="/list/fcqueue") FC Work-Queue
       li: a(href="/list/overview") Resolutions
       li: a(href="/list/codes") Codes
     nav.lighten-2(class=pri role="navigation"): .nav-wrapper

@@ -5,7 +5,7 @@ block title
 
 block content
   .container
-    h4.center: +icon("gesture", "large " + weakpermColor)
+    h4.center: +icon("gesture", "large " + colors.weakperm)
     h3=error.message
     h5.grey-text.text-lighten-1 Status #{error.status || "?"}
     if devEnv && error.stack
