@@ -7,12 +7,13 @@ const { issueError } = require("../lib/logger");
 const { validateAccessLevel } = require("../lib/resUtil");
 
 //get collections
-let resolutions, resolutionArchive, access, metadata;
+let resolutions, resolutionArchive, access, metadata, booklets;
 require("../lib/database").fullInit.then(collections => {
   resolutions = collections.resolutions;
   resolutionArchive = collections.resolutionArchive;
   access = collections.access;
   metadata = collections.metadata;
+  booklets = collections.booklets;
 });
 
 //require admin session for overview and code management
@@ -232,7 +233,7 @@ router.post("/codes/:action", function(req, res) {
         _id: "codeInsertGroupCounter"
       }, {
         $inc: { value: 1 }
-      }, { returnOriginal: false }).then(result => {
+      }, { returnOriginal: false, upsert: true }).then(result => {
         //pass gotten counter value to next step
         return Promise.resolve({
           remainingCodes: codesArr,
@@ -412,4 +413,14 @@ router.get("/fcqueue/getitems", function(req, res) {
     //send data to client, rewrite stageHistory and address
     res.send(mapListItems(items, 3));
   }, err => issueError(res, 500, "could not query fc work queue items", err));
+});
+
+//booklet actions require at least SG permission (booklet perm match mode)
+router.use("/booklet", (req, res, next) =>
+  routingUtil.requireSession("booklet", req, res, () => next()));
+
+//booklet creation and selection page
+router.get("/booklet", function(req, res) {
+  //display all booklets
+
 });

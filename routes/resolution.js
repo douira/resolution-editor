@@ -314,7 +314,7 @@ routingUtil.getAndPost(router, "/advance/:token", function(req, res) {
       collections.resolutionId.findOneAndUpdate({ year: new Date().getFullYear() }, {
         //count up one
         $inc: { counter: 1 }
-      })
+      }, { upsert: true })
 
       //advance resolution to next stage and set id
       .then(yearDoc => {
