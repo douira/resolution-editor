@@ -31,9 +31,10 @@ block content
     #resolution-stage.hide-this=meta.stage
     #resolution-attributes.hide-this=meta.attributes
     -
-      //calculate states of the two restriction flags
+      //calculate states
       const allowSave = ! (meta.attributes === "static" || meta.attributes === "readonly") || accessLevel === "MA";
       const allowAdvance = ! (meta.attributes === "static" || meta.attributes === "noadvance") || accessLevel === "MA";
+      const lvEnabled = meta.stage === 6 || meta.stage === 10;
     h3 Resolution Editor
     .divider
     h5.light
@@ -58,7 +59,7 @@ block content
         span#res-id.lighten-4(class=sec) (MUNOL/#{meta.idYear}/#{meta.resolutionId})
     include stages
     +stage-info-index(meta.stage, true)
-    if meta.stage === 6 && doLoad
+    if lvEnabled && doLoad
       h5.light#liveview-heading LiveView available
         +icon(icons.liveview, "mediumsmall left blue-text text-darken-1")
       .justify
@@ -110,41 +111,48 @@ block content
             +t-item("Subsubclauses:", meta.clauseCount[2])
       if meta.voteResults
         li
-          .collapsible-header(class=meta.stage === 7 ? "active" : "")
+          .collapsible-header(class=meta.stage === 7 || meta.stage === 11 ? "active" : "")
             +icon("thumbs_up_down", "text-darken-3 light-blue-text")
             | Vote Results
           .collapsible-body
-            .center
-              if meta.voteResults.passed
-                +icon("check_circle", "mediumsmall light-green-text text-darken-1")
-              else
-                +icon("cancel", "mediumsmall red-text text-darken-1")
-              h5.light#resolution-pass-status The resolution has
-                b=meta.voteResults.passed ? " passed" : " failed"
-                | .
-              if meta.voteResults.importantQuestion
-                p This resolution was declared an #[em important question] and needs a 2/3 majority to pass.
-            .row.no-bottom-mrg
-              .col.s12.l6
-                span.light-green-text
-                  b=meta.voteResults.inFavor
-                  |  Vote#{meta.voteResults.inFavor === 1 ? "" : "s"} in favor
-                |  •
-                span.deep-orange-text
-                  b=" " + meta.voteResults.against
-                  |  Vote#{meta.voteResults.against === 1 ? "" : "s"} against
-                |  •
-                span.light-blue-text
-                  b=" " + meta.voteResults.abstention
-                  |  Abstention#{meta.voteResults.abstention === 1 ? "" : "s"}
-              .col.s12.l6
-                #vote-bar.z-depth-2
-                  - const voteSum = meta.voteResults.inFavor + meta.voteResults.against + meta.voteResults.abstention;
-                  mixin vote-part(color, votes)
-                    .vote-bar-part(class=color + " lighten-1" style="width: " + (votes * 100 / voteSum) + "%;")
-                  +vote-part("light-green", meta.voteResults.inFavor)
-                  +vote-part("deep-orange", meta.voteResults.against)
-                  +vote-part("light-blue", meta.voteResults.abstention)
+            -
+              //wrap in results object if still in old format
+              if (typeof meta.voteResults.inFavor === "number") {
+                meta.voteResults.voteType = "committee";
+                meta.voteResults = { committee: meta.voteResults };
+              }
+            each voteResult, voteTypeKey in meta.voteResults
+              .center
+                if voteResult.passed
+                  +icon("check_circle", "mediumsmall light-green-text text-darken-1")
+                else
+                  +icon("cancel", "mediumsmall red-text text-darken-1")
+                h5.light#resolution-pass-status The resolution has
+                  b=voteResult.passed ? " passed" : " failed"
+                  =" the " + voteResult.voteType + " vote."
+                if voteResult.importantQuestion
+                  p This resolution was declared an #[em important question] and needs a 2/3 majority to pass.
+              .row.no-bottom-mrg
+                .col.s12.l6
+                  span.light-green-text
+                    b=voteResult.inFavor
+                    |  Vote#{meta.voteResults.inFavor === 1 ? "" : "s"} in favor
+                  |  •
+                  span.deep-orange-text
+                    b=" " + voteResult.against
+                    |  Vote#{meta.voteResults.against === 1 ? "" : "s"} against
+                  |  •
+                  span.light-blue-text
+                    b=" " + voteResult.abstention
+                    |  Abstention#{meta.voteResults.abstention === 1 ? "" : "s"}
+                .col.s12.l6
+                  #vote-bar.z-depth-2
+                    - const voteSum = voteResult.inFavor + voteResult.against + voteResult.abstention;
+                    mixin vote-part(color, votes)
+                      .vote-bar-part(class=color + " lighten-1" style="width: " + (votes * 100 / voteSum) + "%;")
+                    +vote-part("light-green", voteResult.inFavor)
+                    +vote-part("deep-orange", voteResult.against)
+                    +vote-part("light-blue", voteResult.abstention)
     if meta.attributes !== "none" || accessLevel === "MA"
       h5.light Attributes
       +attribute-descr(meta.attributes, accessLevel === "MA")
@@ -162,12 +170,12 @@ block content
         .btn-top-mrg.center: a.btn.waves-effect.waves-light#attribute-submit-btn(href="#" class=pri)&attributes(tooltip("Sets the attribute state", "bottom")) Set State
     h5.light Actions
     //-secretariat doesn't edit but must be able to advance -> stage 4 displays advance field even if not editing
-    if (doLoad || meta.stage === 4) && meta.stage <= 6 && allowAdvance
+    if (doLoad || meta.stage === 4) && meta.stage <= 10 && allowAdvance
       .row
         if meta.stage
-          form#advance-code-form.not-editor.col.xl6.l12.no-bottom-mrg(method="POST" action="/" class=meta.stage === 6 ? "row" : "")
+          form#advance-code-form.not-editor.col.xl6.l12.no-bottom-mrg(method="POST" action="/" class=lvEnabled ? "row" : "")
             //-vote results
-            if meta.stage === 6
+            if lvEnabled
               .col.xl6.m6.s12
                 | Votes for the resolution as a whole:
                 .row
@@ -181,8 +189,8 @@ block content
                   .col.s12
                     input#important-question-checkbox(type="checkbox" name="importantQuestion")
                     label(for="important-question-checkbox") Declared an important question
-            .input-field(class=meta.stage === 6 ? "xl6 m6 s12 col" : "")
-              +icon(icons.code, "prefix")
+            .input-field(class=lvEnabled ? "xl6 m6 s12 col" : "")
+              +icon(codeIcon, "prefix")
               input#advance-code-input(name="code" type="text" placeholder=placeholders.code)
               label(for="advance-code-input") Enter access code
         mixin input-field-wrapper
@@ -209,7 +217,7 @@ block content
           span=text
           block
       if doLoad && allowSave
-        //-large save button in stage 0
+        //-larger save button in stage 0
         +meta-button("action-save", "Save", "backup", "Saves the resolution to the server", pritext + (meta.stage ? "" : " action-save-large"))
       +meta-button("action-pdf", "View PDF", "description", "Generates a formatted PDF document", pritext)
         .inline-spinner-wrapper.hide-this.blue-text#pdf-wait-spinner
@@ -221,7 +229,7 @@ block content
         +meta-button("legacy-action-load", "Open from file (deprecated)", "file_upload", "Loads a resolution from a previously saved file", "grey-text")
         if accessLevel === "MA"
           +meta-button("action-delete", "Delete resolution", "delete_forever", "Deletes the resolution permanently", "red-text text-lighten-1")
-    - const allowAmendments = doLoad && allowSave && (meta.stage === 6 && accessLevel === "CH" || accessLevel === "MA");
+    - const allowAmendments = doLoad && allowSave && (lvEnabled && (accessLevel === "CH" || accessLevel === "SG") || accessLevel === "MA");
     if allowAmendments
       h5.light#amd-info Amendment
       .justify Using this feature only makes sense if a #[a(href="#liveview-heading") LiveView ] client is connected. It will display the amendments you create integrated into the resolution and visually emphasise changes. Click the amendment button in an operative clause to display it here. You can then choose what type of amendment should be performed. The resolution can be edited while in amendment mode but certain structural changes can cause unexpected behavior. #[br]The #[b add] type requires the creation of a new clause and needs no prior selection of an existing clause. Selecting this type will allow you to formulate a new operative clause here and append it to the end of the resolution. #[br]The #[b change] type creates a copy of the selected clause here and will display a detailed view of the changes you make in the LiveView client. #[br]The #[b replace] type is similar to #[b change] but implies a complete change of the clause content. It doesn't create a copy of the selected clause here, but rather allows you to write a new clause that will replace the selected clause. #[br]The #[b strike out] type will mark the selected clause for removal.
@@ -327,7 +335,8 @@ block content
             +icon(icons.code, "prefix")
             input#unlock-code-input(name="code" type="text" placeholder=placeholders.code)
             label(for="unlock-code-input") Enter access code
-        .col.xl9.l8.m7.s12.justify#no-load-mode Editing access to this resolution is restricted beyond your access level (#[a(href="/help#" + accessLevel)=accessLevel]). You can still view meta information and read-only versions of it however. The editor for this resolution can be opened by entering an access code with the levels #[em CH]
+        .col.xl9.l8.m7.s12.justify#no-load-mode Editing access to this resolution is restricted beyond your access level (#[a(href="/help#" + accessLevel)=accessLevel]). You can still view meta information and read-only versions of it however. The editor for this resolution can be opened by entering an access code with the levels
+          em=meta.stage < 7 ? " Chair-like" : " SG"
           case meta.stage
             when 2
               | , #[em AP]

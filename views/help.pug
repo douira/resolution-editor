@@ -35,9 +35,11 @@ block content
         +row("The Formal Clearing", "FC")
           | Editing is restricted to the Formal Clearing. Resolutions are restricted to this access level when they are in stage #[a(href="#rstage3") #3].
         +row("The Secretariat", "SC")
-          | The Secretariat enters its access code in stage #[a(href="#rstage3") #4] to signify that the resolution is being printed and is to be advanced to stage #5. It doesn't have editing access though.
+          | The Secretariat enters its access code in stage #[a(href="#rstage4") #4] to signify that the resolution is being printed and is to be advanced to stage #5. It doesn't have editing access though.
         +row("Chairs", "CH")
-          | Chairs always have unrestricted access to resolutions. This overrides other restrictions, such as the levels FC and AP. This is the maximum level found on a resolution. Chairs can use LiveView when a resolution is being debated.
+          | Chairs always have access to resolutions before they reach stage #[a(href="#rstage7") #7]. This overrides other restrictions, such as the levels FC and AP. Chairs can use LiveView when a resolution is being debated in a committee.
+        +row("Secretaries General", "SG")
+          | The Secretaries General have access to resolutions until they are completed in stage #[a(href="#rstage11") #11] and can also use LiveView in plenary debates. They can also manage the creation of the resolution booklet.
         +row("Administration", "MA")
           | This level represents unrestricted access to all available functions of the website including LiveView. This also includes changing access levels of specific codes or giving out new access codes.
     h4: +icon("font_download", "mediumsmall left blue-text")
@@ -151,7 +153,7 @@ block content
     h4: +stage-info-icon
     h4#workflow-stages Resolution Workflow Stages
     - var i = 0;
-    while i <= 8
+    while i <= 11
       +stage-info-index(i++, false)
     p: em Please note that users with the access level MA have unrestricted access to all applicable functions of the editor in all stages. See #[a(href="#access-levels") Access Levels]
     h4: +icon("build", "mediumsmall left text-darken-2 grey-text")

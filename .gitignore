@@ -145,7 +145,7 @@ render/*
 public/rendered/*
 !*.gitkeep
 
-#ignore logging directory, is created automatically
+#ignore logging directory, is created automatically and filled with lots of files
 logs
 
 #credentials, keys that nobody should have publicly
