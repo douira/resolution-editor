@@ -421,6 +421,70 @@ router.use("/booklet", (req, res, next) =>
 
 //booklet creation and selection page
 router.get("/booklet", function(req, res) {
-  //display all booklets
+  //parse year or take current as default
+  const year = (req.query && parseInt(req.query.year)) || new Date().getFullYear();
 
+  //query all booklets of the current year
+  booklets.find({
+    //use current year as default
+    year: year
+  }).toArray().then(
+    //display booklet select page with all found booklets
+    booklets => res.render("bookletselect", { booklets, year }),
+    err => issueError(res, 500, "could not query booklets", err)
+  );
+});
+
+//edit and info page for a particular booklet
+router.get("/booklet/:id", function(req, res) {
+  //get id to query booklet with
+  const bookletId = parseInt(req.params.id);
+
+  //must be non-negative
+  if (isNaN(bookletId) || bookletId < 0) {
+    //error and stop processing
+    issueError(res, 400, "booklet id given is invalid");
+    return;
+  }
+
+  //query booklet
+  booklets.findOne({
+    _id: bookletId
+  }).then(
+    //render info and edit page for booklet
+    booklet => res.render("bookletinfo", { booklet: booklet }),
+    err => issueError(res, 500, "could not query booklet with id " + bookletId, err)
+  );
+});
+
+//makes a new booklet and redirects to the edit page of that booklet
+router.post("/booklet/new", function(req, res) {
+  //get the posted type
+  const type = req.body.type;
+
+  //validate type to be one of the allowed types
+  if (! ["GA", "ECOSOC"].includes(type)) {
+    //error and stop
+    issueError(res, 400, "invalid type for new booklet given: " + type);
+    return;
+  }
+
+  //get and increment booklet id counter
+  metadata.findOneAndUpdate({
+    _id: "bookletId"
+  }, {
+    $inc: { value: 1 }
+  }, { returnOriginal: false, upsert: true }).then(
+    //insert a new booklet with that id, current year and given type
+    result => booklets.insertOne({
+      _id: result.value.value, //unpack result
+      year: new Date().getFullYear(),
+      type,
+      resolutions: []
+    }),
+    err => issueError(res, 500, "could not increment booklet id counter", err)
+  ).then(result => {
+    //redirect to edit page for that booklet
+    res.redirect("/list/booklet/" + result.ops[0]._id);
+  }, err => issueError(res, 500, "could not insert new booklet", err));
 });

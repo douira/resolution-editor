@@ -1,0 +1,14 @@
+extends layout
+
+block title
+  title Resolution Booklet ##{booklet._id}
+
+//-block styles
+  +static("css", "/css/codeOverviewStyle.css")
+
+block content
+  .container
+    +icon("collections_bookmark", "large left blue-text")
+    h3 Resolution Booklet ##{booklet._id}
+    .divider
+    p.justify h
