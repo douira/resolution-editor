@@ -232,7 +232,8 @@ router.post("/codes/:action", function(req, res) {
       metadata.findOneAndUpdate({
         _id: "codeInsertGroupCounter"
       }, {
-        $inc: { value: 1 }
+        $inc: { value: 1 },
+        $setOnInsert: { value: 0 }
       }, { returnOriginal: false, upsert: true }).then(result => {
         //pass gotten counter value to next step
         return Promise.resolve({
@@ -447,13 +448,29 @@ router.get("/booklet/:id", function(req, res) {
     return;
   }
 
-  //query booklet
-  booklets.findOne({
-    _id: bookletId
-  }).then(
+  //query booklet and eligible resolutions concurrently
+  Promise.all([
+    //get the current booklet
+    booklets.findOne({
+      _id: bookletId
+    }),
+
+    //find eligible resolutions
+    resolutions.find({
+      //must be within correct stage range
+      //(finished committee debating - not yet begun plenary debate)
+      stage: { $gte: 7, $lte: 9 },
+
+      //must have passed the committee vote
+      "voteResults.committee.passed": true
+    }).toArray()
+  ]).then(results =>
     //render info and edit page for booklet
-    booklet => res.render("bookletinfo", { booklet: booklet }),
-    err => issueError(res, 500, "could not query booklet with id " + bookletId, err)
+    res.render("bookletinfo", {
+      booklet: results[0], resolutions: results[1]
+    }),
+    err => issueError(res, 500, "could not query booklet with id " + bookletId +
+      " or query eligible resolutions for booklet", err)
   );
 });
 
@@ -473,7 +490,8 @@ router.post("/booklet/new", function(req, res) {
   metadata.findOneAndUpdate({
     _id: "bookletId"
   }, {
-    $inc: { value: 1 }
+    $inc: { value: 1 },
+    $setOnInsert: { value: 0}
   }, { returnOriginal: false, upsert: true }).then(
     //insert a new booklet with that id, current year and given type
     result => booklets.insertOne({
