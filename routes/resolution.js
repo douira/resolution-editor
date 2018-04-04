@@ -283,28 +283,34 @@ routingUtil.getAndPost(router, "/advance/:token", function(req, res) {
 
     //if vote values are sent
     if (req.body && "inFavor" in req.body) {
-      //stop if vote numbers faulty
-      try {
-        //make voting reults object
-        const voteResults = {
-          // "|| 0" convert to number or 0
-          inFavor: parseInt(req.body.inFavor, 10) || 0,
-          against: parseInt(req.body.against, 10) || 0,
-          abstention: parseInt(req.body.abstention, 10) || 0,
-          importantQuestion: req.body.importantQuestion ? true : false,
-        };
+      //determine vote type with stage we are advancing from
+      const voteType = resDoc.stage === 6 ? "committee" : "plenary";
 
-        /*check and add prop wether or not this resolution passed.
-        must be majority for pass and 2/3 majority (= two times more than...)
-        for important question to pass*/
-        voteResults.passed = voteResults.inFavor > voteResults.against *
-          (voteResults.importantQuestion ? 2 : 1);
+      //make voting reults object
+      const voteResults = {
+        // "|| 0" convert to number or 0
+        inFavor: parseInt(req.body.inFavor, 10) || 0,
+        against: parseInt(req.body.against, 10) || 0,
+        abstention: parseInt(req.body.abstention, 10) || 0,
+        importantQuestion: req.body.importantQuestion ? true : false,
+        voteType
+      };
 
-        //add whole thing to query
-        query.$set = { voteResults: voteResults };
-      } catch (err) {
-        issueError(res, 400, "vote number parse fail", err);
-      }
+      /*check and add prop wether or not this resolution passed.
+      must be majority for pass and 2/3 majority (= two times more than...)
+      for important question to pass*/
+      voteResults.passed = voteResults.inFavor > voteResults.against *
+        (voteResults.importantQuestion ? 2 : 1);
+
+      //add whole thing to query
+      query.$set = {
+        //set result depending on which vote this is
+        [ "voteResults." + voteType]: voteResults
+      };
+    } else if (resDoc.stage === 6 || resDoc.stage === 10) {
+      //needed vote results but got none
+      issueError(res, 400, "got no vote results although they were required");
+      return;
     }
 
     //add resolution id if going from stage 3 (FC) to 4 (print), regular advance otherwise
@@ -313,7 +319,8 @@ routingUtil.getAndPost(router, "/advance/:token", function(req, res) {
       //needs findOneAndUpdate because we need the value of the modified doc
       collections.resolutionId.findOneAndUpdate({ year: new Date().getFullYear() }, {
         //count up one
-        $inc: { counter: 1 }
+        $inc: { counter: 1 },
+        $setOnInsert: { counter: 0 }
       }, { upsert: true })
 
       //advance resolution to next stage and set id
