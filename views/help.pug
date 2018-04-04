@@ -114,17 +114,19 @@ block content
           | See #[a(href="#special-syntax") Special Syntax]. These characters are used to denote the application of special styling in the rendered document. Using them for a different purpose will produce unexpected results.
         +row(["ö", "é", "ì"])
           | If you need to represent names in their romanized but still foreign form, use the letters with the different marks on them instead of adding combining diacritical marks, as they will be removed and are unspported by the renderer.
-        +row("other")
-          | Refrain from using characters that are not listed in this list of allowed characters. Additionally the most common letters with diacritical marks in the unicode range #[code U+00C0-U+024F] are supported as well. They can be viewed #[a(href="http://jrgraphix.net/r/Unicode/00A0-00FF") here], #[a(href="http://jrgraphix.net/r/Unicode/0100-017F") here] and #[a(href="http://jrgraphix.net/r/Unicode/0180-024F") here].
-          br
-          .center: code.block-code
-            | abcdefghijklmnopqrstuvwxyz
+        tr
+          td.center: em other
+          td
+            .justify Refrain from using characters that are not listed in this list of allowed characters. Additionally the most common letters with diacritical marks in the unicode range #[code U+00C0-U+024F] are supported as well. They can be viewed #[a(href="http://jrgraphix.net/r/Unicode/00A0-00FF") here], #[a(href="http://jrgraphix.net/r/Unicode/0100-017F") here] and #[a(href="http://jrgraphix.net/r/Unicode/0180-024F") here].
             br
-            | ABCDEFGHIJKLMNOPQRSTUVWXYZ
-            br
-            | 0123456789
-            br
-            | *_^|&’"-.,()/+
+            .center: code.block-code
+              | abcdefghijklmnopqrstuvwxyz
+              br
+              | ABCDEFGHIJKLMNOPQRSTUVWXYZ
+              br
+              | 0123456789
+              br
+              | *_^|&’"-.,()/+
     h4: +icon(icons.handytextbox, "mediumsmall left" + colors.handytextbox)
     h4#handytextbox Handy Textbox
     p Use this #[a(href="/handytextbox") handy textbox] for whatever you want. It's meant to be used as a temporary text area in which you can type amendments before copying them into editor's amendment interface to debate them.
