@@ -509,7 +509,8 @@ router.post("/booklet/new", function(req, res) {
       year: new Date().getFullYear(),
       type,
       resolutions: [],
-      signatures: []
+      signatures: [],
+      unrenderedChanges: true
     }),
     err => issueError(res, 500, "could not increment booklet id counter", err)
   ).then(result => {

@@ -9,7 +9,8 @@ block title
 block content
   .container
     +icon("collections_bookmark", "large left blue-text")
-    h3 Resolution Booklet ##{booklet._id}
+    h3 Resolution Booklet #
+      span#booklet-id=booklet._id
     .divider
     p.justify This page displays all important information about this resolution booklet. This booklet is for the #[b=booklet.type] plenary. You have to save any changes you make before leaving this page. Generating a PDF will automatically save all changes.
     .btn.waves-effect.waves-light.disabled(color=pri) Save Changes
@@ -19,7 +20,7 @@ block content
         p.center(class=resList.length && "hide-this")
           em.grey-text.text-darken-1 No resolutions to display.
       mixin res-info(res)
-        a(href="/resolution/editor/" + res.token target="_blank")=res.token
+        a.token(href="/resolution/editor/" + res.token target="_blank")=res.token
         =" "
         a(href="/help#rstage" + res.stage): b.grey-text ##{res.stage}
         span.res-id  [MUNOL/#{res.idYear}/#{res.resolutionId}]
@@ -30,14 +31,14 @@ block content
         span.sponsor  #{address.sponsor.main}
       .col.s12.l6
         h5.light Eligible Resolutions
-        ul.collection.eligible-list(class=resolutions.length || "hide-this")
+        ul.collection#eligible-list(class=resolutions.length || "hide-this")
           each resolution in resolutions
             li.collection-item
               +res-info(resolution)
         +check-nothing(resolutions)
       .col.s12.l6
         h5.light Selected Resolutions
-        ul.collection.selected-list(class=booklet.resolutions.length || "hide-this")
+        ul.collection#selected-list(class=booklet.resolutions.length || "hide-this")
           each resolution in booklet.resolutions
             li.collection-item
               +res-info(resolution)
@@ -68,10 +69,11 @@ block content
           +input-field
             input.sig-pos(type="text" id=idPos value=sig && sig.position)
             label(for=idPos) Position for Signature #{index}#{nameExt}
-      - let i = 1;
-      while i <= 8
-        +sig-field(i, i === 8 ? " (optional)" : "", booklet.signatures[i - 1])
-        - i++
+      #sig-list
+        - let i = 1;
+        while i <= 8
+          +sig-field(i, i === 8 ? " (optional)" : "", booklet.signatures[i - 1])
+          - i++
     h5.light Print
     p.justify A printable PDF can be generated when all selected resolutions are in stage #[a(href="/help#rstage9") 9] and at least one resolution is selected. Note that when one selected resolution is advanced past stage 9, no new PDF of the booklet can be genererated (but the old one isn't deleted), because resolutions can be modified in the plenary debate stage #[a(href="/help#rstage10") 10]. It is recommended to print the title page, have all listed people sign above the provided lines and then scan the signed page before using it to replcace the original title page in the generated booklet.
     a.waves-effect.waves-light.btn.btn-spacing-right#print-btn(href="#" target="_blank" class=printable ? "" : "disabled")
