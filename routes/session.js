@@ -72,15 +72,15 @@ router.get("/getaccess/" + credentials.makeCodesSuffix, function(req, res) {
         res.send("MA: " + result.code);
       } else {
         //make a new valid code
-        resUtil.makeNewThing(res, false).then(code =>
+        resUtil.makeNewThing(req, res, false).then(code =>
           //add to the database
           access.insertOne({ level: "MA", code: code }).then(
             //respond with code as content
             () => res.send("MA: " + code),
-            err => issueError(res, 500, "Error inserting getaccess code", err))
+            err => issueError(req, res, 500, "Error inserting getaccess code", err))
         );
       }
     },
-    err => issueError(res, 500, "could not check for existing code in getaccess", err)
+    err => issueError(req, res, 500, "could not check for existing code in getaccess", err)
   );
 });

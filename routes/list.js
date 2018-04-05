@@ -52,7 +52,7 @@ router.get("/overview", function(req, res) {
   ]).toArray().then(items => {
     //send data to client
     res.render("listoverview", { items: items, isArchive: useArchive });
-  }, err => issueError(res, 500, "could not query resolution in overview", err));
+  }, err => issueError(req, res, 500, "could not query resolution in overview", err));
 });
 
 //gets the current insert group counter
@@ -103,7 +103,8 @@ router.get("/codes", function(req, res) {
       latestCodes: latestCodes,
       sessionCode: req.session.code
     });
-  }, err => issueError(res, 500, "could not query codes or insert group id for overview", err));
+  }, err => issueError(req, res, 500,
+    "could not query codes or insert group id for overview", err));
 });
 
 //GET print codes displays items in a plaintext table view that can be easily printed
@@ -120,9 +121,12 @@ router.get("/codes/print/:group", function(req, res, next) {
     query = Promise.resolve({ });
   } else if (printGroupType === "latest") {
     //get insert group counter
-    query = getInsertGroupCounter().then(counterResult => ({
-      insertGroupId: counterResult.value
-    }), err => issueError(res, 500, "could not query insert group id for code print table", err));
+    query = getInsertGroupCounter().then(
+      counterResult => ({
+        insertGroupId: counterResult.value
+      }),
+      err => issueError(req, res, 500, "could not query insert group id for code print table", err)
+    );
   } else if (validateAccessLevel(printGroupType)) {
     //query for codes with this access level
     query = Promise.resolve({
@@ -143,7 +147,7 @@ router.get("/codes/print/:group", function(req, res, next) {
         codes: result,
         groupType: printGroupType
       }),
-      err => issueError(res, 500, "could not query codes for print table", err))
+      err => issueError(req, res, 500, "could not query codes for print table", err))
   );
 });
 
@@ -165,7 +169,7 @@ router.post("/codes/:action", function(req, res) {
       //if there are codes
       if (! codes.length) {
         //send error
-        issueError(res, 404, "no valid codes given");
+        issueError(req, res, 404, "no valid codes given");
         return;
       }
 
@@ -173,7 +177,7 @@ router.post("/codes/:action", function(req, res) {
       if (req.params.action === "revoke") {
         //remove all codes that were given
         access.deleteMany({ code: { "$in": codes }}).then(() => res.send("ok"), err => {
-          issueError(res, 500, "couldn't remove specified codes", err);
+          issueError(req, res, 500, "couldn't remove specified codes", err);
         });
       } else { //change action
         //require correct new level to be set
@@ -184,15 +188,15 @@ router.post("/codes/:action", function(req, res) {
             { code: { $in: codes }},
             { $set: { level: setLevel }}
           ).then(() => res.send("ok"), err => {
-            issueError(res, 500, "couldn't change specified codes to " + setLevel, err);
+            issueError(req, res, 500, "couldn't change specified codes to " + setLevel, err);
           });
         } else {
-          issueError(res, 400, "invalid code level set " + setLevel + " for change op");
+          issueError(req, res, 400, "invalid code level set " + setLevel + " for change op");
         }
       }
     } else {
       //send error
-      issueError(res, 400, "no valid codes for endpoint given");
+      issueError(req, res, 400, "no valid codes for endpoint given");
     }
   } else if (req.params.action === "new") {
     //require list of names and/or number of codes
@@ -201,7 +205,7 @@ router.post("/codes/:action", function(req, res) {
       const useLevel = req.body.accessLevel;
       if (! validateAccessLevel(useLevel)) {
         //complain and stop
-        issueError(res, 400, "invalid code level set " + useLevel + " for new codes op");
+        issueError(req, res, 400, "invalid code level set " + useLevel + " for new codes op");
         return;
       }
 
@@ -282,7 +286,7 @@ router.post("/codes/:action", function(req, res) {
         }, err => {
           //stop at maximum depth, in case of code space exhaustion
           if (opts.depth > maximumCodeGenerationTries) {
-            issueError(res, 500, "most likely no codes left to give out, too many tries", err);
+            issueError(req, res, 500, "most likely no codes left to give out, too many tries", err);
             return;
           }
 
@@ -315,11 +319,11 @@ router.post("/codes/:action", function(req, res) {
             depth: opts.depth + 1
           });
         });
-      }, err => issueError(res, 500, "error while inserting new codes", err));
+      }, err => issueError(req, res, 500, "error while inserting new codes", err));
     }
   } else {
     //error for unhandled (invalid) action type
-    issueError(res, 404, "no such code action " + req.params.action);
+    issueError(req, res, 404, "no such code action " + req.params.action);
   }
 });
 
@@ -380,7 +384,7 @@ router.get("/print/getitems", function(req, res) {
   }).toArray().then(items => {
     //send data to client, rewrite and address
     res.send(mapListItems(items, 4));
-  }, err => issueError(res, 500, "could not query print queue items", err));
+  }, err => issueError(req, res, 500, "could not query print queue items", err));
 });
 
 //uses session auth for FC queue
@@ -414,7 +418,7 @@ router.get("/fcqueue/getitems", function(req, res) {
   }).toArray().then(items => {
     //send data to client, rewrite stageHistory and address
     res.send(mapListItems(items, 3));
-  }, err => issueError(res, 500, "could not query fc work queue items", err));
+  }, err => issueError(req, res, 500, "could not query fc work queue items", err));
 });
 
 //booklet actions require at least SG permission (booklet perm match mode)
@@ -433,7 +437,7 @@ router.get("/booklet", function(req, res) {
   }).toArray().then(
     //display booklet select page with all found booklets
     booklets => res.render("bookletselect", { booklets, year }),
-    err => issueError(res, 500, "could not query booklets", err)
+    err => issueError(req, res, 500, "could not query booklets", err)
   );
 });
 
@@ -452,7 +456,7 @@ router.use(["/booklet/edit/:id", "/booklet/renderpdf/:id", "/booklet/save/:id"],
   //must be non-negative int
   if (isNaN(bookletId) || bookletId < 0) {
     //error and stop processing
-    issueError(res, 400, "booklet id given is invalid");
+    issueError(req, res, 400, "booklet id given is invalid");
     return;
   }
 
@@ -492,7 +496,7 @@ router.get("/booklet/edit/:id", function(req, res) {
       //make sure we found a booklet
       if (! booklet) {
         //error and stop
-        issueError(res, 400, "(edit) no booklet exists with id " + req.bookletId);
+        issueError(req, res, 400, "(edit) no booklet exists with id " + req.bookletId);
         return;
       }
 
@@ -505,7 +509,7 @@ router.get("/booklet/edit/:id", function(req, res) {
         printable: checkBookletPrintable(booklet)
       });
     },
-    err => issueError(res, 500, "could not query booklet with id " + req.bookletId +
+    err => issueError(req, res, 500, "could not query booklet with id " + req.bookletId +
       " or query eligible resolutions for booklet", err)
   );
 });
@@ -519,14 +523,15 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
     //make sure we found a booklet
     if (! booklet) {
       //error and stop
-      issueError(res, 400, "(renderpdf) no booklet exists with id " + req.bookletId);
+      issueError(req, res, 400, "(renderpdf) no booklet exists with id " + req.bookletId);
       return;
     }
 
     //booklet must contain at least one resolution
     if (! booklet.resolutions.length) {
       //error and stop
-      issueError(res, 400, "will not render booklet without any resolutions, id " + req.bookletId);
+      issueError(req, res, 400,
+        "will not render booklet without any resolutions, id " + req.bookletId);
       return;
     }
 
@@ -543,7 +548,7 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
         //there must be the correct amount of resolutions
         if (results.length !== booklet.resolutions.length) {
           //error and stop
-          issueError(res, 500,
+          issueError(req, res, 500,
             "amount of found and specified resolutions in booklet not equal, id " + req.bookletId);
           return;
         }
@@ -571,7 +576,8 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
         //error if not all were found
         if (! booklet.resolutions.every(res => typeof res === "object" && res.token)) {
           //error and stop
-          issueError(res, 500, "did not find all resolutions for booklet with id " + req.bookletId);
+          issueError(req, res, 500,
+            "did not find all resolutions for booklet with id " + req.bookletId);
           return;
         }
 
@@ -594,10 +600,10 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
           },
 
           //print and notify of error
-          err => issueError(res, 500, "render problem", err)
+          err => issueError(req, res, 500, "render problem", err)
         );
       },
-      err => issueError(res, 500, "could not query resolutions in booklet with id " +
+      err => issueError(req, res, 500, "could not query resolutions in booklet with id " +
         req.bookletId, err)
     );
   });
@@ -615,7 +621,7 @@ router.post("/booklet/save/:id", function(req, res) {
   }).then(
     //send ok when update happens without error
     () => res.send("ok"),
-    err => issueError(res, 500, "could not save booklet with id " + req.bookletId, err)
+    err => issueError(req, res, 500, "could not save booklet with id " + req.bookletId, err)
   );
 });
 
@@ -627,7 +633,7 @@ router.post("/booklet/new", function(req, res) {
   //validate type to be one of the allowed types
   if (! ["GA", "ECOSOC"].includes(type)) {
     //error and stop
-    issueError(res, 400, "invalid type for new booklet given: " + type);
+    issueError(req, res, 400, "invalid type for new booklet given: " + type);
     return;
   }
 
@@ -647,9 +653,9 @@ router.post("/booklet/new", function(req, res) {
       signatures: [],
       unrenderedChanges: true
     }),
-    err => issueError(res, 500, "could not increment booklet id counter", err)
+    err => issueError(req, res, 500, "could not increment booklet id counter", err)
   ).then(result => {
     //redirect to edit page for that booklet
     res.redirect("/list/booklet/edit/" + result.ops[0]._id);
-  }, err => issueError(res, 500, "could not insert new booklet", err));
+  }, err => issueError(req, res, 500, "could not insert new booklet", err));
 });

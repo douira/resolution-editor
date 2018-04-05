@@ -37,7 +37,7 @@ router.get("/renderpdf/:token", function(req, res) {
   }, (token, document) => {
     //don't render if nothing saved yet
     if (! document.stage) {
-      issueError(res, 400, "nothing saved (stage 0)");
+      issueError(req, res, 400, "nothing saved (stage 0)");
       return;
     }
 
@@ -50,7 +50,7 @@ router.get("/renderpdf/:token", function(req, res) {
       res.send(pdfUrl);
       return;
     }
-    console.log(document.content.resolution);
+    req.log.error("could not update page amount");
     //generate pdf
     generatePdf(document, "resolution").then(
       //send url to rendered pdf
@@ -70,7 +70,7 @@ router.get("/renderpdf/:token", function(req, res) {
       },
 
       //print and notify of error
-      err => issueError(res, 500, "render problem", err)
+      err => issueError(req, res, 500, "render problem", err)
     );
   });
 });
@@ -81,7 +81,7 @@ router.get("/renderplain/:token", function(req, res) {
   routingUtil.checkToken(req, res, (token, document) => {
     //don't render if nothing saved yet
     if (! document.stage) {
-      issueError(res, 400, "nothing saved (stage 0)");
+      issueError(req, res, 400, "nothing saved (stage 0)");
       return;
     }
 
@@ -102,7 +102,7 @@ router.get("/prenew", function(req, res) {
 //GET (no view, processor) redirects to editor page with new registered token
 router.get("/new", function(req, res) {
   //make a new unique token, true flag for being a token
-  resUtil.makeNewThing(res, true).then(token => {
+  resUtil.makeNewThing(req, res, true).then(token => {
     //get now (consistent)
     const timeNow = Date.now();
 
@@ -121,7 +121,7 @@ router.get("/new", function(req, res) {
     }).then(() => {
       //redirect to editor page (because URL is right then)
       res.redirect("/resolution/editor/" + token);
-    }, () => issueError(res, 500, "can't create new"));
+    }, () => issueError(req, res, 500, "can't create new"));
   });
 });
 
@@ -149,7 +149,7 @@ router.post("/save/:token", function(req, res) {
         }
       ).then(() => {
         res.send("ok");
-      }, () => issueError(res, 500, "can't save"));
+      }, () => issueError(req, res, 500, "can't save"));
     }, {
       //match mode save respects saving attrib restrictions
       matchMode: "save"
@@ -229,9 +229,9 @@ router.post("/setattribs/:token", function(req, res) {
     ).then(() => {
       //redirect back to editor page
       res.redirect("/resolution/editor/" + token);
-    }, err => issueError(res, 500, "can't set attribute", err));
+    }, err => issueError(req, res, 500, "can't set attribute", err));
   } else {
-    issueError(res, 400, "missing or incorrect fields");
+    issueError(req, res, 400, "missing or incorrect fields");
   }
 });
 
@@ -246,8 +246,8 @@ router.post("/delete/:token", function(req, res) {
     resolutionArchive.insertOne(resDoc.value).then(() => {
       //acknowledge
       res.send("ok. deleted " + token);
-    }, err => issueError(res, 500, "can't insert into archive", err));
-  }, err => issueError(res, 500, "can't delete", err));
+    }, err => issueError(req, res, 500, "can't insert into archive", err));
+  }, err => issueError(req, res, 500, "can't delete", err));
 });
 
 //pass liveview stuff on to that module
@@ -309,7 +309,7 @@ routingUtil.getAndPost(router, "/advance/:token", function(req, res) {
       };
     } else if (resDoc.stage === 6 || resDoc.stage === 10) {
       //needed vote results but got none
-      issueError(res, 400, "got no vote results although they were required");
+      issueError(req, res, 400, "got no vote results although they were required");
       return;
     }
 
@@ -357,13 +357,13 @@ routingUtil.getAndPost(router, "/advance/:token", function(req, res) {
           res.redirect("/resolution/editor/" + token);
         }
       },
-      err => issueError(res, 500, "advance db error", err));
+      err => issueError(req, res, 500, "advance db error", err));
   }, {
     //error/warning page on fail
     permissionMissmatch: (token, resolutionDoc, codeDoc) => {
       //issue error if no ui, error page if user is viewing
       if (req.query.noui) {
-        issueError(res, 400, "insufficient permission to advance");
+        issueError(req, res, 400, "insufficient permission to advance");
       } else {
         //display error page
         res.render("weakperm", {
