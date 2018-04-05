@@ -50,7 +50,7 @@ router.get("/renderpdf/:token", function(req, res) {
       res.send(pdfUrl);
       return;
     }
-    req.log.error("could not update page amount");
+
     //generate pdf
     generatePdf(document, "resolution").then(
       //send url to rendered pdf
@@ -149,7 +149,7 @@ router.post("/save/:token", function(req, res) {
         }
       ).then(() => {
         res.send("ok");
-      }, () => issueError(req, res, 500, "can't save"));
+      }, () => issueError(req, res, 500, "can't save resolution"));
     }, {
       //match mode save respects saving attrib restrictions
       matchMode: "save"
