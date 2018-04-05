@@ -5,6 +5,7 @@ const routingUtil = require("../lib/routingUtil");
 const tokenProcessor = require("../lib/token");
 const { issueError } = require("../lib/logger");
 const { validateAccessLevel } = require("../lib/resUtil");
+const generatePdf = require("../lib/generatePdf");
 
 //get collections
 let resolutions, resolutionArchive, access, metadata, booklets;
@@ -539,7 +540,62 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
       }, eligibleResolutionQuery)
     ).toArray().then(
       results => {
-        //
+        //there must be the correct amount of resolutions
+        if (results.length !== booklet.resolutions.length) {
+          //error and stop
+          issueError(res, 500,
+            "amount of found and specified resolutions in booklet not equal, id " + req.bookletId);
+          return;
+        }
+
+        //make url to output pdf
+        const pdfUrl = "/rendered/booklet" + booklet._id + ".pdf";
+
+        //simply return url without rendering if the booklet
+        //and all resolutions don't have unrendered changes
+        if (! (booklet.unrenderedChanges || results.some(res => res.unrenderedChanges))) {
+          //respond with url and stop
+          res.send(pdfUrl);
+          return;
+        }
+
+        //index of found resolutions
+        const foundRes = { };
+
+        //add all found resolutions to index
+        results.forEach(res => foundRes[res.token] = res);
+
+        //replace the resolution tokens with the actual resolutions
+        booklet.resolutions = booklet.resolutions.map(token => foundRes[token]);
+
+        //error if not all were found
+        if (! booklet.resolutions.every(res => typeof res === "object" && res.token)) {
+          //error and stop
+          issueError(res, 500, "did not find all resolutions for booklet with id " + req.bookletId);
+          return;
+        }
+
+        //render booklet
+        generatePdf(booklet, "booklet").then(
+          //when done rendering
+          pageAmount => {
+            //send url to confirm render
+            res.send(pdfUrl);
+
+            //check if the page amount could be determined
+            if (pageAmount) {
+              //save number of pages in booklet
+              booklets.updateOne({ _id: booklet._id }, {
+                $set: { pageAmount: pageAmount }
+              }).catch( //not interested in result
+                err => req.log.error(err, "could not update booklet page amount")
+              );
+            }
+          },
+
+          //print and notify of error
+          err => issueError(res, 500, "render problem", err)
+        );
       },
       err => issueError(res, 500, "could not query resolutions in booklet with id " +
         req.bookletId, err)

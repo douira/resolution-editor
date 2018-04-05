@@ -50,9 +50,9 @@ router.get("/renderpdf/:token", function(req, res) {
       res.send(pdfUrl);
       return;
     }
-
+    console.log(document.content.resolution);
     //generate pdf
-    generatePdf(document).then(
+    generatePdf(document, "resolution").then(
       //send url to rendered pdf
       pageAmount => {
         //send url to confirm render
