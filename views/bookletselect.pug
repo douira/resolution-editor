@@ -33,7 +33,7 @@ block content
       ul.collection
         each booklet in booklets
           li.collection-item
-            a(href="/list/booklet/" + booklet._id) Booklet ##{booklet._id}
+            a(href="/list/booklet/edit/" + booklet._id) Booklet ##{booklet._id}
             em  for #{booklet.type}
             span.right
               - const resAmount = booklet.resolutions.length

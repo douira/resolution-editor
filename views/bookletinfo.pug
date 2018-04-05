@@ -13,7 +13,7 @@ block content
       span#booklet-id=booklet._id
     .divider
     p.justify This page displays all important information about this resolution booklet. This booklet is for the #[b=booklet.type] plenary. You have to save any changes you make before leaving this page. Generating a PDF will automatically save all changes.
-    .btn.waves-effect.waves-light.disabled(color=pri) Save Changes
+    .btn.waves-effect.waves-light.disabled#save-btn(color=pri) Save Changes
     span.hide-this#unsaved-changes-msg  There are unsaved changes!
     .row
       mixin check-nothing(resList)
@@ -86,4 +86,5 @@ block content
     br
     br
 block scripts
+  +static("js", "/js/dialogs.js")
   +static("js", "/js/bookletInfoInit.js")

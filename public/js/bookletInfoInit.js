@@ -13,21 +13,24 @@ $(document).ready(function() {
   var unsavedChanges = false;
 
   //get booklet id
-  var bookletId = $("#booklet-id");
+  var bookletId = $("#booklet-id").text();
 
   //get elements
   var titleInput = $("#title-input");
-  var sessionInput = $("session-input");
+  var sessionInput = $("#session-input");
   var saveBtn = $("#save-btn");
+  var printBtn = $("#print-btn");
   var eligibleList = $("#eligible-list");
   var selectedList = $("#selected-list");
+  var saveMsg = $("#unsaved-changes-msg");
 
   //preselect signature info elements in groups
   var sigGroups = $("#sig-list .sig-field-group").map(function() {
     //return object of both input fields
+    var elem = $(this);
     return {
-      nameInput: this.find("input.sig-name"),
-      posInput: this.find("input.sig-pos")
+      nameInput: elem.find("input.sig-name"),
+      posInput: elem.find("input.sig-pos")
     };
   }).get();
 
@@ -39,8 +42,9 @@ $(document).ready(function() {
     //set render state to unrendered
     setRenderState("unrendered");
 
-    //enable save button
+    //enable save button and message
     saveBtn.removeClass("disabled");
+    saveMsg.removeClass("hide-this");
   }
 
   //saves the current state of the booklet to the server
@@ -60,8 +64,8 @@ $(document).ready(function() {
       signatures: sigGroups.map(function(group) {
         //get values from elements
         return {
-          name: group.name.val().trim(),
-          position: group.pos.val().trim()
+          name: group.nameInput.val().trim(),
+          position: group.posInput.val().trim()
         };
       }),
 
@@ -80,12 +84,13 @@ $(document).ready(function() {
     }
 
     //send data to server
-    $.post("/booklet/save/" + bookletId, bookletData).done(function() {
+    $.post("/list/booklet/save/" + bookletId, bookletData).done(function() {
       //reset flag
       unsavedChanges = false;
 
-      //reset save button to all changes saved
+      //reset save button to all changes saved and hide message
       saveBtn.addClass("disabled");
+      saveMsg.addClass("hide-this");
 
       //display feeback toast message
       displayToast("Saved Booklet");
@@ -126,7 +131,7 @@ $(document).ready(function() {
   }
 
   //handle mouseenter (like hover) and click of view pdf button
-  $("#print-btn")
+  printBtn
   .on("mouseenter", function() {
     //if the booklet hasn't been rendered yet
     if (renderState === "unrendered") {
@@ -134,7 +139,7 @@ $(document).ready(function() {
       setRenderState("rendering");
 
       //ask the server to render
-      $.get("/booklet/renderpdf/" + bookletId).always(function() {
+      $.get("/list/booklet/renderpdf/" + bookletId).always(function() {
         //finished rendering, sets url
         //on fail: maybe there is a older pdf to look at
         setRenderState("rendered");
@@ -159,5 +164,17 @@ $(document).ready(function() {
       //move back to unrendered
       setRenderState("unrendered");
     }
+  });
+
+  //change of any input
+  $("input").on("change", function() {
+    //register change
+    madeChange();
+  });
+
+  //clicking save button
+  saveBtn.on("click", function() {
+    //do save (will not save if nothign to save)
+    saveBooklet();
   });
 });

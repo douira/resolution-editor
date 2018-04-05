@@ -442,23 +442,33 @@ function checkBookletPrintable(booklet) {
   return booklet.resolutions.length && booklet.resolutions.every(r => r.stage === 9);
 }
 
-//edit and info page for a particular booklet
-router.get("/booklet/:id", function(req, res) {
+//requires and validates the given booklet id
+router.use(["/booklet/edit/:id", "/booklet/renderpdf/:id", "/booklet/save/:id"],
+  function(req, res, next) {
   //get id to query booklet with
   const bookletId = parseInt(req.params.id);
 
-  //must be non-negative
+  //must be non-negative int
   if (isNaN(bookletId) || bookletId < 0) {
     //error and stop processing
     issueError(res, 400, "booklet id given is invalid");
     return;
   }
 
+  //attach validated booklet id
+  req.bookletId = bookletId;
+
+  //deal with actualy request
+  next();
+});
+
+//edit and info page for a particular booklet
+router.get("/booklet/edit/:id", function(req, res) {
   //query booklet and eligible resolutions concurrently
   Promise.all([
     //get the current booklet
     booklets.findOne({
-      _id: bookletId
+      _id: req.bookletId
     }),
 
     //find eligible resolutions
@@ -479,8 +489,29 @@ router.get("/booklet/:id", function(req, res) {
       //check that the booklet can be printed
       printable: checkBookletPrintable(results[0])
     }),
-    err => issueError(res, 500, "could not query booklet with id " + bookletId +
+    err => issueError(res, 500, "could not query booklet with id " + req.bookletId +
       " or query eligible resolutions for booklet", err)
+  );
+});
+
+//renders the booklet
+router.get("/booklet/renderpdf/:id", function(req, res) {
+
+});
+
+//saves the booklet
+router.post("/booklet/save/:id", function(req, res) {
+  //save the booklet
+  booklets.updateOne({
+    //select given booklet
+    _id: req.bookletId
+  }, {
+    //set all given attributes
+    $set: req.body
+  }).then(
+    //send ok when update happens without error
+    () => res.send("ok"),
+    err => issueError(res, 500, "could not save booklet with id " + req.bookletId, err)
   );
 });
 
@@ -515,6 +546,6 @@ router.post("/booklet/new", function(req, res) {
     err => issueError(res, 500, "could not increment booklet id counter", err)
   ).then(result => {
     //redirect to edit page for that booklet
-    res.redirect("/list/booklet/" + result.ops[0]._id);
+    res.redirect("/list/booklet/edit/" + result.ops[0]._id);
   }, err => issueError(res, 500, "could not insert new booklet", err));
 });
