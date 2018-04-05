@@ -3,6 +3,12 @@
 makeAlertMessage,
 displayToast*/
 
+//gets the enclosing resolution collection item
+$.fn.getResItem = function() {
+  //return closest ancestor that is a collection item
+  return this.closest("li.collection-item");
+};
+
 //on document ready
 $(document).ready(function() {
   //there are three states: not rendered, rendering, pdf not viewed (clicking goes back to stage 1)
@@ -23,6 +29,8 @@ $(document).ready(function() {
   var eligibleList = $("#eligible-list");
   var selectedList = $("#selected-list");
   var saveMsg = $("#unsaved-changes-msg");
+  var selectedListEmptyMsg = $("#selected-list + .no-cotent-msg");
+  var selectedResIconsTemplate = $("#icon-block-template .selected-icons");
 
   //preselect signature info elements in groups
   var sigGroups = $("#sig-list .sig-field-group").map(function() {
@@ -73,7 +81,7 @@ $(document).ready(function() {
       //get all selected resolutions
       resolutions: selectedList.find(".token").map(function() {
         //map to token string
-        return this.text();
+        return $(this).text();
       }).get()
     };
 
@@ -129,6 +137,21 @@ $(document).ready(function() {
     }
   }
 
+  //updates the display of the no content message and the collection list
+  function updateListDisplay() {
+    //check if the list if empty
+    var listLength = selectedList.children().length;
+
+    //show and hide depending on list empty status
+    if (listLength) {
+      selectedListEmptyMsg.addClass("hide-this");
+      selectedList.removeClass("hide-this");
+    } else {
+      selectedListEmptyMsg.removeClass("hide-this");
+      selectedList.addClass("hide-this");
+    }
+  }
+
   //handle mouseenter (like hover) and click of view pdf button
   printBtn
   .on("mouseenter", function() {
@@ -177,7 +200,78 @@ $(document).ready(function() {
 
   //clicking save button
   saveBtn.on("click", function() {
-    //do save (will not save if nothign to save)
+    //do save (will not save if nothing to save)
     saveBooklet();
+  });
+
+  //clicking on eligible resolution makes it become selected
+  eligibleList.on("click", "li.collection-item:not(.selected-res)", function() {
+    var elem = $(this);
+
+    //move a copy to the selected resolutions
+    elem
+      .clone()
+      .appendTo(selectedList)
+
+      //add ui icons
+      .append(selectedResIconsTemplate.clone())
+
+      //remove the icons meant for selection status display
+      .find(".eligible-icons")
+      .remove();
+
+    //update the no content message status
+    updateListDisplay();
+
+    //make eligible item selected
+    elem.addClass("selected-res");
+
+    //register a change (resolution added)
+    madeChange();
+  });
+
+  //action handlers on selected resolutions
+  selectedList
+
+  //remove from list by clicking the x icon
+  .on("click", ".remove-icon", function() {
+    //get item and token to unselect
+    var item = $(this).getResItem();
+    var token = item.find(".token").text();
+
+    //remove resolution from list
+    item.remove();
+
+    //unselect eligible resolution with token of removed item
+    eligibleList
+      .find(".token:contains(" + token + ")")
+      .getResItem()
+      .removeClass("selected-res");
+
+    //update the list display (length changed)
+    updateListDisplay();
+
+    //register a change (resolution removed)
+    madeChange();
+  })
+
+  //move down list in clicking down icon
+  .on("click", ".down-icon", function() {
+    //insert below next sibling
+    var item = $(this).getResItem();
+    item.insertAfter(item.next());
+
+    //changes were probably made
+    madeChange();
+  })
+
+  //move up list in clicking up icon
+  .on("click", ".up-icon", function() {
+    //insert above previous sibling
+    var item = $(this).getResItem();
+    item.insertBefore(item.prev());
+
+    //changes were probably made
+    madeChange();
   });
 });

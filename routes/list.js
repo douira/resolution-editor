@@ -490,8 +490,21 @@ router.get("/booklet/edit/:id", function(req, res) {
     resolutions.find(eligibleResolutionQuery).toArray()
   ]).then(
     results => {
-      //get booklet from result
+      //get booklet and eligible resolutions from result
       const booklet = results[0];
+      const eligibleResolutions = results[1];
+
+      //for all tokens specified in the booklet
+      booklet.resolutions = booklet.resolutions.map(token => {
+        //find the corresponding eligible resolution
+        const eligibleRes = eligibleResolutions.find(res => res.token === token);
+
+        //mark eligible resolution as selected (because it is present in booklet)
+        eligibleRes.selected = true;
+
+        //return eligible resolution for display
+        return eligibleRes;
+      });
 
       //make sure we found a booklet
       if (! booklet) {
@@ -503,7 +516,7 @@ router.get("/booklet/edit/:id", function(req, res) {
       //render info and edit page for booklet
       res.render("bookletinfo", {
         booklet: booklet,
-        resolutions: results[1],
+        resolutions: eligibleResolutions,
 
         //check that the booklet can be printed
         printable: checkBookletPrintable(booklet)
@@ -611,6 +624,18 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
 
 //saves the booklet
 router.post("/booklet/save/:id", function(req, res) {
+  //add empty resolutions array if none given
+  if (! (req.body && req.resolutions && req.body.resolutions instanceof Array)) {
+    req.body.resolutions = [];
+  }
+
+  //deduplicate resolution tokens given in booklet
+  req.body.resolutions = req.body.resolutions.filter(
+    //return if first index matches current index
+    //(if indexes don't match, then there are more than 1 of this element)
+    (token, index, arr) => arr.indexOf(token) === index
+  );
+
   //save the booklet
   booklets.updateOne({
     //select given booklet

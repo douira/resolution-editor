@@ -1,0 +1,26 @@
+#eligible-list .collection-item i.add-icon {
+  display: none;
+  visibility: hidden;
+}
+
+#eligible-list .collection-item.selected-res i.add-icon {
+  visibility: collapse;
+}
+
+#eligible-list .collection-item:not(.selected-res):hover i.add-icon {
+  display: inline-block;
+  visibility: visible;
+}
+
+#eligible-list .collection-item:not(.selected-res) i.selected-icon {
+  display: none;
+}
+
+.selected-icons {
+  display: none;
+}
+
+#selected-list .collection-item:hover .selected-icons {
+  display: inline-block;
+  cursor: pointer;
+}
