@@ -436,6 +436,12 @@ router.get("/booklet", function(req, res) {
   );
 });
 
+//checks if the given booklet can be printed
+function checkBookletPrintable(booklet) {
+  //must have at least one resolution and all resolutions must be in stage 9
+  return booklet.resolutions.length && booklet.resolutions.every(r => r.stage === 9);
+}
+
 //edit and info page for a particular booklet
 router.get("/booklet/:id", function(req, res) {
   //get id to query booklet with
@@ -467,7 +473,11 @@ router.get("/booklet/:id", function(req, res) {
   ]).then(results =>
     //render info and edit page for booklet
     res.render("bookletinfo", {
-      booklet: results[0], resolutions: results[1]
+      booklet: results[0],
+      resolutions: results[1],
+
+      //check that the booklet can be printed
+      printable: checkBookletPrintable(results[0])
     }),
     err => issueError(res, 500, "could not query booklet with id " + bookletId +
       " or query eligible resolutions for booklet", err)
