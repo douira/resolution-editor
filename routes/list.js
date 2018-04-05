@@ -462,6 +462,16 @@ router.use(["/booklet/edit/:id", "/booklet/renderpdf/:id", "/booklet/save/:id"],
   next();
 });
 
+//base query for eligible resolutions for booklets
+const eligibleResolutionQuery = {
+  //must be within correct stage range
+  //(finished committee debating - not yet begun plenary debate)
+  stage: { $gte: 7, $lte: 9 },
+
+  //must have passed the committee vote
+  "voteResults.committee.passed": true
+};
+
 //edit and info page for a particular booklet
 router.get("/booklet/edit/:id", function(req, res) {
   //query booklet and eligible resolutions concurrently
@@ -472,23 +482,28 @@ router.get("/booklet/edit/:id", function(req, res) {
     }),
 
     //find eligible resolutions
-    resolutions.find({
-      //must be within correct stage range
-      //(finished committee debating - not yet begun plenary debate)
-      stage: { $gte: 7, $lte: 9 },
+    resolutions.find(eligibleResolutionQuery).toArray()
+  ]).then(
+    results => {
+      //get booklet from result
+      const booklet = results[0];
 
-      //must have passed the committee vote
-      "voteResults.committee.passed": true
-    }).toArray()
-  ]).then(results =>
-    //render info and edit page for booklet
-    res.render("bookletinfo", {
-      booklet: results[0],
-      resolutions: results[1],
+      //make sure we found a booklet
+      if (! booklet) {
+        //error and stop
+        issueError(res, 400, "(edit) no booklet exists with id " + req.bookletId);
+        return;
+      }
 
-      //check that the booklet can be printed
-      printable: checkBookletPrintable(results[0])
-    }),
+      //render info and edit page for booklet
+      res.render("bookletinfo", {
+        booklet: booklet,
+        resolutions: results[1],
+
+        //check that the booklet can be printed
+        printable: checkBookletPrintable(booklet)
+      });
+    },
     err => issueError(res, 500, "could not query booklet with id " + req.bookletId +
       " or query eligible resolutions for booklet", err)
   );
@@ -496,7 +511,40 @@ router.get("/booklet/edit/:id", function(req, res) {
 
 //renders the booklet
 router.get("/booklet/renderpdf/:id", function(req, res) {
+  //get the current booklet
+  booklets.findOne({
+    _id: req.bookletId
+  }).then(booklet => {
+    //make sure we found a booklet
+    if (! booklet) {
+      //error and stop
+      issueError(res, 400, "(renderpdf) no booklet exists with id " + req.bookletId);
+      return;
+    }
 
+    //booklet must contain at least one resolution
+    if (! booklet.resolutions.length) {
+      //error and stop
+      issueError(res, 400, "will not render booklet without any resolutions, id " + req.bookletId);
+      return;
+    }
+
+    //query resolutions of this booklet
+    resolutions.findMany(
+      //extend eligible resolution query,
+      //all resolutions we render should be valid booklet resolutions
+      Object.assign({
+        //token must be one of the ones specified in the booklet
+        token: { $in: booklet.resolutions }
+      }, eligibleResolutionQuery)
+    ).toArray().then(
+      results => {
+        //
+      },
+      err => issueError(res, 500, "could not query resolutions in booklet with id " +
+        req.bookletId, err)
+    );
+  });
 });
 
 //saves the booklet

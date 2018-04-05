@@ -51,7 +51,8 @@ $(document).ready(function() {
   function saveBooklet() {
     //no action if all changes already saved
     if (! unsavedChanges) {
-      return;
+      //return already resolved promise
+      return $.Deferred().resolve().promise();
     }
 
     //get data for booklet
@@ -83,8 +84,8 @@ $(document).ready(function() {
       delete bookletData.signatures[7];
     }
 
-    //send data to server
-    $.post("/list/booklet/save/" + bookletId, bookletData).done(function() {
+    //send data to server and return promise
+    return $.post("/list/booklet/save/" + bookletId, bookletData).done(function() {
       //reset flag
       unsavedChanges = false;
 
@@ -97,12 +98,10 @@ $(document).ready(function() {
     }).fail(function() {
       //display error message
       makeAlertMessage(
-          "error_outline", "Error generating PDF", "ok",
-          "The server encountered an error while trying to generate the requested" +
-          " PDF file. This may happen when a resolution includes illegal characters or" +
-          " some attribute of the booklet is invalid." +
-          " Please talk to the owner of this document and ask IT-Management for help if" +
-          " this problem persists.", "pdf_gen");
+        "error_outline", "Error saving Booklet", "ok",
+        "The server encountered an error while saving the booklet." +
+        " Ask IT-Management for help if this problem persists after" +
+        " reloading the page.", "pdf_gen");
     });
   }
 
@@ -133,25 +132,29 @@ $(document).ready(function() {
   //handle mouseenter (like hover) and click of view pdf button
   printBtn
   .on("mouseenter", function() {
+    //if no resolutions are selected
     //if the booklet hasn't been rendered yet
     if (renderState === "unrendered") {
       //move into rendering stage (with spinner)
       setRenderState("rendering");
 
-      //ask the server to render
-      $.get("/list/booklet/renderpdf/" + bookletId).always(function() {
-        //finished rendering, sets url
-        //on fail: maybe there is a older pdf to look at
-        setRenderState("rendered");
-      }).fail(function() {
-        //display error and and help directives
-        makeAlertMessage(
-          "error_outline", "Error generating PDF", "ok",
-          "The server encountered an error while trying to generate the requested" +
-          " PDF file. This may happen when a resolution includes illegal characters or" +
-          " some attribute of the booklet is invalid." +
-          " Please talk to the owner of this document and ask IT-Management for help if" +
-          " this problem persists.", "pdf_gen_booklet");
+      //save first
+      saveBooklet().done(function() {
+        //ask the server to render
+        $.get("/list/booklet/renderpdf/" + bookletId).always(function() {
+          //finished rendering, sets url
+          //on fail: maybe there is a older pdf to look at
+          setRenderState("rendered");
+        }).fail(function() {
+          //display error and and help directives
+          makeAlertMessage(
+            "error_outline", "Error generating PDF", "ok",
+            "The server encountered an error while trying to generate the requested" +
+            " PDF file. This may happen when a resolution includes illegal characters or" +
+            " some attribute of the booklet is invalid." +
+            " Please talk to the owner of this document and ask IT-Management for help if" +
+            " this problem persists.", "pdf_gen_booklet");
+        });
       });
     }
   })
