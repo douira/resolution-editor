@@ -100,7 +100,7 @@ $(document).ready(function() {
           "The server encountered an error while trying to generate the requested" +
           " PDF file. This may happen when the resolution includes illegal characters." +
           " Please talk to the owner of this document and ask IT-Management for help if" +
-          " this problem persists.", "pdf_gen");
+          " this problem persists.", "pdf_gen_printqueue");
       });
     }
   })
