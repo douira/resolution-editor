@@ -13,6 +13,7 @@ block content
     .divider
     p.justify This page displays all important information about this resolution booklet. This booklet is for the #[b=booklet.type] plenary. You have to save any changes you make before leaving this page. Generating a PDF will automatically save all changes.
     .btn.waves-effect.waves-light.disabled(color=pri) Save Changes
+    span.hide-this#unsaved-changes-msg  There are unsaved changes!
     .row
       mixin check-nothing(resList)
         p.center(class=resList.length && "hide-this")
@@ -29,14 +30,14 @@ block content
         span.sponsor  #{address.sponsor.main}
       .col.s12.l6
         h5.light Eligible Resolutions
-        ul.collection(class=resolutions.length || "hide-this")
+        ul.collection.eligible-list(class=resolutions.length || "hide-this")
           each resolution in resolutions
             li.collection-item
               +res-info(resolution)
         +check-nothing(resolutions)
       .col.s12.l6
         h5.light Selected Resolutions
-        ul.collection(class=booklet.resolutions.length || "hide-this")
+        ul.collection.selected-list(class=booklet.resolutions.length || "hide-this")
           each resolution in booklet.resolutions
             li.collection-item
               +res-info(resolution)
@@ -48,28 +49,31 @@ block content
         .col.s12.m6.input-field
           block
       +input-field
-        input#title-input(type="text" placeholder="RESOLUTION BOOKLET <year>")
+        input#title-input(type="text" placeholder="RESOLUTION BOOKLET <year>" value=booklet.title)
         label(for="title-input") Booklet Title
       +input-field
-        input#session-input(type="text" placeholder="<session number>. Annual Session")
+        input#session-input(type="text" placeholder="<session number>. Annual Session" value=booklet.session)
         label(for="session-input") Booklet Session Name
-      mixin sig-field(index, nameExt)
+      .col.s12
+        .divider
+        br
+      mixin sig-field(index, nameExt, sig)
         -
           const idName = "sig-name-" + index;
           const idPos = "sig-pos-" + index;
         .sig-field-group
           +input-field
-            input.sig-name(type="text" id=idName)
+            input.sig-name(type="text" id=idName value=sig && sig.name)
             label(for=idName) Name for Signature #{index}#{nameExt}
           +input-field
-            input.sig-pos(type="text" id=idPos)
+            input.sig-pos(type="text" id=idPos value=sig && sig.position)
             label(for=idPos) Position for Signature #{index}#{nameExt}
       - let i = 1;
       while i <= 8
-        +sig-field(i, i === 8 ? " (optional)" : "")
+        +sig-field(i, i === 8 ? " (optional)" : "", booklet.signatures[i - 1])
         - i++
     h5.light Print
-    p.justify A printable PDF can be generated when all selected resolutions are in stage #[a(href="/help#rstage9") 9] and at least one resolution is selected. Note that when one selected resolution is advanced past stage 9, no new PDF of the booklet can be genererated (but the old one isn't deleted), because resolutions are modified in the plenary debate stage #[a(href="/help#rstage10") 10].
+    p.justify A printable PDF can be generated when all selected resolutions are in stage #[a(href="/help#rstage9") 9] and at least one resolution is selected. Note that when one selected resolution is advanced past stage 9, no new PDF of the booklet can be genererated (but the old one isn't deleted), because resolutions can be modified in the plenary debate stage #[a(href="/help#rstage10") 10]. It is recommended to print the title page, have all listed people sign above the provided lines and then scan the signed page before using it to replcace the original title page in the generated booklet.
     a.waves-effect.waves-light.btn.btn-spacing-right#print-btn(href="#" target="_blank" class=printable ? "" : "disabled")
       .inline-spinner-wrapper.hide-this#pdf-wait-spinner
         +spinner("blue", "inline-spinner")
