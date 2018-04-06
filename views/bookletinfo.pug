@@ -23,7 +23,9 @@ block content
         - const address = res.content.resolution.address;
         a.token(href="/resolution/editor/" + res.token target="_blank")=res.token
         =" "
-        a(href="/help#rstage" + res.stage): b.grey-text ##{res.stage}
+        a(href="/help#rstage" + res.stage)
+          b.grey-text #
+            span.res-stage=res.stage
         span.res-id  [MUNOL/#{res.idYear}/#{res.resolutionId}]
         span.grey-text  in
         span.forum  #{address.forum}
@@ -85,16 +87,15 @@ block content
           +sig-field(i, i === 8 ? " (optional)" : "", booklet.signatures[i - 1])
           - i++
     h5.light Print
-    p.justify A printable PDF can be generated when all selected resolutions are in stage #[a(href="/help#rstage9") 9] and at least one resolution is selected. Note that when one selected resolution is advanced past stage 9, no new PDF of the booklet can be genererated (but the old one isn't deleted), because resolutions can be modified in the plenary debate stage #[a(href="/help#rstage10") 10]. It is recommended to print the title page, have all listed people sign above the provided lines and then scan the signed page before using it to replcace the original title page in the generated booklet.
-    a.waves-effect.waves-light.btn.btn-spacing-right#print-btn(href="#" target="_blank" class=printable ? "" : "disabled")
+    p.justify A printable PDF can be generated when all selected resolutions are in the stages #[a(href="/help#rstage7") 7] - #[a(href="/help#rstage9") 9] and at least one resolution is selected. Note that when one selected resolution is advanced past stage 9, no new PDF of the booklet can be genererated (but the old one isn't deleted), because resolutions can be modified in the plenary debate stage #[a(href="/help#rstage10") 10]. It is recommended to print the title page, have all listed people sign above the provided lines and then scan the signed page before using it to replace the bare title page in the generated booklet.
+    a.waves-effect.waves-light.btn-flat.btn-spacing-right#print-btn(href="#" target="_blank")
       .inline-spinner-wrapper.hide-this#pdf-wait-spinner
         +spinner("blue", "inline-spinner")
         |  Rendering...
       #print-btn-inner
-        span#print-btn-text Generate PDF
-        +icon("refresh", "left")
-    br
-    br
+        span#print-btn-text Loading
+        +icon("", "left")
+    p: a(href="/rendered/booklet" + booklet._id + ".pdf") View outdated PDF
 block scripts
   +static("js", "/js/dialogs.js")
   +static("js", "/js/bookletInfoInit.js")

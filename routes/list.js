@@ -441,12 +441,6 @@ router.get("/booklet", function(req, res) {
   );
 });
 
-//checks if the given booklet can be printed
-function checkBookletPrintable(booklet) {
-  //must have at least one resolution and all resolutions must be in stage 9
-  return booklet.resolutions.length && booklet.resolutions.every(r => r.stage === 9);
-}
-
 //requires and validates the given booklet id
 router.use(["/booklet/edit/:id", "/booklet/renderpdf/:id", "/booklet/save/:id"],
   function(req, res, next) {
@@ -516,10 +510,7 @@ router.get("/booklet/edit/:id", function(req, res) {
       //render info and edit page for booklet
       res.render("bookletinfo", {
         booklet: booklet,
-        resolutions: eligibleResolutions,
-
-        //check that the booklet can be printed
-        printable: checkBookletPrintable(booklet)
+        resolutions: eligibleResolutions
       });
     },
     err => issueError(req, res, 500, "could not query booklet with id " + req.bookletId +
@@ -548,8 +539,17 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
       return;
     }
 
+    //all resolutions of booklet must be at least in stage 7 and at most in stage 9
+    if (! booklet.resolutions.every(r => r.stage >= 7 && r.stage <= 9)) {
+      //error and stop
+      issueError(req, res, 400,
+        "will not render booklet with resolutions outside of stage range [7, 9], id " +
+        req.bookletId);
+      return;
+    }
+
     //query resolutions of this booklet
-    resolutions.findMany(
+    resolutions.find(
       //extend eligible resolution query,
       //all resolutions we render should be valid booklet resolutions
       Object.assign({
@@ -624,17 +624,18 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
 
 //saves the booklet
 router.post("/booklet/save/:id", function(req, res) {
-  //add empty resolutions array if none given
-  if (! (req.body && req.resolutions && req.body.resolutions instanceof Array)) {
+  //if resolutions were given
+  if (req.body && req.body.resolutions && req.body.resolutions instanceof Array) {
+    //deduplicate resolution tokens given in booklet
+    req.body.resolutions = req.body.resolutions.filter(
+      //return if first index matches current index
+      //(if indexes don't match, then there are more than 1 of this element)
+      (token, index, arr) => arr.indexOf(token) === index
+    );
+  } else {
+    //simply replace with empty array
     req.body.resolutions = [];
   }
-
-  //deduplicate resolution tokens given in booklet
-  req.body.resolutions = req.body.resolutions.filter(
-    //return if first index matches current index
-    //(if indexes don't match, then there are more than 1 of this element)
-    (token, index, arr) => arr.indexOf(token) === index
-  );
 
   //save the booklet
   booklets.updateOne({

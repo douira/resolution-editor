@@ -24,3 +24,7 @@
   display: inline-block;
   cursor: pointer;
 }
+
+#print-btn.btn-flat {
+  border: 1px lightgrey solid;
+}

@@ -9,11 +9,17 @@ $.fn.getResItem = function() {
   return this.closest("li.collection-item");
 };
 
+//sets the class status for an element and given class
+$.fn.classStatus = function(useClass, status) {
+  //add or remove depening on passed status
+  this[status ? "addClass" : "removeClass"](useClass);
+};
+
 //on document ready
 $(document).ready(function() {
   //there are three states: not rendered, rendering, pdf not viewed (clicking goes back to stage 1)
   //the button can also be disabled when wrong data has been entered
-  var renderState = "unrendered"; //unrendered, rendering, rendered, disabled
+  var renderState = "disabled"; //unrendered, rendering, rendered, disabled
 
   //true when there are changes that haven't been saved to the server
   var unsavedChanges = false;
@@ -21,11 +27,15 @@ $(document).ready(function() {
   //get booklet id
   var bookletId = $("#booklet-id").text();
 
-  //get elements
+  //query elements
   var titleInput = $("#title-input");
   var sessionInput = $("#session-input");
   var saveBtn = $("#save-btn");
   var printBtn = $("#print-btn");
+  var printBtnInner = $("#print-btn-inner");
+  var printBtnText = $("#print-btn-text");
+  var printBtnIcon = printBtnInner.find("i");
+  var renderingSpinner = $("#pdf-wait-spinner");
   var eligibleList = $("#eligible-list");
   var selectedList = $("#selected-list");
   var saveMsg = $("#unsaved-changes-msg");
@@ -48,7 +58,10 @@ $(document).ready(function() {
     unsavedChanges = true;
 
     //set render state to unrendered
-    setRenderState("unrendered");
+    //but don't set if set as disabled, update list re-enabled when allowed
+    if (renderState !== "disabled") {
+      setRenderState("unrendered");
+    }
 
     //enable save button and message
     saveBtn.removeClass("disabled");
@@ -115,19 +128,54 @@ $(document).ready(function() {
 
   //sets the render state and updates UI elements
   function setRenderState(newState) {
+    //set new state
+    renderState = newState;
+
     //depending on new state
     switch (newState) {
       case "unrendered":
+        //make enabled and set flat style to display action is ready
+        printBtn.removeClass("disabled btn").addClass("btn-flat");
 
+        //set text to display that a render will happen on hover
+        printBtnText.text("Hover to Generate PDF");
+
+        //set correct icon
+        printBtnIcon.text("refresh");
         break;
       case "rendering":
-
+        //show spinner and hide regular text
+        renderingSpinner.removeClass("hide-this");
+        printBtnInner.addClass("hide-this");
         break;
       case "rendered":
+        //hide rendering spinner and show regular text
+        renderingSpinner.addClass("hide-this");
+        printBtnInner.removeClass("hide-this");
 
+        //set normal button style (action requires click)
+        printBtn.removeClass("btn-flat").addClass("btn")
+
+        //and set url to pdf
+        .attr("href", "/rendered/booklet" + bookletId + ".pdf");
+
+        //set text and icon to display rendering done
+        printBtnText.text("View PDF");
+        printBtnIcon.text("print");
         break;
       case "disabled":
+        //set text to display function of button
+        printBtnText.text("Generate PDF");
 
+        //and set default disabled style
+        printBtn.addClass("disabled btn").removeClass("btn-flat");
+
+        //hide spinner in case it was there and show normal display text
+        renderingSpinner.addClass("hide-this");
+        printBtnInner.removeClass("hide-this");
+
+        //set disabled icon
+        printBtnIcon.text("do_not_disturb");
         break;
 
       //bad state given
@@ -139,8 +187,11 @@ $(document).ready(function() {
 
   //updates the display of the no content message and the collection list
   function updateListDisplay() {
+    //get the selected resolution items
+    var selectedRes = selectedList.children();
+
     //check if the list if empty
-    var listLength = selectedList.children().length;
+    var listLength = selectedRes.length;
 
     //show and hide depending on list empty status
     if (listLength) {
@@ -149,6 +200,24 @@ $(document).ready(function() {
     } else {
       selectedListEmptyMsg.removeClass("hide-this");
       selectedList.addClass("hide-this");
+    }
+
+    //check if the resolution can be printed
+    //must have at least one resolution and all resolutions in stage range [7, 9]
+    if (listLength && selectedRes.get().every(function(el) {
+      //get the stage of this resolution item
+      var stage = parseInt($(el).find(".res-stage").text());
+
+      //when the stage matches the range
+      return stage >= 7 && stage <= 9;
+    })) {
+      //reset to renderable if still disabled
+      if (renderState === "disabled") {
+        setRenderState("unrendered");
+      }
+    } else {
+      //disable rendering
+      setRenderState("disabled");
     }
   }
 
@@ -181,14 +250,24 @@ $(document).ready(function() {
       });
     }
   })
-  .on("click", function() {
+  .on("click", function(e) {
     /*when the open pdf button is clicked and opened the pdf,
     go back to unrendered bcause one of the resolutions might have changes,
     we're not reporting resolution changes but the server does regard them internally
     when deciding wether or not to actually re-render the booklet*/
     if (renderState === "rendered") {
-      //move back to unrendered
-      setRenderState("unrendered");
+      //blur to remove focus that makes it go dark
+      printBtn.blur();
+
+      //move back to unrendered after a short time, 1 second is short
+      //enough that the user doesn't perform another action
+      setTimeout(function() {
+        //move back to unrendered
+        setRenderState("unrendered");
+      }, 1000);
+    } else {
+      //prevent following link, there is nothing valid to look at
+      e.preventDefault();
     }
   });
 
@@ -274,4 +353,7 @@ $(document).ready(function() {
     //changes were probably made
     madeChange();
   });
+
+  //do initial check of selected resolution list
+  updateListDisplay();
 });
