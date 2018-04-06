@@ -56,13 +56,13 @@ block content
                 +selected-icons
         +check-nothing(booklet.resolutions)
     h5.light Title Page
-    p.justify Enter the title and session description of the resolution booklet and the names an positions of all signature fields. Currently only 7 or 8 signatures are possible and signature 8 is optional. The session number is usually written in roman numerals.
+    p.justify Enter the title and session description of the resolution booklet and the names an positions of all signature fields. Currently only 7 or 8 signatures are possible and signature 8 is optional. The Booklet title is printed with small capitals and the session number is usually written in roman numerals.
     .row
       mixin input-field
         .col.s12.m6.input-field
           block
       +input-field
-        input#title-input(type="text" placeholder="RESOLUTION BOOKLET <year>" value=booklet.title)
+        input#title-input(type="text" placeholder="Resolution Booklet <year>" value=booklet.title)
         label(for="title-input") Booklet Title
       +input-field
         input#session-input(type="text" placeholder="<session number>. Annual Session" value=booklet.session)
