@@ -361,8 +361,10 @@ $(document).ready(function() {
       e.preventDefault();
 
       //try to send a message to the user, the default from the browser is fine too though
-      return "You have unsaved changes that will be lost if you proceed!" +
+      var msg = "You have unsaved changes that will be lost if you proceed!" +
         "Press the 'Save Changes' button to save the booklet state.";
+      e.returnValue = msg;
+      return msg;
     }
   });
 });
