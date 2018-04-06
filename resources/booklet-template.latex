@@ -27,17 +27,12 @@
 \renewcommand{\footrulewidth}{0pt}
 \pagestyle{fancy}
 
-%own commands need to be defined before renewing them below in every resolution
-\newcommand{\forum}{}
-\newcommand{\issue}{}
-\newcommand{\sponsor}{}
-
 %TikZ Variables for Signature lines
-\\def\\strichbreite{3.25}
-\\def\\luecke{0.5}
-\\def\\erstezeile{4}
-\\def\\zweitezeile{1}
-\\def\\offsetsieben{\\strichbreite/2+\\luecke/2}
+\def\strichbreite{3.25}
+\def\luecke{0.5}
+\def\erstezeile{4}
+\def\zweitezeile{1}
+\def\offsetsieben{\strichbreite/2+\luecke/2}
 
 \setlength\parindent{0pt}
 \newenvironment{preamb}[2]{
