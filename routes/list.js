@@ -539,15 +539,6 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
       return;
     }
 
-    //all resolutions of booklet must be at least in stage 7 and at most in stage 9
-    if (! booklet.resolutions.every(r => r.stage >= 7 && r.stage <= 9)) {
-      //error and stop
-      issueError(req, res, 400,
-        "will not render booklet with resolutions outside of stage range [7, 9], id " +
-        req.bookletId);
-      return;
-    }
-
     //query resolutions of this booklet
     resolutions.find(
       //extend eligible resolution query,
@@ -563,6 +554,15 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
           //error and stop
           issueError(req, res, 500,
             "amount of found and specified resolutions in booklet not equal, id " + req.bookletId);
+          return;
+        }
+
+        //all resolutions of booklet must be at least in stage 7 and at most in stage 9
+        if (! results.every(r => r.stage >= 7 && r.stage <= 9)) {
+          //error and stop
+          issueError(req, res, 400,
+            "will not render booklet with resolutions outside of stage range [7, 9], id " +
+            req.bookletId);
           return;
         }
 
