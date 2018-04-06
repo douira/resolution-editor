@@ -259,12 +259,8 @@ $(document).ready(function() {
       //blur to remove focus that makes it go dark
       printBtn.blur();
 
-      //move back to unrendered after a short time, 1 second is short
-      //enough that the user doesn't perform another action
-      setTimeout(function() {
-        //move back to unrendered
-        setRenderState("unrendered");
-      }, 1000);
+      //move back to unrendered
+      setRenderState("unrendered");
     } else {
       //prevent following link, there is nothing valid to look at
       e.preventDefault();
