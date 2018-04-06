@@ -352,4 +352,17 @@ $(document).ready(function() {
 
   //do initial check of selected resolution list
   updateListDisplay();
+
+  //register do you want to leave message
+  $(window)
+  .on("beforeunload", function(e) {
+    //halt close if flag set that there are unsaved changes
+    if (unsavedChanges) {
+      e.preventDefault();
+
+      //try to send a message to the user, the default from the browser is fine too though
+      return "You have unsaved changes that will be lost if you proceed!" +
+        "Press the 'Save Changes' button to save the booklet state.";
+    }
+  });
 });
