@@ -242,8 +242,8 @@ $(document).ready(function() {
           makeAlertMessage(
             "error_outline", "Error generating PDF", "ok",
             "The server encountered an error while trying to generate the requested" +
-            " PDF file. This may happen when a resolution includes illegal characters or" +
-            " some attribute of the booklet is invalid." +
+            " PDF file. This may happen when a resolution or the booklet includes illegal" +
+            "characters or some attribute of the booklet is invalid." +
             " Please talk to the owner of this document and ask IT-Management for help if" +
             " this problem persists.", "pdf_gen_booklet");
         });
