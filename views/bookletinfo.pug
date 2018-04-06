@@ -95,7 +95,7 @@ block content
       #print-btn-inner
         span#print-btn-text Loading
         +icon("", "left")
-    p: a(href="/rendered/booklet" + booklet._id + ".pdf") View outdated PDF
+    p: a(href="/rendered/booklet" + booklet._id + ".pdf" target="_blank") View outdated PDF
 block scripts
   +static("js", "/js/dialogs.js")
   +static("js", "/js/bookletInfoInit.js")
