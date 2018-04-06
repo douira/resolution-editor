@@ -6,57 +6,64 @@ updateListConfig,
 makeAlertMessage,
 advanceButton*/
 
-//current state of the buttons for the first item
-//can be: unrendered, rendering, rendered, viewed (in that order)
-var firstItemPdfStage;
-
-//updates the buttons and spinner acording to the view stage
-function setFirstItemStage(newStage, useItem) {
-  //use given item is present
-  useItem = useItem || firstItem;
-
-  //set to new stage
-  firstItemPdfStage = newStage;
-
-  //switch to stage
-  switch(firstItemPdfStage) {
-    case "unrendered":
-      $("#print-btn-text").text("Hover to Generate PDF");
-      $("#print-btn i").text("refresh");
-      $("#print-btn")
-        .attr("href", "#")
-        .removeClass("btn")
-        .addClass("btn-flat");
-      advanceButton.addClass("disabled");
-      break;
-    case "rendering":
-      $("#print-btn-inner").addClass("hide-this");
-      $("#pdf-wait-spinner").removeClass("hide-this");
-      break;
-    case "rendered":
-      $("#print-btn-inner").removeClass("hide-this");
-      $("#pdf-wait-spinner").addClass("hide-this");
-      advanceButton.addClass("disabled");
-
-      //set to be rendered
-      useItem.unrenderedChanges = false;
-
-      //setup button
-      $("#print-btn")
-        .attr("href", "/rendered/" + useItem.token + ".pdf")
-        .removeClass("btn-flat")
-        .addClass("btn")
-        .find("i").text("print");
-      $("#print-btn-text").text("View PDF");
-      break;
-    case "viewed":
-      advanceButton.removeClass("disabled");
-      break;
-  }
-}
-
 //on document ready
 $(document).ready(function() {
+  //current state of the buttons for the first item
+  //can be: unrendered, rendering, rendered, viewed (in that order)
+  var firstItemPdfStage;
+
+  //query elements
+  var printBtn = $("#print-btn");
+  var printBtnText = $("#print-btn-text");
+  var pdfWaitSpinner = $("#pdf-wait-spinner");
+  var printBtnInner = $("#print-btn-inner");
+  var printBtnIcon = printBtn.find("i");
+
+  //updates the buttons and spinner acording to the view stage
+  function setFirstItemStage(newStage, useItem) {
+    //use given item is present
+    useItem = useItem || firstItem;
+
+    //set to new stage
+    firstItemPdfStage = newStage;
+
+    //switch to stage
+    switch(firstItemPdfStage) {
+      case "unrendered":
+        printBtnText.text("Hover to Generate PDF");
+        printBtnIcon.text("refresh");
+        printBtn
+          .attr("href", "#")
+          .removeClass("btn")
+          .addClass("btn-flat");
+        advanceButton.addClass("disabled");
+        break;
+      case "rendering":
+        printBtnInner.addClass("hide-this");
+        pdfWaitSpinner.removeClass("hide-this");
+        break;
+      case "rendered":
+        printBtnInner.removeClass("hide-this");
+        pdfWaitSpinner.addClass("hide-this");
+        advanceButton.addClass("disabled");
+
+        //set to be rendered
+        useItem.unrenderedChanges = false;
+
+        //setup button
+        printBtn
+          .attr("href", "/rendered/" + useItem.token + ".pdf")
+          .removeClass("btn-flat")
+          .addClass("btn");
+        printBtnIcon.text("print");
+        printBtnText.text("View PDF");
+        break;
+      case "viewed":
+        advanceButton.removeClass("disabled");
+        break;
+    }
+  }
+
   //need to set rendering state first
   updateListConfig.preCopyHandler = function(newFirst, firstItem) {
     //reset flag to given value if it's a new item
@@ -74,7 +81,7 @@ $(document).ready(function() {
   updateList();
 
   //handler how mouseenter (like hover) and click of view pdf button
-  $("#print-btn")
+  printBtn
   .on("mouseenter", function() {
     //if the resolution hasn't been rendered yet
     if (firstItemPdfStage === "unrendered") {
@@ -104,12 +111,18 @@ $(document).ready(function() {
       });
     }
   })
-  .on("click", function() {
+  .on("click", function(e) {
     //when the open pdf button is clicked and opened the pdf
     //make the advance resolution button appear in color
     if (firstItemPdfStage === "rendered") {
       //move into viewed stage
       setFirstItemStage("viewed");
+
+      //blur to remove focus and prevent strange darkening
+      printBtn.blur();
+    } else {
+      //prevent click, nothing valid to see
+      e.preventDefault();
     }
   });
 });
