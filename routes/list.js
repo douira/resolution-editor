@@ -615,9 +615,12 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
 
             //check if the page amount could be determined
             if (pageAmount) {
-              //save number of pages in booklet
+              //save number of pages in booklet and unset unrendered changes
               booklets.updateOne({ _id: booklet._id }, {
-                $set: { pageAmount: pageAmount }
+                $set: {
+                  pageAmount: pageAmount,
+                  unrenderedChanges: false
+                }
               }).catch( //not interested in result
                 err => req.log.error(err, "could not update booklet page amount")
               );
@@ -655,7 +658,10 @@ router.post("/booklet/save/:id", function(req, res) {
     _id: req.bookletId
   }, {
     //set all given attributes
-    $set: req.body
+    $set: Object.assign(req.body, {
+      //also set unrendered changes on save
+      unrenderedChanges: true
+    })
   }).then(
     //send ok when update happens without error
     () => res.send("ok"),
