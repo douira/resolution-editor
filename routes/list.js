@@ -473,21 +473,29 @@ const eligibleResolutionQuery = {
 
 //edit and info page for a particular booklet
 router.get("/booklet/edit/:id", function(req, res) {
-  //query booklet and eligible resolutions concurrently
-  Promise.all([
-    //get the current booklet
-    booklets.findOne({
-      _id: req.bookletId
-    }),
+  //get the current booklet
+  booklets.findOne({
+    _id: req.bookletId
+  }).then(booklet => {
+    //make sure we found a booklet
+    if (! booklet) {
+      //error and stop
+      issueError(req, res, 400, "(renderpdf) no booklet exists with id " + req.bookletId);
+      return;
+    }
 
-    //find eligible resolutions
-    resolutions.find(eligibleResolutionQuery).toArray()
-  ]).then(
-    results => {
-      //get booklet and eligible resolutions from result
-      const booklet = results[0];
-      const eligibleResolutions = results[1];
+    //find eligible and selected resolutions
+    resolutions.find(
+      {
+        $or: [
+          //token is one of the ones specified in the booklet
+          { token: { $in: booklet.resolutions } },
 
+          //or a eligible resolution
+          eligibleResolutionQuery
+        ]
+      }
+    ).toArray().then(eligibleResolutions => {
       //for all tokens specified in the booklet
       booklet.resolutions = booklet.resolutions.map(token => {
         //find the corresponding eligible resolution
@@ -499,6 +507,9 @@ router.get("/booklet/edit/:id", function(req, res) {
         //return eligible resolution for display
         return eligibleRes;
       });
+
+      //filter eligibleResolutions to remove selected but not anymore eligible resolutions
+      eligibleResolutions = eligibleResolutions.filter(res => res.stage <= 9);
 
       //make sure we found a booklet
       if (! booklet) {
@@ -515,7 +526,8 @@ router.get("/booklet/edit/:id", function(req, res) {
     },
     err => issueError(req, res, 500, "could not query booklet with id " + req.bookletId +
       " or query eligible resolutions for booklet", err)
-  );
+    );
+  });
 });
 
 //renders the booklet
