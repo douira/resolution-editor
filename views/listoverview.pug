@@ -24,7 +24,7 @@ block content
                 li.collection-item
                   a(href="/resolution/editor/" + res.token target="_blank")=res.token
                   if res.resolutionId && res.idYear
-                    span.light.res-id  [MUNOL/#{res.idYear}/#{res.resolutionId}]
+                    span.res-id  [MUNOL/#{res.idYear}/#{res.resolutionId}]
                   if ! res.forum
                     span.grey-text  (not saved)
                   else
