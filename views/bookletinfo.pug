@@ -1,0 +1,102 @@
+extends layout
+
+block title
+  title Resolution Booklet ##{booklet._id}
+
+block styles
+  +static("css", "/css/bookletInfoStyle.css")
+
+block content
+  .container
+    +icon("collections_bookmark", "large left blue-text")
+    h3 Resolution Booklet #
+      span#booklet-id=booklet._id
+    .divider
+    p.justify This page displays all important information about this resolution booklet. This booklet is for the #[b=booklet.type] plenary. You have to save any changes you make before leaving this page. Generating a PDF will automatically save all changes. If you remove a selecte resoluton that is not eligible anymore it can't be selected again after saving the changes. Eligible resolutions are sorted by forum, stage, token.
+    .btn.waves-effect.waves-light.disabled#save-btn(color=pri) Save Changes
+    span.hide-this#unsaved-changes-msg  There are unsaved changes!
+    .row
+      mixin check-nothing(resList)
+        p.center.no-cotent-msg(class=resList.length && "hide-this")
+          em.grey-text.text-darken-1 No resolutions to display.
+      mixin res-info(res)
+        - const address = res.content.resolution.address;
+        a.token(href="/resolution/editor/" + res.token target="_blank")=res.token
+        =" "
+        a(href="/help#rstage" + res.stage)
+          b.grey-text #
+            span.res-stage=res.stage
+        span.res-id  [MUNOL/#{res.idYear}/#{res.resolutionId}]
+        span.grey-text  in
+        span.forum  #{address.forum}
+        span.grey-text  by
+        span.sponsor  #{address.sponsor.main}
+        block
+      mixin selected-icons
+        +icon("clear", "right red-text remove-icon selected-icons")
+        +icon("arrow_upward", "right blue-text up-icon selected-icons")
+        +icon("arrow_downward", "right blue-text down-icon selected-icons")
+      #icon-block-template.hide-this
+        +selected-icons
+      .col.s12.l6
+        h5.light Eligible Resolutions
+        ul.collection#eligible-list(class=resolutions.length || "hide-this")
+          - const getForum = res => res && res.content.resolution.address.forum;
+          each resolution, index in resolutions
+            li.collection-item(class=(resolution.selected && "selected-res") + (getForum(resolution) !== getForum(resolutions[index + 1]) ? " item-group-divider" : ""))
+              +res-info(resolution)
+                +icon("check", "right green-text text-darken-1 selected-icon eligible-icons")
+                +icon("add", "right grey-text add-icon eligible-icons")
+        +check-nothing(resolutions)
+      .col.s12.l6
+        h5.light Selected Resolutions
+        ul.collection#selected-list(class=booklet.resolutions.length || "hide-this")
+          each resolution in booklet.resolutions
+            li.collection-item
+              +res-info(resolution)
+                +selected-icons
+        +check-nothing(booklet.resolutions)
+    h5.light Title Page
+    p.justify Enter the title and session description of the resolution booklet and the names an positions of all signature fields. Currently only 7 or 8 signatures are possible and signature 8 is optional. The Booklet title is printed with small capitals and the session number is usually written in roman numerals.
+    .row
+      mixin input-field
+        .col.s12.m6.input-field
+          block
+      +input-field
+        input#title-input(type="text" placeholder="Resolution Booklet <year>" value=booklet.title)
+        label(for="title-input") Booklet Title
+      +input-field
+        input#session-input(type="text" placeholder="<session number>. Annual Session" value=booklet.session)
+        label(for="session-input") Booklet Session Name
+      .col.s12
+        .divider
+        br
+      mixin sig-field(index, nameExt, sig)
+        -
+          const idName = "sig-name-" + index;
+          const idPos = "sig-pos-" + index;
+        .sig-field-group
+          +input-field
+            input.sig-name(type="text" id=idName value=sig && sig.name)
+            label(for=idName) Name for Signature #{index}#{nameExt}
+          +input-field
+            input.sig-pos(type="text" id=idPos value=sig && sig.position)
+            label(for=idPos) Position for Signature #{index}#{nameExt}
+      #sig-list
+        - let i = 1;
+        while i <= 8
+          +sig-field(i, i === 8 ? " (optional)" : "", booklet.signatures[i - 1])
+          - i++
+    h5.light Print
+    p.justify A printable PDF can be generated when all selected resolutions are in the stages #[a(href="/help#rstage7") 7] - #[a(href="/help#rstage9") 9] and at least one resolution is selected. Note that when one selected resolution is advanced past stage 9, no new PDF of the booklet can be genererated (but the old one isn't deleted), because resolutions can be modified in the plenary debate stage #[a(href="/help#rstage10") 10]. It is recommended to print the title page, have all listed people sign above the provided lines and then scan the signed page before using it to replace the bare title page in the generated booklet.
+    a.waves-effect.waves-light.btn-flat.btn-spacing-right#print-btn(href="#" target="_blank")
+      .inline-spinner-wrapper.hide-this#pdf-wait-spinner
+        +spinner("blue", "inline-spinner")
+        |  Rendering...
+      #print-btn-inner
+        span#print-btn-text Loading
+        +icon("", "left")
+    p: a(href="/rendered/booklet" + booklet._id + ".pdf" target="_blank") View outdated PDF
+block scripts
+  +static("js", "/js/dialogs.js")
+  +static("js", "/js/bookletInfoInit.js")

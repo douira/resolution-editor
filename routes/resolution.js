@@ -37,7 +37,7 @@ router.get("/renderpdf/:token", function(req, res) {
   }, (token, document) => {
     //don't render if nothing saved yet
     if (! document.stage) {
-      issueError(res, 400, "nothing saved (stage 0)");
+      issueError(req, res, 400, "nothing saved (stage 0)");
       return;
     }
 
@@ -52,7 +52,7 @@ router.get("/renderpdf/:token", function(req, res) {
     }
 
     //generate pdf
-    generatePdf(document).then(
+    generatePdf(document, "resolution").then(
       //send url to rendered pdf
       pageAmount => {
         //send url to confirm render
@@ -70,7 +70,7 @@ router.get("/renderpdf/:token", function(req, res) {
       },
 
       //print and notify of error
-      err => issueError(res, 500, "render problem", err)
+      err => issueError(req, res, 500, "render problem", err)
     );
   });
 });
@@ -81,7 +81,7 @@ router.get("/renderplain/:token", function(req, res) {
   routingUtil.checkToken(req, res, (token, document) => {
     //don't render if nothing saved yet
     if (! document.stage) {
-      issueError(res, 400, "nothing saved (stage 0)");
+      issueError(req, res, 400, "nothing saved (stage 0)");
       return;
     }
 
@@ -102,7 +102,7 @@ router.get("/prenew", function(req, res) {
 //GET (no view, processor) redirects to editor page with new registered token
 router.get("/new", function(req, res) {
   //make a new unique token, true flag for being a token
-  resUtil.makeNewThing(res, true).then(token => {
+  resUtil.makeNewThing(req, res, true).then(token => {
     //get now (consistent)
     const timeNow = Date.now();
 
@@ -121,7 +121,7 @@ router.get("/new", function(req, res) {
     }).then(() => {
       //redirect to editor page (because URL is right then)
       res.redirect("/resolution/editor/" + token);
-    }, () => issueError(res, 500, "can't create new"));
+    }, () => issueError(req, res, 500, "can't create new"));
   });
 });
 
@@ -149,7 +149,7 @@ router.post("/save/:token", function(req, res) {
         }
       ).then(() => {
         res.send("ok");
-      }, () => issueError(res, 500, "can't save"));
+      }, () => issueError(req, res, 500, "can't save resolution"));
     }, {
       //match mode save respects saving attrib restrictions
       matchMode: "save"
@@ -229,9 +229,9 @@ router.post("/setattribs/:token", function(req, res) {
     ).then(() => {
       //redirect back to editor page
       res.redirect("/resolution/editor/" + token);
-    }, err => issueError(res, 500, "can't set attribute", err));
+    }, err => issueError(req, res, 500, "can't set attribute", err));
   } else {
-    issueError(res, 400, "missing or incorrect fields");
+    issueError(req, res, 400, "missing or incorrect fields");
   }
 });
 
@@ -246,8 +246,8 @@ router.post("/delete/:token", function(req, res) {
     resolutionArchive.insertOne(resDoc.value).then(() => {
       //acknowledge
       res.send("ok. deleted " + token);
-    }, err => issueError(res, 500, "can't insert into archive", err));
-  }, err => issueError(res, 500, "can't delete", err));
+    }, err => issueError(req, res, 500, "can't insert into archive", err));
+  }, err => issueError(req, res, 500, "can't delete", err));
 });
 
 //pass liveview stuff on to that module
@@ -283,28 +283,34 @@ routingUtil.getAndPost(router, "/advance/:token", function(req, res) {
 
     //if vote values are sent
     if (req.body && "inFavor" in req.body) {
-      //stop if vote numbers faulty
-      try {
-        //make voting reults object
-        const voteResults = {
-          // "|| 0" convert to number or 0
-          inFavor: parseInt(req.body.inFavor, 10) || 0,
-          against: parseInt(req.body.against, 10) || 0,
-          abstention: parseInt(req.body.abstention, 10) || 0,
-          importantQuestion: req.body.importantQuestion ? true : false,
-        };
+      //determine vote type with stage we are advancing from
+      const voteType = resDoc.stage === 6 ? "committee" : "plenary";
 
-        /*check and add prop wether or not this resolution passed.
-        must be majority for pass and 2/3 majority (= two times more than...)
-        for important question to pass*/
-        voteResults.passed = voteResults.inFavor > voteResults.against *
-          (voteResults.importantQuestion ? 2 : 1);
+      //make voting reults object
+      const voteResults = {
+        // "|| 0" convert to number or 0
+        inFavor: parseInt(req.body.inFavor, 10) || 0,
+        against: parseInt(req.body.against, 10) || 0,
+        abstention: parseInt(req.body.abstention, 10) || 0,
+        importantQuestion: req.body.importantQuestion ? true : false,
+        voteType
+      };
 
-        //add whole thing to query
-        query.$set = { voteResults: voteResults };
-      } catch (err) {
-        issueError(res, 400, "vote number parse fail", err);
-      }
+      /*check and add prop wether or not this resolution passed.
+      must be majority for pass and 2/3 majority (= two times more than...)
+      for important question to pass*/
+      voteResults.passed = voteResults.inFavor > voteResults.against *
+        (voteResults.importantQuestion ? 2 : 1);
+
+      //add whole thing to query
+      query.$set = {
+        //set result depending on which vote this is
+        [ "voteResults." + voteType]: voteResults
+      };
+    } else if (resDoc.stage === 6 || resDoc.stage === 10) {
+      //needed vote results but got none
+      issueError(req, res, 400, "got no vote results although they were required");
+      return;
     }
 
     //add resolution id if going from stage 3 (FC) to 4 (print), regular advance otherwise
@@ -314,7 +320,7 @@ routingUtil.getAndPost(router, "/advance/:token", function(req, res) {
       collections.resolutionId.findOneAndUpdate({ year: new Date().getFullYear() }, {
         //count up one
         $inc: { counter: 1 }
-      })
+      }, { upsert: true })
 
       //advance resolution to next stage and set id
       .then(yearDoc => {
@@ -350,13 +356,13 @@ routingUtil.getAndPost(router, "/advance/:token", function(req, res) {
           res.redirect("/resolution/editor/" + token);
         }
       },
-      err => issueError(res, 500, "advance db error", err));
+      err => issueError(req, res, 500, "advance db error", err));
   }, {
     //error/warning page on fail
     permissionMissmatch: (token, resolutionDoc, codeDoc) => {
       //issue error if no ui, error page if user is viewing
       if (req.query.noui) {
-        issueError(res, 400, "insufficient permission to advance");
+        issueError(req, res, 400, "insufficient permission to advance");
       } else {
         //display error page
         res.render("weakperm", {

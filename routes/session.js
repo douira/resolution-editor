@@ -61,12 +61,26 @@ router.get("/logout", function(req, res) {
 
 //GET a master code with the key stored in keys.json
 router.get("/getaccess/" + credentials.makeCodesSuffix, function(req, res) {
-  //make a valid code
-  resUtil.makeNewThing(res, false).then(code =>
-    //add all of them to the database
-    access.insertOne({ level: "MA", code: code }).then(
-      //respond with codes as content
-      () => res.send("MA: " + code),
-      err => issueError(res, 500, "Error inserting makecode code", err))
+  //try to find a existing MA code
+  access.findOne({
+    level: "MA"
+  }).then(
+    result => {
+      //if there is a result
+      if (result) {
+        //respond with gotten code
+        res.send("MA: " + result.code);
+      } else {
+        //make a new valid code
+        resUtil.makeNewThing(req, res, false).then(code =>
+          //add to the database
+          access.insertOne({ level: "MA", code: code }).then(
+            //respond with code as content
+            () => res.send("MA: " + code),
+            err => issueError(req, res, 500, "Error inserting getaccess code", err))
+        );
+      }
+    },
+    err => issueError(req, res, 500, "could not check for existing code in getaccess", err)
   );
 });

@@ -53,6 +53,14 @@
   height: 22px;
 }
 
+#vote-results {
+  padding-top: 0px;
+}
+
+.vote-result {
+  margin-top: 30px;
+}
+
 #resolution-pass-status {
   margin-top: 0px;
 }

@@ -66,7 +66,7 @@ block content
         p To open LiveView on another device open the resolution by entering the resolution token and your access code on the #[a(href="/resolution" target="_blank") Resoluion Page] and clicking the "LiveView" button. LiveView will display a mock version of the rendered resolution document that will update in real time and colorize amendments you make while LiveView is active.
         p
           a#hide-lieview-hint.grey-text(href="#") [Hide hint]
-          span#liveview-hint  The following procedure is recommended: Retype amendments somehwere into your computer. This can be any text editor or this #[a(href="/handytextbox" target="_blank") handy textbox]. When you want to discuss the amendment, paste it into the amendment field and select the appropriate sponsor and action type. This will update it on the LiveView client. The LiveView client marks removed text #[span(class=marker.red) red] and added text #[span(class=markers.green) green]. After discussing and voting in favour or against the amendment, click the keep or reject button below the amendment field to either apply the proposed changes to the resolution or remove them from the display.
+          span#liveview-hint  The following procedure is recommended: Retype amendments somehwere into your computer. This can be any text editor or this #[a(href="/handytextbox" target="_blank") handy textbox]. When you want to discuss the amendment, paste it into the amendment field and select the appropriate sponsor and action type. This will update it on the LiveView client. The LiveView client marks removed text #[span(class=markers.red) red] and added text #[span(class=markers.green) green]. After discussing and voting in favour or against the amendment, click the keep or reject button below the amendment field to either apply the proposed changes to the resolution or remove them from the display.
     if doLoad
       h5.light Important: Concurrent Editing
         +icon("announcement", "mediumsmall left red-text")
@@ -114,7 +114,7 @@ block content
           .collapsible-header(class=meta.stage === 7 || meta.stage === 11 ? "active" : "")
             +icon("thumbs_up_down", "text-darken-3 light-blue-text")
             | Vote Results
-          .collapsible-body
+          .collapsible-body#vote-results
             -
               //wrap in results object if still in old format
               if (typeof meta.voteResults.inFavor === "number") {
@@ -122,7 +122,7 @@ block content
                 meta.voteResults = { committee: meta.voteResults };
               }
             each voteResult, voteTypeKey in meta.voteResults
-              .center
+              .center.vote-result
                 if voteResult.passed
                   +icon("check_circle", "mediumsmall light-green-text text-darken-1")
                 else
@@ -190,7 +190,7 @@ block content
                     input#important-question-checkbox(type="checkbox" name="importantQuestion")
                     label(for="important-question-checkbox") Declared an important question
             .input-field(class=lvEnabled ? "xl6 m6 s12 col" : "")
-              +icon(codeIcon, "prefix")
+              +icon(icons.code, "prefix")
               input#advance-code-input(name="code" type="text" placeholder=placeholders.code)
               label(for="advance-code-input") Enter access code
         mixin input-field-wrapper

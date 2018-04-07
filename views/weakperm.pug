@@ -7,14 +7,6 @@ block content
   .container
     h4.center: +icon(icons.weakperm, "large " + colors.weakperm)
     case type
-      when "workqueue"
-        h3.center Insufficient Permission for this Work Queue
-        .divider
-        p.justify This work queue could not be opened because the provided valid access code did not have the required permission level. Check the code entry page for permission requirements.
-      when "adminlogin"
-        h3.center Insufficient Permission for Admin Login
-        .divider
-        p.justify You need to enter a #[a(href="/help#MA") MA] level access code in order to log into the admin area.
       when "liveview"
         include stages
         h3.center Insufficient Permission for LiveView
