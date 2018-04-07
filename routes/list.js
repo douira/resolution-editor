@@ -237,8 +237,7 @@ router.post("/codes/:action", function(req, res) {
       metadata.findOneAndUpdate({
         _id: "codeInsertGroupCounter"
       }, {
-        $inc: { value: 1 },
-        $setOnInsert: { value: 0 }
+        $inc: { value: 1 }
       }, { returnOriginal: false, upsert: true }).then(result => {
         //pass gotten counter value to next step
         return Promise.resolve({
@@ -685,8 +684,7 @@ router.post("/booklet/new", function(req, res) {
   metadata.findOneAndUpdate({
     _id: "bookletId"
   }, {
-    $inc: { value: 1 },
-    $setOnInsert: { value: 0}
+    $inc: { value: 1 }
   }, { returnOriginal: false, upsert: true }).then(
     //insert a new booklet with that id, current year and given type
     result => booklets.insertOne({
@@ -699,7 +697,12 @@ router.post("/booklet/new", function(req, res) {
     }),
     err => issueError(req, res, 500, "could not increment booklet id counter", err)
   ).then(result => {
-    //redirect to edit page for that booklet
-    res.redirect("/list/booklet/edit/" + result.ops[0]._id);
+    //there must be a valid result
+    if (result && result.ops instanceof Array) {
+      //redirect to edit page for that booklet
+      res.redirect("/list/booklet/edit/" + result.ops[0]._id);
+    } else {
+      issueError(req, res, 500, "error after booklet insert: did not get result");
+    }
   }, err => issueError(req, res, 500, "could not insert new booklet", err));
 });

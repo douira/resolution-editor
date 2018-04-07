@@ -319,8 +319,7 @@ routingUtil.getAndPost(router, "/advance/:token", function(req, res) {
       //needs findOneAndUpdate because we need the value of the modified doc
       collections.resolutionId.findOneAndUpdate({ year: new Date().getFullYear() }, {
         //count up one
-        $inc: { counter: 1 },
-        $setOnInsert: { counter: 0 }
+        $inc: { counter: 1 }
       }, { upsert: true })
 
       //advance resolution to next stage and set id
