@@ -695,6 +695,10 @@ function sendLVUpdate(type, eventType, elem) {
     //no not update if type inactivation and not type change,
     //inactivation updates only make sense for change action type
     if (eventType !== "inactivation" || amdActionType === "change") {
+      //reset path cache for safety, path ids from cloned elments may
+      //have been cariied over into amendment display elements
+      //pathCache = {};
+
       //process amendment update directly
       doAmdUpdate();
     }

@@ -28,7 +28,8 @@ var amdActionTexts = {
   change: "change",
   replace: "replace",
   add: "append",
-  remove: "strike out"
+  remove: "strike out",
+  noselection: "?"
 };
 
 //applies a change to the resolution document in html given a path and a new content
@@ -217,7 +218,7 @@ function render() {
 
       //splice into clauses (for replace and change)
       opClauses.splice(amendment.clauseIndex + 1, 0, amendment.newClause);
-    } else if (amendment.type === "change") {
+    } else if (amendment.type === "change" || amendment.type === "noselection") {
       //replace clause that is to be changed
       opClauses.splice(amendment.clauseIndex, 1, amendment.newClause);
     }
@@ -526,7 +527,7 @@ function render() {
       amendmentElements.amd.addClass("mark-amd-green");
     } else if (amendment.type === "remove" || amendment.type === "replace") {
       amendmentElements.amd.addClass("mark-amd-red");
-    } else if (amendment.type === "change") {
+    } else if (amendment.type === "change" || amendment.type === "noselection") {
       amendmentElements.amd.addClass("mark-amd-grey");
     }
   }

@@ -718,7 +718,7 @@ function registerEventHandlers(loadedData) {
     //called by sendLVUpdate in dataInteraction.js to generate the object that is sent to the server
     //and the liveview clients containing all information describing the current amendment
     getAmendmentUpdate = function(noData) {
-      //no update when nothing there to update
+      //no update when nothing there to update or no action is selected
       if (! amdClauseElem.length) {
         return false;
       }
