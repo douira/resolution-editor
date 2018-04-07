@@ -1108,8 +1108,8 @@ function registerEventHandlers(loadedData) {
     var elem = $(this);
 
     //change validation state to wether or not this field contains a correct value
-    var valueOk = this.checkAutoCompValue(loadedData);
-    elem.classState(valueOk, "invalid");
+    var valueOk = elem.checkAutoCompValue(loadedData);
+    elem.classState(! valueOk, "invalid");
 
     //apply to global flag
     badFieldPresent = badFieldPresent || ! valueOk;
