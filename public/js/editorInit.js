@@ -426,9 +426,18 @@ $.fn.filterIllegalContent = function() {
       return;
     }
 
+    //check if normalization is possible in this environment
+    var newContent;
+    if (String.prototype.normalize) {
+      //apply normalization to prevent added diacritical marks from being lost
+      newContent = content.normalize("NFKC");
+    } else {
+      newContent = content;
+    }
+
     //run cleansing regexp replacements over the content
     //see lib/latexGenerator.js for the server version of this and explanations
-    var newContent = content
+    newContent = newContent
       //normalize apostrophes
       .replace(/ *[`´']+/g, "’")
 
