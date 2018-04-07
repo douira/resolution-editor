@@ -494,7 +494,12 @@ router.get("/booklet/edit/:id", function(req, res) {
           eligibleResolutionQuery
         ]
       }
-    ).toArray().then(eligibleResolutions => {
+    ).sort({
+      //sort by committee, level, token
+      "content.resolution.address.forum": 1,
+      stage: 1,
+      token: 1
+    }).toArray().then(eligibleResolutions => {
       //for all tokens specified in the booklet
       booklet.resolutions = booklet.resolutions.map(token => {
         //find the corresponding eligible resolution

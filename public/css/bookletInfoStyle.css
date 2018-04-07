@@ -28,3 +28,7 @@
 #print-btn.btn-flat {
   border: 1px lightgrey solid;
 }
+
+li.collection-item.item-group-divider {
+  border-bottom: solid 2px #b3b3b3;
+}

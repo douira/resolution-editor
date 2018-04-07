@@ -12,7 +12,7 @@ block content
     h3 Resolution Booklet #
       span#booklet-id=booklet._id
     .divider
-    p.justify This page displays all important information about this resolution booklet. This booklet is for the #[b=booklet.type] plenary. You have to save any changes you make before leaving this page. Generating a PDF will automatically save all changes. If you remove a selecte resoluton that is not eligible anymore it can't be selected again after saving the changes.
+    p.justify This page displays all important information about this resolution booklet. This booklet is for the #[b=booklet.type] plenary. You have to save any changes you make before leaving this page. Generating a PDF will automatically save all changes. If you remove a selecte resoluton that is not eligible anymore it can't be selected again after saving the changes. Eligible resolutions are sorted by forum, stage, token.
     .btn.waves-effect.waves-light.disabled#save-btn(color=pri) Save Changes
     span.hide-this#unsaved-changes-msg  There are unsaved changes!
     .row
@@ -41,8 +41,9 @@ block content
       .col.s12.l6
         h5.light Eligible Resolutions
         ul.collection#eligible-list(class=resolutions.length || "hide-this")
-          each resolution in resolutions
-            li.collection-item(class=resolution.selected && "selected-res")
+          - const getForum = res => res && res.content.resolution.address.forum;
+          each resolution, index in resolutions
+            li.collection-item(class=(resolution.selected && "selected-res") + (getForum(resolution) !== getForum(resolutions[index + 1]) ? " item-group-divider" : ""))
               +res-info(resolution)
                 +icon("check", "right green-text text-darken-1 selected-icon eligible-icons")
                 +icon("add", "right grey-text add-icon eligible-icons")
