@@ -313,6 +313,10 @@ $.fn.addSubClause = function(activationStateChanges) {
   strippedClause
     .children(".phrase-input-wrapper")
     .remove();
+
+  //also remove phrase condensed field
+  strippedClause.children(".clause-cond").children(".cond-phrase").remove();
+
   strippedClause
     .trigger("reset") //trigger reset to make it like a new clause
     .appendTo(subList) //add it to the end of the subclause list
@@ -1357,7 +1361,7 @@ function registerEventHandlers(loadedData) {
     var phraseFieldWrapper = elem.children(".phrase-input-wrapper");
     if (phraseFieldWrapper.length) {
       //put value into condensed element
-      condensedWrapper.children(".cond-phrase").text(phraseFieldWrapper.find("input").val());
+      condensedWrapper.children(".cond-phrase").text(phraseFieldWrapper.find("input").val() + " ");
     }
 
     //also move content into condensed content element
