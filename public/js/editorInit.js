@@ -268,7 +268,11 @@ $.fn.amountAbove = function(selector) {
 
 //cleans up cloned tooltips by reiniting them
 $.fn.cleanupClonedTooltips = function() {
+  //forcibly remove tooltip and re-init
   this.find(".tooltipped").removeAttr("data-tooltip-id").tooltip();
+
+  //return original for chaining
+  return this;
 };
 
 //adds a subclause for given clause (and makes list if necessary),
@@ -304,6 +308,9 @@ $.fn.addSubClause = function(activationStateChanges) {
 
     //add created list to clause, add clause button will be made visible by clause event
     this.children(".clause-content-ext").before(subList);
+
+    //reinit tooltips of newly created list
+    subList.cleanupClonedTooltips();
   }
 
   //clone the clause as a base for the new clause
@@ -322,7 +329,7 @@ $.fn.addSubClause = function(activationStateChanges) {
     .appendTo(subList) //add it to the end of the subclause list
     .trigger("updateTreeDepth"); //update the info texts on it
 
-  //re-init tooltip after clone, DOESN'T WORK
+  //re-init tooltips after clone
   strippedClause.cleanupClonedTooltips();
 
   //move button to bottom of list
@@ -797,6 +804,9 @@ function registerEventHandlers(loadedData) {
 
         //insert prepared list into wrapper
         .appendTo(amdClauseWrapper);
+
+      //reinit tooltips on cloned elements
+      amdClauseListSelection.cleanupClonedTooltips();
 
       //preselect main clause
       amdClauseElem = amdClauseListSelection.children(".clause");

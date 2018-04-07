@@ -266,7 +266,7 @@ block content
       mixin clause-content-field(type, placeholder, addClasses)
         .input-field.hide-this(class=type)
           textarea.materialize-textarea(class=(addClasses ? addClasses + " " : "") + type + "-text")
-          label(for="materialize-textarea")=placeholder
+          label=placeholder
       mixin clause-card(cardId, clauseType, cardType)
         +content-card(cardId)
           h5=cardType + " Clauses"
@@ -283,7 +283,7 @@ block content
                 .col.xl4.m6.s12
                   .input-field
                     input.autocomplete.required.phrase-input(type="text")
-                    label(for=".phrase-input") Phrase
+                    label Phrase
               +clause-content-field("clause-list-anchor clause-content", "Clause Content", "required")
               p.clause-cond.hide-this
                 em.cond-phrase
