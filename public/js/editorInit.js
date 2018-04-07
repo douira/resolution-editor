@@ -824,6 +824,9 @@ function registerEventHandlers(loadedData) {
         amdClauseElem.find(".phrase-input").trigger("init");
       }
 
+      //activate new amendment clause
+      amdClauseElem.trigger("editActive");
+
       //send amendment update
       sendLVUpdate("amendment");
     };
