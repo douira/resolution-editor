@@ -160,11 +160,6 @@ function deepConvertToObjects(obj) {
       value;
   }
 
-  //add length property if this is an array
-  if (obj instanceof Array) {
-    newObj.length = obj.length;
-  }
-
   //return created object
   return newObj;
 }
@@ -265,6 +260,12 @@ function markConsistentDiffs(obj) {
   //remove diff property if it has no contents
   if (obj.diff && ! Object.keys(obj.diff).length) {
     delete obj.diff;
+  }
+
+  //add length property if numeric indexes found
+  if ("0" in obj) {
+    //length is the length of the keys in the object array, we can assume a dense array
+    obj.length = Object.keys(obj).length - 1;
   }
 
   //return consistent diff type (or false if it is inconsistent)
