@@ -689,26 +689,30 @@ function registerEventHandlers(loadedData) {
     //define here for satisfaction of declaraton order prettiness
     var updateAmd;
 
-    //if it is ok to apply the amendment right now
-    var amdApplyOk = false;
+    //if it is ok to reject or apply the amendment right now
+    var amdActionBtnsEnabled = {
+      apply: false,
+      reject: false
+    };
 
     //updates the amd reject and apply button states
     var updateActionBtnState = function() {
       //ok if amd is displayable
-      amdApplyOk = amdDisplayable;
+      amdActionBtnsEnabled.apply = amdDisplayable;
 
       //if a new sponsor was selected
-      if (amdApplyOk) {
+      if (amdActionBtnsEnabled.apply) {
         //check that the sponsor is one of the sponsors allowed for that autocomplete field
-        amdApplyOk = sponsorInput.checkAutoCompValue(loadedData);
+        amdActionBtnsEnabled.apply = sponsorInput.checkAutoCompValue(loadedData);
       }
 
-      //update the disabled state of the button
-      applyAmdBtn.disabledState(! amdApplyOk);
-
       //reject button is enabled when there is a sponsor, a clause or a selected action type
-      rejectAmdBtn.disabledState(
-        ! (sponsorInput.val().length || amdDisplayable || amdActionType !== "noselection"));
+      amdActionBtnsEnabled.reject =
+        sponsorInput.val().length || amdDisplayable || amdActionType !== "noselection";
+
+      //apply states to buttons
+      rejectAmdBtn.disabledState(! amdActionBtnsEnabled.reject);
+      applyAmdBtn.disabledState(! amdActionBtnsEnabled.apply);
     };
 
     //called by sendLVUpdate in dataInteraction.js to generate the object that is sent to the server
@@ -979,7 +983,7 @@ function registerEventHandlers(loadedData) {
       e.stopPropagation();
 
       //needs to be ok to apply
-      if (! amdApplyOk) {
+      if (amdActionBtnsEnabled.apply) {
         //illegal click
         return;
       }
