@@ -157,7 +157,7 @@ function checkRequiredFields() {
   //call check on all required elements
   $(".required").trigger("checkRequired");
 
-  //return for usa of result
+  //return for use of result
   return ! badFieldPresent;
 }
 
@@ -1365,9 +1365,10 @@ function registerEventHandlers(loadedData) {
     }
 
     //also move content into condensed content element
+    var textContent = elem.children(".clause-content").children("textarea").val().trim();
     condensedWrapper
       .children(".cond-content")
-      .text(elem.children(".clause-content").children("textarea").val());
+      .html(textContent.length ? textContent : "<span class='red-text'>no content</span>");
 
     //get EABs
     var clauseTitle = elem.children(".clause-title");
