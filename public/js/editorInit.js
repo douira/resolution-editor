@@ -1102,9 +1102,8 @@ function registerEventHandlers(loadedData) {
       console.error("no autocomplete data found for field", this);
     }
   });
-  $("input.required, textarea.required")
-  .on("checkRequired", function(e) {
-    e.stopPropagation();
+  var requiredContainers = $("#meta-data, #preamb-clauses, #op-clauses");
+  requiredContainers.on("checkRequired", "input.required, textarea.required", function() {
     var elem = $(this);
 
     //change validation state to wether or not this field contains a correct value
@@ -1113,7 +1112,8 @@ function registerEventHandlers(loadedData) {
 
     //apply to global flag
     badFieldPresent = badFieldPresent || ! valueOk;
-  })
+  });
+  $("input.required, textarea.required")
   .on("change", function() {
     //check again on changed value
     $(this).trigger("checkRequired");
@@ -1236,9 +1236,8 @@ function registerEventHandlers(loadedData) {
     $(this).val("");
     $(this).trigger("init");
   });
-  $(".chips.required")
-  .on("checkRequired", function(e) {
-    e.stopPropagation();
+  requiredContainers
+  .on("checkRequired", ".chips.required", function() {
     var elem = $(this);
 
     //get value of field
@@ -1283,7 +1282,8 @@ function registerEventHandlers(loadedData) {
 
     //apply to global flag
     badFieldPresent = badFieldPresent || valueBad;
-  })
+  });
+  $(".chips.required")
   .on("chip.add chip.delete", function() {
     //change action
     changesSaved = false;
