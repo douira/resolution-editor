@@ -696,7 +696,8 @@ function sendLVUpdate(type, eventType, elem) {
     //inactivation updates only make sense for change action type
     if (eventType !== "inactivation" || amdActionType === "change") {
       //reset path cache for safety, path ids from cloned elments may
-      //have been cariied over into amendment display elements
+      //have been carried over into amendment display elements
+      //however, it doesn't seem like anything bad happens when no reset is done...
       //pathCache = {};
 
       //process amendment update directly

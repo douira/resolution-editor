@@ -498,7 +498,7 @@ function render() {
 
         //fill clone with info
         amdContainer.find("span.amd-sponsor")
-          .html(amendment.sponsor || "<em class='grey-text text-darken-1'>Sponsor</em>");
+          .html(amendment.sponsor || "<em class='grey-text text-darken-1'>Submitter</em>");
         amdContainer.find("span.amd-action-text").text(actionText);
 
         //convert to 1 indexed counting
