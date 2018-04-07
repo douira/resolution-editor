@@ -678,20 +678,38 @@ function registerEventHandlers(loadedData) {
     //the current original selected clause
     var amdOrigClause = $();
 
-    //the sponsor input field element
-    var sponsorInputElem = $("#amd-spon");
+    //query elements
+    var sponsorInput = $("#amd-spon");
+    var applyAmdBtn = $("#amd-apply-btn");
+    var rejectAmdBtn = $("#amd-reject-btn");
+    var amdClauseWrapper = $("#amd-clause-wrapper");
+    var amdNoSelectionMsg = $("#amd-no-selection");
+    var amdTypeSelect = $("#amd-type-select-box");
 
     //define here for satisfaction of declaraton order prettiness
     var updateAmd;
 
-    //apply amendment button
-    var applyAmdBtn = $("#amd-apply-btn");
-
-    //updates the state of the amendment apply button
-    var updateApplyBtnState;
-
     //if it is ok to apply the amendment right now
     var amdApplyOk = false;
+
+    //updates the amd reject and apply button states
+    var updateActionBtnState = function() {
+      //ok if amd is displayable
+      amdApplyOk = amdDisplayable;
+
+      //if a new sponsor was selected
+      if (amdApplyOk) {
+        //check that the sponsor is one of the sponsors allowed for that autocomplete field
+        amdApplyOk = sponsorInput.checkAutoCompValue(loadedData);
+      }
+
+      //update the disabled state of the button
+      applyAmdBtn.disabledState(! amdApplyOk);
+
+      //reject button is enabled when there is a sponsor, a clause or a selected action type
+      rejectAmdBtn.disabledState(
+        ! (sponsorInput.val().length || amdDisplayable || amdActionType !== "noselection"));
+    };
 
     //called by sendLVUpdate in dataInteraction.js to generate the object that is sent to the server
     //and the liveview clients containing all information describing the current amendment
@@ -741,7 +759,7 @@ function registerEventHandlers(loadedData) {
       //start object with required fields
       var amdUpdate = {
         type: amdActionType,
-        sponsor: sponsorInputElem.val().trim() //get value from input field
+        sponsor: sponsorInput.val().trim() //get value from input field
       };
 
       //attach index if present
@@ -766,9 +784,6 @@ function registerEventHandlers(loadedData) {
     //also shows the no selection message if no clause is selected or the
     //selected clause has been removed in the mean time
     updateAmd = function() {
-      //get amd clause wrapper element
-      var amdClauseWrapper = $("#amd-clause-wrapper");
-
       //trigger edit inactive on the current selection to avoid removing the eabs
       amdClauseListSelection.find(".clause").trigger("editInactive");
 
@@ -779,24 +794,18 @@ function registerEventHandlers(loadedData) {
       if (amdActionType === "add") {
         //add clause is first op clause, id is modified later and
         amdOrigClause = $("#op-clauses").children(".clause-list").children(".clause").eq(0);
-      } else {
-        //show no selection message if no clause is selected
-        if (! amdOrigClause.length) {
-          $("#amd-no-selection").show();
-
-          //also hide amd clause container
-          $("#amd-clause-wrapper").hide();
-
-          //cannot be displayed in lv without clause
-          amdDisplayable = false;
-        }
+      } //show no-selection-message if no clause is selected
+      else if (! amdOrigClause.length) {
+        //show message and hide amd clause container
+        amdClauseWrapper.hide();
+        amdNoSelectionMsg.show();
       }
 
-      //at this point the displayability is determined by the selected type
-      amdDisplayable = amdActionType !== "noselection";
+      //displayable if a clause is given
+      amdDisplayable = amdOrigClause.length === 1;
 
-      //update apply amd button state (sponsor didn't change though)
-      updateApplyBtnState();
+      //update reject and apply amd button state
+      updateActionBtnState();
 
       //stop if not displayable
       if (! amdDisplayable) {
@@ -804,7 +813,7 @@ function registerEventHandlers(loadedData) {
       }
 
       //hide select message
-      $("#amd-no-selection").hide();
+      amdNoSelectionMsg.hide();
 
       //show clause container
       amdClauseWrapper.show();
@@ -868,23 +877,8 @@ function registerEventHandlers(loadedData) {
       sendLVUpdate("amendment");
     };
 
-    //updates the amd apply button state
-    updateApplyBtnState = function() {
-      //ok if amd is displayable
-      amdApplyOk = amdDisplayable;
-
-      //if a new sponsor was selected
-      if (amdApplyOk) {
-        //check that the sponsor is one of the sponsors allowed for that autocomplete field
-        amdApplyOk = sponsorInputElem.checkAutoCompValue(loadedData);
-      }
-
-      //update the disabled state of the button
-      applyAmdBtn.disabledState(! amdApplyOk);
-    };
-
     //amendment action type selection
-    $("#amd-type-select-box").on("change", function() {
+    amdTypeSelect.on("change", function() {
       //update action type
       var newAmdActionType = $(this).getSelectValueId();
       console.log("change select!");
@@ -923,7 +917,7 @@ function registerEventHandlers(loadedData) {
 
         //cannot be add type if clause is selected
         if (amdActionType === "add") {
-          $("#amd-type-select-box").setSelectValueId("noselection");
+          amdTypeSelect.setSelectValueId("noselection");
           amdActionType = "noselection";
         }
 
@@ -951,22 +945,40 @@ function registerEventHandlers(loadedData) {
     });
 
     //sponsor field change
-    sponsorInputElem.on("change", function(e) {
+    sponsorInput.on("change", function(e) {
       //only use the event that has .originalEvent and was not triggered by materialize
       if (e.originalEvent) {
         //send amendment update
         sendLVUpdate("amendment");
 
-        //update the apply button state
-        updateApplyBtnState();
+        //update the reject and apply button states
+        updateActionBtnState();
       }
+    });
+
+    //on clicking reject button
+    rejectAmdBtn.on("click", function(e) {
+      e.stopPropagation();
+
+      //reset to no state selected
+      amdTypeSelect.setSelectValueId("noselection");
+      amdActionType = "noselection";
+
+      //remove selected clause
+      amdOrigClause = $();
+
+      //clear sponsor field and update its label
+      sponsorInput.val("").resetSiblingLabels();
+
+      //and update amd display to match state
+      updateAmd();
     });
 
     //on clicking apply amendment button
     applyAmdBtn.on("click", function(e) {
       e.stopPropagation();
 
-      //needs to be ok
+      //needs to be ok to apply
       if (! amdApplyOk) {
         //illegal click
         return;

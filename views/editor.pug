@@ -244,7 +244,9 @@ block content
         +icon("rate_review", "lime-text text-darken-1")
         |  button or choose the action type "Add".
       #amd-clause-wrapper
-      .center: a.btn.waves-effect.waves-light.disabled#amd-apply-btn(class=pri) Apply Amendment
+      .center
+        a.btn.waves-effect.waves-light.disabled.red.lighten-1#amd-reject-btn Reject
+        a.btn.waves-effect.waves-light.disabled.green.lighten-1#amd-apply-btn Apply
     if doLoad
       mixin floating-sm-btn(color, type, icon, tooltipText)
         a.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)
