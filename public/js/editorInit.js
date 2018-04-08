@@ -1370,15 +1370,20 @@ function registerEventHandlers(loadedData) {
       elem.children(".clause-ext-cond").text(contentExtVal).setHide(false);
     }
 
+    //get text content
+    var textContent = elem.children(".clause-content").children("textarea").val().trim();
+
     //if a phrase field is present
     var phraseFieldWrapper = elem.children(".phrase-input-wrapper");
     if (phraseFieldWrapper.length) {
       //put value into condensed element
-      condensedWrapper.children(".cond-phrase").text(phraseFieldWrapper.find("input").val() + " ");
+      condensedWrapper.children(".cond-phrase").text(phraseFieldWrapper.find("input").val());
+
+      //add space to content, between phrase and content
+      textContent = " " + textContent;
     }
 
     //also move content into condensed content element
-    var textContent = elem.children(".clause-content").children("textarea").val().trim();
     condensedWrapper
       .children(".cond-content")
       .html(textContent.length ? textContent : "<span class='red-text'>no content</span>");
