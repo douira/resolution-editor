@@ -272,9 +272,9 @@ block content
           .col.s12(id=cardId)
             block
       mixin clause-content-field(type, placeholder, addClasses)
-        .input-field(class=type)
+        .input-field.hide-this(class=type)
           textarea.materialize-textarea(class=(addClasses ? addClasses + " " : "") + type + "-text")
-          label(for="materialize-textarea")=placeholder
+          label=placeholder
       mixin clause-card(cardId, clauseType, cardType)
         +content-card(cardId)
           h5=cardType + " Clauses"
@@ -287,13 +287,17 @@ block content
                 span.clause-prefix
                 | Clause #
                 span.clause-number 1
-              .row.phrase-input-wrapper
+              .row.phrase-input-wrapper.hide-this
                 .col.xl4.m6.s12
                   .input-field
                     input.autocomplete.required.phrase-input(type="text")
-                    label(for=".phrase-input") Phrase
+                    label Phrase
               +clause-content-field("clause-list-anchor clause-content", "Clause Content", "required")
+              p.clause-cond.hide-this
+                span.cond-phrase
+                span.cond-content
               +clause-content-field("clause-content-ext", "Continuation of Clause Content")
+              p.clause-ext-cond.hide-this
             .add-clause-container
               .divider
               a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)&attributes(tooltip("Adds a new clause to the list", "right"))

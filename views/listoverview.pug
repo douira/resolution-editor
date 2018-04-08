@@ -22,7 +22,7 @@ block content
             ul.collection
               each res in stage.list
                 li.collection-item
-                  a(href="/resolution/editor/" + res.token)=res.token
+                  a(href="/resolution/editor/" + res.token target="_blank")=res.token
                   if res.resolutionId && res.idYear
                     span.res-id  [MUNOL/#{res.idYear}/#{res.resolutionId}]
                   if ! res.forum

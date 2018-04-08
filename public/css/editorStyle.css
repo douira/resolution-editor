@@ -16,9 +16,9 @@
   margin-bottom: 10px;
 }
 
-.clause-content-ext {
+/*.clause-content-ext {
   display: none;
-}
+}*/
 
 .red-underline {
   text-decoration: underline;
@@ -104,4 +104,12 @@
 .disabled-clause input:disabled, .disabled-clause textarea:disabled {
   color: rgba(0, 0, 0, 0.65) !important;
   border-bottom-width: 2px !important;
+}
+
+#preamb-clauses .cond-phrase {
+  text-decoration: underline;
+}
+
+#op-clauses .cond-phrase, #amd-clause-wrapper .cond-phrase {
+  font-style: italic;
 }
