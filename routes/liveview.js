@@ -26,6 +26,7 @@ const uuidv4 = require("uuid/v4");
 const detailedDiff = require("deep-object-diff").detailedDiff;
 //const deepEqual = require("fast-deep-equal");
 const { logger } = require("../lib/logger");
+const pick = require("object.pick");
 
 //const inspect = require("../lib/inspect");
 
@@ -116,20 +117,55 @@ routingUtil.getAndPost(router, "/:token", function(req, res) {
   );
 });
 
-//returns a function that iterates all viewers of the given object
-function makeForEach(obj) {
-  return (callback) => {
-    //for all in object
-    for (const prop in obj) {
-      callback(obj[prop], prop, obj);
-    }
-  };
+//iterates all viewers of the given object
+function forEachObj(obj, callback) {
+  //for all in object
+  for (const prop in obj) {
+    callback(obj[prop], prop, obj);
+  }
 }
 
 //sends an object json encoded to a websocket client
 function sendJson(ws, obj) {
   //send prepared object after stringify
   ws.send(JSON.stringify(obj));
+}
+
+//send an error to the given socket
+function wsError(ws, msg, opts) {
+  //apply message prefix
+  msg = "lv error: " + msg;
+
+  //opts if object if not given
+  opts = opts || { };
+
+  //take socket logger if present, default otherwise
+  const log = (ws && ws.log) || logger;
+
+  //check that socket is stil lactive
+  if (ws && ws.readyState === ws.OPEN) {
+    //send error message
+    sendJson(ws, {
+      type: "error",
+      tryAgain: opts.tryAgain || false,
+      errorMsg: msg
+    });
+
+    //close if not specified otherwise
+    if (! opts.noClose && opts.type !== "warn") {
+      ws.close();
+    }
+  }
+
+  //log error message and error if give
+  if (opts.type && opts.type !== "error") {
+    //other message type
+    log[opts.type](msg);
+  } else if (opts.err) {
+    log.error(opts.err, msg);
+  } else {
+    log.error(msg);
+  }
 }
 
 /*returns a copy of the given object in which all arrays are plain objects.
@@ -344,7 +380,6 @@ function receiveServer(httpServer) {
       tokens[clientEntry.token] = {
         editor: null,
         viewers: viewers,
-        viewersForEach: makeForEach(viewers),
         pathCache: {} //init with empty path cache
       };
     }
@@ -392,7 +427,7 @@ function receiveServer(httpServer) {
 
     //forwards data to all clients listening this token
     function dataToAllViewers() {
-      tokenEntry.viewersForEach(v => sendJson(v.socket, {
+      forEachObj(tokenEntry.viewers, v => sendJson(v.socket, {
         type: data.type,
         update: data.update
       }));
@@ -414,7 +449,7 @@ function receiveServer(httpServer) {
         if (tokenEntry.editor) {
           viewerJoinedMsg(tokenEntry.editor);
         }
-        tokenEntry.viewersForEach(viewerJoinedMsg);
+        forEachObj(tokenEntry.viewers, viewerJoinedMsg);
 
         //register with token
         tokenEntry.viewers[accessToken] = clientEntry;
@@ -432,7 +467,7 @@ function receiveServer(httpServer) {
         }
 
         //notify viewers of editor
-        tokenEntry.viewersForEach(v => sendJson(v.socket, {
+        forEachObj(tokenEntry.viewers, v => sendJson(v.socket, {
           //check if it's a replacement or new add
           type: tokenEntry.editor ? "editorReplaced" : "editorJoined"
         }));
@@ -486,6 +521,81 @@ function receiveServer(httpServer) {
         dataToAllViewers();
 
         break;
+      case "saveAmd": //reject or apply an amendment
+        //get the update content
+        const saveAmdUpdate = data.update;
+
+        //get type of save event, reject or accept
+        const saveType = saveAmdUpdate.saveType;
+
+        //validate save type
+        if (! ["reject", "apply"].includes(saveType)) {
+          //bad type, error and stop
+          wsError(ws, "bad amd save type " + saveType);
+          return;
+        }
+
+        //check all aspects of the given save amendment
+        if (
+          //validate sponsor
+          ! (saveAmdUpdate.sponsor && typeof saveAmdUpdate.sponsor === "string" &&
+
+          //validate action type
+          saveAmdUpdate.type &&
+          ["change", "add", "replace", "remove"].includes(saveAmdUpdate.type) &&
+
+          //validate clause existence if necessary
+          (typeof saveAmdUpdate.newClause === "object" && saveAmdUpdate.newClause.phrase ||
+          saveAmdUpdate.type === "remove") &&
+
+          //validate presence of clauseIndex if necessary
+          (typeof saveAmdUpdate.clauseIndex === "number" || saveAmdUpdate.type === "add") &&
+
+          //validate existence of new structure
+          typeof saveAmdUpdate.newStructure === "object")
+        ) {
+          //error and stop
+          wsError(ws, "invalid or incomplete amendment given for save");
+          return;
+        }
+
+        //additional info to save the in the amendment history
+        const amdHistoryExtend = {
+          //extend with log info and remove full structure
+          timestamp: Date.now()
+        };
+
+        //if index if is given
+        if (saveAmdUpdate.clauseIndex) {
+          //add clause that was acted upon
+          amdHistoryExtend.changedClause =
+            tokenEntry.latestStructure.resolution.clauses.operative[saveAmdUpdate.clauseIndex];
+        }
+
+        //use the given resolution as the new structure
+        tokenEntry.latestStructure = saveAmdUpdate.newStructure;
+
+        //reset path cache
+        tokenEntry.pathCache = {};
+
+        //forward to all viewers
+        dataToAllViewers();
+
+        //append amendment to amendment history of resolution
+        resolutions.updateOne({
+          token: clientEntry.token
+        }, {
+          $push: {
+            amendments: Object.assign(
+              amdHistoryExtend,
+              pick(saveAmdUpdate, ["clauseIndex", "newclause", "type", "saveType"])
+            )
+          }
+        }).catch(
+          //log db error
+          err => wsError(ws, "failed to save amendment to resolution", { err: err })
+        );
+        break;
       case "updateContent":
         //what object the update should be applied to
         let applyUpdateTo = tokenEntry.latestStructure.resolution.clauses;
@@ -536,57 +646,39 @@ function receiveServer(httpServer) {
       resolutions.updateOne(
         { token: clientEntry.token }, { $set: { lastLiveview: Date.now() } }
       ).catch(
-        //TODO: proper logging in liveview.js (where not implemented yet)
-        () => console.error("could not update last lievview timestamp")
+        err => logger.error(err, "could not update last liveview timestamp")
       );
     }
   }
 
-  //sends an error
-  function sendError(ws, msg, tryAgain, noClose) {
-    //display error
-    msg = "error: " + msg;
-    logger.error("liveview " + msg);
-
-    //send message to not tryagain if specified
-    sendJson(ws, {
-      type: "error",
-      tryAgain: tryAgain,
-      errorMsg: msg
-    });
-
-    //close connection on error if not specified otherwise
-    if (! noClose) {
-      ws.close();
-    }
-  }
-
-  //returns a fucntions that send an error
-  function errorSender(ws, msg, tryAgain, noClose) {
-    return () => sendError(ws, msg, tryAgain, noClose);
-  }
-
   //listen on client conections
-  wss.on("connection", (ws) => {
+  wss.on("connection", ws => {
     //access token for this client
     let accessToken;
 
+    //add bound field reqId to chain all log entries for a single socket
+    ws.log = logger.child({ req_id: uuidv4() });
+
     //wait for message
-    ws.on("message", (msg) => {
+    ws.on("message", msg => {
       //decode json message
       let data;
       try {
         data = JSON.parse(msg);
       } catch (err) {
-        sendError(ws, "non-json data received", true);
+        wsError(ws, "non-json data received", { tryAgain: true });
         return;
       }
 
       //authorize: check if accessToken sent matches the one set previously
-      if (data.hasOwnProperty("accessToken") && accessToken === data.accessToken) {
+      if (data.accessToken && data.accessToken === accessToken) {
         //deal with message
-        processMessage(data, ws, data.accessToken);
-      } else if (data.hasOwnProperty("token") && data.hasOwnProperty("code") &&
+        try {
+          processMessage(data, ws, data.accessToken);
+        } catch (err) {
+          wsError(ws, "error processing message");
+        }
+      } else if (data.token && data.code &&
                  (data.type === "initViewer" || data.type === "initEditor")) {
         //get token and coe from data
         const token = data.token;
@@ -595,48 +687,44 @@ function receiveServer(httpServer) {
         //check validitiy of token
         if (tokenProcessor.check(token)) {
           //select with given token
-          resolutions.findOne({ token: token }).then((resDoc) => {
-            //check for existance
-            if (resDoc) {
-              //must be valid code
-              if (tokenProcessor.check(code)) {
-                //load corresponding access entry
-                access.findOne({ code: code }).then((codeDoc) => {
-                  //code found
-                  if (codeDoc) {
-                    //check permission
-                    if (resUtil.checkPermission(resDoc, codeDoc, "liveview")) {
-                      //all is ok now, generate new random accessToken for client
-                      accessToken = uuidv4();
+          resolutions.findOne({ token: token }).then(resDoc => {
+            //check for existance and valid code
+            if (resDoc && tokenProcessor.check(code)) {
+              //load corresponding access entry
+              access.findOne({ code: code }).then(codeDoc => {
+                //code found and check permission
+                if (codeDoc && resUtil.checkPermission(resDoc, codeDoc, "liveview")) {
+                  //all is ok now, generate new random accessToken for client
+                  accessToken = uuidv4();
 
-                      //create entry in clients
-                      const clientEntry = {
-                        socket: ws,
-                        token: token,
-                        code: code,
-                        accessToken: accessToken
-                      };
-                      clients[accessToken] = clientEntry;
+                  //create entry in clients
+                  const clientEntry = {
+                    socket: ws,
+                    token: token,
+                    code: code,
+                    accessToken: accessToken
+                  };
+                  clients[accessToken] = clientEntry;
 
-                      //process message and pass client info
-                      processMessage(data, ws, accessToken, resDoc);
-                    }
-                  } else {
-                    sendError(ws, "code wrong");
+                  //process message and pass client info
+                  try {
+                    processMessage(data, ws, accessToken, resDoc);
+                  } catch (err) {
+                    wsError(ws, "error processing message (new auth)");
                   }
-                }).catch(errorSender(ws, "code db read error", true));
-              } else {
-                sendError(ws, "code invalid");
-              }
+                } else {
+                  wsError(ws, "code wrong or missing permission");
+                }
+              }).catch(err => wsError(ws, "code db read error", { tryAgain: true, err: err }));
             } else {
-              sendError(ws, "token wrong");
+              wsError(ws, "token wrong or invalid");
             }
-          }).catch(errorSender(ws, "token db read error", true));
+          }).catch(err => wsError(ws, "token db read error", { tryAgain: true, err: err }));
         } else {
-          sendError(ws, "token invalid");
+          wsError(ws, "token invalid");
         }
       } else {
-        sendError(ws, "missing data", true);
+        wsError(ws, "missing data", { tryAgain: true });
       }
     });
 
@@ -671,7 +759,7 @@ function receiveServer(httpServer) {
         }
       } else {
         //notify viewers of editor having left
-        tokenEntry.viewersForEach((v) => sendJson(v.socket, { type: "editorGone" }));
+        forEachObj(tokenEntry.viewers, v => sendJson(v.socket, { type: "editorGone" }));
 
         //remove
         tokenEntry.editor = null;
@@ -685,6 +773,12 @@ function receiveServer(httpServer) {
       //revoke access token
       delete clients[accessToken];
       accessToken = null;
+    });
+
+    //on connection error
+    ws.on("error", err => {
+      //log connection error
+      wsError(ws, "connection error", { err: err });
     });
   });
 }
