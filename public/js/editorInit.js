@@ -690,29 +690,22 @@ function registerEventHandlers(loadedData) {
     var updateAmd;
 
     //if it is ok to reject or apply the amendment right now
-    var amdActionBtnsEnabled = {
-      apply: false,
-      reject: false
-    };
+    var amdActionBtnsEnabled = false;
 
     //updates the amd reject and apply button states
     var updateActionBtnState = function() {
       //ok if amd is displayable
-      amdActionBtnsEnabled.apply = amdDisplayable;
+      amdActionBtnsEnabled = amdDisplayable;
 
-      //if a new sponsor was selected
-      if (amdActionBtnsEnabled.apply) {
+      //and if a new sponsor was selected, validate it
+      if (amdActionBtnsEnabled) {
         //check that the sponsor is one of the sponsors allowed for that autocomplete field
-        amdActionBtnsEnabled.apply = sponsorInput.checkAutoCompValue(loadedData);
+        amdActionBtnsEnabled = sponsorInput.checkAutoCompValue(loadedData);
       }
 
-      //reject button is enabled when there is a sponsor, a clause or a selected action type
-      amdActionBtnsEnabled.reject =
-        sponsorInput.val().length || amdDisplayable || amdActionType !== "noselection";
-
-      //apply states to buttons
-      rejectAmdBtn.disabledState(! amdActionBtnsEnabled.reject);
-      applyAmdBtn.disabledState(! amdActionBtnsEnabled.apply);
+      //apply state to buttons
+      rejectAmdBtn.disabledState(! amdActionBtnsEnabled);
+      applyAmdBtn.disabledState(! amdActionBtnsEnabled);
     };
 
     //called by sendLVUpdate in dataInteraction.js to generate the object that is sent to the server
@@ -964,6 +957,12 @@ function registerEventHandlers(loadedData) {
     rejectAmdBtn.on("click", function(e) {
       e.stopPropagation();
 
+      //check that button was enabled
+      if (amdActionBtnsEnabled) {
+        //illegal click
+        return;
+      }
+
       //reset to no state selected
       amdTypeSelect.setSelectValueId("noselection");
       amdActionType = "noselection";
@@ -982,8 +981,8 @@ function registerEventHandlers(loadedData) {
     applyAmdBtn.on("click", function(e) {
       e.stopPropagation();
 
-      //needs to be ok to apply
-      if (amdActionBtnsEnabled.apply) {
+      //check that button was enabled
+      if (amdActionBtnsEnabled) {
         //illegal click
         return;
       }
