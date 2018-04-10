@@ -293,7 +293,7 @@ router.post("/codes/:action", function(req, res) {
           //otherwise the given error is an write error
           const writeErrors = err.writeErrors ? err.writeErrors : [err];
 
-          //construct array of remaining codes (some of which may have name properties)
+          //construct an array of remaining codes (some of which may have name properties)
           //and handle as remaining
           handleRemaining({
             remainingCodes: writeErrors.map(err => {
@@ -398,7 +398,7 @@ router.get("/fcqueue", function(req, res) {
 
 //GET fc work queue data
 router.get("/fcqueue/getitems", function(req, res) {
-  //query resolutions thart are in stage 3 and can be advanced
+  //query resolutions that are in stage 3 and can be advanced
   resolutions.find({
     stage: 3,
     $nor: [

@@ -4,7 +4,7 @@
 Protocol (C client, S server)
 LV-client:
   1. (http) C connects and sends token and code to POST endpoint
-  2. (http) S checks them in DB (also state of resolution)
+  2. (http) S checks them in DB (also the state of resolution)
      and if ok returns code, token, random access token uuid
       (to prevent querying the DB every time an update comes in)
      and current content of the resolution for that token
@@ -133,7 +133,7 @@ function sendJson(ws, obj) {
 }
 
 /*returns a copy of the given object in which all arrays are plain objects.
-used on clauses because we can't put a .diff property into an array in json.
+used on clauses because we can't put a .diff property into an array in JSON.
 if they are supposed to be arrays or not can still be determined by the property the arrays are in.
 .sub is always filled with an array, all others are objects or strings*/
 function deepConvertToObjects(obj) {
@@ -212,7 +212,7 @@ function processDiff(diffType, diff, oldClausePart, newClausePart) {
       allow setting of diff types only on value properties,
       because it may otherwise seem like a whole part of the clause was changed, although a
       deleted mark only progressed up the clause tree because it was the only change.
-      A second pass is performed to check for marking complete object as one diff type.
+      A second pass is performed to check for marking the complete objects as one diff type.
       Because this will only visit this particular value once
       we don't have to worry about overriding it with another diff type.
       */
@@ -409,7 +409,7 @@ function receiveServer(httpServer) {
         //send ack to start connection
         sendAck(ws, accessToken, tokenEntry, viewerAmount, tokenEntry.latestStructure);
 
-        //notify editor and viewers of joined viewer
+        //notify editor and viewers of the joined viewer
         if (tokenEntry.editor) {
           viewerJoinedMsg(tokenEntry.editor);
         }
@@ -547,7 +547,7 @@ function receiveServer(httpServer) {
     msg = "error: " + msg;
     logger.error("liveview " + msg);
 
-    //send message to not tryagain if specified
+    //send a message to not try again if specified
     sendJson(ws, {
       type: "error",
       tryAgain: tryAgain,
@@ -641,7 +641,7 @@ function receiveServer(httpServer) {
 
     //on closing of connection
     ws.on("close", () => {
-      //stop if connection is closing before having given out an access token
+      //stop if the connection is closing before having given out an access token
       if (! accessToken) {
         return;
       }
