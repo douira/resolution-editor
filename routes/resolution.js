@@ -296,7 +296,7 @@ routingUtil.getAndPost(router, "/advance/:token", function(req, res) {
         voteType
       };
 
-      /*check and add prop wether or not this resolution passed.
+      /*check and add prop whether or not this resolution passed.
       must be majority for pass and 2/3 majority (= two times more than...)
       for important question to pass*/
       voteResults.passed = voteResults.inFavor > voteResults.against *

@@ -9,14 +9,14 @@ var connectTriesLV = 3;
 //how many tries are left, reset to LVConnectTries when a connection is established
 var connectTriesLeftLV = connectTriesLV;
 
-//reference to the current websocket for closing it on page unload
+//reference to the current WebSocket for closing it on page unload
 var currentWS;
 
 //token and code given on page
 var presetTokenLV;
 var presetCodeLV;
 
-//lv access token to authenticate communication with server
+//lv access token to authenticate communication with the server
 var accessToken;
 
 //seends an object json encoded to the server
@@ -58,7 +58,7 @@ var sendJsonLV = (function() {
 
 //starts a websockets connection to the server
 function startWS(isViewer, updateListener) {
-  //decrement try coutner
+  //decrement try counter
   connectTriesLeftLV --;
 
   //open websocket connection to server

@@ -75,7 +75,7 @@ $(document).ready(function() {
   //all code items
   var codeElements = listContainer.find(".code-text-content");
 
-  //hides and shows code list items by wether or not they include the search query
+  //hides and shows code list items by whether or not they include the search query
   function searchUpdate() {
     //get trimmed and capitalized value from input
     var query = searchField.val();
@@ -132,7 +132,7 @@ $(document).ready(function() {
     //check if is selected
     var isSelected = elem.is(".selected-code");
 
-    //add or remove class depending on wether or not the class is present now
+    //add or remove class depending on whether or not the class is present now
     elem[isSelected ? "removeClass" : "addClass"]("selected-code");
 
     //increment or decrement counter

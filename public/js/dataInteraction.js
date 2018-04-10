@@ -31,7 +31,7 @@ var resolutionFormat = module.exports.resolutionFormat;
 
 //returns a bug report tag string
 function bugReportLink(errorCode) {
-  //calling it probelm report because it may be user error
+  //calling it problem report because it may be user error
   return "<a href='https://github.com/douira/resolution-editor/issues/new" +
     "?title=Problem Report: " + errorCode + "'>problem report</a>";
 }
@@ -249,7 +249,7 @@ function serverLoad(token, doToast, callback) {
   });
 }
 
-//sends the current json of to the server and calls back with the url to the generated pdf
+//sends the current json of to the server and calls back with the URL to the generated pdf
 function generatePdf() {
   //start the spinner to indicate activity
   var spinner = $("#pdf-wait-spinner").removeClass("hide-this");
@@ -625,7 +625,7 @@ function doAmdUpdate() {
   //update amd display indexes and get the amendment descriptor object
   var amdUpdate = getAmendmentUpdate(! sendLVUpdates);
 
-  //do not send update if it cannot be displayed in this state
+  //do not send an update if it cannot be displayed in this state
   if (! amdUpdate) {
     return;
   }
@@ -656,7 +656,7 @@ type: structure
 function sendLVUpdate(type, eventType, elem) {
   //sends a structure update to server
   if (type === "structure") {
-    //empty path cache as structure has changed and cache of paths is invalid now
+    //empty path cache as the structure has changed and cache of paths is invalid now
     pathCache = {};
 
     //check if given element is in the amendment display

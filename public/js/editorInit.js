@@ -60,10 +60,10 @@ var resolutionStage;
 //attribute string of resolution, gotten from page
 var resolutionAttributes, attributesString;
 
-//if automatic saving is enabled or not, determiend from other state variables
+//if automatic saving is enabled or not, determined from other state variables
 var autosaveEnabled;
 
-//is set to true after the phrase in content message has been displayed
+//is set to true after the phrase in the content message has been displayed
 var displayedPhraseContentMessage;
 
 //filled by amendment handler to generate an amendment descriptor object
@@ -88,7 +88,7 @@ function transformMarkedArrays(structure, flag, propValue, depth) {
   if (depth < 10 && typeof structure === "object") {
     //is an array
     if (structure instanceof Array) {
-      //if it actuallly has anything to deal with
+      //if it actually has anything to deal with
       if (structure.length) {
         //check if this array should be converted
         if (structure[0] === flag) {
@@ -141,7 +141,7 @@ function makeEabMoveUpdateDisabledHandler(isUpButton) {
     var clauses = enclosingClause.parent().children(".clause");
     var clauseIndex = clauses.index(enclosingClause);
 
-    //depending on direction flag, decide wether or not to disable
+    //depending on direction flag, decide whether or not to disable
     $(this)[
       (isUpButton ? ! clauseIndex : clauseIndex === clauses.length - 1) ?
       "addClass" : "removeClass"
@@ -316,7 +316,8 @@ $.fn.addSubClause = function(activationStateChanges) {
   //clone the clause as a base for the new clause
   var strippedClause = this.clone(true, true);
 
-  //remove the phrase field (prevent failing autocomplete init on "floating" element through reset)
+  //remove the phrase field
+  //(prevent failing to autocomplete init on "floating" element through reset)
   strippedClause
     .children(".phrase-input-wrapper")
     .remove();
@@ -472,7 +473,7 @@ $.fn.filterIllegalContent = function() {
 
     //append final " if there is an odd amount
     if ((newContent.match(/"/g) || []).length % 2) {
-      //append at end of string to satisfy renderer
+      //append at end of the string to satisfy renderer
       //(would be done on server otherwise, do it here so the user can be informed)
       newContent += "\"";
     }
@@ -705,7 +706,7 @@ function registerEventHandlers(loadedData) {
           //call updateAmd to make clause look right
           updateAmd();
 
-          //stop rocessing, will be called again once update is processed
+          //stop processing, will be called again once update is processed
         }
 
         //set index in amendment display, +1 for natural (non 0 index) counting
@@ -713,7 +714,7 @@ function registerEventHandlers(loadedData) {
         console.log("new index", clauseIndex);
       }
 
-      //must be displayable and flag for only update must not be set
+      //must be displayable and flag for update display only must not be set
       if (! amdDisplayable || noData) {
         //return false to not send an update as no type or no clause has been selected
         return false;
@@ -860,7 +861,7 @@ function registerEventHandlers(loadedData) {
       if (amdActionType === "add" && newAmdActionType !== "add") {
         amdOrigClause = $();
 
-        //no need to remove handler as original clause was synthetic anyways
+        //no need to remove handler as the original clause was synthetic anyways
       }
 
       //set new action type as current
@@ -987,7 +988,7 @@ function registerEventHandlers(loadedData) {
         //get value from validation
         var selectedValue = getSelectValue();
 
-        //proceed to submission if value is truthy and selection thereby valid
+        //proceed to submission if the value is truthy and selection thereby valid
         if (selectedValue) {
           //inject code input element
           selectBox.append("<input type='hidden' name='code' value='" +
@@ -1173,7 +1174,7 @@ function registerEventHandlers(loadedData) {
   })
   .on("removeForeign", function(e) {
     e.stopPropagation();
-    //removes other things than what we put there, like grammarly stuff
+    //removes other things than what we put there, like Grammarly stuff
     //this may be removed at some point when we get the cloning to work properly
     $(this)
       .siblings()
@@ -1550,7 +1551,7 @@ function registerEventHandlers(loadedData) {
         .trigger("activateLabel");
     }
 
-    //fill content field
+    //fill the content field
     elem
       .children(".clause-content")
       .children("textarea")
@@ -1615,7 +1616,7 @@ function registerEventHandlers(loadedData) {
     //set edit mode for this clause to true
     thisClause.trigger("editActive");
 
-    //update disabled state of movement buttons
+    //update the disabled state of movement buttons
     thisClause
       .find("#eab-wrapper")
       .children()
@@ -1683,7 +1684,7 @@ function registerEventHandlers(loadedData) {
   .on("updateDisabled", function(e) {
     e.stopPropagation();
 
-    //set disabled state according to wether or not a subclause can be added
+    //set disabled state according to whether or not a subclause can be added
     $(this).disabledState(! $(this).canReceiveSubclause());
   });
   $("#eab-add-ext")
@@ -1703,7 +1704,7 @@ function registerEventHandlers(loadedData) {
   .on("updateDisabled", function(e) {
     e.stopPropagation();
 
-    //set disabled state according to wether or not a subclause can be added
+    //set disabled state according to whether or not a subclause can be added
     //also can't un-hide again (disabled if visible)
     var clause = $(this).closest(".clause");
     $(this).disabledState(
@@ -1756,7 +1757,7 @@ function registerEventHandlers(loadedData) {
   .on("click", function(e) {
     e.stopPropagation();
 
-    //display message before triggering save on clauses, will probably be in saved state afterwards
+    //display message before triggering save on clauses, will probably be in saved state afterward
     if (changesSaved) {
       displayToast("Already saved");
     } else {
@@ -2057,7 +2058,7 @@ $(document).ready(function() {
 
       //check if localStorage is supported and no flag is found
       if (typeof localStorage !== "undefined" && ! localStorage.getItem("helppagehint")) {
-        //set to false when an error happens while setting the flag in local storage
+        //set to false when an error happens while setting the flag in the local storage
         //we won't display the hint if we can't prevent it
         //from being shown every time the page is reloaded
         var canSetFlag = true;
@@ -2070,7 +2071,7 @@ $(document).ready(function() {
           canSetFlag = false;
         }
 
-        //display the help page hint, if we were able to set the flag
+        //display the help page hint if we were able to set the flag
         if (canSetFlag) {
           //provide links to help page and formatting section
           makeAlertMessage(

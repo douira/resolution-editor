@@ -11,9 +11,9 @@ var magicIdentifier = "PG52QE1AM4LACMX9";
 }*/
 
 //pattern of the resolution format - VERSION 2
-/*File format version history: (incremented when compatability changes or with large differences)
+/*File format version history: (incremented when compatibility changes or with large differences)
 1: start
-2: typo fix (from editied to edited)
+2: typo fix (from edited to edited)
 3: typo fix (from form to forum)
 6: removed clauses of just strings, must always be objects
 */
@@ -228,7 +228,7 @@ function validateObjectStructure(obj, format) {
 
         //check if a present field was found
         if (! field) {
-          //make new field with name
+          //make a new field with a name
           field = {
             name: fieldSpec.name,
             present: false

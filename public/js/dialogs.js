@@ -6,7 +6,7 @@ var alertQueue = [];
 
 //checks if we can display an alert now or starts processing the queue
 function checkAlertDisplay() {
-  //only if any items in queue and still animating
+  //only if any items in the queue and still animating
   if (alertQueue.length) {
     var modal = $("#alert-message-modal");
     if (! (modal.hasClass("open") || modal.hasClass("velocity-animating"))) {
