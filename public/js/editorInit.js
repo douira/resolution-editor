@@ -708,6 +708,56 @@ function registerEventHandlers(loadedData) {
       applyAmdBtn.disabledState(! amdActionBtnsEnabled);
     };
 
+    //send a saveAmd message abd then resets the amd display
+    var saveAmd = function(saveType) {
+      //validation has already been done, get amd update object
+      var saveAmdUpdate = getAmendmentUpdate();
+
+      //make sure we actually got something
+      if (! saveAmdUpdate) {
+        //error and stop; why is it falsy!?
+        console.error("Got falsy amd update object while doing saveAmd update!");
+        return;
+      }
+
+      //if in apply mode
+      if (saveType === "apply") {
+        //when in remove mode
+        if (amdActionType === "remove") {
+          //remove the specified clause from the resolution
+          amdOrigClause.trigger("attemptRemove");
+        } else if (saveType === "change" || saveType === "replace") {
+          //insert the amendment clause with the original clause
+          amdClauseElem.insertAfter(amdOrigClause);
+
+          //remove the orig clause
+          amdOrigClause.trigger("attemptRemove");
+        } else {
+          //in add mode, simply append amd clause to op clauses
+          $("#op-clauses .add-clause-container").before(amdClauseElem)
+
+          //update indexes
+          .parent().children(".clause").trigger("updateId");
+        }
+      } //in reject the amendment is just removed
+
+      //send the saveAmd message and pass amd update object to use
+      sendLVUpdate("saveAmd", saveType, saveAmdUpdate);
+
+      //reset to no state selected
+      amdTypeSelect.setSelectValueId("noselection");
+      amdActionType = "noselection";
+
+      //remove selected clause
+      amdOrigClause = $();
+
+      //clear sponsor field and update its label
+      sponsorInput.val("").resetSiblingLabels();
+
+      //update display but don't send another update
+      updateAmd(true);
+    };
+
     //called by sendLVUpdate in dataInteraction.js to generate the object that is sent to the server
     //and the liveview clients containing all information describing the current amendment
     getAmendmentUpdate = function(noData) {
@@ -780,7 +830,7 @@ function registerEventHandlers(loadedData) {
     //resets the amendment display with the current type and selected clause
     //also shows the no selection message if no clause is selected or the
     //selected clause has been removed in the mean time
-    updateAmd = function() {
+    updateAmd = function(sendNoUpdate) {
       //trigger edit inactive on the current selection to avoid removing the eabs
       amdClauseListSelection.find(".clause").trigger("editInactive");
 
@@ -870,8 +920,10 @@ function registerEventHandlers(loadedData) {
         amdClauseElem.find(".phrase-input").trigger("init");
       }
 
-      //send amendment update
-      sendLVUpdate("amendment");
+      //send amendment update if allowed
+      if (! sendNoUpdate) {
+        sendLVUpdate("amendment");
+      }
     };
 
     //amendment action type selection
@@ -958,23 +1010,14 @@ function registerEventHandlers(loadedData) {
       e.stopPropagation();
 
       //check that button was enabled
-      if (amdActionBtnsEnabled) {
+      if (! amdActionBtnsEnabled) {
         //illegal click
+        console.error("illegal reject btn click");
         return;
       }
 
-      //reset to no state selected
-      amdTypeSelect.setSelectValueId("noselection");
-      amdActionType = "noselection";
-
-      //remove selected clause
-      amdOrigClause = $();
-
-      //clear sponsor field and update its label
-      sponsorInput.val("").resetSiblingLabels();
-
-      //and update amd display to match state
-      updateAmd();
+      //send a saveAmd message
+      saveAmd("reject");
     });
 
     //on clicking apply amendment button
@@ -982,12 +1025,14 @@ function registerEventHandlers(loadedData) {
       e.stopPropagation();
 
       //check that button was enabled
-      if (amdActionBtnsEnabled) {
+      if (! amdActionBtnsEnabled) {
         //illegal click
+        console.error("illegal apply btn click");
         return;
       }
 
-      console.log("apply amd");
+      //send a saveAmd message
+      saveAmd("apply");
     });
   }
 

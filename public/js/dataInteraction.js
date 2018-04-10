@@ -703,6 +703,34 @@ function sendLVUpdate(type, eventType, elem) {
       //process amendment update directly
       doAmdUpdate();
     }
+  } else if (type === "saveAmd") {
+    //needs update to be specified
+    if (! (typeof elem === "object" && typeof elem.type === "string")) {
+      //error and stop
+      console.error("saveAmd event requires amd update object to be passed!");
+      return;
+    }
+
+    //the update object is passed as elem
+    var saveAmdUpdate = elem;
+
+    //attach saveType to update
+    saveAmdUpdate.saveType = eventType;
+
+    //if the amendment was applied
+    if (eventType === "apply") {
+      //attach the whole current structure to the update
+      saveAmdUpdate.newStructure = getEditorObj(true);
+    }
+
+    //send saveAmd update
+    sendJsonLV({
+      type: "saveAmd",
+      update: saveAmdUpdate
+    });
+
+    //reset path cache, otherwise applied field will send amendment content updates
+    pathCache = { };
   } else if (type === "content") {
     //don't send if not necessary
     if (! sendLVUpdates) {

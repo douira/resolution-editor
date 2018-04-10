@@ -191,6 +191,7 @@ function startWS(isViewer, updateListener) {
       case "updateStructure": //viewer
       case "updateContent":
       case "amendment":
+      case "saveAmd":
         //no special action, handling done by update listener
         break;
       default: //both client types

@@ -195,7 +195,7 @@ function render() {
     //get a clone of the template amendment container
     amdContainer = $("#amd-container").clone();
 
-    //if the structure will be modified
+    //if the structure object will be modified, copy
     if (amendment.type === "add" || amendment.type === "replace" || amendment.type === "change") {
       //make a copy for rendering with amendment, these change types modify the structure
       renderStructure = $.extend(true, {}, structure);
@@ -597,6 +597,19 @@ $(document).ready(function() {
           //will do nothing if it is a empty set because the amendment isn't type replace
           .add(amendmentElements.replacementClause)
           .scrollIntoView();
+        break;
+      case "saveAmd":
+        //reset the amendment to nothing
+        amendment = null;
+
+        //if in apply mode
+        if (data.update.saveType === "apply") {
+          //save given new structure
+          structure = data.update.newStructure;
+        }
+
+        //re-render wtihout amendment
+        render();
         break;
     }
   });

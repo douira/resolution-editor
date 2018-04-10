@@ -152,7 +152,7 @@ function wsError(ws, msg, opts) {
     });
 
     //close if not specified otherwise
-    if (! opts.noClose && opts.type !== "warn") {
+    if (! opts.noClose && (! opts.type || opts.type === "error")) {
       ws.close();
     }
   }
@@ -160,11 +160,11 @@ function wsError(ws, msg, opts) {
   //log error message and error if give
   if (opts.type && opts.type !== "error") {
     //other message type
-    log[opts.type](msg);
+    log[opts.type](msg, opts);
   } else if (opts.err) {
-    log.error(opts.err, msg);
+    log.error(opts.err, msg, opts);
   } else {
-    log.error(msg);
+    log.error(msg, opts);
   }
 }
 
@@ -301,7 +301,12 @@ function markConsistentDiffs(obj) {
   //add length property if numeric indexes found
   if ("0" in obj) {
     //length is the length of the keys in the object array, we can assume a dense array
-    obj.length = Object.keys(obj).length - 1;
+    obj.length = Object.keys(obj).length;
+
+    //decrement one if we counted .diff as one of keys
+    if (obj.diff) {
+      obj.length --;
+    }
   }
 
   //return consistent diff type (or false if it is inconsistent)
@@ -519,7 +524,6 @@ function receiveServer(httpServer) {
 
         //forward to all viewers
         dataToAllViewers();
-
         break;
       case "saveAmd": //reject or apply an amendment
         //get the update content
@@ -538,7 +542,7 @@ function receiveServer(httpServer) {
         //check all aspects of the given save amendment
         if (
           //validate sponsor
-          ! (saveAmdUpdate.sponsor && typeof saveAmdUpdate.sponsor === "string" &&
+          ! (typeof saveAmdUpdate.sponsor === "string" &&
 
           //validate action type
           saveAmdUpdate.type &&
@@ -551,8 +555,8 @@ function receiveServer(httpServer) {
           //validate presence of clauseIndex if necessary
           (typeof saveAmdUpdate.clauseIndex === "number" || saveAmdUpdate.type === "add") &&
 
-          //validate existence of new structure
-          typeof saveAmdUpdate.newStructure === "object")
+          //validate existence of new structure (if applying amd)
+          (typeof saveAmdUpdate.newStructure === "object" || saveType === "reject"))
         ) {
           //error and stop
           wsError(ws, "invalid or incomplete amendment given for save");
@@ -572,11 +576,26 @@ function receiveServer(httpServer) {
             tokenEntry.latestStructure.resolution.clauses.operative[saveAmdUpdate.clauseIndex];
         }
 
-        //use the given resolution as the new structure
-        tokenEntry.latestStructure = saveAmdUpdate.newStructure;
+        //if we got a new structure iwth the amendment applied
+        if (saveType === "apply") {
+          //use the given resolution as the new structure
+          tokenEntry.latestStructure = saveAmdUpdate.newStructure;
 
-        //reset path cache
-        tokenEntry.pathCache = {};
+          //reset path cache on canged structure
+          tokenEntry.pathCache = {};
+
+          //set data to send to be only the new structure, clients should just reset
+          data.update = {
+            newStructure: saveAmdUpdate.newStructure,
+            saveType
+          };
+        } else {
+          //on reject, only send saveType
+          data.update = { saveType };
+        }
+
+        //remove amd from token entry
+        delete tokenEntry.amd;
 
         //forward to all viewers
         dataToAllViewers();
@@ -588,7 +607,7 @@ function receiveServer(httpServer) {
           $push: {
             amendments: Object.assign(
               amdHistoryExtend,
-              pick(saveAmdUpdate, ["clauseIndex", "newclause", "type", "saveType"])
+              pick(saveAmdUpdate, ["clauseIndex", "newClause", "type", "saveType"])
             )
           }
         }).catch(
@@ -605,6 +624,13 @@ function receiveServer(httpServer) {
 
         //is amendment content update
         if (updatePath[updatePath.length - 1] === "amendment") {
+          //error if no amd save in token entry
+          if (! tokenEntry.amd) {
+            //error and stop
+            logger.error("received amendment content update but no amendment exists!");
+            return;
+          }
+
           //remove amendment flag and set amendment as object to be modified
           updatePath.pop();
           applyUpdateTo = tokenEntry.amd.newClause;
