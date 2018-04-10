@@ -10,7 +10,7 @@ makeAlertMessage*/
 //the template dom element for the list
 var templateItem;
 
-//true when the check now link is alowed to work, prevents click spamming
+//true when the check now the link is allowed to work, prevents click spamming
 var allowCheckNow = true;
 
 //the last time the server was asked for an update
@@ -115,7 +115,7 @@ function updateList() {
       //get the next first item from the list
       var newFirst = data.pop();
 
-      //run pre copyh andler if given
+      //run pre copy handler if given
       if (typeof updateListConfig.preCopyHandler === "function") {
         updateListConfig.preCopyHandler(newFirst, firstItem);
       }

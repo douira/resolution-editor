@@ -10,7 +10,7 @@ var amendment;
 //the current amendment and clause elements
 var amendmentElements;
 
-//maps between string path segments and sub element selectors
+//maps between string path segments and sub-element selectors
 var pathSegmentMapping = {
   sub: function(e) { return e.children(".subs").children(); },
   phrase: function(e) { return e.children("div.clause-content").children("span.phrase"); },
@@ -32,7 +32,7 @@ var amdActionTexts = {
 };
 
 //applies a change to the resolution document in html given a path and a new content
-//basically does a translation between the resolution docuement and the dom version of it
+//basically does a translation between the resolution document and the dom version of it
 function applyDocumentChange(resolution, path, content) {
   //element to apply the change to (set new value)
   var currentElem;
@@ -40,7 +40,7 @@ function applyDocumentChange(resolution, path, content) {
   //convert the path into a string as a key for caching
   var pathAsString = path.join(",");
 
-  //if there is a already found element for the path, use that results instead of calculating it
+  //if there is an already found element for the path, use that results instead of calculating it
   if (pathAsString in changeCache) {
     //simply use already computed result
     var cacheResult = changeCache[pathAsString];
@@ -173,7 +173,7 @@ var diffTypeColorMap = {
 
 //marks an element with diff colors according to the passed diff type
 $.fn.colorDiff = function(type) {
-  //con't do anything if falsy
+  //can't do anything if falsy
   if (! type) {
     return;
   }
@@ -446,7 +446,7 @@ function render() {
               subContentExt.colorDiff(subClauseData.diff.contentExt);
             }
 
-            //update wether or not this is the last piece of the clause
+            //update whether or not this is the last piece of the clause
             lastPieceOfClause = ! contentExtPresent && lastSubClause;
 
             //add extra punctuation for ext content

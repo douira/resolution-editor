@@ -8,7 +8,7 @@ firstItem*/
 //the link element to the editor page of the first item
 var tokenLinkElem;
 
-//wether the current first item has been viewed, enabled advance button
+//whether the current first item has been viewed, enabled advance button
 var firstItemViewed;
 
 //updates the buttons and spinner acording to the view stage

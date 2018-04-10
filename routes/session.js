@@ -23,7 +23,7 @@ router.get("/", function(req, res) {
 
 //GET display enter access code page
 router.get("/login", function(req, res) {
-  //wether or not there is an existing session
+  //whether or not there is an existing session
   const renderOpts = { loggedIn: typeof req.session.code === "string" };
 
   //add code doc if logged in

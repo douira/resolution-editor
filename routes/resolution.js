@@ -159,7 +159,7 @@ router.post("/save/:token", function(req, res) {
 
 //return the render param object for the editor view
 function getEditorViewParams(doLoad, resDoc, token, codeDoc) {
-  //send rendered editor page with token set
+  //send rendered editor page with the token set
   return {
     token: token,
     meta: resUtil.getMetaInfo(resDoc),
@@ -198,7 +198,7 @@ router.use(["/setattribs/:token", "/delete/:token"], (req, res, next) =>
     //proceed to individual routes
     next();
   }, {
-    //just make no db query on auth fail
+    //just make no DB query on auth fail
     permissionMissmatch: token => {
       //just go back to editor
       res.redirect("/resolution/editor/" + token);
@@ -211,7 +211,7 @@ router.use(["/setattribs/:token", "/delete/:token"], (req, res, next) =>
 
 //POST (no view) update attributes and redirect back to editor page
 router.post("/setattribs/:token", function(req, res) {
-  //get token from req as it was attached in the middleware for setattribs and delete
+  //get token from req as it was attached to the middleware for setattribs and delete
   const token = req.resToken;
 
   //check for present post body property and must be a ok value
@@ -296,7 +296,7 @@ routingUtil.getAndPost(router, "/advance/:token", function(req, res) {
         voteType
       };
 
-      /*check and add prop wether or not this resolution passed.
+      /*check and add prop whether or not this resolution passed.
       must be majority for pass and 2/3 majority (= two times more than...)
       for important question to pass*/
       voteResults.passed = voteResults.inFavor > voteResults.against *

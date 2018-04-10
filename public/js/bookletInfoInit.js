@@ -252,9 +252,9 @@ $(document).ready(function() {
   })
   .on("click", function(e) {
     /*when the open pdf button is clicked and opened the pdf,
-    go back to unrendered bcause one of the resolutions might have changes,
+    go back to unrendered because one of the resolutions might have changed,
     we're not reporting resolution changes but the server does regard them internally
-    when deciding wether or not to actually re-render the booklet*/
+    when deciding whether or not to actually re-render the booklet*/
     if (renderState === "rendered") {
       //blur to remove focus that makes it go dark
       printBtn.blur();
@@ -317,7 +317,7 @@ $(document).ready(function() {
     //remove resolution from list
     item.remove();
 
-    //unselect eligible resolution with token of removed item
+    //unselect eligible resolution with the token of the removed item
     eligibleList
       .find(".token:contains(" + token + ")")
       .getResItem()
