@@ -739,6 +739,9 @@ function registerEventHandlers(loadedData) {
           //update indexes
           .parent().children(".clause").trigger("updateId");
         }
+
+        //set flag for made changes, amendment changed resolution
+        changesSaved = false;
       } //in reject the amendment is just removed
 
       //send the saveAmd message and pass amd update object to use
