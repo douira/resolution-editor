@@ -536,7 +536,7 @@ function receiveServer(httpServer) {
         { token: clientEntry.token }, { $set: { lastLiveview: Date.now() } }
       ).catch(
         //TODO: proper logging in liveview.js (where not implemented yet)
-        () => console.error("could not update last lievview timestamp")
+        () => console.error("could not update last liveview timestamp")
       );
     }
   }

@@ -12,7 +12,7 @@ block content
     h3 Resolution Booklet #
       span#booklet-id=booklet._id
     .divider
-    p.justify This page displays all important information about this resolution booklet. This booklet is for the #[b=booklet.type] plenary. You have to save any changes you make before leaving this page. Generating a PDF will automatically save all changes. If you remove a selecte resoluton that is not eligible anymore it can't be selected again after saving the changes. Eligible resolutions are sorted by forum, stage, token.
+    p.justify This page displays all important information about this resolution booklet. This booklet is for the #[b=booklet.type] plenary. You have to save any changes you make before leaving this page. Generating a PDF will automatically save all changes. If you remove a selected resolution that is not eligible anymore it can't be selected again after saving the changes. Eligible resolutions are sorted by forum, stage, token.
     .btn.waves-effect.waves-light.disabled#save-btn(color=pri) Save Changes
     span.hide-this#unsaved-changes-msg  There are unsaved changes!
     .row
@@ -57,7 +57,7 @@ block content
                 +selected-icons
         +check-nothing(booklet.resolutions)
     h5.light Title Page
-    p.justify Enter the title and session description of the resolution booklet and the names an positions of all signature fields. Currently only 7 or 8 signatures are possible and signature 8 is optional. The Booklet title is printed with small capitals and the session number is usually written in roman numerals.
+    p.justify Enter the title and session description of the resolution booklet and the names an positions of all signature fields. Currently, only 7 or 8 signatures are possible and signature 8 is optional. The Booklet title is printed with small capitals and the session number is usually written in Roman numerals.
     .row
       mixin input-field
         .col.s12.m6.input-field

@@ -39,11 +39,11 @@ block content
           p.justify Remove the selected codes from the system. They may be generated again at random though.
           a.btn.waves-effect.waves-light.red#revoke-btn Revoke Selected
       h5.light Add New
-      p.justify You can add new codes by specifying an amount or entering a list of shorthand names. For codes with specified shorthand names you can query the code later with a given name if you enter is exactly. However, because of data protection policies the names themselves aren't saved directly, but rather a hash is generated.
+      p.justify You can add new codes by specifying an amount or entering a list of shorthand names. For codes with specified shorthand names, you can query the code later with a given name if you enter is exactly. However, because of data protection policies, the names themselves aren't saved directly, but rather a hash is generated.
       .row
         .col.s12: +level-select("gen-code-level-select", "Access Level")
         .col.s12.m6
-          | Enter a list of (shorthand) names to assign codes to seperated by newlines and/or commas.
+          | Enter a list of (shorthand) names to assign codes to separated by newlines and/or commas.
           .input-field
             textarea.materialize-textarea#code-name-field
             label(for="code-name-field") List of names
