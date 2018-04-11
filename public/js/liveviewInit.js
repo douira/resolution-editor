@@ -1,5 +1,5 @@
 /*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
-/*global startLiveviewWS*/
+/*global startLiveviewWS, getTimeText*/
 
 //the current structure
 var structure;
@@ -9,6 +9,9 @@ var amendment;
 
 //the current amendment and clause elements
 var amendmentElements;
+
+//list of last amendments
+var lastAmdList;
 
 //maps between string path segments and sub element selectors
 var pathSegmentMapping = {
@@ -183,9 +186,46 @@ $.fn.colorDiff = function(type) {
   this.addClass(diffTypeColorMap[type] || "mark-grey");
 };
 
-//fucntion that renders the given structure to the liveview display,
-//updates completely: do not use for content update
+//renders the given structure to the liveview display,
+//re-generates elements completely: do not use for content update
 function render() {
+  //if there are last amendments
+  if (lastAmdList) {
+    //unhide collection and get child elements
+    var lastAmdElems = $("#last-amd").removeClass("hide-this").children();
+
+    //for the first three elements of the last amendments (we only expect three)
+    var amdItem, amdElem;
+    for (var i = 0; i < 3; i ++) {
+      //get element from list
+      amdItem = lastAmdList[i];
+
+      //get current element from display item collection
+      amdElem = lastAmdElems.eq(i);
+
+      //if there is data for this index
+      if (amdItem) {
+        //unhide element
+        amdElem.removeClass("hide-this");
+      } else {
+        //nothing there, hide element
+        amdElem.addClass("hide-this");
+
+        //continue to next element
+        continue;
+      }
+
+      //set time text in display element
+      amdElem.find(".item-age").text(getTimeText((Date.now() - amdItem.timestamp) / 1000, "ago"));
+
+      //apply attributes of item to display element
+      amdElem.find(".item-sponsor").text(amdItem.sponsor);
+      amdElem.find(".item-clause").text(amdItem.clauseIndex + 1); //convert to 1-start counting
+      amdElem.find(".item-action").text(amdActionTexts[amdItem.type]);
+      amdElem.find(".item-status").text(amdItem.saveType === "apply" ? "Accepted" : "Rejected");
+    }
+  }
+
   //the structure to render
   var renderStructure = structure;
 
@@ -560,8 +600,11 @@ $(document).ready(function() {
         }
 
         //copy given resolution to current structure
-        structure = data.update;
+        structure = data.resolutionData || data.update;
 
+        //copy last amendments
+        lastAmdList = data.lastAmd;
+        console.log(type, data, lastAmdList);
         //render everything
         render();
         break;
@@ -608,7 +651,16 @@ $(document).ready(function() {
           structure = data.update.newStructure;
         }
 
-        //re-render wtihout amendment
+        //save list of last amendments
+        lastAmdList = data.update.lastAmd;
+
+        //if not given
+        if (! lastAmdList) {
+          //hide whole display list
+          $("#last-amd").addClass("hide-this");
+        }
+
+        //re-render without amendment
         render();
         break;
     }

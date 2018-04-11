@@ -42,3 +42,7 @@
 .no-bottom-mrg {
   margin-bottom: 0;
 }
+
+.underline {
+  text-decoration: underline;
+}

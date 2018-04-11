@@ -126,8 +126,8 @@ function startWS(isViewer, updateListener) {
     }
 
     //if resolution data sent as init, call listener with init structure
-    if (data.hasOwnProperty("resolutionData") && typeof updateListener === "function") {
-      updateListener("initStructure", { update: data.resolutionData });
+    if (data.hasOwnProperty("resolutionData")) {
+      updateListener("initStructure", data);
     }
 
     console.log("received:", data);

@@ -560,10 +560,13 @@ function processMessage(clients, tokens, data, ws, accessToken, resDoc) {
       saveAmdUpdate.timestamp = Date.now();
 
       //if index if is given
+      const opClauses = tokenEntry.latestStructure.resolution.clauses.operative;
       if (saveAmdUpdate.clauseIndex) {
         //add clause that was acted upon
-        saveAmdUpdate.changedClause =
-          tokenEntry.latestStructure.resolution.clauses.operative[saveAmdUpdate.clauseIndex];
+        saveAmdUpdate.changedClause = opClauses[saveAmdUpdate.clauseIndex];
+      } else {
+        //add index as last clause index plus one
+        saveAmdUpdate.clauseIndex = opClauses.length;
       }
 
       //if we got a new structure iwth the amendment applied
