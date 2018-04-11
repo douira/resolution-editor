@@ -726,18 +726,26 @@ function registerEventHandlers(loadedData) {
         if (amdActionType === "remove") {
           //remove the specified clause from the resolution
           amdOrigClause.trigger("attemptRemove");
-        } else if (saveType === "change" || saveType === "replace") {
+
+          //update all indexes
+          $("#op-clauses > .clause-list > .clause").trigger("updateId");
+        } else if (amdActionType === "change" || amdActionType === "replace") {
           //insert the amendment clause with the original clause
           amdClauseElem.insertAfter(amdOrigClause);
 
           //remove the orig clause
           amdOrigClause.trigger("attemptRemove");
-        } else {
+
+          //update the id of the newly inserted clause
+          amdClauseElem.trigger("updateId");
+        } else if (amdActionType === "add") {
           //in add mode, simply append amd clause to op clauses
-          $("#op-clauses .add-clause-container").before(amdClauseElem)
+          $("#op-clauses > .clause-list > .add-clause-container").before(amdClauseElem)
 
           //update indexes
           .parent().children(".clause").trigger("updateId");
+        } else {
+          console.error("invalid action type found when doing saveAmd", amdActionType);
         }
 
         //set flag for made changes, amendment changed resolution
