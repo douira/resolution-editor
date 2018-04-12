@@ -19,6 +19,7 @@ const resolution = require("./routes/resolution");
 const handytextbox = require("./routes/handytextbox");
 const list = require("./routes/list");
 const sessionRoute = require("./routes/session");
+const logRoute = require("./routes/log");
 
 //make express app
 const app = module.exports = express();
@@ -80,6 +81,7 @@ app.use("/resolution", resolution);
 app.use("/handytextbox", handytextbox);
 app.use("/list", list);
 app.use("/session", sessionRoute);
+app.use("/log", logRoute);
 
 //catch 404 and forward to error handler
 app.use((req, res) => {

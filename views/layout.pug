@@ -18,7 +18,7 @@
 
   //function that generates tooltip attribute data, use: &attributes(tooltip("blah", "left"))
   function tooltip(msg, position) {
-  const obj = {
+    const obj = {
       "class": "tooltipped",
       "data-delay": 700,
       "data-position": position
@@ -235,6 +235,7 @@ html(lang="en")
 
     //-general scripts
     script(src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous")
+    +static("js", "/js/log.js")
     script(src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js")
     +static("js", "/js/mainInit.js")
 
