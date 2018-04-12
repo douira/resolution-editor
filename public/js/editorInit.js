@@ -803,7 +803,7 @@ function registerEventHandlers(loadedData) {
           //stop processing, will be called again once update is processed
         }
 
-        //set index in amendment display, +1 for natural (non 0 index) counting
+        //set index in amendment display, +1 for natural (1 based) counting in display
         amdClauseElem.children("h6").find(".clause-number").text(clauseIndex + 1);
         console.log("new index", clauseIndex);
       }

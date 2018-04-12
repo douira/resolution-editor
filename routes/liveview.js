@@ -565,8 +565,8 @@ function processMessage(clients, tokens, data, ws, accessToken, resDoc) {
         //add clause that was acted upon
         saveAmdUpdate.changedClause = opClauses[saveAmdUpdate.clauseIndex];
       } else {
-        //add index as last clause index plus one (adding a clause)
-        saveAmdUpdate.clauseIndex = opClauses.length + 1;
+        //add index as last clause index (0 based)
+        saveAmdUpdate.clauseIndex = opClauses.length;
       }
 
       //if we got a new structure iwth the amendment applied
