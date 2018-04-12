@@ -24,6 +24,9 @@ var logSendSchedule = {
 
 //logs a message
 function log(dataOrMessage, level) {
+  //log to console for immediate viewing
+  console.log(dataOrMessage);
+
   //make log item object
   var logItem = {
     //include some helpful information
@@ -51,7 +54,7 @@ function log(dataOrMessage, level) {
     }
 
     //data has err property
-    if (dataOrMessage.err) {
+    if (dataOrMessage.err && dataOrMessage.err.stack) {
       //add err properties
       logItem.stack = dataOrMessage.err.stack;
     }
@@ -62,7 +65,7 @@ function log(dataOrMessage, level) {
     //simply attach as message
     logItem.msg = dataOrMessage;
   }
-  console.log(logItem);
+
   //append log message to list
   logMessages.push(logItem);
 

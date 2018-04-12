@@ -1,5 +1,7 @@
 /*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
-/*global startLiveviewWS*/
+/*global
+startLiveviewWS,
+log*/
 
 //the current structure
 var structure;
@@ -572,7 +574,7 @@ $(document).ready(function() {
             structure.resolution, data.update.contentPath, data.update.content);
         } else {
           //bad, no content update should arrive before the init or updateStructure messages
-          console.error("no content update should arrive before structure is received");
+          log({ msg: "no content update should arrive before structure is received" });
         }
         break;
       case "amendment":

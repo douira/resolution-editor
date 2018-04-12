@@ -1,7 +1,9 @@
 /*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
 /*exported startLiveviewWS, sendJsonLV*/
-/* global makeAlertMessage,
-  displayToast*/
+/* global
+makeAlertMessage,
+log,
+displayToast*/
 
 //how many times we will try to connect
 var connectTriesLV = 3;
@@ -46,7 +48,7 @@ var sendJsonLV = (function() {
 
       //send prepared object after stringify
       currentWS.send(JSON.stringify(obj));
-      console.log("sent:", obj);
+
       //work on emptying queue
       sendJsonLV("empty");
     } else {
@@ -115,7 +117,7 @@ function startWS(isViewer, updateListener) {
     try {
       data = JSON.parse(event.data);
     } catch (err) {
-      console.log("non-json data received/error", event.data, err);
+      log({ msg: "non-json data received/error", eventData: event.data, err: err });
       return;
     }
 
@@ -130,12 +132,11 @@ function startWS(isViewer, updateListener) {
       updateListener("initStructure", { update: data.resolutionData });
     }
 
-    console.log("received:", data);
     //for type of send message
     switch (data.type) {
       case "error": //both, error message from server
-        //log
-        console.log(data.errorMsg);
+        //log error
+        log({ msg: "lv received error", errMsg: data.errorMsg });
 
         //check if we are allowed to retry
         if (! data.tryAgain) {
@@ -194,7 +195,7 @@ function startWS(isViewer, updateListener) {
         //no special action, handling done by update listener
         break;
       default: //both client types
-        console.log("unrecognised message type", data);
+        log({ msg: "lv: unrecognised message type", data: data });
         return;
     }
 
