@@ -1,7 +1,6 @@
 /*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
 /* global makeAlertMessage,
   checkRequiredFields,
-  module,
   changesSaved:true,
   resolutionToken,
   resolutionCode,
@@ -12,7 +11,8 @@
   resolutionStage,
   resolutionAttributes,
   getAmendmentUpdate,
-  amdActionType*/
+  amdActionType,
+  resolutionFormat*/
 /* exported loadFilePick,
   serverLoad,
   generatePdf,
@@ -25,9 +25,6 @@
 
 //current version of the resolution format supported
 var supportedResFileFormats = [6];
-
-//get resolutionFormat from module exported
-var resolutionFormat = module.exports.resolutionFormat;
 
 //returns a bug report tag string
 function bugReportLink(errorCode) {

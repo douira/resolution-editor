@@ -324,9 +324,14 @@ function validateObjectStructure(obj, format) {
   return typeValidators.object(obj, format.structure);
 }
 
-//nodejs module exporting
-module.exports.resolutionFormat = {
+//create object to export
+var resolutionFormat = {
   check: validateObjectStructure,
   magicIdentifier: magicIdentifier,
   resolutionFileFormat: resolutionFileFormat
 };
+
+//extra nodejs module exporting
+if (typeof module === "object") {
+  module.exports = resolutionFormat;
+}
