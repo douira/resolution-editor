@@ -1,7 +1,7 @@
 /*jshint esversion: 6, node: true */
 const express = require("express");
 const path = require("path");
-const compression = require("compression");
+const compression = require("shrink-ray");
 const favicon = require("serve-favicon");
 const session = require("express-session");
 const MongoStore = require("connect-mongo")(session);
