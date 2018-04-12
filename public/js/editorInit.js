@@ -801,6 +801,7 @@ function registerEventHandlers(loadedData) {
           updateAmd();
 
           //stop processing, will be called again once update is processed
+          return;
         }
 
         //set index in amendment display, +1 for natural (1 based) counting in display

@@ -26,7 +26,7 @@ function getTimeText(time, suffix) {
   //less than 120 minutes
   time /= 60;
   if (time < 120) {
-    return Math.round(time) + " minutes" + suffix;
+    return Math.ceil(time) + " minutes" + suffix;
   }
 
   //less than 48 hours
