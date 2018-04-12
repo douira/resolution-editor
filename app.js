@@ -8,7 +8,7 @@ const MongoStore = require("connect-mongo")(session);
 const credentials = require("./lib/credentials");
 const dbPromise = require("./lib/database").dbPromise;
 const mongoSanitize = require("express-mongo-sanitize");
-
+const getTimeText = require("./public/js/getTimeText");
 const devEnv = require("./lib/devEnv");
 const { logger, applyLoggerMiddleware } = require("./lib/logger");
 
@@ -26,6 +26,9 @@ const app = module.exports = express();
 //view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
+
+//add libraries that should be available within the templates
+app.locals.getTimeText = getTimeText;
 
 //register express middleware
 app.use(compression()); //use compression to make it faster

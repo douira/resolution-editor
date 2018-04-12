@@ -108,6 +108,16 @@ block content
             +t-item("Subclauses:", meta.clauseCount[1])
           if meta.clauseCount[2]
             +t-item("Subsubclauses:", meta.clauseCount[2])
+      if meta.amendments && meta.amendments.length
+        +collapsible-item("Amentment History", "speaker_notes")
+          ul.collection
+            - const now = Date.now();
+            each amendment in meta.amendments
+              li.collection-item
+                span.item-age.grey-text.right=getTimeText((now - amendment.timestamp) / 1000, "ago")
+                | Proposal by #[span.item-sponsor=amendment.sponsor] to #[span.underline #[span.item-action=amendment.type] OC#[span.item-clause=amendment.clauseIndex]]:
+                - const isApply = amendment.saveType === "apply";
+                b.item-status(class=isApply ? "green-text" : "red-text")=isApply ? " Accepted" : " Rejected"
       if meta.voteResults
         li
           .collapsible-header(class=meta.stage === 7 ? "active" : "")
