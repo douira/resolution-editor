@@ -540,8 +540,21 @@ $.fn.setSelectValueId = function(setValueId) {
 $.fn.checkAutoCompValue = function(loadedData) {
   var elem = this;
 
+  //require to ba called on a single element
+  if (this.length > 1) {
+    //use only first
+    elem = this.eq(0);
+  } else if (! this.length) {
+    return;
+  }
+
   //get value of required field
-  var value = this.val().trim();
+  var value = elem.val().trim();
+
+  //stop on missing value
+  if (! value.length) {
+    return false;
+  }
 
   //keep track if value ok
   var valueOk = true;
@@ -694,14 +707,16 @@ function registerEventHandlers(loadedData) {
 
     //updates the amd reject and apply button states
     var updateActionBtnState = function() {
-      //ok if amd is displayable
-      amdActionBtnsEnabled = amdDisplayable;
+      //check validitiy of amendments
+      amdActionBtnsEnabled =
+        //ok if amd is displayable
+        amdDisplayable &&
 
-      //and if a new sponsor was selected, validate it
-      if (amdActionBtnsEnabled) {
+        //check for filled phrase field
+        amdClauseElem.find(".phrase-input").checkAutoCompValue(loadedData) &&
+
         //check that the sponsor is one of the sponsors allowed for that autocomplete field
-        amdActionBtnsEnabled = sponsorInput.checkAutoCompValue(loadedData);
-      }
+        sponsorInput.checkAutoCompValue(loadedData);
 
       //apply state to buttons
       rejectAmdBtn.disabledState(! amdActionBtnsEnabled);
@@ -863,11 +878,10 @@ function registerEventHandlers(loadedData) {
       //displayable if a clause is given
       amdDisplayable = amdOrigClause.length === 1;
 
-      //update reject and apply amd button state
-      updateActionBtnState();
-
       //stop if not displayable
       if (! amdDisplayable) {
+        //update action buttons
+        updateActionBtnState();
         return;
       }
 
@@ -931,6 +945,9 @@ function registerEventHandlers(loadedData) {
         //re-init the autocompleting phrase field
         amdClauseElem.find(".phrase-input").trigger("init");
       }
+
+      //update actions buttons now that clause is present
+      updateActionBtnState();
 
       //send amendment update if allowed
       if (! sendNoUpdate) {
@@ -1006,15 +1023,18 @@ function registerEventHandlers(loadedData) {
     });
 
     //sponsor field change
-    sponsorInput.on("change", function(e) {
-      //only use the event that has .originalEvent and was not triggered by materialize
-      if (e.originalEvent) {
-        //send amendment update
-        sendLVUpdate("amendment");
+    sponsorInput.on("change", function() {
+      //send amendment update
+      sendLVUpdate("amendment");
 
-        //update the reject and apply button states
-        updateActionBtnState();
-      }
+      //update the reject and apply button states
+      updateActionBtnState();
+    });
+
+    //update button state of change of phrase field in amendment display
+    amdClauseWrapper.on("change", ".phrase-input", function() {
+      //also update on change of phrase input
+      updateActionBtnState();
     });
 
     //on clicking reject button
