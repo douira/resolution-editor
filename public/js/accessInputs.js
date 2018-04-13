@@ -49,11 +49,11 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
   };
 
   //check for selector of code input field or given code for which a hidden field will be created
-  var codeFieldSelector = "";
-  if (inputOpts.hasOwnProperty("codeFieldSelector")) {
-    //get selector from ops
-    codeFieldSelector = inputOpts.codeFieldSelector;
-  } else if (inputOpts.hasOwnProperty("presetCode")) {
+  var codeFieldElem;
+  if (inputOpts.codeFieldSelector) {
+    //get selector from ops and find element
+    codeFieldElem = $(inputOpts.codeFieldSelector);
+  } else if (inputOpts.presetCode) {
     //make hidden field above submit button, code is expected to be valid
     submitElem.before(
       "<input type='hidden' class='hidden-code-input not-editor' name='code' value='" +
@@ -68,12 +68,11 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
   }
 
   //check for selector of token input or token will be used as-is
-  var tokenFieldSelector = "";
-  var presetToken;
-  if (inputOpts.hasOwnProperty("tokenFieldSelector")) {
-    //get field selector
-    tokenFieldSelector = inputOpts.tokenFieldSelector;
-  } else if (inputOpts.hasOwnProperty("presetToken")) {
+  var presetToken, tokenFieldElem;
+  if (inputOpts.tokenFieldSelector) {
+    //get field element
+    tokenFieldElem = $(inputOpts.tokenFieldSelector);
+  } else if (inputOpts.presetToken) {
     //get token
     presetToken = inputOpts.presetToken;
 
@@ -85,9 +84,12 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
     return;
   }
 
-  //make a combined selector for the input fields,
-  //only use combinator if there are two things to combine, and get elements
-  var fieldElem = $(codeFieldSelector).add(tokenFieldSelector);
+  //use empties if elements not found
+  codeFieldElem = codeFieldElem || $();
+  tokenFieldElem = tokenFieldElem || $();
+
+  //both field elements
+  var fieldElem = codeFieldElem.add(tokenFieldElem);
 
   //true if all fields are valid
   var allOk = false;
@@ -132,8 +134,49 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
     });
   }
 
+  //handles a submit even (pressig a submit button or pressing enter in one of the input fields)
+  function handleSubmitEvent(e) {
+    //check if still valid
+    updateButtonState();
+
+    //do click action if everything valid
+    if (allOk) {
+      //make url path
+      var buttonUrl = getElementUrl(submitElem) + (typeof presetToken === "undefined" ?
+        tokenFieldElem.val() : presetToken);
+
+      //send combined get and post request with token and code (if there is a code)
+      //use only get request if no code given
+      if (fieldStates.code.valid === "onlyToken") { //only token
+        //if a click event given
+        if (e.type === "click") {
+          //change href and allow link click follow
+          submitElem.attr("href", buttonUrl);
+        } else {
+          //change location to url
+          window.location.href = buttonUrl;
+
+          //and don't do whatever this event does as an action
+          e.preventDefault();
+        }
+      } else { //token and code
+        //populate action url
+        form.attr("action", buttonUrl);
+
+        //submit form to send request and follow
+        form.submit();
+
+        //stop normal link following behavior
+        e.preventDefault();
+      }
+    } else {
+      //don't do anything if not ok and still pressed
+      e.preventDefault();
+    }
+  }
+
   //token and code input validation
-  fieldElem.on("keyup paste checkValidation", function() {
+  fieldElem.on("keyup paste checkValidation", function(e) {
     var elem = $(this);
 
     //get value of current input field and remove any whitespace, make capitalized
@@ -141,7 +184,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
     elem.val(value);
 
     //check if it's the token or the code field
-    var isTokenField = elem.is(tokenFieldSelector);
+    var isTokenField = elem.is(tokenFieldElem);
     var fieldId = isTokenField ? "token" : "code";
 
     //proceed checking only if there is anything filled in
@@ -219,39 +262,26 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
 
     //update button state with current validation state
     updateButtonState();
+
+    //if the key was an enter key press
+    if (e.keyCode === 13) {
+      //call submit event (by default the first one, in index it's to the editor)
+      handleSubmitEvent.call(submitElem[0], e);
+    }
+  });
+
+  //on keydown event for enter press in form
+  codeFieldElem.on("keydown", function(e) {
+    //when enter key was pressed
+    if (e.keyCode === 13) {
+      //handle a submit event
+      handleSubmitEvent.call(submitElem[0], e);
+    }
   });
 
   //submit button click
-  submitElem.on("click", function(e) {
-    //check if still valid
-    updateButtonState();
+  submitElem.on("click", handleSubmitEvent)
 
-    //do click action if everything valid
-    if (allOk) {
-      //make url path
-      var buttonUrl = getElementUrl(this) + (typeof presetToken === "undefined" ?
-          $(tokenFieldSelector).val() : presetToken);
-
-      //send combined get and post request with token and code (if there is a code)
-      //use only get request if no code given
-      if (fieldStates.code.valid === "onlyToken") { //only token
-        //change href and allow link click follow
-        $(this).attr("href", buttonUrl);
-      } else { //token and code
-        //populate action url
-        form.attr("action", buttonUrl);
-
-        //submit form to send request and follow
-        form.submit();
-
-        //stop normal link following behavior
-        e.preventDefault();
-      }
-    } else {
-      //don't do anything if not ok and still pressed
-      e.preventDefault();
-    }
-  })
   //hover over button updates it's state
   .on("mouseover", function() {
     //call validation again
