@@ -12,10 +12,13 @@
   the action field of the form is automatically set and doesn't need to have a specific value
 */
 function registerAccessInputs(submitOptions, formSelector, inputOpts) {
-  //formSelector must resolve to elment
+  //get form element
+  var form = $(formSelector);
+
+  //form must be present
   if ($(formSelector).length !== 1) {
     //wrong
-    //console.log("accessInput registration error: selectors faulty"); only run when debugging
+    //console.log("accessInput registration error: selectors faulty"); TODO: proper logging
     return;
   }
 
@@ -30,8 +33,8 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
     opt.element = $(opt.selector);
   });
 
-  //make submitSelector that selects all submit elements
-  var submitSelector = submitOptions.map(function(opt) { return opt.selector; }).join(",");
+  //make submitSelector that selects all submit elements and find the elements
+  var submitElem = $(submitOptions.map(function(opt) { return opt.selector; }).join(","));
 
   //states of the two fields
   var fieldStates = {
@@ -52,7 +55,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
     codeFieldSelector = inputOpts.codeFieldSelector;
   } else if (inputOpts.hasOwnProperty("presetCode")) {
     //make hidden field above submit button, code is expected to be valid
-    $(submitSelector).before(
+    submitElem.before(
       "<input type='hidden' class='hidden-code-input not-editor' name='code' value='" +
       inputOpts.presetCode + "'>");
 
@@ -83,10 +86,8 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
   }
 
   //make a combined selector for the input fields,
-  //only use combinator if there are two things to combine
-  var fieldSelector = codeFieldSelector +
-      (tokenFieldSelector.length && codeFieldSelector.length ? "," : "") +
-      tokenFieldSelector;
+  //only use combinator if there are two things to combine, and get elements
+  var fieldElem = $(codeFieldSelector).add(tokenFieldSelector);
 
   //true if all fields are valid
   var allOk = false;
@@ -118,10 +119,10 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
       (fieldStates.code.valid === true || typeof presetToken === "undefined")) &&
       //check with additional validation callback if given
       (typeof inputOpts.additionalValidation === "function" ?
-       inputOpts.additionalValidation(setInputValidState, formSelector) : true);
+       inputOpts.additionalValidation(setInputValidState) : true);
 
     //apply to button state
-    $(submitSelector)[allOk ? "removeClass" : "addClass"]("disabled");
+    submitElem[allOk ? "removeClass" : "addClass"]("disabled");
   }
 
   //check button state also when change happens on additional inputs
@@ -132,7 +133,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
   }
 
   //token and code input validation
-  $(fieldSelector).on("keyup paste checkValidation", function() {
+  fieldElem.on("keyup paste checkValidation", function() {
     var elem = $(this);
 
     //get value of current input field and remove any whitespace, make capitalized
@@ -221,7 +222,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
   });
 
   //submit button click
-  $(submitSelector).on("click", function(e) {
+  submitElem.on("click", function(e) {
     //check if still valid
     updateButtonState();
 
@@ -237,8 +238,6 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
         //change href and allow link click follow
         $(this).attr("href", buttonUrl);
       } else { //token and code
-        var form = $(formSelector);
-
         //populate action url
         form.attr("action", buttonUrl);
 
@@ -256,7 +255,10 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
   //hover over button updates it's state
   .on("mouseover", function() {
     //call validation again
-    $(fieldSelector).trigger("checkValidation");
+    fieldElem.trigger("checkValidation");
   });
+
+  //initial checks
+  fieldElem.trigger("checkValidation");
 }
 
