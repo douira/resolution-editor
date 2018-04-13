@@ -30,7 +30,6 @@ function log(dataOrMessage, level) {
   //make log item object
   var logItem = {
     //include some helpful information
-    userAgent: navigator.userAgent,
     url: window.location.href,
     timestamp: Date.now(),
 
@@ -69,10 +68,8 @@ function log(dataOrMessage, level) {
   //append log message to list
   logMessages.push(logItem);
 
-  //if we have 10 messages, try to log to server
-  if (logMessages.length >= 10) {
-    sendBufferItems();
-  }
+  //try to send to server
+  sendBufferItems();
 }
 
 //flush the buffer of log messages to the server
@@ -159,3 +156,29 @@ window.onerror = function(msg, url, line, column, error) {
     stack: error && error.stack
   });
 };
+
+//handles unload by trying to send the rest of the log messages
+function handleUnload() {
+  //stop if there is nothing to log
+  if (! logMessages.length) {
+    return;
+  }
+
+  //create an object to add the messages to
+  var messageObj = { };
+
+  //add all messages to object
+  logMessages.forEach(function(msg, index) { messageObj[index] = msg; });
+
+  //use sync post xhr instead
+  var client = new XMLHttpRequest();
+
+  //set type and url with data (false is for using sync)
+  client.open("GET", "/log?" + $.param(messageObj, false), false);
+
+  //send messages
+  client.send(null);
+}
+
+//before the window closes
+$(window).on("beforeunload", handleUnload);
