@@ -3,7 +3,7 @@ const express = require("express");
 const router = module.exports = express.Router();
 const routingUtil = require("../lib/routingUtil");
 const tokenProcessor = require("../lib/token");
-const { issueError } = require("../lib/logger");
+const { logger, issueError } = require("../lib/logger");
 const { validateAccessLevel } = require("../lib/resUtil");
 const generatePdf = require("../lib/generatePdf");
 
@@ -626,7 +626,7 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
                   unrenderedChanges: false
                 }
               }).catch( //not interested in result
-                err => req.log.error(err, "could not update booklet page amount")
+                err => logger.error("could not update booklet page amount", { stack: err.stack })
               );
             }
           },

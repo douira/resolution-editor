@@ -1,11 +1,8 @@
 /*jshint esversion: 6, node: true */
 const express = require("express");
 const router = module.exports = express.Router();
-const { logger: libLogger, issueError } = require("../lib/logger");
+const { logger, issueError } = require("../lib/logger");
 const { getAndPost } = require("../lib/routingUtil");
-
-//create a child logger for clients
-const logger = libLogger.child({ source: "client" });
 
 //POST or GET an error
 getAndPost(router, "/", function(req, res) {
@@ -50,7 +47,7 @@ getAndPost(router, "/", function(req, res) {
       msg.userAgent = reqUserAgent;
 
       //log message
-      logger.error(msg, "client log message");
+      logger.error("client log message", msg);
     });
 
     //respond with ok

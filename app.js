@@ -108,5 +108,5 @@ app.use((err, req, res, next) => { //jshint ignore: line
   });
 
   //log error with logger
-  logger.error(err);
+  logger.error("express error", { stack: err.stack });
 });

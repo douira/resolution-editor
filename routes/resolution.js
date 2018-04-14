@@ -6,7 +6,7 @@ const generatePdf = require("../lib/generatePdf");
 const resUtil = require("../lib/resUtil");
 const routingUtil = require("../lib/routingUtil");
 const liveView = require("./liveview").router;
-const { issueError } = require("../lib/logger");
+const { logger, issueError } = require("../lib/logger");
 
 //register callback to get collections on load
 let resolutions, access, resolutionArchive, collections;
@@ -64,7 +64,7 @@ router.get("/renderpdf/:token", function(req, res) {
           resolutions.updateOne({ token: token }, {
             $set: { pageAmount: pageAmount }
           }).catch( //not interested in result
-            err => req.log.error(err, "could not update page amount")
+            err => logger.error("could not update page amount", { stack: err.stack })
           );
         }
       },
