@@ -590,6 +590,18 @@ function invalidAmdTypeError(type) {
   return Error("no amendment action type '" + type + "' exists.");
 }
 
+//sets the last amd list and limits its elements
+function setLastAmdList(newList) {
+  //set to new list
+  lastAmdList = newList;
+
+  //if there are items
+  if (lastAmdList && lastAmdList.length) {
+    //limit to the last n items
+    lastAmdList.splice(0, lastAmdList.length - 3);
+  }
+}
+
 //start liveview as viewer on document load
 $(document).ready(function() {
   //true because we are a viewer, add function to deal with the updates it receives
@@ -614,9 +626,9 @@ $(document).ready(function() {
         //copy given resolution to current structure
         structure = data.resolutionData || data.update;
 
-        //copy last amendments
-        lastAmdList = data.lastAmd;
-        console.log(type, data, lastAmdList);
+        //set last amendment list
+        setLastAmdList(data.lastAmd);
+
         //render everything
         render();
         break;
@@ -664,7 +676,7 @@ $(document).ready(function() {
         }
 
         //save list of last amendments
-        lastAmdList = data.update.lastAmd;
+        setLastAmdList(data.update.lastAmd);
 
         //if not given
         if (! lastAmdList) {
