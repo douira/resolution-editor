@@ -218,11 +218,17 @@ function render() {
       //set time text in display element
       amdElem.find(".item-age").text(getTimeText((Date.now() - amdItem.timestamp) / 1000, "ago"));
 
+      //get the apply status
+      var applyStatus = amdItem.saveType === "apply";
+
       //apply attributes of item to display element
       amdElem.find(".item-sponsor").text(amdItem.sponsor);
       amdElem.find(".item-clause").text(amdItem.clauseIndex + 1); //convert to 1-start counting
       amdElem.find(".item-action").text(amdActionTexts[amdItem.type]);
-      amdElem.find(".item-status").text(amdItem.saveType === "apply" ? "Accepted" : "Rejected");
+      var itemStatus = amdElem.find(".item-status").text(applyStatus ? "Accepted" : "Rejected");
+
+      //apply color class to accepted/rejected text
+      itemStatus.classState(applyStatus, "green-text").classState(! applyStatus, "red-text");
     }
   }
 

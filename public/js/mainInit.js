@@ -1,8 +1,36 @@
 /*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
-/* exported module*/
 
-//module.exports for usa of node like files in browser
-var module = { exports: {} };
+//sets the state of a class (adding or removing)
+$.fn.classState = function(state, className) {
+  //add or remove class depending on flag value
+  this.each(function() {
+    $(this)[state ? "addClass" : "removeClass"](className);
+  });
+  return this;
+};
+
+//hides and unhides by adding or removing hide-this
+$.fn.setHide = function(makeHidden) {
+  //modify class status
+  return this.classState(makeHidden, "hide-this");
+};
+
+//sets the disabled state for element by adding or removing the .disabled class
+$.fn.disabledState = function(makeDisabled) {
+  //set class state for .disabled
+  return this.classState(makeDisabled, "disabled");
+};
+
+//triggers several events in order
+$.fn.triggerAll = function(eventNames, params) {
+  //trigger all events with params
+  eventNames.split(/[ ,]+/).forEach(function(event) {
+    this.trigger(event, params);
+  }, this);
+
+  //return this for chaining
+  return this;
+};
 
 //navigation collapse
 $(document).ready(function() {
