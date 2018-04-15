@@ -142,10 +142,7 @@ function makeEabMoveUpdateDisabledHandler(isUpButton) {
     var clauseIndex = clauses.index(enclosingClause);
 
     //depending on direction flag, decide whether or not to disable
-    $(this)[
-      (isUpButton ? ! clauseIndex : clauseIndex === clauses.length - 1) ?
-      "addClass" : "removeClass"
-    ]("disabled");
+    $(this).disabledState(isUpButton ? ! clauseIndex : clauseIndex === clauses.length - 1);
   };
 }
 
@@ -216,9 +213,9 @@ $.fn.indexInParent = function() {
 //triggers updateId on all clauses of parent
 $.fn.triggerAllIdUpdate = function() {
   return this
-      .parent()
-      .children(".clause")
-      .trigger("updateId");
+    .parent()
+    .children(".clause")
+    .trigger("updateId");
 };
 
 //checks if clause can be removed
@@ -234,11 +231,18 @@ $.fn.isSubClause = function() {
   return this.closest(".clause-list").is(".clause-list-sub");
 };
 
+//sets the state of a class (adding or removing)
+$.fn.classState = function(state, className) {
+  //add or remove class depending on flag value
+  this.each(function() {
+    $(this)[state ? "addClass" : "removeClass"](className);
+  });
+};
+
 //sets the disabled state for element by adding or removing the .disabled class
 $.fn.disabledState = function(makeDisabled) {
-  return this.each(function() {
-    $(this)[makeDisabled ? "addClass" : "removeClass"]("disabled");
-  });
+  //set class state for .disabled
+  this.classState(makeDisabled, "disabled");
 };
 
 //triggers several events in order
@@ -559,6 +563,51 @@ $.fn.setHide = function(makeHidden) {
   return this[makeHidden ? "addClass" : "removeClass"]("hide-this");
 };
 
+//checks if a input field has a autocompletable value
+$.fn.checkAutoCompValue = function(loadedData) {
+  var elem = this;
+
+  //require to ba called on a single element
+  if (this.length > 1) {
+    //use only first
+    elem = this.eq(0);
+  } else if (! this.length) {
+    return;
+  }
+
+  //get value of required field
+  var value = elem.val().trim();
+
+  //stop on missing value
+  if (! value.length) {
+    return false;
+  }
+
+  //keep track if value ok
+  var valueOk = true;
+
+  //check for presence of value
+  valueOk = value && value.length;
+
+  //check for presence in autofill data mapping and require value to be in data if so
+  if (valueOk) {
+    //get the data we have to match to
+    var matchDataSelector = Object.keys(loadedData.autofillDataMapping)
+      .find(function(selector) {
+        //check if element matches this selector
+        return elem.is(selector);
+      });
+
+    //only if there actually is a selector for this element in the data mappings
+    if (matchDataSelector) {
+      valueOk = loadedData.autofillDataMapping[matchDataSelector].includes(value);
+    }
+  }
+
+  //return determined state
+  return valueOk;
+};
+
 //registers event handlers that are essential for the general function of the page
 function registerEssentialEventHandlers(doLoad) {
   //we can only load from file or delete if we loaded the resolution
@@ -669,16 +718,103 @@ function registerEventHandlers(loadedData) {
     //the current original selected clause
     var amdOrigClause = $();
 
-    //the sponsor input field element
-    var sponsorInputElem = $("#amd-spon");
+    //query elements
+    var sponsorInput = $("#amd-spon");
+    var applyAmdBtn = $("#amd-apply-btn");
+    var rejectAmdBtn = $("#amd-reject-btn");
+    var amdClauseWrapper = $("#amd-clause-wrapper");
+    var amdNoSelectionMsg = $("#amd-no-selection");
+    var amdTypeSelect = $("#amd-type-select-box");
 
     //define here for satisfaction of declaraton order prettiness
     var updateAmd;
 
+    //if it is ok to reject or apply the amendment right now
+    var amdActionBtnsEnabled = false;
+
+    //updates the amd reject and apply button states
+    var updateActionBtnState = function() {
+      //check validitiy of amendments
+      amdActionBtnsEnabled =
+        //ok if amd is displayable
+        amdDisplayable &&
+
+        //check for filled phrase field
+        amdClauseElem.find(".phrase-input").checkAutoCompValue(loadedData) &&
+
+        //check that the sponsor is one of the sponsors allowed for that autocomplete field
+        sponsorInput.checkAutoCompValue(loadedData);
+
+      //apply state to buttons
+      rejectAmdBtn.disabledState(! amdActionBtnsEnabled);
+      applyAmdBtn.disabledState(! amdActionBtnsEnabled);
+    };
+
+    //send a saveAmd message abd then resets the amd display
+    var saveAmd = function(saveType) {
+      //validation has already been done, get amd update object
+      var saveAmdUpdate = getAmendmentUpdate();
+
+      //make sure we actually got something
+      if (! saveAmdUpdate) {
+        //error and stop; why is it falsy!?
+        console.error("Got falsy amd update object while doing saveAmd update!");
+        return;
+      }
+
+      //if in apply mode
+      if (saveType === "apply") {
+        //when in remove mode
+        if (amdActionType === "remove") {
+          //remove the specified clause from the resolution
+          amdOrigClause.trigger("attemptRemove");
+
+          //update all indexes
+          $("#op-clauses > .clause-list > .clause").trigger("updateId");
+        } else if (amdActionType === "change" || amdActionType === "replace") {
+          //insert the amendment clause with the original clause
+          amdClauseElem.insertAfter(amdOrigClause);
+
+          //remove the orig clause
+          amdOrigClause.trigger("attemptRemove");
+
+          //update the id of the newly inserted clause
+          amdClauseElem.trigger("updateId");
+        } else if (amdActionType === "add") {
+          //in add mode, simply append amd clause to op clauses
+          $("#op-clauses > .clause-list > .add-clause-container").before(amdClauseElem)
+
+          //update indexes
+          .parent().children(".clause").trigger("updateId");
+        } else {
+          console.error("invalid action type found when doing saveAmd", amdActionType);
+        }
+
+        //set flag for made changes, amendment changed resolution
+        changesSaved = false;
+      } //in reject the amendment is just removed
+
+      //send the saveAmd message and pass amd update object to use
+      sendLVUpdate("saveAmd", saveType, saveAmdUpdate);
+
+      //reset to no state selected
+      amdTypeSelect.setSelectValueId("noselection");
+      amdActionType = "noselection";
+
+      //remove selected clause
+      amdOrigClause = $();
+
+      //clear sponsor field and update its label
+      sponsorInput.val("").resetSiblingLabels();
+
+      //update display but don't send another update
+      updateAmd(true);
+    };
+
     //called by sendLVUpdate in dataInteraction.js to generate the object that is sent to the server
     //and the liveview clients containing all information describing the current amendment
     getAmendmentUpdate = function(noData) {
-      //no update when nothing there to update
+      //no update when nothing there to update or no action is selected
       if (! amdClauseElem.length) {
         return false;
       }
@@ -707,9 +843,10 @@ function registerEventHandlers(loadedData) {
           updateAmd();
 
           //stop processing, will be called again once update is processed
+          return;
         }
 
-        //set index in amendment display, +1 for natural (non 0 index) counting
+        //set index in amendment display, +1 for natural (1 based) counting in display
         amdClauseElem.children("h6").find(".clause-number").text(clauseIndex + 1);
         console.log("new index", clauseIndex);
       }
@@ -723,7 +860,7 @@ function registerEventHandlers(loadedData) {
       //start object with required fields
       var amdUpdate = {
         type: amdActionType,
-        sponsor: sponsorInputElem.val().trim() //get value from input field
+        sponsor: sponsorInput.val().trim() //get value from input field
       };
 
       //attach index if present
@@ -747,10 +884,7 @@ function registerEventHandlers(loadedData) {
     //resets the amendment display with the current type and selected clause
     //also shows the no selection message if no clause is selected or the
     //selected clause has been removed in the mean time
-    updateAmd = function() {
-      //get amd clause wrapper element
-      var amdClauseWrapper = $("#amd-clause-wrapper");
-
+    updateAmd = function(sendNoUpdate) {
       //trigger edit inactive on the current selection to avoid removing the eabs
       amdClauseListSelection.find(".clause").trigger("editInactive");
 
@@ -761,27 +895,25 @@ function registerEventHandlers(loadedData) {
       if (amdActionType === "add") {
         //add clause is first op clause, id is modified later and
         amdOrigClause = $("#op-clauses").children(".clause-list").children(".clause").eq(0);
-      } else {
-        //show no selection message if no clause is selected
-        if (! amdOrigClause.length) {
-          $("#amd-no-selection").show();
-
-          //also hide amd clause container
-          $("#amd-clause-wrapper").hide();
-
-          //cannot be displayed in lv without clause
-          amdDisplayable = false;
-
-          //stop, only show message
-          return;
-        }
+      } //show no-selection-message if no clause is selected
+      else if (! amdOrigClause.length) {
+        //show message and hide amd clause container
+        amdClauseWrapper.hide();
+        amdNoSelectionMsg.show();
       }
 
-      //at this point the displayability is determined by the selected type
-      amdDisplayable = amdActionType !== "noselection";
+      //displayable if a clause is given
+      amdDisplayable = amdOrigClause.length === 1;
+
+      //stop if not displayable
+      if (! amdDisplayable) {
+        //update action buttons
+        updateActionBtnState();
+        return;
+      }
 
       //hide select message
-      $("#amd-no-selection").hide();
+      amdNoSelectionMsg.hide();
 
       //show clause container
       amdClauseWrapper.show();
@@ -847,12 +979,17 @@ function registerEventHandlers(loadedData) {
       //activate new amendment clause
       amdClauseElem.trigger("editActive");
 
-      //send amendment update
-      sendLVUpdate("amendment");
+      //update actions buttons now that clause is present
+      updateActionBtnState();
+
+      //send amendment update if allowed
+      if (! sendNoUpdate) {
+        sendLVUpdate("amendment");
+      }
     };
 
     //amendment action type selection
-    $("#amd-type-select-box").on("change", function() {
+    amdTypeSelect.on("change", function() {
       //update action type
       var newAmdActionType = $(this).getSelectValueId();
       console.log("change select!");
@@ -891,7 +1028,7 @@ function registerEventHandlers(loadedData) {
 
         //cannot be add type if clause is selected
         if (amdActionType === "add") {
-          $("#amd-type-select-box").setSelectValueId("noselection");
+          amdTypeSelect.setSelectValueId("noselection");
           amdActionType = "noselection";
         }
 
@@ -919,12 +1056,48 @@ function registerEventHandlers(loadedData) {
     });
 
     //sponsor field change
-    //TODO: chaneg event is fired twice and causes double amendment update,
-    //removing materialize venet handlers from #amd-spon solves this...
-    $("#amd-spon")
-    .on("change", function() { //not on single keystrokes, not necessary
+    sponsorInput.on("change", function() {
       //send amendment update
       sendLVUpdate("amendment");
+
+      //update the reject and apply button states
+      updateActionBtnState();
+    });
+
+    //update button state of change of phrase field in amendment display
+    amdClauseWrapper.on("change", ".phrase-input", function() {
+      //also update on change of phrase input
+      updateActionBtnState();
+    });
+
+    //on clicking reject button
+    rejectAmdBtn.on("click", function(e) {
+      e.stopPropagation();
+
+      //check that button was enabled
+      if (! amdActionBtnsEnabled) {
+        //illegal click
+        console.error("illegal reject btn click");
+        return;
+      }
+
+      //send a saveAmd message
+      saveAmd("reject");
+    });
+
+    //on clicking apply amendment button
+    applyAmdBtn.on("click", function(e) {
+      e.stopPropagation();
+
+      //check that button was enabled
+      if (! amdActionBtnsEnabled) {
+        //illegal click
+        console.error("illegal apply btn click");
+        return;
+      }
+
+      //send a saveAmd message
+      saveAmd("apply");
     });
   }
 
@@ -1054,42 +1227,18 @@ function registerEventHandlers(loadedData) {
       console.error("no autocomplete data found for field", this);
     }
   });
-  $("input.required, textarea.required")
-  .on("checkRequired", function(e) {
-    e.stopPropagation();
+  var requiredContainers = $("#meta-data, #preamb-clauses, #op-clauses");
+  requiredContainers.on("checkRequired", "input.required, textarea.required", function() {
     var elem = $(this);
 
-    //get value of required field
-    var value = elem.val().trim();
-
-    //keep track if value invalid
-    var valueBad = false;
-
-    //check for presence of value
-    valueBad = ! (value && value.length);
-
-    //check for presence in autofill data mapping and require value to be in data if so
-    if (! valueBad) {
-      //get the data we have to match to
-      var matchDataSelector = Object.keys(loadedData.autofillDataMapping)
-        .find(function(selector) {
-          //check if element matches this selector
-          return elem.is(selector);
-        });
-
-      //only if there actually is a selector for this element in the data mappings
-      if (matchDataSelector) {
-        valueBad = valueBad || ! loadedData
-          .autofillDataMapping[matchDataSelector].includes(value);
-      }
-    }
-
-    //change validation state accordingly
-    elem[valueBad ? "addClass" : "removeClass"]("invalid");
+    //change validation state to wether or not this field contains a correct value
+    var valueOk = elem.checkAutoCompValue(loadedData);
+    elem.classState(! valueOk, "invalid");
 
     //apply to global flag
-    badFieldPresent = badFieldPresent || valueBad;
-  })
+    badFieldPresent = badFieldPresent || ! valueOk;
+  });
+  $("input.required, textarea.required")
   .on("change", function() {
     //check again on changed value
     $(this).trigger("checkRequired");
@@ -1212,9 +1361,8 @@ function registerEventHandlers(loadedData) {
     $(this).val("");
     $(this).trigger("init");
   });
-  $(".chips.required")
-  .on("checkRequired", function(e) {
-    e.stopPropagation();
+  requiredContainers
+  .on("checkRequired", ".chips.required", function() {
     var elem = $(this);
 
     //get value of field
@@ -1227,8 +1375,7 @@ function registerEventHandlers(loadedData) {
     valueBad = ! (value && value.length);
 
     //color label according to status
-    elem.siblings("label")
-      [valueBad ? "addClass" : "removeClass"]("red-text");
+    elem.siblings("label").classState(valueBad, "red-text");
 
     //check that all entries are ok sponsors in autofill data
     if (! valueBad) {
@@ -1250,8 +1397,7 @@ function registerEventHandlers(loadedData) {
           var isOk = matchData.includes(value) && $("#main-spon").val().trim() !== value;
 
           //color-mark tag object
-          elem.children(".chip:eq(" + index + ")")
-            [isOk ? "removeClass" : "addClass"]("red white-text");
+          elem.children(".chip:eq(" + index + ")").classState(! isOk, "red white-text");
 
           //return for validation of whole array
           return allOk && isOk;
@@ -1261,7 +1407,8 @@ function registerEventHandlers(loadedData) {
 
     //apply to global flag
     badFieldPresent = badFieldPresent || valueBad;
-  })
+  });
+  $(".chips.required")
   .on("chip.add chip.delete", function() {
     //change action
     changesSaved = false;

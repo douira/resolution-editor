@@ -11,6 +11,11 @@ block content
     a.right(href="/help#liveview") Help Page Section for LiveView
     h5.light#token-preset=token
     #code-preset.hide-this=code
+    ul.collection.hide-this#last-amd
+      each i in [1, 2, 3]
+        li.collection-item
+          span.item-age.grey-text.right ? minutes (ago)
+          | Proposal by #[span.item-sponsor Submitter] to #[span.underline #[span.item-action action] OC#[span.item-clause ?]]: #[b.item-status Accepted/Rejected]
     .z-depth-2#viewcontent
       #no-content-msg.hide-this
         h5 No content received
@@ -18,15 +23,8 @@ block content
       .center#spinner-wrapper
         +spinner("blue", "small")
       #resolution.hide-this
-        #amd-container.hide-this: h5#amd-text
-          ="Proposal by "
-          span.amd-sponsor
-          =" to "
-          u
-            span.amd-action-text
-            =" "
-            span.amd-target
-          | :
+        #amd-container.hide-this
+          h5#amd-text Proposal by #[span.amd-sponsor] to #[span.underline #[span.amd-action-text] #[span.amd-target]]:
         #address
           mixin info-piece(type)
             .row
@@ -55,4 +53,5 @@ block scripts
   +static("js", "/js/scrollintoview.js")
   +static("js", "/js/dialogs.js")
   +static("js", "/js/liveviewWS.js")
+  +static("js", "/js/getTimeText.js")
   +static("js", "/js/liveviewInit.js")

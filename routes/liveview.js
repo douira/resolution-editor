@@ -26,6 +26,7 @@ const uuidv4 = require("uuid/v4");
 const detailedDiff = require("deep-object-diff").detailedDiff;
 //const deepEqual = require("fast-deep-equal");
 const { logger } = require("../lib/logger");
+const pick = require("object.pick");
 
 //const inspect = require("../lib/inspect");
 
@@ -77,6 +78,9 @@ function testDiff() {
   console.log(JSON.stringify(newClause, null, 2));
 }*/
 
+//maximum length of the last amendment display
+const lastAmdListLength = 3;
+
 //get database connections
 let resolutions, access;
 require("../lib/database").fullInit.then(collections => {
@@ -116,20 +120,55 @@ routingUtil.getAndPost(router, "/:token", function(req, res) {
   );
 });
 
-//returns a function that iterates all viewers of the given object
-function makeForEach(obj) {
-  return (callback) => {
-    //for all in object
-    for (const prop in obj) {
-      callback(obj[prop], prop, obj);
-    }
-  };
+//iterates all viewers of the given object
+function forEachObj(obj, callback) {
+  //for all in object
+  for (const prop in obj) {
+    callback(obj[prop], prop, obj);
+  }
 }
 
 //sends an object json encoded to a websocket client
 function sendJson(ws, obj) {
   //send prepared object after stringify
   ws.send(JSON.stringify(obj));
+}
+
+//send an error to the given socket
+function wsError(ws, msg, opts) {
+  //apply message prefix
+  msg = "lv error: " + msg;
+
+  //opts if object if not given
+  opts = opts || { };
+
+  //take socket logger if present, default otherwise
+  const log = (ws && ws.log) || logger;
+
+  //check that socket is stil lactive
+  if (ws && ws.readyState === ws.OPEN) {
+    //send error message
+    sendJson(ws, {
+      type: "error",
+      tryAgain: opts.tryAgain || false,
+      errorMsg: msg
+    });
+
+    //close if not specified otherwise
+    if (! opts.noClose && (! opts.type || opts.type === "error")) {
+      ws.close();
+    }
+  }
+
+  //log error message and error if give
+  if (opts.type && opts.type !== "error") {
+    //other message type
+    log[opts.type](msg, opts);
+  } else if (opts.err) {
+    log.error(opts.err, msg, opts);
+  } else {
+    log.error(msg, opts);
+  }
 }
 
 /*returns a copy of the given object in which all arrays are plain objects.
@@ -158,11 +197,6 @@ function deepConvertToObjects(obj) {
 
       //simply copy literal value
       value;
-  }
-
-  //add length property if this is an array
-  if (obj instanceof Array) {
-    newObj.length = obj.length;
   }
 
   //return created object
@@ -267,6 +301,17 @@ function markConsistentDiffs(obj) {
     delete obj.diff;
   }
 
+  //add length property if numeric indexes found
+  if ("0" in obj) {
+    //length is the length of the keys in the object array, we can assume a dense array
+    obj.length = Object.keys(obj).length;
+
+    //decrement one if we counted .diff as one of keys
+    if (obj.diff) {
+      obj.length --;
+    }
+  }
+
   //return consistent diff type (or false if it is inconsistent)
   return changeType;
 }
@@ -317,6 +362,339 @@ function resolveChangePath(prevObj, remainingPath, setValue, cache, dontReadCach
   }
 }
 
+//responds with access token in ackInit
+function sendAck(ws, accessToken, tokenEntry, viewerAmount, resolutionData) {
+  //data object to send to client
+  const sendData = {
+    type: "ackInit",
+    accessToken: accessToken,
+    viewerAmount: viewerAmount,
+    sendUpdates: viewerAmount > 0,
+    editorPresent: tokenEntry.editor ? true : false //true if editor present
+  };
+
+  //add resolutionData if given
+  if (typeof resolutionData === "object") {
+    //resolution data to get the viewer started
+    sendData.resolutionData = resolutionData;
+  }
+
+  //add last amendments if present
+  if (tokenEntry.lastAmd) {
+    sendData.lastAmd = tokenEntry.lastAmd;
+  }
+
+  //respond to viewer with access token
+  sendJson(ws, sendData);
+}
+
+//notify of joined viewer with amount
+function viewerJoinedMsg(sendTo, viewerAmount) {
+  sendJson(sendTo.socket, {
+    type: "viewerJoined",
+    amount: viewerAmount,
+    sendUpdates: true //editor should be sending update messages
+  });
+}
+
+//forwards data to all clients listening this token
+function dataToAllViewers(tokenEntry, data) {
+  forEachObj(tokenEntry.viewers, v => sendJson(v.socket, {
+    type: data.type,
+    update: data.update
+  }));
+}
+
+//processes received messages
+function processMessage(clients, tokens, data, ws, accessToken, resDoc) {
+  //get client entry for access token
+  const clientEntry = clients[accessToken];
+
+  //create token entry if not present
+  if (! tokens.hasOwnProperty(clientEntry.token)) {
+    const viewers = {};
+    tokens[clientEntry.token] = {
+      editor: null,
+      viewers: viewers,
+      pathCache: {} //init with empty path cache
+    };
+  }
+
+  //get token entry
+  const tokenEntry = tokens[clientEntry.token];
+
+  //add resolution from db as latestStructure if resDoc given and none there yet
+  if (typeof resDoc === "object" && ! tokenEntry.latestStructure) {
+    tokenEntry.latestStructure = resDoc.content;
+  }
+
+  //get number of viewers
+  let viewerAmount = Object.keys(tokenEntry.viewers).length;
+
+  //on type of message
+  switch (data.type) {
+    case "initViewer": //first message sent by liveview client for registration
+      //register as viewer
+      clientEntry.clientType = "viewer";
+
+      //increment viewer amount because this message means that one is joining
+      viewerAmount ++;
+
+      //send ack to start connection
+      sendAck(ws, accessToken, tokenEntry, viewerAmount, tokenEntry.latestStructure);
+
+      //notify editor and viewers of joined viewer
+      if (tokenEntry.editor) {
+        viewerJoinedMsg(tokenEntry.editor, viewerAmount);
+      }
+      forEachObj(tokenEntry.viewers, v => viewerJoinedMsg(v, viewerAmount));
+
+      //register with token
+      tokenEntry.viewers[accessToken] = clientEntry;
+      break;
+    case "initEditor": //message sent by eligible editor clients
+      //register as editor data sender
+      clientEntry.clientType = "editor";
+
+      //if present, notify editor of it's replacement
+      if (tokenEntry.editor) {
+        sendJson(tokenEntry.editor.socket, {
+          type: "replacedByOther",
+          sendUpdates: false
+        });
+      }
+
+      //notify viewers of editor
+      forEachObj(tokenEntry.viewers, v => sendJson(v.socket, {
+        //check if it's a replacement or new add
+        type: tokenEntry.editor ? "editorReplaced" : "editorJoined"
+      }));
+
+      //register with token, overwrite last editor
+      tokenEntry.editor = clientEntry;
+
+      //send ack to start connection
+      sendAck(ws, accessToken, tokenEntry, viewerAmount);
+      break;
+    case "amendment": //amendment message
+      //get amendment object, we expect the structure to have changed significantly
+      //if a client sends an amendment update, content is updated through content updates
+      const currentAmd = data.update;
+
+      //amendment structure changed and a re-render will be done by the clients
+
+      //attach the current (content updates applied) structure
+      //for the new amendment to be applied to by the clients
+      //currentAmd.latestStructure = tokenEntry.latestStructure;
+
+      //old clause can be gotten by index from the resolution structure
+      let oldClause =
+        tokenEntry.latestStructure.resolution.clauses.operative[currentAmd.clauseIndex];
+
+      //is change type amendment, requires newClause to be present
+      if (currentAmd.type === "change" && currentAmd.newClause) {
+        //remove arrays from both clauses
+        oldClause = deepConvertToObjects(oldClause); //currentAmd.oldClause =
+        currentAmd.newClause = deepConvertToObjects(currentAmd.newClause);
+
+        //calculate a detailed group of diffs bewteen old and new clause
+        const diffs = detailedDiff(oldClause, currentAmd.newClause);
+
+        //for all three part (added, deleted and changed),
+        //add color markers to the new clause for diff rendering
+        ["updated", "added", "deleted"].forEach(diffType => {
+          //process this diff type and thereby apply marking to the new clause
+          processDiff(diffType, diffs[diffType], oldClause, currentAmd.newClause);
+        });
+
+        //traverse the now value-marked new clause again to find consistent objects
+        //that can be marked as a whole because they were changed (updated, added...) as a whole
+        markConsistentDiffs(currentAmd.newClause);
+      }
+
+      //save amendment
+      tokenEntry.amd = currentAmd;
+
+      //forward to all viewers
+      dataToAllViewers(tokenEntry, data);
+      break;
+    case "saveAmd": //reject or apply an amendment
+      //get the update content
+      const saveAmdUpdate = data.update;
+
+      //get type of save event, reject or accept
+      const saveType = saveAmdUpdate.saveType;
+
+      //validate save type
+      if (! ["reject", "apply"].includes(saveType)) {
+        //bad type, error and stop
+        wsError(ws, "bad amd save type " + saveType);
+        return;
+      }
+
+      //check all aspects of the given save amendment
+      if (
+        //validate sponsor
+        ! (typeof saveAmdUpdate.sponsor === "string" &&
+
+        //validate action type
+        saveAmdUpdate.type &&
+        ["change", "add", "replace", "remove"].includes(saveAmdUpdate.type) &&
+
+        //validate clause existence if necessary
+        (typeof saveAmdUpdate.newClause === "object" && saveAmdUpdate.newClause.phrase ||
+        saveAmdUpdate.type === "remove") &&
+
+        //validate presence of clauseIndex if necessary
+        (typeof saveAmdUpdate.clauseIndex === "number" || saveAmdUpdate.type === "add") &&
+
+        //validate existence of new structure (if applying amd)
+        (typeof saveAmdUpdate.newStructure === "object" || saveType === "reject"))
+      ) {
+        //error and stop
+        wsError(ws, "invalid or incomplete amendment given for save");
+        return;
+      }
+
+      //extend with log info and remove full structure
+      saveAmdUpdate.timestamp = Date.now();
+
+      //if index if is given
+      const opClauses = tokenEntry.latestStructure.resolution.clauses.operative;
+      if (saveAmdUpdate.clauseIndex) {
+        //add clause that was acted upon
+        saveAmdUpdate.changedClause = opClauses[saveAmdUpdate.clauseIndex];
+      } else {
+        //add index as last clause index (0 based)
+        saveAmdUpdate.clauseIndex = opClauses.length;
+      }
+
+      //if we got a new structure iwth the amendment applied
+      if (saveType === "apply") {
+        //use the given resolution as the new structure
+        tokenEntry.latestStructure = saveAmdUpdate.newStructure;
+
+        //reset path cache on canged structure
+        tokenEntry.pathCache = {};
+
+        //set data to send to be only the new structure, clients should just reset
+        data.update = {
+          newStructure: saveAmdUpdate.newStructure,
+          saveType
+        };
+      } else {
+        //on reject, only send saveType
+        data.update = { saveType };
+      }
+
+      //remove amd from token entry
+      delete tokenEntry.amd;
+
+      //append amendment to amendment history of resolution
+      resolutions.updateOne({
+        token: clientEntry.token
+      }, {
+        $push: {
+          amendments: pick(
+            saveAmdUpdate,
+            [
+              "changedClause",
+              "timestamp",
+              "clauseIndex",
+              "newClause",
+              "type",
+              "saveType",
+              "sponsor"
+            ]
+          )
+        }
+      }).catch(
+        //log db error
+        err => wsError(ws, "failed to save amendment to resolution", { err: err })
+      );
+
+      //create list if not present
+      if (! tokenEntry.lastAmd) {
+        //create as new array
+        tokenEntry.lastAmd = [];
+      } //if longer than maximum
+      else if (tokenEntry.lastAmd.length > lastAmdListLength) {
+        //remove oldest element
+        tokenEntry.lastAmd.shift();
+      }
+
+      //update list of local last amendments with summary of this amendment
+      tokenEntry.lastAmd.push(pick(
+        saveAmdUpdate,
+        ["timestamp", "clauseIndex", "type", "saveType", "sponsor"]
+      ));
+
+      //attach list of past amendments
+      data.update.lastAmd = tokenEntry.lastAmd;
+
+      //forward data to all viewers
+      dataToAllViewers(tokenEntry, data);
+      break;
+    case "updateContent":
+      //what object the update should be applied to
+      let applyUpdateTo = tokenEntry.latestStructure.resolution.clauses;
+
+      //the path to the property to change
+      const updatePath = data.update.contentPath.slice();
+
+      //is amendment content update
+      if (updatePath[updatePath.length - 1] === "amendment") {
+        //error if no amd save in token entry
+        if (! tokenEntry.amd) {
+          //error and stop
+          logger.error("received amendment content update but no amendment exists!");
+          return;
+        }
+
+        //remove amendment flag and set amendment as object to be modified
+        updatePath.pop();
+        applyUpdateTo = tokenEntry.amd.newClause;
+      }
+
+      //apply content update to structure
+      resolveChangePath(
+        //the current structure as saved by the server
+        applyUpdateTo,
+        updatePath, //the path and content in the update sent by the editor
+        data.update.content,
+        tokenEntry.pathCache); //the cache built in previous content updates
+
+      //forward to all viewers
+      dataToAllViewers(tokenEntry, data);
+      break;
+    case "updateStructure": //save structure update data to send to joining viewer clients
+      //save structure from editor as current
+      tokenEntry.latestStructure = data.update;
+
+      //reset path cache
+      tokenEntry.pathCache = {};
+
+      //forward to all viewers
+      dataToAllViewers(tokenEntry, data);
+      break;
+    default:
+      logger.warn({ data: data }, "unrecognised message type");
+      return;
+  }
+
+  //check if we have to update the database and
+  //if there is an editor and at least one viewer present
+  if ((data.type === "initEditor" || data.type === "initViewer") &&
+     tokenEntry.editor && Object.keys(tokenEntry.viewers)) {
+    //then update the liveview timestamp in the database for this resolution
+    resolutions.updateOne(
+      { token: clientEntry.token }, { $set: { lastLiveview: Date.now() } }
+    ).catch(
+      err => logger.error(err, "could not update last liveview timestamp")
+    );
+  }
+}
+
 //websocket server
 function receiveServer(httpServer) {
   //start the WebSocket server
@@ -332,260 +710,34 @@ function receiveServer(httpServer) {
   //list of tokens with their data suppliers and viewers
   const tokens = {};
 
-  //processes received messages
-  function processMessage(data, ws, accessToken, resDoc) {
-    //get client entry for access token
-    const clientEntry = clients[accessToken];
-
-    //create token entry if not present
-    if (! tokens.hasOwnProperty(clientEntry.token)) {
-      const viewers = {};
-      tokens[clientEntry.token] = {
-        editor: null,
-        viewers: viewers,
-        viewersForEach: makeForEach(viewers),
-        pathCache: {} //init with empty path cache
-      };
-    }
-
-    //responds with access token in ackInit
-    function sendAck(ws, accessToken, tokenEntry, viewerAmount, resolutionData) {
-      //data object to send to client
-      const sendData = {
-        type: "ackInit",
-        accessToken: accessToken,
-        viewerAmount: viewerAmount,
-        sendUpdates: viewerAmount > 0,
-        editorPresent: tokenEntry.editor ? true : false //true if editor present
-      };
-
-      //add resolutionData if given
-      if (typeof resolutionData !== "undefined") {
-        //resolution data to get the viewer started
-        sendData.resolutionData = resolutionData;
-      }
-
-      //respond to viewer with access token
-      sendJson(ws, sendData);
-    }
-
-    //get token entry
-    const tokenEntry = tokens[clientEntry.token];
-
-    //add resolution from db as latestStructure if resDoc given and none there yet
-    if (typeof resDoc === "object" && ! tokenEntry.latestStructure) {
-      tokenEntry.latestStructure = resDoc.content;
-    }
-
-    //get number of viewers
-    let viewerAmount = Object.keys(tokenEntry.viewers).length;
-
-    //notify of joined viewer with amount
-    function viewerJoinedMsg(sendTo) {
-      sendJson(sendTo.socket, {
-        type: "viewerJoined",
-        amount: viewerAmount,
-        sendUpdates: true //editor should be sending update messages
-      });
-    }
-
-    //forwards data to all clients listening this token
-    function dataToAllViewers() {
-      tokenEntry.viewersForEach(v => sendJson(v.socket, {
-        type: data.type,
-        update: data.update
-      }));
-    }
-
-    //on type of message
-    switch (data.type) {
-      case "initViewer": //first message sent by liveview client for registration
-        //register as viewer
-        clientEntry.clientType = "viewer";
-
-        //increment viewer amount because this message means that one is joining
-        viewerAmount ++;
-
-        //send ack to start connection
-        sendAck(ws, accessToken, tokenEntry, viewerAmount, tokenEntry.latestStructure);
-
-        //notify editor and viewers of the joined viewer
-        if (tokenEntry.editor) {
-          viewerJoinedMsg(tokenEntry.editor);
-        }
-        tokenEntry.viewersForEach(viewerJoinedMsg);
-
-        //register with token
-        tokenEntry.viewers[accessToken] = clientEntry;
-        break;
-      case "initEditor": //message sent by eligible editor clients
-        //register as editor data sender
-        clientEntry.clientType = "editor";
-
-        //if present, notify editor of it's replacement
-        if (tokenEntry.editor) {
-          sendJson(tokenEntry.editor.socket, {
-            type: "replacedByOther",
-            sendUpdates: false
-          });
-        }
-
-        //notify viewers of editor
-        tokenEntry.viewersForEach(v => sendJson(v.socket, {
-          //check if it's a replacement or new add
-          type: tokenEntry.editor ? "editorReplaced" : "editorJoined"
-        }));
-
-        //register with token, overwrite last editor
-        tokenEntry.editor = clientEntry;
-
-        //send ack to start connection
-        sendAck(ws, accessToken, tokenEntry, viewerAmount);
-        break;
-      case "amendment": //amendment message
-        //get amendment object, we expect the structure to have changed significantly
-        //if a client sends an amendment update, content is updated through content updates
-        const currentAmd = data.update;
-
-        //amendment structure changed and a re-render will be done by the clients
-
-        //attach the current (content updates applied) structure
-        //for the new amendment to be applied to by the clients
-        //currentAmd.latestStructure = tokenEntry.latestStructure;
-
-        //old clause can be gotten by index from the resolution structure
-        let oldClause =
-          tokenEntry.latestStructure.resolution.clauses.operative[currentAmd.clauseIndex];
-
-        //is change type amendment, requires newClause to be present
-        if (currentAmd.type === "change" && currentAmd.newClause) {
-          //remove arrays from both clauses
-          oldClause = deepConvertToObjects(oldClause); //currentAmd.oldClause =
-          currentAmd.newClause = deepConvertToObjects(currentAmd.newClause);
-
-          //calculate a detailed group of diffs bewteen old and new clause
-          const diffs = detailedDiff(oldClause, currentAmd.newClause);
-
-          //for all three part (added, deleted and changed),
-          //add color markers to the new clause for diff rendering
-          ["updated", "added", "deleted"].forEach(diffType => {
-            //process this diff type and thereby apply marking to the new clause
-            processDiff(diffType, diffs[diffType], oldClause, currentAmd.newClause);
-          });
-
-          //traverse the now value-marked new clause again to find consistent objects
-          //that can be marked as a whole because they were changed (updated, added...) as a whole
-          markConsistentDiffs(currentAmd.newClause);
-        }
-
-        //save amendment
-        tokenEntry.amd = currentAmd;
-
-        //forward to all viewers
-        dataToAllViewers();
-
-        break;
-      case "updateContent":
-        //what object the update should be applied to
-        let applyUpdateTo = tokenEntry.latestStructure.resolution.clauses;
-
-        //the path to the property to change
-        const updatePath = data.update.contentPath.slice();
-
-        //is amendment content update
-        if (updatePath[updatePath.length - 1] === "amendment") {
-          //remove amendment flag and set amendment as object to be modified
-          updatePath.pop();
-          applyUpdateTo = tokenEntry.amd.newClause;
-        }
-
-        //apply content update to structure
-        resolveChangePath(
-          //the current structure as saved by the server
-          applyUpdateTo,
-          updatePath, //the path and content in the update sent by the editor
-          data.update.content,
-          tokenEntry.pathCache); //the cache built in previous content updates
-
-        //forward to all viewers
-        dataToAllViewers();
-
-        break;
-      case "updateStructure": //save structure update data to send to joining viewer clients
-        //save structure from editor as current
-        tokenEntry.latestStructure = data.update;
-
-        //reset path cache
-        tokenEntry.pathCache = {};
-
-        //forward to all viewers
-        dataToAllViewers();
-
-        break;
-      default:
-        logger.warn({ data: data }, "unrecognised message type");
-        return;
-    }
-
-    //check if we have to update the database and
-    //if there is an editor and at least one viewer present
-    if ((data.type === "initEditor" || data.type === "initViewer") &&
-       tokenEntry.editor && Object.keys(tokenEntry.viewers)) {
-      //then update the liveview timestamp in the database for this resolution
-      resolutions.updateOne(
-        { token: clientEntry.token }, { $set: { lastLiveview: Date.now() } }
-      ).catch(
-        //TODO: proper logging in liveview.js (where not implemented yet)
-        () => console.error("could not update last liveview timestamp")
-      );
-    }
-  }
-
-  //sends an error
-  function sendError(ws, msg, tryAgain, noClose) {
-    //display error
-    msg = "error: " + msg;
-    logger.error("liveview " + msg);
-
-    //send a message to not try again if specified
-    sendJson(ws, {
-      type: "error",
-      tryAgain: tryAgain,
-      errorMsg: msg
-    });
-
-    //close connection on error if not specified otherwise
-    if (! noClose) {
-      ws.close();
-    }
-  }
-
-  //returns a fucntions that send an error
-  function errorSender(ws, msg, tryAgain, noClose) {
-    return () => sendError(ws, msg, tryAgain, noClose);
-  }
-
   //listen on client conections
-  wss.on("connection", (ws) => {
+  wss.on("connection", ws => {
     //access token for this client
     let accessToken;
 
+    //add bound field reqId to chain all log entries for a single socket
+    ws.log = logger.child({ req_id: uuidv4() });
+
     //wait for message
-    ws.on("message", (msg) => {
+    ws.on("message", msg => {
       //decode json message
       let data;
       try {
         data = JSON.parse(msg);
       } catch (err) {
-        sendError(ws, "non-json data received", true);
+        wsError(ws, "non-json data received", { tryAgain: true });
         return;
       }
 
       //authorize: check if accessToken sent matches the one set previously
-      if (data.hasOwnProperty("accessToken") && accessToken === data.accessToken) {
+      if (data.accessToken && data.accessToken === accessToken) {
         //deal with message
-        processMessage(data, ws, data.accessToken);
-      } else if (data.hasOwnProperty("token") && data.hasOwnProperty("code") &&
+        try {
+          processMessage(clients, tokens, data, ws, data.accessToken);
+        } catch (err) {
+          wsError(ws, "error processing message");
+        }
+      } else if (data.token && data.code &&
                  (data.type === "initViewer" || data.type === "initEditor")) {
         //get token and coe from data
         const token = data.token;
@@ -594,48 +746,44 @@ function receiveServer(httpServer) {
         //check validitiy of token
         if (tokenProcessor.check(token)) {
           //select with given token
-          resolutions.findOne({ token: token }).then((resDoc) => {
-            //check for existance
-            if (resDoc) {
-              //must be valid code
-              if (tokenProcessor.check(code)) {
-                //load corresponding access entry
-                access.findOne({ code: code }).then((codeDoc) => {
-                  //code found
-                  if (codeDoc) {
-                    //check permission
-                    if (resUtil.checkPermission(resDoc, codeDoc, "liveview")) {
-                      //all is ok now, generate new random accessToken for client
-                      accessToken = uuidv4();
+          resolutions.findOne({ token: token }).then(resDoc => {
+            //check for existance and valid code
+            if (resDoc && tokenProcessor.check(code)) {
+              //load corresponding access entry
+              access.findOne({ code: code }).then(codeDoc => {
+                //code found and check permission
+                if (codeDoc && resUtil.checkPermission(resDoc, codeDoc, "liveview")) {
+                  //all is ok now, generate new random accessToken for client
+                  accessToken = uuidv4();
 
-                      //create entry in clients
-                      const clientEntry = {
-                        socket: ws,
-                        token: token,
-                        code: code,
-                        accessToken: accessToken
-                      };
-                      clients[accessToken] = clientEntry;
+                  //create entry in clients
+                  const clientEntry = {
+                    socket: ws,
+                    token: token,
+                    code: code,
+                    accessToken: accessToken
+                  };
+                  clients[accessToken] = clientEntry;
 
-                      //process message and pass client info
-                      processMessage(data, ws, accessToken, resDoc);
-                    }
-                  } else {
-                    sendError(ws, "code wrong");
+                  //process message and pass client info
+                  try {
+                    processMessage(clients, tokens, data, ws, accessToken, resDoc);
+                  } catch (err) {
+                    wsError(ws, "error processing message (new auth)");
                   }
-                }).catch(errorSender(ws, "code db read error", true));
-              } else {
-                sendError(ws, "code invalid");
-              }
+                } else {
+                  wsError(ws, "code wrong or missing permission");
+                }
+              }).catch(err => wsError(ws, "code db read error", { tryAgain: true, err: err }));
             } else {
-              sendError(ws, "token wrong");
+              wsError(ws, "token wrong or invalid");
             }
-          }).catch(errorSender(ws, "token db read error", true));
+          }).catch(err => wsError(ws, "token db read error", { tryAgain: true, err: err }));
         } else {
-          sendError(ws, "token invalid");
+          wsError(ws, "token invalid");
         }
       } else {
-        sendError(ws, "missing data", true);
+        wsError(ws, "missing data", { tryAgain: true });
       }
     });
 
@@ -670,7 +818,7 @@ function receiveServer(httpServer) {
         }
       } else {
         //notify viewers of editor having left
-        tokenEntry.viewersForEach((v) => sendJson(v.socket, { type: "editorGone" }));
+        forEachObj(tokenEntry.viewers, v => sendJson(v.socket, { type: "editorGone" }));
 
         //remove
         tokenEntry.editor = null;
@@ -684,6 +832,12 @@ function receiveServer(httpServer) {
       //revoke access token
       delete clients[accessToken];
       accessToken = null;
+    });
+
+    //on connection error
+    ws.on("error", err => {
+      //log connection error
+      wsError(ws, "connection error", { err: err });
     });
   });
 }

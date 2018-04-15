@@ -113,3 +113,7 @@
 #op-clauses .cond-phrase, #amd-clause-wrapper .cond-phrase {
   font-style: italic;
 }
+
+#amd-apply-btn {
+  margin-left: 1em;
+}

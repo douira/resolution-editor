@@ -5,7 +5,8 @@ updateList,
 updateListConfig*/
 /*global
 displayToast,
-makeAlertMessage*/
+makeAlertMessage,
+getTimeText*/
 
 //the template dom element for the list
 var templateItem;
@@ -27,39 +28,6 @@ var list, errorMsg, noItems, advanceButton;
 
 //config is set by specific page code
 var updateListConfig = { };
-
-//returns a nice time text description
-function getTimeText(time) {
-  //super short
-  if (time < 30) {
-    return "Just now";
-  }
-
-  //really short
-  if (time < 60) {
-    return "Less than a minute";
-  }
-
-  //pretty short
-  if (time < 120) {
-    return "Two minutes";
-  }
-
-  //less than 120 minutes
-  time /= 60;
-  if (time < 120) {
-    return Math.round(time) + " minutes";
-  }
-
-  //less than 48 hours
-  time /= 60;
-  if (time < 48) {
-    return Math.round(time) + " hours";
-  }
-
-  //really long: any amount of days
-  return Math.round(time / 24) + " days";
-}
 
 //sets the basic attributes of a list item with a given data object
 function setBasicAttribs(data, elem) {

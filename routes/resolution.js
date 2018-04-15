@@ -118,6 +118,7 @@ router.get("/new", function(req, res) {
       liveviewOpen: false, //if a liveview page is viewing this resolution right now (TODO: use)
       attributes: "none", //attribute status, see /setattribs or fucntion, restricts actions
       unrenderedChanges: false, //set to true when saved and reset when rendered
+      amendments: [] //stores all amendments made to the resolution
     }).then(() => {
       //redirect to editor page (because URL is right then)
       res.redirect("/resolution/editor/" + token);

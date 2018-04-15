@@ -65,8 +65,8 @@ block content
       .justify
         p To open LiveView on another device open the resolution by entering the resolution token and your access code on the #[a(href="/resolution" target="_blank") Resolution Page] and clicking the "LiveView" button. LiveView will display a mock version of the rendered resolution document that will update in real time and colorize amendments you make while LiveView is active.
         p
-          a#hide-liveview-hint.grey-text(href="#") [Hide hint]
-          span#liveview-hint  The following procedure is recommended: Retype amendments somewhere into your computer. This can be any text editor or this #[a(href="/handytextbox" target="_blank") handy textbox]. When you want to discuss the amendment, paste it into the amendment field and select the appropriate sponsor and action type. This will update it on the LiveView client. The LiveView client marks removed text #[span(class=markers.red) red] and added text #[span(class=markers.green) green]. After discussing and voting in favor or against the amendment, click the keep or reject button below the amendment field to either apply the proposed changes to the resolution or remove them from the display.
+          a#hide-lieview-hint.grey-text(href="#") [Hide hint]
+          span#liveview-hint  The following procedure is recommended: Retype amendments somehwere into your computer. This can be any text editor or this #[a(href="/handytextbox" target="_blank") handy textbox]. When you want to discuss the amendment, paste it into the amendment field and select the appropriate sponsor and action type. This will update it on the LiveView client. The LiveView client marks removed text #[span(class=markers.red) red] and added text #[span(class=markers.green) green]. After discussing and voting in favour or against the amendment, click the keep or reject button below the amendment field to either apply the proposed changes to the resolution or remove them from the display.
     if doLoad
       h5.light Important: Concurrent Editing
         +icon("announcement", "mediumsmall left red-text")
@@ -109,6 +109,16 @@ block content
             +t-item("Subclauses:", meta.clauseCount[1])
           if meta.clauseCount[2]
             +t-item("Subsubclauses:", meta.clauseCount[2])
+      if meta.amendments && meta.amendments.length
+        +collapsible-item("Amentment History", "speaker_notes")
+          ul.collection
+            - const now = Date.now();
+            each amendment in meta.amendments
+              li.collection-item
+                span.item-age.grey-text.right=getTimeText((now - amendment.timestamp) / 1000, "ago")
+                | Proposal by #[span.item-sponsor=amendment.sponsor] to #[span.underline #[span.item-action=amendment.type] OC#[span.item-clause=amendment.clauseIndex]]:
+                - const isApply = amendment.saveType === "apply";
+                b.item-status(class=isApply ? "green-text" : "red-text")=isApply ? " Accepted" : " Rejected"
       if meta.voteResults
         li
           .collapsible-header(class=meta.stage === 7 || meta.stage === 11 ? "active" : "")
@@ -246,12 +256,15 @@ block content
           label Action Type
         .col.s12.m6: .input-field.not-editor
           input.not-editor.autocomplete#amd-spon(type="text")
-          label(for="amd-spon") Sponsor
+          label(for="amd-spon") Submitter
       p.center.grey-text#amd-no-selection Select a clause with the
         =" "
         +icon("rate_review", "lime-text text-darken-1")
         |  button or choose the action type "Add".
       #amd-clause-wrapper
+      .center
+        a.btn.waves-effect.waves-light.disabled.red.lighten-1#amd-reject-btn Reject
+        a.btn.waves-effect.waves-light.disabled.green.lighten-1#amd-apply-btn Apply
     if doLoad
       mixin floating-sm-btn(color, type, icon, tooltipText)
         a.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)

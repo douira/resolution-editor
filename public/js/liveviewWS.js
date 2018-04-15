@@ -126,8 +126,8 @@ function startWS(isViewer, updateListener) {
     }
 
     //if resolution data sent as init, call listener with init structure
-    if (data.hasOwnProperty("resolutionData") && typeof updateListener === "function") {
-      updateListener("initStructure", { update: data.resolutionData });
+    if (data.hasOwnProperty("resolutionData")) {
+      updateListener("initStructure", data);
     }
 
     console.log("received:", data);
@@ -191,6 +191,7 @@ function startWS(isViewer, updateListener) {
       case "updateStructure": //viewer
       case "updateContent":
       case "amendment":
+      case "saveAmd":
         //no special action, handling done by update listener
         break;
       default: //both client types
