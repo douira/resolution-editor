@@ -646,7 +646,7 @@ function registerEventHandlers(loadedData) {
   });
 
   $("#hide-liveview-hint")
-  .on("click", function() {
+  .on("click", function(e) {
     //toggle visibility of liveview hint
     var clickText = $(this);
     var hint = $("#liveview-hint");
@@ -659,6 +659,9 @@ function registerEventHandlers(loadedData) {
       hint.show();
       clickText.text("[Hide hint]");
     }
+
+    //prevent following of link and scroll movement
+    e.preventDefault();
   });
 
   //init selectors
