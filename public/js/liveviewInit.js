@@ -186,9 +186,8 @@ $.fn.colorDiff = function(type) {
   this.addClass(diffTypeColorMap[type] || "mark-grey");
 };
 
-//renders the given structure to the liveview display,
-//re-generates elements completely: do not use for content update
-function render() {
+//updates the last amd list (given there are any in the list)
+function updateLastAmdList() {
   //if there are last amendments
   if (lastAmdList) {
     //unhide collection and get child elements
@@ -231,6 +230,13 @@ function render() {
       itemStatus.classState(applyStatus, "green-text").classState(! applyStatus, "red-text");
     }
   }
+}
+
+//renders the given structure to the liveview display,
+//re-generates elements completely: do not use for content update
+function render() {
+  //update the last amendments list
+  updateLastAmdList();
 
   //the structure to render
   var renderStructure = structure;
@@ -674,7 +680,7 @@ $(document).ready(function() {
 
   //display no content message after two seconds (if the content isn't there then)
   setTimeout(function() {
-    //check if the content is there, if not display no content message
+    //check if the content is there, if not, display no content message
     if ($("#resolution").is(":hidden")) {
       $("#no-content-msg").show(250);
     }
@@ -686,3 +692,6 @@ $(document).ready(function() {
     makeFullScreen($("#viewcontent")[0]);
   });
 });
+
+//regularly update the last amd list (every 10 seconds)
+setInterval(updateLastAmdList, 10000);
