@@ -629,8 +629,8 @@ function processMessage(clients, tokens, data, ws, accessToken, resDoc) {
         ["timestamp", "clauseIndex", "type", "saveType", "sponsor"]
       ));
 
-      //attach list of past amendments
-      data.update.lastAmd = tokenEntry.lastAmd;
+      //attach list of past 3 amendments
+      data.update.lastAmd = tokenEntry.lastAmd.slice(-3);
 
       //forward data to all viewers
       dataToAllViewers(tokenEntry, data);
