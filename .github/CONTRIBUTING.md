@@ -25,6 +25,7 @@ Make a screenshot of the bug as soon as it occurs. Also, make screenshots of any
 
 ## Note on using git with this repo
 Please run `git fetch -p` after having deleted a branch from a merged PR. This will actually delete the branch on the remote git servers instead of just "fake" deleting it.
+Use `npm install` to resolve merge conflicts in package-lock.json if there are any. Npm will automatically detect and fix git merge conflicts.
 
 ## Tags
 - The `bug` tag can be used on issues that describe a bug or on PRs that fix bugs.
