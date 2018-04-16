@@ -1,4 +1,5 @@
 /*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
+/*global log*/
 /*exported registerAccessInputs*/
 //deals with UI for input of token and access codes
 
@@ -60,7 +61,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
     fieldStates.code.valid = "onlyToken";
   } else {
     //wrong
-    console.log("accessInput registration error: missing token data");
+    log("accessInput registration error: missing token data");
     return;
   }
 
@@ -78,7 +79,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
     fieldStates.token.valid = true;
   } else {
     //wrong
-    console.log("accessInput registration error: missing code data");
+    log("accessInput registration error: missing code data");
     return;
   }
 

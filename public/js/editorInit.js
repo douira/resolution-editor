@@ -12,6 +12,7 @@
   makeAlertMessage,
   startLiveviewWS,
   sendLVUpdate,
+  log,
   onAllSaveDone*/
 /* exported
   checkRequiredFields,
@@ -196,12 +197,6 @@ $.fn.detectManipulator = function() {
   });
 };
 
-//prints for making jquery debugging easier:
-$.fn.printThis = function() {
-  console.log($(this));
-  return this;
-};
-
 //function that returns the index of a given element in the parent element it's in
 $.fn.indexInParent = function() {
   return this
@@ -363,7 +358,7 @@ $.fn.addClause = function(amount, activationStateChanges) {
     if (this.is(".clause-list")) {
       addClauseContainer = this.children(".add-clause-container").last();
     } else {
-      console.error("could not find add clause container for element:", this);
+      log({ msg: "could not find add clause container for element", elem: this });
       return this;
     }
   }
@@ -551,7 +546,7 @@ $.fn.setSelectValueId = function(setValueId) {
     //find option with given id and activate
     .filter("[value='" + setValueId + "']")
     .prop("selected", true);
-  console.log("update select", setValueId);
+
   //re-initialize
   select.material_select("destroy");
   select.material_select();
@@ -848,7 +843,6 @@ function registerEventHandlers(loadedData) {
 
         //set index in amendment display, +1 for natural (1 based) counting in display
         amdClauseElem.children("h6").find(".clause-number").text(clauseIndex + 1);
-        console.log("new index", clauseIndex);
       }
 
       //must be displayable and flag for update display only must not be set
@@ -952,7 +946,7 @@ function registerEventHandlers(loadedData) {
 
       //preselect main clause
       amdClauseElem = amdClauseListSelection.children(".clause");
-      console.log(amdActionType);
+
       //disable if in remove mode to prevent editing, only display what will be removed
       if (amdActionType === "remove") {
         //by adding the disabled class the all contained input fields and textarea inputs
@@ -992,7 +986,7 @@ function registerEventHandlers(loadedData) {
     amdTypeSelect.on("change", function() {
       //update action type
       var newAmdActionType = $(this).getSelectValueId();
-      console.log("change select!");
+
       //if change away from add, remove orig clause, because the reference is actually the first
       //clause but it wasn't selected as such
       if (amdActionType === "add" && newAmdActionType !== "add") {
@@ -1224,7 +1218,7 @@ function registerEventHandlers(loadedData) {
       //init with prepared data and predefined settings
       elem.autocomplete($.extend(autoOpts, autofillSettings));
     } else { //there was no data for this element, error
-      console.error("no autocomplete data found for field", this);
+      log({ msg: "no autocomplete data found for field", elem: this });
     }
   });
   var requiredContainers = $("#meta-data, #preamb-clauses, #op-clauses");
@@ -2065,9 +2059,9 @@ $(document).ready(function() {
   } else { //proceed normally
     //load external sponsor, phrase and forum name data
     $.getJSON("/autofillData.json")
-    .fail(function(data, status, error) {
+    .fail(function(xhr, status, error) {
       //log the error we have with getting the data
-      console.error(status, error);
+      log({ msg: "error loading autofill data", status: status, err: error });
       makeAlertMessage(
         "error_outline", "Error loading necessary data!", "ok",
         "Failed to download data! Check the console for more info." +

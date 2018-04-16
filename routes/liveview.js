@@ -338,7 +338,7 @@ function resolveChangePath(prevObj, remainingPath, setValue, cache, dontReadCach
 
   //error if property not present
   if (! (prop in prevObj)) {
-    logger.error({ prop: prop, prevObj: prevObj }, "invalid path property segement");
+    logger.error("invalid path property segement", { prop, prevObj });
 
     //stop, will actually throw error otherwise
     return;
@@ -678,7 +678,7 @@ function processMessage(clients, tokens, data, ws, accessToken, resDoc) {
       dataToAllViewers(tokenEntry, data);
       break;
     default:
-      logger.warn({ data: data }, "unrecognised message type");
+      logger.warn("unrecognised message lv type", data);
       return;
   }
 

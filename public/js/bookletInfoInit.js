@@ -1,6 +1,7 @@
 /*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
 /*global
 makeAlertMessage,
+log,
 displayToast*/
 
 //gets the enclosing resolution collection item
@@ -180,7 +181,7 @@ $(document).ready(function() {
 
       //bad state given
       default:
-        console.error("Bad render state given", newState);
+        log({ msg: "Bad render state given", givenState: newState });
         break;
     }
   }

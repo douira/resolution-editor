@@ -12,6 +12,7 @@
   resolutionAttributes,
   getAmendmentUpdate,
   amdActionType,
+  log,
   resolutionFormat*/
 /* exported loadFilePick,
   serverLoad,
@@ -35,7 +36,7 @@ function bugReportLink(errorCode) {
 
 //displays a modal message for invalid json file at parse or apply stage
 function jsonReadErrorModal(errorCode) {
-  console.log("error", errorCode);
+  log("error reading loaded json resolution (from file)", "warn");
   makeAlertMessage(
     "error_outline", "Error reading file", "ok",
     "The provided data could not be read and processed." +
@@ -745,7 +746,7 @@ function sendLVUpdate(type, eventType, elem) {
       }
     });
   } else {
-    console.error("bad lv event type", type);
+    log({ msg: "bad lv event type", givenType: type });
   }
 }
 
