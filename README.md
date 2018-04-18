@@ -55,6 +55,25 @@ db.createUser(
 ```
 (You may have to enter these commands separately.) Replace the `xyz` placeholders with the default passwords from `lib/credentials.js` or specify your own credentials a file in the same directory `resources/keys.json`. This file should not be committed and is ignored through .gitignore. The structure of the key file is the same as the object that specifies the default credentials. The server will read the specified credentials and use them to authenticate as `resolutionEditor` to the database.
 
+### Using PM2
+We use the process manager PM2 to manage automatic running of the server and the database.
+```
+//to install pm2
+npm install pm2 -g
+
+//to initially load the app config
+pm2 start ecosystem.config.js
+
+//to start/stop/reload
+pm2 start/stop/reload all
+
+//to create a persistent service in the OS
+pm2 startup
+
+//then run the command it outputs to install
+```
+PM2 will change locations with nvm when node is updated; `pm2 startup` needs to be executed after every node update with nvm. See [The PM2 docs](http://pm2.keymetrics.io/docs/usage/startup/)
+
 ## How to contribute
 Thanks for wanting to contribute, that's great! All the info on how to contribute is in the [CONTRIBUTING file](https://github.com/douira/resolution-editor/edit/meta/CONTRIBUTING.md).
 
