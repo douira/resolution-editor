@@ -1,17 +1,27 @@
 //jshint ignore: start
 module.exports = {
-  apps: [{
-    name: "webserver",
-    script: "./bin/www.js",
-    args: "--trace-deprecation",
-    env: {
-      NODE_ENV: "production"
+  apps: [
+    {
+      name: "mongod",
+      script: "mongod",
+      args: "--auth --port 27017 --dbpath data",
+      error_file: "./log/db/err.log",
+      out_file: "./log/db/out.log",
+      kill_timeout: 5000
     },
-    error_file: "./log/env/err.log",
-    out_file: "./log/env/out.log",
-    kill_timeout: 3000,
-    wait_ready: true
-  }]
+    {
+      name: "webserver",
+      script: "./bin/www.js",
+      args: "--trace-deprecation",
+      env: {
+        NODE_ENV: "production"
+      },
+      error_file: "./log/env/err.log",
+      out_file: "./log/env/out.log",
+      kill_timeout: 3000,
+      wait_ready: true
+    }
+  ]
 }
 
 /*
