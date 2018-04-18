@@ -381,7 +381,7 @@ function sendAck(ws, accessToken, tokenEntry, viewerAmount, resolutionData) {
 
   //add last amendments if present
   if (tokenEntry.lastAmd) {
-    sendData.lastAmd = tokenEntry.lastAmd;
+    sendData.lastAmd = tokenEntry.lastAmd.slice(-lastAmdListLength);
   }
 
   //respond to viewer with access token
@@ -629,8 +629,8 @@ function processMessage(clients, tokens, data, ws, accessToken, resDoc) {
         ["timestamp", "clauseIndex", "type", "saveType", "sponsor"]
       ));
 
-      //attach list of past amendments
-      data.update.lastAmd = tokenEntry.lastAmd;
+      //attach list of past lastAmdListLength amendments
+      data.update.lastAmd = tokenEntry.lastAmd.slice(-lastAmdListLength);
 
       //forward data to all viewers
       dataToAllViewers(tokenEntry, data);

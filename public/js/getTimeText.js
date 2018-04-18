@@ -5,8 +5,8 @@
 //returns a nice time text description, set useAgo to append suffix to all not just now times
 //time has to be passed in seconds
 function getTimeText(time, suffix) {
-  //suffix is empty string if not given, add space
-  suffix = " " + (suffix || "");
+  //suffix is empty string if not given, add space if suffix present
+  suffix = suffix && " " + suffix || "";
 
   //super short
   if (time < 30) {
@@ -18,15 +18,15 @@ function getTimeText(time, suffix) {
     return "Less than a minute" + suffix;
   }
 
-  //pretty short
-  if (time < 120) {
+  //pretty short, under 2.5 minutes
+  if (time < 150) {
     return "Two minutes" + suffix;
   }
 
   //less than 120 minutes
   time /= 60;
   if (time < 120) {
-    return Math.ceil(time) + " minutes" + suffix;
+    return Math.round(time) + " minutes" + suffix;
   }
 
   //less than 48 hours

@@ -189,9 +189,8 @@ $.fn.colorDiff = function(type) {
   this.addClass(diffTypeColorMap[type] || "mark-grey");
 };
 
-//renders the given structure to the liveview display,
-//re-generates elements completely: do not use for content update
-function render() {
+//updates the last amd list (given there are any in the list)
+function updateLastAmdList() {
   //if there are last amendments
   if (lastAmdList) {
     //unhide collection and get child elements
@@ -221,13 +220,26 @@ function render() {
       //set time text in display element
       amdElem.find(".item-age").text(getTimeText((Date.now() - amdItem.timestamp) / 1000, "ago"));
 
+      //get the apply status
+      var applyStatus = amdItem.saveType === "apply";
+
       //apply attributes of item to display element
       amdElem.find(".item-sponsor").text(amdItem.sponsor);
       amdElem.find(".item-clause").text(amdItem.clauseIndex + 1); //convert to 1-start counting
       amdElem.find(".item-action").text(amdActionTexts[amdItem.type]);
-      amdElem.find(".item-status").text(amdItem.saveType === "apply" ? "Accepted" : "Rejected");
+      var itemStatus = amdElem.find(".item-status").text(applyStatus ? "Accepted" : "Rejected");
+
+      //apply color class to accepted/rejected text
+      itemStatus.classState(applyStatus, "green-text").classState(! applyStatus, "red-text");
     }
   }
+}
+
+//renders the given structure to the liveview display,
+//re-generates elements completely: do not use for content update
+function render() {
+  //update the last amendments list
+  updateLastAmdList();
 
   //the structure to render
   var renderStructure = structure;
@@ -581,6 +593,18 @@ function invalidAmdTypeError(type) {
   return Error("no amendment action type '" + type + "' exists.");
 }
 
+//sets the last amd list and limits its elements
+function setLastAmdList(newList) {
+  //set to new list
+  lastAmdList = newList;
+
+  //if there are items
+  if (lastAmdList && lastAmdList.length) {
+    //limit to the last n items
+    lastAmdList.splice(0, lastAmdList.length - 3);
+  }
+}
+
 //start liveview as viewer on document load
 $(document).ready(function() {
   //true because we are a viewer, add function to deal with the updates it receives
@@ -605,9 +629,9 @@ $(document).ready(function() {
         //copy given resolution to current structure
         structure = data.resolutionData || data.update;
 
-        //copy last amendments
-        lastAmdList = data.lastAmd;
-        console.log(type, data, lastAmdList);
+        //set last amendment list
+        setLastAmdList(data.lastAmd);
+
         //render everything
         render();
         break;
@@ -655,7 +679,7 @@ $(document).ready(function() {
         }
 
         //save list of last amendments
-        lastAmdList = data.update.lastAmd;
+        setLastAmdList(data.update.lastAmd);
 
         //if not given
         if (! lastAmdList) {
@@ -671,7 +695,7 @@ $(document).ready(function() {
 
   //display no content message after two seconds (if the content isn't there then)
   setTimeout(function() {
-    //check if the content is there, if not display no content message
+    //check if the content is there, if not, display no content message
     if ($("#resolution").is(":hidden")) {
       $("#no-content-msg").show(250);
     }
@@ -683,3 +707,6 @@ $(document).ready(function() {
     makeFullScreen($("#viewcontent")[0]);
   });
 });
+
+//regularly update the last amd list (every 10 seconds)
+setInterval(updateLastAmdList, 10000);

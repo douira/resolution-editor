@@ -226,31 +226,6 @@ $.fn.isSubClause = function() {
   return this.closest(".clause-list").is(".clause-list-sub");
 };
 
-//sets the state of a class (adding or removing)
-$.fn.classState = function(state, className) {
-  //add or remove class depending on flag value
-  this.each(function() {
-    $(this)[state ? "addClass" : "removeClass"](className);
-  });
-};
-
-//sets the disabled state for element by adding or removing the .disabled class
-$.fn.disabledState = function(makeDisabled) {
-  //set class state for .disabled
-  this.classState(makeDisabled, "disabled");
-};
-
-//triggers several events in order
-$.fn.triggerAll = function(eventNames, params) {
-  //trigger all events with params
-  eventNames.split(/[ ,]+/).forEach(function(event) {
-    this.trigger(event, params);
-  }, this);
-
-  //return this for chaining
-  return this;
-};
-
 //checks if a subclause is allowed to be added to element
 $.fn.canReceiveSubclause = function() {
   //check if we've reached the max depth of sub clauses for this type of clause
@@ -552,12 +527,6 @@ $.fn.setSelectValueId = function(setValueId) {
   select.material_select();
 };
 
-//hides and unhides by adding or removing hide-this
-$.fn.setHide = function(makeHidden) {
-  //modify class status
-  return this[makeHidden ? "addClass" : "removeClass"]("hide-this");
-};
-
 //checks if a input field has a autocompletable value
 $.fn.checkAutoCompValue = function(loadedData) {
   var elem = this;
@@ -672,7 +641,7 @@ function registerEventHandlers(loadedData) {
   });
 
   $("#hide-liveview-hint")
-  .on("click", function() {
+  .on("click", function(e) {
     //toggle visibility of liveview hint
     var clickText = $(this);
     var hint = $("#liveview-hint");
@@ -685,6 +654,9 @@ function registerEventHandlers(loadedData) {
       hint.show();
       clickText.text("[Hide hint]");
     }
+
+    //prevent following of link and scroll movement
+    e.preventDefault();
   });
 
   //init selectors
