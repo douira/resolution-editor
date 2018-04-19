@@ -2,7 +2,7 @@
 /*jshint esversion: 6, node: true */
 const app = require("../app");
 const { logger } = require("../lib/logger");
-const { dbClient, dbPromise, fullInit } = require("../lib/database");
+const db = require("../lib/database");
 
 //normalizes a port into a number, string, or false
 function normalizePort(val) {
@@ -26,7 +26,7 @@ const port = normalizePort(process.env.PORT || "3000");
 app.set("port", port);
 
 //wait for database to finish loading
-fullInit.then(() => {
+db.fullInit.then(() => {
   //create HTTP server
   const server = app.listen(port);
 
@@ -66,32 +66,23 @@ fullInit.then(() => {
     //only if process send if possible
     if (process.send) {
       //when database is done loading, notify process manager of start
-      dbPromise.then(() => process.send("ready"));
+      db.dbPromise.then(() => process.send("ready"));
     }
   });
 
-  //listen on process close signal
-  process.on("SIGINT", () => Promise.all([
-    //stop the http server
-    new Promise((resolve, reject) => server.close(err => {
-      //check if an error is passed
-      if (err) {
-        //reject with error
-        reject(err);
-      } else {
-        //shut down correctly
-        resolve();
+  //listen on process close signals
+  process.on("SIGINT", () =>
+    //require client to be present
+    db.dbClient.close().then(
+      //exit process
+      () => process.exit(),
+
+      //error exititing db connection
+      err => {
+        logger.error("could not end db connection", { stack: err.stack });
+        process.exit(1);
       }
-    })),
-
-    //stop the database connection
-    dbClient ? dbClient.close() : Promise.resolve()
-  ]).then(() => process.exit(), err => {
-    //log exit error
-    logger.error("error shutting down", { stack: err.stack });
-
-    //shut down with errpr
-    process.exit(1);
-  }));
+    )
+  );
 });
 
