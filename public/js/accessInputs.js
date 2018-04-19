@@ -143,7 +143,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
     //do click action if everything valid
     if (allOk) {
       //make url path
-      var buttonUrl = getElementUrl(submitElem) + (typeof presetToken === "undefined" ?
+      var buttonUrl = getElementUrl(this) + (typeof presetToken === "undefined" ?
         tokenFieldElem.val() : presetToken);
 
       //send combined get and post request with token and code (if there is a code)

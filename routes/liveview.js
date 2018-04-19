@@ -142,9 +142,6 @@ function wsError(ws, msg, opts) {
   //opts if object if not given
   opts = opts || { };
 
-  //take socket logger if present, default otherwise
-  const log = (ws && ws.log) || logger;
-
   //check that socket is stil lactive
   if (ws && ws.readyState === ws.OPEN) {
     //send error message
@@ -163,11 +160,11 @@ function wsError(ws, msg, opts) {
   //log error message and error if give
   if (opts.type && opts.type !== "error") {
     //other message type
-    log[opts.type](msg, opts);
+    logger[opts.type](msg, opts);
   } else if (opts.err) {
-    log.error(opts.err, msg, opts);
+    logger.error(opts.err, msg, opts);
   } else {
-    log.error(msg, opts);
+    logger.error(msg, opts);
   }
 }
 
@@ -714,9 +711,6 @@ function receiveServer(httpServer) {
   wss.on("connection", ws => {
     //access token for this client
     let accessToken;
-
-    //add bound field reqId to chain all log entries for a single socket
-    ws.log = logger.child({ req_id: uuidv4() });
 
     //wait for message
     ws.on("message", msg => {
