@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 /*jshint esversion: 6, node: true */
-const app = require("../app");
+//require logger and do start message
 const { logger } = require("../lib/logger");
+logger.info("start program");
+
+//require other parts
+const app = require("../app");
 const db = require("../lib/database");
 
 //normalizes a port into a number, string, or false
@@ -71,7 +75,15 @@ db.fullInit.then(() => {
   });
 
   //listen on process close signals
-  process.on("SIGINT", () =>
+  process.on("SIGINT", () => {
+    logger.info("received SIGINT, stopping");
+
+    //if database is not connected, no need to disconnect
+    if (! db.dbClient || ! db.dbClient.isConnected()) {
+      logger.warn("db not connected on exit");
+      process.exit(1);
+    }
+
     //require client to be present
     db.dbClient.close().then(
       //exit process
@@ -82,7 +94,7 @@ db.fullInit.then(() => {
         logger.error("could not end db connection", { stack: err.stack });
         process.exit(1);
       }
-    )
-  );
+    );
+  });
 });
 
