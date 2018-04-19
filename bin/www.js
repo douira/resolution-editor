@@ -63,10 +63,12 @@ fullInit.then(() => {
     const bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
     logger.info("Listening on " + bind);
 
-    //when database is done loading, notify process manager of start
-    dbPromise.then(() => process.send("ready"));
+    //only if process send if possible
+    if (process.send) {
+      //when database is done loading, notify process manager of start
+      dbPromise.then(() => process.send("ready"));
+    }
   });
-
 
   //listen on process close signal
   process.on("SIGINT", () => Promise.all([
