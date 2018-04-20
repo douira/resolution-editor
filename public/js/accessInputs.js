@@ -54,7 +54,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
   if (inputOpts.codeFieldSelector) {
     //get selector from ops and find element
     codeFieldElem = $(inputOpts.codeFieldSelector);
-  } else if (inputOpts.presetCode) {
+  } else if ("presetCode" in inputOpts) {
     //make hidden field above submit button, code is expected to be valid
     submitElem.before(
       "<input type='hidden' class='hidden-code-input not-editor' name='code' value='" +
@@ -64,7 +64,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
     fieldStates.code.valid = "onlyToken";
   } else {
     //wrong
-    log("accessInput registration error: missing token data");
+    log("accessInput registration error: missing code data");
     return;
   }
 
@@ -73,7 +73,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
   if (inputOpts.tokenFieldSelector) {
     //get field element
     tokenFieldElem = $(inputOpts.tokenFieldSelector);
-  } else if (inputOpts.presetToken) {
+  } else if ("presetToken" in inputOpts) {
     //get token
     presetToken = inputOpts.presetToken;
 
@@ -81,7 +81,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
     fieldStates.token.valid = true;
   } else {
     //wrong
-    log("accessInput registration error: missing code data");
+    log("accessInput registration error: missing token data");
     return;
   }
 
