@@ -2,99 +2,36 @@
 /*jshint esversion: 6, node: true */
 //require logger and do start message
 const { logger } = require("../lib/logger");
+const { createServer } = require("http");
 logger.info("start program");
 
 //require other parts
 const app = require("../app");
 const db = require("../lib/database");
+const { normalizePort, applyServerListeners } = require("../lib/httpUtil");
 
-//normalizes a port into a number, string, or false
-function normalizePort(val) {
-  const port = parseInt(val, 10);
+//register process stop listener
+require("../lib/processStop.js");
 
-  if (isNaN(port)) {
-    // named pipe
-    return val;
-  }
-
-  if (port >= 0) {
-    // port number
-    return port;
-  }
-
-  return false;
-}
-
-//Get port from environment and store in Express.
+//get port from environment and store in express
 const port = normalizePort(process.env.PORT || "3000");
 app.set("port", port);
 
 //wait for database to finish loading
 db.fullInit.then(() => {
   //create HTTP server
-  const server = app.listen(port);
+  const server = createServer(app);
 
-  //give server to liveview to attach websockets
-  require("../routes/liveview").giveHttpServer(server);
+  //check of env variable disabling lv websockets is not set
+  if (! process.env.NO_WS_LV) {
+    //attach liveview websocket handler
+    require("../lib/lvWS")(server);
+  }
 
-  //http server error handler
-  server.on("error", error => {
-    if (error.syscall !== "listen") {
-      throw error;
-    }
+  //start lisening on connections
+  server.listen(port);
 
-    const bind = typeof port === "string" ? "Pipe " + port : "Port " + port;
-
-    // handle specific listen errors with friendly messages
-    switch (error.code) {
-      case "EACCES":
-        logger.fatal(bind + " requires elevated privileges");
-        process.exit(1);
-        break;
-      case "EADDRINUSE":
-        logger.fatal(bind + " is already in use");
-        process.exit(1);
-        break;
-      default:
-        throw error;
-    }
-  });
-
-  //server starts listening handler
-  server.on("listening", () => {
-    //print message
-    const addr = server.address();
-    const bind = typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
-    logger.info("Listening on " + bind);
-
-    //only if process send if possible
-    if (process.send) {
-      //when database is done loading, notify process manager of start
-      db.dbPromise.then(() => process.send("ready"));
-    }
-  });
-
-  //listen on process close signals
-  process.on("SIGINT", () => {
-    logger.info("received SIGINT, stopping");
-
-    //if database is not connected, no need to disconnect
-    if (! db.dbClient || ! db.dbClient.isConnected()) {
-      logger.warn("db not connected on exit");
-      process.exit(1);
-    }
-
-    //require client to be present
-    db.dbClient.close().then(
-      //exit process
-      () => process.exit(),
-
-      //error exititing db connection
-      err => {
-        logger.error("could not end db connection", { stack: err.stack });
-        process.exit(1);
-      }
-    );
-  });
+  //apply extra error and startup handlers to server
+  applyServerListeners(server, port);
 });
 

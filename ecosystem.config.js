@@ -7,19 +7,38 @@ module.exports = {
       args: "--auth --port 27017 --dbpath data",
       error_file: "./log/db/err.log",
       out_file: "./log/db/out.log",
-      kill_timeout: 5000
+      kill_timeout: 5000,
+      exec_mode: "fork"
     },
     {
       name: "webserver",
       script: "./bin/www.js",
       args: "--trace-deprecation",
       env: {
-        NODE_ENV: "production"
+        PORT: 3000,
+        NO_WS_LV: 1,
+        //NODE_ENV: "production"
       },
       error_file: "./log/env/err.log",
       out_file: "./log/env/out.log",
       kill_timeout: 3000,
-      wait_ready: true
+      wait_ready: true,
+      exec_mode: "cluster",
+      instances: "-1"
+    },
+    {
+      name: "liveview",
+      script: "./bin/lvServer.js",
+      args: "--trace-deprecation",
+      env: {
+        PORT: 17750
+        //NODE_ENV: "production"
+      },
+      error_file: "./log/env/errlv.log",
+      out_file: "./log/env/outlv.log",
+      kill_timeout: 3000,
+      wait_ready: true,
+      exec_mode: "fork"
     }
   ]
 }

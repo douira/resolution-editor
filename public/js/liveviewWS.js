@@ -64,7 +64,7 @@ function startWS(isViewer, updateListener) {
   connectTriesLeftLV --;
 
   //open websocket connection to server
-  currentWS = new WebSocket("ws://" + window.location.host + "/resolution/liveview/ws");
+  currentWS = new WebSocket("ws://" + window.location.hostname + ":17750/liveview");
 
   //get the token and code given in the page if not already present
   presetTokenLV = presetTokenLV || $("#token-preset").text();
