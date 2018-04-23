@@ -6,7 +6,7 @@ const favicon = require("serve-favicon");
 const session = require("express-session");
 const MongoStore = require("connect-mongo")(session);
 const credentials = require("./lib/credentials");
-const { dbPromise } = require("./lib/database");
+const { dbPromise, sessionExpireSeconds } = require("./lib/database");
 const mongoSanitize = require("express-mongo-sanitize");
 const getTimeText = require("./public/js/getTimeText");
 const devEnv = require("./lib/devEnv");
@@ -54,6 +54,7 @@ app.use(session({
   secret: credentials.cookieSecret,
   resave: false,
   saveUninitialized: false,
+  //rolling: true, //reset ttl on every opening of a page
   store: new MongoStore({
     dbPromise: dbPromise, //pass the already created mongodb connection promise
     autoRemove: "disabled", //we implement our own removal index in database.js
@@ -62,10 +63,9 @@ app.use(session({
     //more efficient if not stringyfied for every save, mongodb can handle nested objects!
     stringify: false,
 
-    //define ttl to limit length of non-persistent session
-    ttl: 1000 * 60 * 60 * 24 //one day
+    //expire after specified time
+    ttl: sessionExpireSeconds
   })
-  //non-persistent session
 }));
 
 //set specific caching params if in production mode
