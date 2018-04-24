@@ -16,11 +16,12 @@ module.exports = {
       args: "--trace-deprecation",
       env: {
         PORT: 3000,
-        NO_WS_LV: 1,
+        WS_LV: "off",
+        SERVE_LOCAL: "off"
         //NODE_ENV: "production"
       },
       env_offline: {
-        SERVE_LOCAL: 1
+        SERVE_LOCAL: "on"
       },
       error_file: "./log/env/err.log",
       out_file: "./log/env/out.log",
@@ -34,7 +35,7 @@ module.exports = {
       script: "./bin/lvServer.js",
       args: "--trace-deprecation",
       env: {
-        PORT: 17750
+        PORT: 17750,
         //NODE_ENV: "production"
       },
       error_file: "./log/env/errlv.log",

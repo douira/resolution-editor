@@ -23,7 +23,7 @@ db.fullInit.then(() => {
   const server = createServer(app);
 
   //check of env variable disabling lv websockets is not set
-  if (! process.env.NO_WS_LV) {
+  if (process.env.WS_LV === "off") {
     //attach liveview websocket handler
     require("../lib/lvWS")(server);
   }

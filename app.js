@@ -32,7 +32,7 @@ app.set("view engine", "pug");
 app.locals.getTimeText = getTimeText;
 
 //if we are serving external libaries ourselves now
-app.locals.serveLocalExt = process.env.SERVE_LOCAL;
+app.locals.serveLocalExt = process.env.SERVE_LOCAL === "on";
 
 //register express middleware
 app.use(compression()); //use compression to make it faster
