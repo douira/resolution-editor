@@ -19,6 +19,9 @@ module.exports = {
         NO_WS_LV: 1,
         //NODE_ENV: "production"
       },
+      env_offline: {
+        SERVE_LOCAL: 1
+      },
       error_file: "./log/env/err.log",
       out_file: "./log/env/out.log",
       kill_timeout: 3000,

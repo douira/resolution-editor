@@ -31,6 +31,9 @@ app.set("view engine", "pug");
 //add libraries that should be available within the templates
 app.locals.getTimeText = getTimeText;
 
+//if we are serving external libaries ourselves now
+app.locals.serveLocalExt = process.env.SERVE_LOCAL;
+
 //register express middleware
 app.use(compression()); //use compression to make it faster
 

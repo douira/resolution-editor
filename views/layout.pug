@@ -112,9 +112,13 @@ html(lang="en")
       title Resolution Editor
 
     //-custom and materialize style sheets
-    link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
-    //-link(href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700" rel="stylesheet")
-    link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css")
+    if serveLocalExt
+      +static("css", "/ext/material-icons-2.2.0.css")
+      +static("css", "/ext/materialize-0.100.2.min.css")
+    else
+      link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
+      //-link(href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700" rel="stylesheet")
+      link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css")
     +static("css", "/css/mainStyle.css")
 
     //-critical styles are inlined
@@ -234,9 +238,16 @@ html(lang="en")
             a.text-lighten-3(class=sectext href="https://github.com/douira/resolution-editor")  Github
 
     //-general scripts
-    script(src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous")
+    if serveLocalExt
+      +static("js", "/ext/jquery-3.3.1.min.js")
+    else
+      script(src="http://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous")
     +static("js", "/js/log.js")
-    script(src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js")
+    if serveLocalExt
+      +static("js", "/ext/materialize-0.100.2.min.js")
+    else
+      script(src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js")
     +static("js", "/js/mainInit.js")
 
     //-specific scripts
