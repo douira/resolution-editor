@@ -1,6 +1,7 @@
 /*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
 /*global log*/
 /*exported registerAccessInputs*/
+//jshint ignore: start
 //install Array find polyfill
 // https://tc39.github.io/ecma262/#sec-array.prototype.find
 if (!Array.prototype.find) {
@@ -48,6 +49,7 @@ if (!Array.prototype.find) {
     writable: true
   });
 }
+//jshint ignore: end
 
 //deals with UI for input of token and access codes
 //handles code and token input and registers the event handlers for the given fields
