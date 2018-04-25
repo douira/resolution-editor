@@ -330,7 +330,7 @@ router.post("/codes/:action", function(req, res) {
   }
 });
 
-//print queue needs SC access
+//print queue needs SC or FC access
 router.use("/print", (req, res, next) =>
   routingUtil.requireSession("printqueue", req, res, () => next()));
 
