@@ -430,14 +430,14 @@ $.fn.filterIllegalContent = function() {
       //normalize quotes
       .replace(/[“”‹›«»]/g, "\"")
 
+      //remove trailing _ and ^ (produce latex error), also remove trailing . , - ) &
+      .replace(/[_^.,\-)&]+$/gm, "")
+
       //replace newlines with spaces
       .replace(/\n+/g, " ")
 
       //remove padding whitespace
       .trim()
-
-      //remove trailing _ and ^ (produce latex error)
-      .replace(/[_^]$/g, "")
 
       //filter characters
       .replace(/[^a-zA-Z0-9*_^|&’"\-.,()/+\u00c0-\u024F ]+/g, "")
