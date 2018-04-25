@@ -87,16 +87,20 @@ router.get("/codes", function(req, res) {
   ]).then(results => {
     //codes are in the second result
     const codes = results[1];
+  
+    //check for there to be any group insert id
+    let latestCodes;
+    if (results[0]) {
+      //the first result is the current insert group id
+      const insertGroupId = results[0].value;
 
-    //the first result is the current insert group id
-    const insertGroupId = results[0].value;
-
-    //list of the recently added codes, they have the current insert group counter
-    const latestCodes = codes.reduce(
-      //append all codes thatmatch the current insert group index
-      (acc, group) => acc.concat(
-        group.list.filter(codeObj => codeObj.insertGroupId === insertGroupId)), []);
-
+      //list of the recently added codes, they have the current insert group counter
+      latestCodes = codes.reduce(
+        //append all codes thatmatch the current insert group index
+        (acc, group) => acc.concat(
+          group.list.filter(codeObj => codeObj.insertGroupId === insertGroupId)), []);
+    }
+    
     //display code overview page
     res.render("codeoverview", {
       codes: codes,
