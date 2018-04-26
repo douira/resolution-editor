@@ -1561,7 +1561,7 @@ function registerEventHandlers(loadedData) {
       //check if the content text area includes a phrase
       if (phrases.some(function(phrase) {
         //return true if it starts with the phrase
-        return clauseContent.startsWith(phrase.toLowerCase());
+        return clauseContent.trim().indexOf(phrase.toLowerCase()) === 0;
       })) {
         //display message concerning phrase field
         makeAlertMessage("info", "Phrase found in content field", "OK",
