@@ -430,14 +430,14 @@ $.fn.filterIllegalContent = function() {
       //normalize quotes
       .replace(/[“”‹›«»]/g, "\"")
 
+      //remove trailing _ and ^ (produce latex error), also remove trailing . , - ) &
+      .replace(/[_^.,\-)&]+$/gm, "")
+
       //replace newlines with spaces
       .replace(/\n+/g, " ")
 
       //remove padding whitespace
       .trim()
-
-      //remove trailing _ and ^ (produce latex error)
-      .replace(/[_^]$/g, "")
 
       //filter characters
       .replace(/[^a-zA-Z0-9*_^|&’"\-.,()/+\u00c0-\u024F ]+/g, "")
@@ -1561,7 +1561,7 @@ function registerEventHandlers(loadedData) {
       //check if the content text area includes a phrase
       if (phrases.some(function(phrase) {
         //return true if it starts with the phrase
-        return clauseContent.startsWith(phrase.toLowerCase());
+        return clauseContent.trim().indexOf(phrase.toLowerCase()) === 0;
       })) {
         //display message concerning phrase field
         makeAlertMessage("info", "Phrase found in content field", "OK",

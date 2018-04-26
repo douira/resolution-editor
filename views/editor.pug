@@ -116,7 +116,7 @@ block content
             each amendment in meta.amendments
               li.collection-item
                 span.item-age.grey-text.right=getTimeText((now - amendment.timestamp) / 1000, "ago")
-                | Proposal by #[span.item-sponsor=amendment.sponsor] to #[span.underline #[span.item-action=amendment.type] OC#[span.item-clause=amendment.clauseIndex]]:
+                | Proposal by #[span.item-sponsor=amendment.sponsor] to #[span.underline #[span.item-action=amendment.type] OC#[span.item-clause=amendment.clauseIndex + 1]]:
                 - const isApply = amendment.saveType === "apply";
                 b.item-status(class=isApply ? "green-text" : "red-text")=isApply ? " Accepted" : " Rejected"
       if meta.voteResults

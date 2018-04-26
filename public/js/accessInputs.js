@@ -1,8 +1,57 @@
 /*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
 /*global log*/
 /*exported registerAccessInputs*/
-//deals with UI for input of token and access codes
+//jshint ignore: start
+//install Array find polyfill
+// https://tc39.github.io/ecma262/#sec-array.prototype.find
+if (!Array.prototype.find) {
+  Object.defineProperty(Array.prototype, 'find', {
+    value: function(predicate) {
+     // 1. Let O be ? ToObject(this value).
+      if (this == null) {
+        throw new TypeError('"this" is null or not defined');
+      }
 
+      var o = Object(this);
+
+      // 2. Let len be ? ToLength(? Get(O, "length")).
+      var len = o.length >>> 0;
+
+      // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+      if (typeof predicate !== 'function') {
+        throw new TypeError('predicate must be a function');
+      }
+
+      // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+      var thisArg = arguments[1];
+
+      // 5. Let k be 0.
+      var k = 0;
+
+      // 6. Repeat, while k < len
+      while (k < len) {
+        // a. Let Pk be ! ToString(k).
+        // b. Let kValue be ? Get(O, Pk).
+        // c. Let testResult be ToBoolean(? Call(predicate, T, « kValue, k, O »)).
+        // d. If testResult is true, return kValue.
+        var kValue = o[k];
+        if (predicate.call(thisArg, kValue, k, o)) {
+          return kValue;
+        }
+        // e. Increase k by 1.
+        k++;
+      }
+
+      // 7. Return undefined.
+      return undefined;
+    },
+    configurable: true,
+    writable: true
+  });
+}
+//jshint ignore: end
+
+//deals with UI for input of token and access codes
 //handles code and token input and registers the event handlers for the given fields
 /*pass function to check for other validation things as additionalValidation in inputOpts
   return true when either validation is ok or nothing to validate
@@ -54,7 +103,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
   if (inputOpts.codeFieldSelector) {
     //get selector from ops and find element
     codeFieldElem = $(inputOpts.codeFieldSelector);
-  } else if (inputOpts.presetCode) {
+  } else if ("presetCode" in inputOpts) {
     //make hidden field above submit button, code is expected to be valid
     submitElem.before(
       "<input type='hidden' class='hidden-code-input not-editor' name='code' value='" +
@@ -64,7 +113,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
     fieldStates.code.valid = "onlyToken";
   } else {
     //wrong
-    log("accessInput registration error: missing token data");
+    log("accessInput registration error: missing code data");
     return;
   }
 
@@ -73,7 +122,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
   if (inputOpts.tokenFieldSelector) {
     //get field element
     tokenFieldElem = $(inputOpts.tokenFieldSelector);
-  } else if (inputOpts.presetToken) {
+  } else if ("presetToken" in inputOpts) {
     //get token
     presetToken = inputOpts.presetToken;
 
@@ -81,7 +130,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
     fieldStates.token.valid = true;
   } else {
     //wrong
-    log("accessInput registration error: missing code data");
+    log("accessInput registration error: missing token data");
     return;
   }
 
@@ -143,7 +192,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
     //do click action if everything valid
     if (allOk) {
       //make url path
-      var buttonUrl = getElementUrl(submitElem) + (typeof presetToken === "undefined" ?
+      var buttonUrl = getElementUrl(this) + (typeof presetToken === "undefined" ?
         tokenFieldElem.val() : presetToken);
 
       //send combined get and post request with token and code (if there is a code)

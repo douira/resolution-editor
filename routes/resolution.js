@@ -5,7 +5,6 @@ const router = module.exports = express.Router();
 const generatePdf = require("../lib/generatePdf");
 const resUtil = require("../lib/resUtil");
 const routingUtil = require("../lib/routingUtil");
-const liveView = require("./liveview").router;
 const { logger, issueError } = require("../lib/logger");
 
 //register callback to get collections on load
@@ -251,8 +250,31 @@ router.post("/delete/:token", function(req, res) {
   }, err => issueError(req, res, 500, "can't delete", err));
 });
 
-//pass liveview stuff on to that module
-router.use("/liveview", liveView);
+//POST, GET for liveview page (GET may be ok when session with auth is present)
+routingUtil.getAndPost(router, "/liveview/:token", function(req, res) {
+  //check for token and code and correct stage (liveview permission mode)
+  routingUtil.fullAuth(req, res,
+    (token, resDoc, codeDoc) =>
+      //send rendered editor page with token set
+      res.render("liveview", {
+        token: token,
+        code: codeDoc.code,
+        accessLevel: codeDoc.level,
+        stage: resDoc.stage
+      }),
+    {
+      permissionMissmatch: (token, resDoc, codeDoc) =>
+        //send no permission page
+        res.render("weakperm", {
+          type: "liveview",
+          token: resDoc.token,
+          stage: resDoc.stage,
+          accessLevel: codeDoc.level
+        }),
+      matchMode: "liveview"
+    }
+  );
+});
 
 //GET and POST (no view) to send resolution data
 routingUtil.getAndPost(router, "/load/:token", function(req, res) {
