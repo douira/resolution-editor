@@ -36,21 +36,13 @@
 
 \setlength\parindent{0pt}
 \newenvironment{preamb}[2]{
-%\vspace*{1em}
-\StrLeft{#1}{1}[\firstletter]%
-\StrBehind{#1}{\firstletter}[\rest]%
-\StrRight{#2}{1}[\lastletter] %
-%~\\
-\emph{\capitalisewords{\firstletter}\rest}
+\emph{#1}
 #2%
 }{%
 \par ~\newline
 }
 \newenvironment{oc}[2]{\item %
-\StrLeft{#1}{1}[\firstletter]%
-\StrBehind{#1}{\firstletter}[\rest]%
-\StrRight{#2}{1}[\lastletter]%
-\underline{\smash{\capitalisewords{\firstletter}\rest}}
+\underline{\smash{#1}}
 #2%
 }
 {%
