@@ -20,6 +20,7 @@ module.exports = {
         WS_LV: "off",
         SERVE_LOCAL: "off",
         PRINT_ERR: "on",
+        LOG_NORM_ACCESS: "off",
         NODE_ENV: "production"
       },
       env_offline: {
