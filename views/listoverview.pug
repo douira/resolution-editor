@@ -13,7 +13,11 @@ block content
       if isArchive
         | This is a list of archived(deleted) resolutions grouped by stage. Go back to the #[a(href="?") list] of regular resolutions.
       else
-        | This is a list of all resolutions grouped by stage. View the #[a(href="?archive=1") list] of archived (deleted) resolutions.
+        | This is a list of all resolutions grouped by stage.
+        if comMode
+          |  These resolutions are in the committee #[b=comName].
+        else
+          | View the #[a(href="?archive=1") list] of archived (deleted) resolutions.
     if items.length
       .row
         each stage in items
@@ -28,8 +32,9 @@ block content
                   if ! res.forum
                     span.grey-text  (not saved)
                   else
-                    span.grey-text  in
-                    span.forum(class=res.forum ? "" : "grey-text text-darken-1")=" " + res.forum
+                    if ! comMode
+                      span.grey-text  in
+                      span.forum(class=res.forum ? "" : "grey-text text-darken-1")=" " + res.forum
                     span.grey-text  by
                     span.sponsor(class=res.sponsor ? "" : "grey-text text-darken-1")=" " + res.sponsor
     else

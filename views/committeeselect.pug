@@ -1,0 +1,17 @@
+extends layout
+
+block title
+  title Committee Selection for Resolution Overview
+
+block content
+  .container
+    +icon("description", "large left blue-text")
+    h3 Committee Selection
+    .divider
+    p.justify Select which committee you want to view the resolutions of.
+    if committees
+      ul
+        each com in committees
+          li: a(href="/list/committee/" + com.id)=com.name
+    else
+      p.center: em.grey-text.text-darken-1 No committees to display.
