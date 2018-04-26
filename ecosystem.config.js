@@ -8,7 +8,8 @@ module.exports = {
       error_file: "./log/db/err.log",
       out_file: "./log/db/out.log",
       kill_timeout: 5000,
-      exec_mode: "fork"
+      exec_mode: "fork",
+      merge_logs: true
     },
     {
       name: "webserver",
@@ -17,8 +18,9 @@ module.exports = {
       env: {
         PORT: 3000,
         WS_LV: "off",
-        SERVE_LOCAL: "off"
-        //NODE_ENV: "production"
+        SERVE_LOCAL: "off",
+        PRINT_ERR: "on",
+        NODE_ENV: "production"
       },
       env_offline: {
         SERVE_LOCAL: "on"
@@ -28,7 +30,8 @@ module.exports = {
       kill_timeout: 3000,
       wait_ready: true,
       exec_mode: "cluster",
-      instances: "-1"
+      instances: "max",
+      merge_logs: true
     },
     {
       name: "liveview",
@@ -36,13 +39,15 @@ module.exports = {
       args: "--trace-deprecation",
       env: {
         PORT: 17750,
-        //NODE_ENV: "production"
+        PRINT_ERR: "on",
+        NODE_ENV: "production"
       },
-      error_file: "./log/env/errlv.log",
-      out_file: "./log/env/outlv.log",
+      error_file: "./log/lv/err.log",
+      out_file: "./log/lv/out.log",
       kill_timeout: 3000,
       wait_ready: true,
-      exec_mode: "fork"
+      exec_mode: "fork",
+      merge_logs: true
     }
   ]
 }
