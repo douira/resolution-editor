@@ -6,7 +6,7 @@ block title
 block content
   .container
     .center
-      h4 Please read before making a new resolution
+      h4 Read before making a new resolution
       p: em.grey-text You will regret it if you don't.
     .divider
     mixin icon-box(iconName, iconColor, title)
@@ -23,11 +23,11 @@ block content
     .row.no-bottom-mrg
       +icon-box("visibility", "green-text", "Read Hint Texts")
         | The Editor is full of helpful hints to guide you along the way. Often problems can be solved by carefully reading the hints on the page itself. Some buttons have additional information in tooltips.
+      +icon-box("lock", "cyan-text", "Secure your Credentials")
+        | Keep all credentials you are given by the staff or the editor safe and secure. You are responsible for any data loss resulting from handling credentials insecurely. #[b Treat Resolution Tokens like passwords!]
+    .row
       +icon-box("bug_report", "red-text", "Report Bugs")
         | Please #[a(href=bugReportLink) report all problems] concerning this website. Including but not limited to software bugs, security issues, unexpected/unhelpful behavior and typos/grammar mistakes.
-    .row
-      +icon-box("lock", "cyan-text", "Secure your Credentials")
-        | Keep all credentials you are given by the staff or the editor safe and secure. You are responsible for any data loss resulting from handling credentials insecurely.
       +icon-box(icons.code, "indigo-text", "Contact IT-Management")
         | If you still can't solve your problems after reading hint texts, the Help Page and asking your Chair or fellow Delegates/Participants, talk to IT-Management for final advice.
     if ! noNew
