@@ -73,64 +73,6 @@ var getAmendmentUpdate;
 //the current amendment action type
 var amdActionType;
 
-//transforms arrays containign a certain flag in an object and array json structure
-function transformMarkedArrays(structure, flag, propValue, depth) {
-  //propValue is null if not given otherwise
-  if (typeof propValue === "undefined") {
-    propValue = null;
-  }
-
-  //start at depth if not given
-  if (typeof depth === "undefined") {
-    depth = 0;
-  }
-
-  //don't recurse if at max depth and is actually an array or object
-  if (depth < 10 && typeof structure === "object") {
-    //is an array
-    if (structure instanceof Array) {
-      //if it actually has anything to deal with
-      if (structure.length) {
-        //check if this array should be converted
-        if (structure[0] === flag) {
-          //remove flag
-          structure.shift();
-
-          //convert to prop object
-          var obj = {};
-          structure.forEach(function(str) {
-            //if is array
-            if (str instanceof Array) {
-              //add all of array
-              str.forEach(function(s) {
-                obj[s] = propValue;
-              });
-            } else {
-              //normal prop add
-              obj[str] = propValue;
-            }
-          });
-          structure = obj;
-        } else {
-          //recurse deeper
-          structure.map(function(obj) {
-            return transformMarkedArrays(obj, flag, propValue, depth + 1);
-          });
-        }
-      }
-    } else {
-      //call for all properties
-      for (var propName in structure) {
-        structure[propName] = transformMarkedArrays(structure[propName],
-                                                    flag, propValue, depth + 1);
-      }
-    }
-  }
-
-  //return object back
-  return structure;
-}
-
 //updates the disabling state of eab movement buttons, used as event handler
 function makeEabMoveUpdateDisabledHandler(isUpButton) {
   //return event handler function, type flag is preserved in closure
@@ -1919,6 +1861,17 @@ function registerEventHandlers(loadedData) {
   });
 }
 
+//converts an array of strings into an object with each string as a null prop
+function convertPropObj(orig, propValue) {
+  //convert to prop object
+  var obj = {};
+  orig.forEach(function(str) {
+    //prop add
+    obj[str] = propValue;
+  });
+  return obj;
+}
+
 //do things when the document has finished loading
 $(document).ready(function() {
   //get token and, if present, code from document
@@ -2029,8 +1982,8 @@ $(document).ready(function() {
     //trigger all init events
     $("*").trigger("init");
   } else { //proceed normally
-    //load external sponsor, phrase and forum name data
-    $.getJSON("/autofillData.json")
+    //load external sponsor and forum ext data and phrases
+    $.getJSON("/extData")
     .fail(function(xhr, status, error) {
       //log the error we have with getting the data
       log({ msg: "error loading autofill data", status: status, err: error });
@@ -2041,62 +1994,79 @@ $(document).ready(function() {
         "(The editor won't work until you reload the page and the data is downloaded)",
         "data_load_fail");
     })
-    .done(function(data) {
-      //data object to pass to scope of event handlers
+    .done(function(extData) {
+      //data object to pass to event handlers
       var loadedData = {};
 
-      //map forums with Chair code mode in mind
-      data.forums = data.forums.map(function(forum) {
-        //process only if array of length 3
-        if (forum instanceof Array && forum[2] === true) {
-          //in Chair mode, return normally, otherwise mark to be removed
-          return chairMode ? forum : false;
+      //multi functional mapping object:
+      //maps from forum abbreviation to name and has forum object for real names, allows value check
+      loadedData.forumMapping = { };
+
+      //for all forums
+      for (var forumId in extData.forumsFlat) {
+        //get the current forum
+        var forum = extData.forumsFlat[forumId];
+
+        //create mapping to name for abbr
+        loadedData.forumMapping[forum.abbr] = forum.name;
+
+        //signal ok with identifier name
+        loadedData.forumMapping[forum.name] = forum;
+      }
+
+      //function that generates country name mappings for a given selected forum name in loadedData
+      loadedData.generateCountryMapping = function(selectedForum) {
+        //generate mapping for all countries of this forum
+        //mapping (like forumMapping) from alt names to id name, id name has value 1
+        loadedData.countryMapping = { };
+
+        //get selected forum object
+        var forumCountries = loadedData.forumMapping[selectedForum];
+
+        //stop if not present
+        if (forumCountries) {
+          //get list of countries
+          forumCountries = forumCountries.countries;
         } else {
-          //return normally
-          return forum;
+          return;
         }
-      }) //filter out falsy ones that were selected to be removed
-      .filter(function(forum) { return forum; });
+
+        //for all countries of this forum
+        forumCountries.forEach(function(countryId) {
+          //get country object
+          var country = extData.countries[countryId];
+
+          //add full and placard name as mapping to real name
+          loadedData.countryMapping[country.placardname] = country.name;
+          loadedData.countryMapping[country.fullname] = country.name;
+
+          //id name maps to country object
+          loadedData.countryMapping[country.name] = country;
+        });
+      };
 
       //mapping between autofill data and input field selectors
-      loadedData.autofillDataMapping = {
-        "#forum-name": data.forums.map(function(pair) { return pair[0]; }), //only full name ok
-        "#main-spon,#co-spon,#amd-spon": data.sponsors.slice(),
-        "#preamb-clauses .phrase-input": data.phrases.preamb.slice(),
-        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": data.phrases.op.slice(),
+      loadedData.autofillDataMapping = { //
+        //"#main-spon,#co-spon,#amd-spon": sponsors,
+        //"#forum-name": forums, //only full name ok
+        "#preamb-clauses .phrase-input": extData.preamb,
+        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": extData.op,
       };
 
-      //get forum abbreviation mapping data
-      loadedData.forumAbbreviations = data.forums.slice();
-      loadedData.forumAbbreviations.shift();
-
-      //convert to mapping object
-      loadedData.forumAbbrevMapping = {};
-      loadedData.forumAbbreviations.forEach(function(nameSet) {
-        //attach mapping
-        loadedData.forumAbbrevMapping[nameSet[1].trim().toLowerCase()] = nameSet[0];
-      });
-
-      //make copies in loadedData
+      //plain phrase lists
       loadedData.phrases = {
-        op: data.phrases.op.slice(),
-        preamb: data.phrases.preamb.slice()
+        op: extData.op,
+        preamb: extData.preamb
       };
-
-      //remove _convert element
-      loadedData.phrases.op.shift();
-      loadedData.phrases.preamb.shift();
-
-      //transform into correct data structure when gotten data
-      transformMarkedArrays(data, "_convert", null);
 
       //data used to inititalize autocomplete fields/thingies and their other options
       loadedData.autofillInitData = {
-        "#forum-name": data.forums,
-        "#main-spon,#co-spon,#amd-spon": data.sponsors,
-        "sponsors": data.sponsors, //shortcut for chips init
-        "#preamb-clauses .phrase-input": data.phrases.preamb,
-        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": data.phrases.op,
+        //"#forum-name": forums,
+        //"#main-spon,#co-spon,#amd-spon": sponsors,
+        //sponsors: sponsors, //shortcut for chips init
+        "#preamb-clauses .phrase-input": convertPropObj(extData.preamb),
+        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input":
+          convertPropObj(extData.op),
       };
 
       //register all event handlers
