@@ -469,7 +469,7 @@ $.fn.setSelectValueId = function(setValueId) {
   select.material_select();
 };
 
-//checks if a input field has a autocompletable and ok value
+//checks if a input field has an autocompletable and ok value
 $.fn.checkAutoCompValue = function(loadedData) {
   var elem = this;
 
@@ -1140,7 +1140,7 @@ function registerEventHandlers(loadedData) {
 
     //if there actually was any data for this element
     if (foundData) {
-      //get data from loadedData is is string attrib reference
+      //get data from loadedData if it is string attrib reference
       if (typeof foundData === "string") {
         foundData = loadedData[foundData];
       }
@@ -1907,7 +1907,7 @@ function convertPropObj(orig) {
   return obj;
 }
 
-//prepares strign for lookup in abbreviation mapping
+//prepares string for lookup in abbreviation mapping
 function abbrevMappingPrep(str) {
   //lower case and remove other chars
   return str.toLowerCase().replace(/[^a-z]+/g, "");

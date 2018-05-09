@@ -152,8 +152,10 @@ function loadJson(json, callbackOnSuccess) {
   $(".clause").trigger("attemptRemove");
   $("input, textarea").trigger("reset");
 
-  //put author data into field
-  $("#author-name").val(obj.author).trigger("activateLabel");
+  //put author data into field if any present
+  if (obj.author) {
+    $("#author-name").val(obj.author).trigger("activateLabel");
+  }
 
   //get resolution object
   var res = obj.resolution;
