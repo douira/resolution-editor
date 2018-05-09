@@ -181,7 +181,7 @@ function loadJson(json, callbackOnSuccess) {
 
   //call success callback
   if (typeof callbackOnSuccess === "function") {
-    callbackOnSuccess();
+    callbackOnSuccess(res.address.forum);
   }
 }
 
@@ -224,7 +224,7 @@ function serverLoad(token, doToast, callback) {
   $.ajax(ajaxSettings)
   .done(function(response) {
     //attempt to load json into editor
-    loadJson(response, function() {
+    loadJson(response, function(forum) {
       //display toast
       if (doToast) {
         displayToast("Successfully loaded");
@@ -232,7 +232,7 @@ function serverLoad(token, doToast, callback) {
 
       //call callback if there is one
       if (typeof callback === "function") {
-        callback();
+        callback(forum);
       }
 
       //set flag, loaded resolution is fully saved already

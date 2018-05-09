@@ -469,7 +469,7 @@ $.fn.setSelectValueId = function(setValueId) {
   select.material_select();
 };
 
-//checks if a input field has a autocompletable value
+//checks if a input field has a autocompletable and ok value
 $.fn.checkAutoCompValue = function(loadedData) {
   var elem = this;
 
@@ -489,7 +489,7 @@ $.fn.checkAutoCompValue = function(loadedData) {
     return false;
   }
 
-  //keep track if value ok
+  //keep track of value ok
   var valueOk = true;
 
   //check for presence of value
@@ -506,12 +506,40 @@ $.fn.checkAutoCompValue = function(loadedData) {
 
     //only if there actually is a selector for this element in the data mappings
     if (matchDataSelector) {
-      valueOk = loadedData.autofillDataMapping[matchDataSelector].includes(value);
+      //get data to match value in
+      var matchData = loadedData.autofillDataMapping[matchDataSelector];
+
+      //resolve reference to loadedData if given as string
+      if (typeof matchData === "string") {
+        matchData = loadedData[matchData];
+      }
+
+      //for array type data match check if its contained, otherwise must have value 1 to be valid
+      valueOk = matchData instanceof Array ?
+        matchData.indexOf(value) !== -1 :
+        matchData[value] === 1 || typeof matchData[value] === "object";
     }
   }
 
   //return determined state
   return valueOk;
+};
+
+//does autocomplete abbreviation replacement
+$.fn.abbrevReplace = function(mapping) {
+  var value = this.val();
+  var unabbreviated = mapping[abbrevMappingPrep(value)];
+  if (typeof unabbreviated === "object") {
+    //set value to new unabbreviated name
+    value = unabbreviated.to;
+
+    //replace with non-abbreviated version
+    this.val(value);
+
+    //make field check for validity now
+    this.trigger("checkRequired");
+  }
+  return value;
 };
 
 //registers event handlers that are essential for the general function of the page
@@ -1110,14 +1138,17 @@ function registerEventHandlers(loadedData) {
       }
     }
 
-    //check if there actually was any data for this element
+    //if there actually was any data for this element
     if (foundData) {
-      //prepare the autocomplete init options object
+      //get data from loadedData is is string attrib reference
+      if (typeof foundData === "string") {
+        foundData = loadedData[foundData];
+      }
+
+      //prepare the autocomplete init options object, other settings are taken from autofillSettings
       var autoOpts = {
         //init the autocomplete on this field with the data for this field's autocomplete role
-        data: foundData,
-
-        //other settings are taken from autofillSettings
+        data: foundData
       };
 
       //if this is a editor-relevant field that tracks changes and must be in a clause
@@ -1135,6 +1166,36 @@ function registerEventHandlers(loadedData) {
       log({ msg: "no autocomplete data found for field", elem: this });
     }
   });
+  $("input#forum-name")
+  .on("change", function(e) {
+    e.stopPropagation();
+
+    //replace if there is unabbreviated version
+    var elem = $(this);
+    var value = elem.abbrevReplace(loadedData.forumMapping);
+
+    //forum is now a valid name, check if it changed from the current mapping forum name
+    //forum changed, update mappings: if change caused mapping update
+    if (value !== loadedData.selectedForum && loadedData.generateCountryMappings(value)) {
+      //re-init fields that use sponsor data
+      //check chips and sponsor fields for validity with new sponsor data
+      $("#main-spon, #co-spon, #amd-spon").triggerAll("init checkRequired");
+    }
+  });
+  $("#main-spon, #amd-spon").on("change", function() {
+    //replace if there is unabbreviated version
+    var elem = $(this);
+    elem.abbrevReplace(loadedData.countryMapping);
+  });
+  $("#main-spon").on("change", function() {
+    //update chips on main sponsor change
+    $("#co-spon").trigger("checkRequired");
+  });
+  $("input.required, textarea.required")
+  .on("change", function() {
+    //check again on changed value
+    $(this).trigger("checkRequired");
+  });
   var requiredContainers = $("#meta-data, #preamb-clauses, #op-clauses");
   requiredContainers.on("checkRequired", "input.required, textarea.required", function() {
     var elem = $(this);
@@ -1145,11 +1206,6 @@ function registerEventHandlers(loadedData) {
 
     //apply to global flag
     badFieldPresent = badFieldPresent || ! valueOk;
-  });
-  $("input.required, textarea.required")
-  .on("change", function() {
-    //check again on changed value
-    $(this).trigger("checkRequired");
   });
   $("input[type='file']")
   .on("reset", function(e) {
@@ -1193,21 +1249,6 @@ function registerEventHandlers(loadedData) {
     //set meta canges unsaved flag
     metaChangesSaved = true;
   });
-  $("input#forum-name")
-  .on("change", function(e) {
-    e.stopPropagation();
-
-    //replace if has abbreviation extension
-    var elem = $(this);
-    var unabbreviated = loadedData.forumAbbrevMapping[elem.val().trim().toLowerCase()];
-    if (unabbreviated) {
-      //replace with non-abbreviated version
-      elem.val(unabbreviated);
-
-      //make field check for validity now
-      elem.trigger("checkRequired");
-    }
-  });
   $("input:not(.not-editor *)")
   .on("reset", function(e) {
     e.stopPropagation();
@@ -1246,23 +1287,24 @@ function registerEventHandlers(loadedData) {
     e.stopPropagation();
     var elem = $(this);
 
+    //get already present data (re-init is happening if this is an object)
+    var prevData = elem.material_chip("data");
+
     //init the chips thing with autocomplete options
     elem.material_chip({
-      //chips prefilled data
-      data: elem.getData().initData,
+      //chips prefilled data (loaded document)
+      data: prevData || elem.getData().initData,
 
       //autocomplete options for the input field
       autocompleteOptions: $.extend({
         //have it use the correct autocomplete data
-        data: loadedData.autofillInitData.sponsors,
+        data: loadedData.simpleCountryList,
 
         //don't send content updates for header information
 
         //other settings are taken from autofillSettings
       }, autofillSettings)
     });
-
-    elem.getData().initData = [];
   })
   .on("reset", function(e) {
     e.stopPropagation();
@@ -1287,30 +1329,23 @@ function registerEventHandlers(loadedData) {
 
     //check that all entries are ok sponsors in autofill data
     if (! valueBad) {
-      //get the data selector we have to match to
-      var matchDataSelector = Object.keys(loadedData.autofillDataMapping)
-        .find(function(selector) {
-          //check if element matches this selector
-          return elem.is(selector);
-        });
+      var matchData = loadedData.countryMapping;
 
-      //only if there actually is a selector for this element in the data mappings
-      if (matchDataSelector) {
-        var matchData = loadedData.autofillDataMapping[matchDataSelector];
+      //check all chips values for being included
+      var mainSponsor = $("#main-spon").val().trim();
+      valueBad = ! value.reduce(function(allOk, item, index) {
+        //get tag item content
+        var value = item.tag.trim();
 
-        //check all chips values for being included
-        valueBad = ! value.reduce(function(allOk, item, index) {
-          //must be included in data and not equal the main sponsor
-          var value = item.tag.trim();
-          var isOk = matchData.includes(value) && $("#main-spon").val().trim() !== value;
+        //must not be main sponsor and have an non-valid (not mapping) value in the data
+        var isOk = value !== mainSponsor && matchData[value] === 1;
 
-          //color-mark tag object
-          elem.children(".chip:eq(" + index + ")").classState(! isOk, "red white-text");
+        //color-mark tag object
+        elem.children(".chip:eq(" + index + ")").classState(! isOk, "red white-text");
 
-          //return for validation of whole array
-          return allOk && isOk;
-        }, true) || valueBad;
-      }
+        //return for validation of whole array
+        return allOk && isOk;
+      }, true) || valueBad;
     }
 
     //apply to global flag
@@ -1862,14 +1897,20 @@ function registerEventHandlers(loadedData) {
 }
 
 //converts an array of strings into an object with each string as a null prop
-function convertPropObj(orig, propValue) {
+function convertPropObj(orig) {
   //convert to prop object
   var obj = {};
   orig.forEach(function(str) {
-    //prop add
-    obj[str] = propValue;
+    //prop add, 1 signals ok value
+    obj[str] = null;
   });
   return obj;
+}
+
+//prepares strign for lookup in abbreviation mapping
+function abbrevMappingPrep(str) {
+  //lower case and remove other chars
+  return str.toLowerCase().replace(/[^a-z]+/g, "");
 }
 
 //do things when the document has finished loading
@@ -1998,9 +2039,9 @@ $(document).ready(function() {
       //data object to pass to event handlers
       var loadedData = {};
 
-      //multi functional mapping object:
       //maps from forum abbreviation to name and has forum object for real names, allows value check
       loadedData.forumMapping = { };
+      loadedData.forumAutofill = { };
 
       //for all forums
       for (var forumId in extData.forumsFlat) {
@@ -2008,47 +2049,73 @@ $(document).ready(function() {
         var forum = extData.forumsFlat[forumId];
 
         //create mapping to name for abbr
-        loadedData.forumMapping[forum.abbr] = forum.name;
+        loadedData.forumMapping[abbrevMappingPrep(forum.abbr)] = { to: forum.name };
 
-        //signal ok with identifier name
+        //signal ok with forum object
         loadedData.forumMapping[forum.name] = forum;
+
+        //create null props for autofill
+        loadedData.forumAutofill[forum.abbr] = null;
+        loadedData.forumAutofill[forum.name] = null;
       }
 
-      //function that generates country name mappings for a given selected forum name in loadedData
-      loadedData.generateCountryMapping = function(selectedForum) {
-        //generate mapping for all countries of this forum
-        //mapping (like forumMapping) from alt names to id name, id name has value 1
-        loadedData.countryMapping = { };
+      //mapping (like forumMapping) from alt names to id name, id name has value 1
+      loadedData.countryMapping = { };
+      loadedData.countryAutofill = { };
 
+      //list of countries autocomplete format, only allowed named as no replacing happens in chips
+      loadedData.simpleCountryList = { };
+
+      //function that generates country name mappings for a given selected forum name in loadedData
+      loadedData.generateCountryMappings = function(selectedForum) {
         //get selected forum object
         var forumCountries = loadedData.forumMapping[selectedForum];
-
         //stop if not present
         if (forumCountries) {
           //get list of countries
           forumCountries = forumCountries.countries;
         } else {
-          return;
+          //nothing changed
+          return false;
         }
+
+        //set the name of the forum these coutnry mappings are for
+        loadedData.selectedForum = selectedForum;
+
+        //generate mapping for all countries of this forum, reset to flush old values
+        loadedData.countryMapping = { };
+        loadedData.countryAutofill = { };
+        loadedData.simpleCountryList = { };
 
         //for all countries of this forum
         forumCountries.forEach(function(countryId) {
           //get country object
-          var country = extData.countries[countryId];
+          var country = extData.countriesFlat[countryId];
 
           //add full and placard name as mapping to real name
-          loadedData.countryMapping[country.placardname] = country.name;
-          loadedData.countryMapping[country.fullname] = country.name;
+          loadedData.countryMapping[abbrevMappingPrep(country.placardname)] = { to: country.name };
+          loadedData.countryMapping[abbrevMappingPrep(country.fullname)] = { to: country.name };
 
-          //id name maps to country object
-          loadedData.countryMapping[country.name] = country;
+          //id name maps to 1 for signaling ok name
+          loadedData.countryMapping[country.name] = 1;
+
+          //create null props for autofill
+          loadedData.countryAutofill[country.placardname] = null;
+          loadedData.countryAutofill[country.fullname] = null;
+          loadedData.countryAutofill[country.name] = null;
+
+          //also add to simple autofill list
+          loadedData.simpleCountryList[country.name] = null;
         });
+
+        //return true to signal change
+        return true;
       };
 
-      //mapping between autofill data and input field selectors
-      loadedData.autofillDataMapping = { //
-        //"#main-spon,#co-spon,#amd-spon": sponsors,
-        //"#forum-name": forums, //only full name ok
+      //mapping between raw autofill data and input field selectors
+      loadedData.autofillDataMapping = {
+        "#main-spon,#co-spon,#amd-spon": "countryMapping", //only reference
+        "#forum-name": loadedData.forumMapping, //use mapping object
         "#preamb-clauses .phrase-input": extData.preamb,
         "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": extData.op,
       };
@@ -2061,13 +2128,12 @@ $(document).ready(function() {
 
       //data used to inititalize autocomplete fields/thingies and their other options
       loadedData.autofillInitData = {
-        //"#forum-name": forums,
-        //"#main-spon,#co-spon,#amd-spon": sponsors,
-        //sponsors: sponsors, //shortcut for chips init
+        "#main-spon,#amd-spon": "countryAutofill", //only reference
+        "#forum-name": loadedData.forumAutofill,
         "#preamb-clauses .phrase-input": convertPropObj(extData.preamb),
         "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input":
           convertPropObj(extData.op),
-      };
+      }; //co sponsor chips gets data on its own
 
       //register all event handlers
       registerEssentialEventHandlers(true);
@@ -2080,7 +2146,7 @@ $(document).ready(function() {
         $("*:not(.autocomplete, .chips)").trigger("init");
 
         //initiate loading of resolution from server with preset token
-        serverLoad(resolutionToken, true, function() {
+        serverLoad(resolutionToken, true, function(forum) {
           //don't send update if still loading,
           //some events may be fake-fired in the process of getting
           $(".clause input, .clause textarea")
@@ -2089,9 +2155,13 @@ $(document).ready(function() {
             sendLVUpdate("content", "type", $(this));
           });
 
+          //create country mappings with forum
+          loadedData.generateCountryMappings(forum);
+
           //init autocomplete fields now, they require to be already in their final positions
-          //to detect the correct dataset to use for completion
-          $(".autocomplete").trigger("init");
+          //to detect the correct dataset to use for completion,
+          //the forum is also necessary to create the correct country autofill data
+          $(".autocomplete, #co-spon").trigger("init");
         });
       } else {
         //trigger init on all
