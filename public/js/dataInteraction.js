@@ -264,7 +264,8 @@ function generatePdf() {
     makeAlertMessage(
       "description", "Generated PDF file", "done",
       "Click <b><a href='" + response +
-      "' target='_blank'>here</a></b> to view your resolution as a PDF file.");
+      "' target='_blank'>here</a></b> to view your resolution as a PDF file." +
+      "If the PDF does not reflect a recent change, reload the PDF viewer page.");
   })
   .fail(function() {
     //stop showing spinner
