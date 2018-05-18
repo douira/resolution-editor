@@ -2047,7 +2047,7 @@ $(document).ready(function() {
       for (var forumId in extData.forumsFlat) {
         //get the current forum
         var forum = extData.forumsFlat[forumId];
-        console.log(forum);
+
         //create mapping to name for abbr
         loadedData.forumMapping[abbrevMappingPrep(forum.abbr)] = { to: forum.name };
 
@@ -2113,27 +2113,53 @@ $(document).ready(function() {
         return true;
       };
 
-      //mapping between raw autofill data and input field selectors
-      loadedData.autofillDataMapping = {
-        "#main-spon,#co-spon,#amd-spon": "countryMapping", //only reference
-        "#forum-name": loadedData.forumMapping, //use mapping object
-        "#preamb-clauses .phrase-input": extData.preamb,
-        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": extData.op,
-      };
-
       //plain phrase lists
       loadedData.phrases = {
         op: extData.op,
         preamb: extData.preamb
       };
 
+      //generate prefix combinations
+      var phrases, prefixes, phrase, phraseIndex, prefixIndex, phrasesLength;
+      for (var phraseType in loadedData.phrases) {
+        //get current list of phrases
+        phrases = extData[phraseType];
+
+        //get list of prefixes for this type of phrase
+        prefixes = extData.prefix[phraseType] || [];
+
+        //for all phrases
+        for (phraseIndex = 0, phrasesLength = phrases.length;
+             phraseIndex < phrasesLength; phraseIndex ++) {
+          //get current phrase
+          phrase = phrases[phraseIndex];
+
+          //change first char to lower case
+          phrase = phrase[0].toLowerCase() + phrase.substr(1);
+
+          //for all phrase prefixes
+          for (prefixIndex = 0; prefixIndex < prefixes.length; prefixIndex ++) {
+            //add prefixed phrase to list of phrases for this type
+            phrases.push(prefixes[prefixIndex] + " " + phrase);
+          }
+        }
+      }
+
+      //mapping between raw autofill data and input field selectors
+      loadedData.autofillDataMapping = {
+        "#main-spon,#co-spon,#amd-spon": "countryMapping", //only reference
+        "#forum-name": loadedData.forumMapping, //use mapping object
+        "#preamb-clauses .phrase-input": loadedData.phrases.preamb,
+        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": loadedData.phrases.op,
+      };
+
       //data used to inititalize autocomplete fields/thingies and their other options
       loadedData.autofillInitData = {
         "#main-spon,#amd-spon": "countryAutofill", //only reference
         "#forum-name": loadedData.forumAutofill,
-        "#preamb-clauses .phrase-input": convertPropObj(extData.preamb),
+        "#preamb-clauses .phrase-input": convertPropObj(loadedData.phrases.preamb),
         "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input":
-          convertPropObj(extData.op),
+          convertPropObj(loadedData.phrases.op),
       }; //co sponsor chips gets data on its own
 
       //register all event handlers
