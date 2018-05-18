@@ -132,21 +132,24 @@ router.post("/save/:token", function(req, res) {
   routingUtil.checkBodyRes(req, res, resolutionSent => {
     //authorize, doesn't do code auth if no code necessary (if session present)
     routingUtil.fullAuth(req, res, token => {
+      //plenary id to set
+      let plenaryId;
+
       //require extData to be present
       extDataPromise.then(extData => {
         //get the plenary type for the forum of this resolution
-        resolutionSent.plenaryId =
-          extData.forums[resolutionSent.resolution.address.forum].plenary;
+        plenaryId = extData.forums[resolutionSent.resolution.address.forum].plenary;
       })
 
       //save document
-      .then(resolutions.updateOne(
+      .then(() => resolutions.updateOne(
         { token: token },
         {
           $set: {
             content: resolutionSent, //update resolution content
             changed: Date.now(), //update changedate
-            unrenderedChanges: true //must be rendered
+            unrenderedChanges: true, //must be rendered
+            plenaryId: plenaryId
           },
           $max: {
             stage: 1 //first saved stage at least
