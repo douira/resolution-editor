@@ -1910,7 +1910,7 @@ function convertPropObj(orig) {
 //prepares string for lookup in abbreviation mapping
 function abbrevMappingPrep(str) {
   //lower case and remove other chars
-  return str.toLowerCase().replace(/[^a-z]+/g, "");
+  return str.toLowerCase().replace(/[^a-z0-9]+/g, "");
 }
 
 //do things when the document has finished loading
@@ -2047,7 +2047,7 @@ $(document).ready(function() {
       for (var forumId in extData.forumsFlat) {
         //get the current forum
         var forum = extData.forumsFlat[forumId];
-
+        console.log(forum);
         //create mapping to name for abbr
         loadedData.forumMapping[abbrevMappingPrep(forum.abbr)] = { to: forum.name };
 
@@ -2070,6 +2070,7 @@ $(document).ready(function() {
       loadedData.generateCountryMappings = function(selectedForum) {
         //get selected forum object
         var forumCountries = loadedData.forumMapping[selectedForum];
+
         //stop if not present
         if (forumCountries) {
           //get list of countries
