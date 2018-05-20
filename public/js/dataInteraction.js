@@ -332,8 +332,9 @@ $.fn.clauseAsObject = function(allowEmpty) {
   }
 
   //check for visible extended clause content
-  var contentExtVal = this.children(".clause-content-ext").find("textarea").val().trim();
-  if (contentExtVal.length) {
+  var contentExt = this.children(".clause-content-ext");
+  var contentExtVal = contentExt.find("textarea").val().trim();
+  if (contentExtVal.length || ! contentExt.hasClass("hide-this")) {
     clauseData.contentExt = contentExtVal;
   }
 
