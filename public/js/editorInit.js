@@ -1468,7 +1468,7 @@ function registerEventHandlers(loadedData) {
     if (contentExtVal.length) {
       //fill ext content condensed with text from field and show
       elem.children(".clause-ext-cond").text(contentExtVal).setHide(false);
-    }
+    } //is hidden by attemptRemove of subclause
 
     //get text content
     var textContent = elem.children(".clause-content").children("textarea").val().trim();
@@ -1610,6 +1610,11 @@ function registerEventHandlers(loadedData) {
 
         //clear ext field
         extField.trigger("reset");
+
+        //hide ext content condensed field on parent and trigger inactivation to update cond fields
+        var parentClause = parent.parent();
+        parentClause.children(".clause-ext-cond").setHide(true);
+        parentClause.trigger("editInactive");
       }
 
       //remove this clause
