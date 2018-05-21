@@ -13,6 +13,7 @@
   getAmendmentUpdate,
   amdActionType,
   log,
+  allowLV,
   resolutionFormat*/
 /* exported loadFilePick,
   serverLoad,
@@ -656,6 +657,11 @@ type: structure
   clear, content cleared, ext content removed but subclauses stay
 */
 function sendLVUpdate(type, eventType, elem) {
+  //stop if not allowed
+  if (! allowLV) {
+    return;
+  }
+
   //sends a structure update to server
   if (type === "structure") {
     //empty path cache as the structure has changed and cache of paths is invalid now

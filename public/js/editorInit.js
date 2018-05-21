@@ -21,7 +21,8 @@
   resolutionToken,
   resolutionAttributes,
   getAmendmentUpdate,
-  amdActionType*/
+  amdActionType,
+  allowLV*/
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -49,8 +50,8 @@ var metaChangesSaved = true;
 //token and access code for this resolution, used for saving
 var resolutionToken, resolutionCode;
 
-//access level and chair mode are later taken from document
-var accessLevel, chairMode;
+//access level is later taken from document
+var accessLevel;
 
 //is set to true if we need to send updates to LV viewers
 var sendLVUpdates = false;
@@ -72,6 +73,9 @@ var getAmendmentUpdate;
 
 //the current amendment action type
 var amdActionType;
+
+//true when lv is enabled
+var allowLV;
 
 //updates the disabling state of eab movement buttons, used as event handler
 function makeEabMoveUpdateDisabledHandler(isUpButton) {
@@ -639,10 +643,8 @@ function registerEventHandlers(loadedData) {
     $(this).material_select();
   });
 
-  //if chair or master access, amendments allowed
-  var doAmendments = accessLevel === "MA" ||
-      ! resolutionAttributes.readonly && accessLevel === "CH" && resolutionStage === 6;
-  if (doAmendments) {
+  //setup amd if lv is enabled
+  if (allowLV) {
     //the current amendment action type
     amdActionType = "noselection";
 
@@ -1953,8 +1955,6 @@ $(document).ready(function() {
 
   //check for chair or admin access
   accessLevel = $("#code-access-level").text();
-  chairMode = accessLevel === "MA" || accessLevel === "CH" && resolutionStage < 7 ||
-    accessLevel === "SG" && resolutionStage < 11;
 
   //autosave is aenabled if at non 0 stage
   autosaveEnabled = resolutionStage > 0;
@@ -1978,6 +1978,13 @@ $(document).ready(function() {
   resolutionAttributes.allowSave = ! resolutionAttributes.readonly || accessLevel === "MA";
   resolutionAttributes.allowAdvance = ! resolutionAttributes.noadvance || accessLevel === "MA";
 
+  //if chair, sg or master access, liveview allowed
+  allowLV =
+    ! resolutionAttributes.readonly && (
+    resolutionStage === 6 && (accessLevel === "CH" || accessLevel === "SG") ||
+    resolutionStage === 10 && accessLevel === "SG") ||
+    resolutionStage && accessLevel === "MA";
+
   //register an access input group for resolution advancement
   registerAccessInputs({
     url: "/resolution/advance/",
@@ -1989,7 +1996,7 @@ $(document).ready(function() {
 
     //additional validation to check for vote field values
     additionalValidation: function(setFieldState) {
-      //return true right away if we're not at stage 6
+      //return true right away if we're not at a voting/lv stage
       if (! (resolutionStage === 6 || resolutionStage === 10)) {
         return true;
       }
@@ -2197,7 +2204,7 @@ $(document).ready(function() {
         //initiate loading of resolution from server with preset token
         serverLoad(resolutionToken, true, function(forum) {
           //don't send update if still loading,
-          //some events may be fake-fired in the process of getting
+          //some events may be fake-fired in the process of getting data into the clauses
           $(".clause input, .clause textarea")
           .on("paste keyup", function() {
             //send content update
@@ -2232,10 +2239,8 @@ $(document).ready(function() {
       }
 
       //if as MA or at stage 6/10 and authorized as CH/SG, start liveview editor websocket
-      if (resolutionStage === 6 && (accessLevel === "CH" || accessLevel === "SG") ||
-          resolutionStage === 10 && accessLevel === "SG" ||
-          resolutionStage && accessLevel === "MA") { //MA access to LV needs at least once saved
-        //disable autosave for liveview, we don't want to be accidenatlly saving undesired states
+      if (allowLV) {
+        //disable autosave for liveview, we don't want to be accidentally saving a undesired state
         autosaveEnabled = false;
 
         //give token and code, false for being editor type client
