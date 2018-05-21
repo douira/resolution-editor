@@ -550,6 +550,20 @@ $.fn.abbrevReplace = function(mapping) {
   return value;
 };
 
+//processes text for condensed clause display, highlights special chars
+function processCondText(text) {
+  //return right away if empty or falsy or if not in stage for FC
+  if (! text || ! text.length || resolutionStage !== 3) {
+    return text;
+  }
+
+  //enclose ^_|* with bold span tags
+  return text.replace(/[_^|*]+/g, function(match) {
+    //return enclosed in emphasis tags
+    return "<span class='bold deep-orange lighten-3'>" + match + "</span>";
+  });
+}
+
 //registers event handlers that are essential for the general function of the page
 function registerEssentialEventHandlers(doLoad) {
   //we can only load from file or delete if we loaded the resolution
@@ -1494,7 +1508,7 @@ function registerEventHandlers(loadedData) {
     //if there is ext content
     if (contentExtVal.length) {
       //fill ext content condensed with text from field and show
-      clauseExtCond.text(contentExtVal).setHide(false);
+      clauseExtCond.html(processCondText(contentExtVal)).setHide(false);
     }
 
     //get text content
@@ -1504,7 +1518,8 @@ function registerEventHandlers(loadedData) {
     var phraseFieldWrapper = elem.children(".phrase-input-wrapper");
     if (phraseFieldWrapper.length) {
       //put value into condensed element
-      condensedWrapper.children(".cond-phrase").text(phraseFieldWrapper.find("input").val());
+      condensedWrapper.children(".cond-phrase")
+        .html(processCondText(phraseFieldWrapper.find("input").val()));
 
       //add space to content, between phrase and content
       textContent = " " + textContent;
@@ -1513,7 +1528,8 @@ function registerEventHandlers(loadedData) {
     //also move content into condensed content element
     condensedWrapper
       .children(".cond-content")
-      .html(textContent.length ? textContent : "<span class='red-text'>no content</span>");
+      .html(textContent.length ?
+        processCondText(textContent) : "<span class='red-text'>no content</span>");
 
     //if they are present, we were in edit just now
     //stop if we were already not in edit mode
