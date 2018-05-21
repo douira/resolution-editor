@@ -81,7 +81,7 @@ block content
     h5#whitespace Whitespace
     p Please refrain from inserting any #[b abnormal whitespace] into clause text areas or any other input field. The editor will most likely remove all unnecessary whitespace before rendering the resolution. Line breaks, tabs and more obscure whitespace characters will be removed from clauses in order to preserve formatting and aesthetics in the rendered document. Do not use tabs for indentation of sub clauses and instead use the integrated button, that appears in the clause when you click the edit button or start typing, to create sub clauses.
     h5#special-chars Special Characters
-    p Some characters have a special meaning and are removed or transformed by the editor and the renderer. Try to find another way of expressing the meaning of a special character if it doesn't have the expected purpose of the editor. Phrases will be stripped of all non-alphanumeric characters. If any character is observed to behave differently than described here or produces an error, please immediately contact your Chair and IT-Management!
+    p Some characters have a special meaning and are removed or transformed by the editor and the renderer. Try to find another way of expressing the meaning of a special character if it doesn't have the expected purpose of the editor. Phrases will be stripped of all non-alphanumeric characters. If any character is observed to behave differently than described here, produces an error or is necessary for correct display of the resolution although it is disallowed, please immediately contact your Chair and IT-Management!
     table.striped
       thead: tr
         th Character(s)
@@ -113,7 +113,7 @@ block content
         +row(["_", "^", "*", "|"])
           | See #[a(href="#special-syntax") Special Syntax]. These characters are used to denote the application of special styling in the rendered document. Using them for a different purpose will produce unexpected results.
         +row(["ö", "é", "ì"])
-          | If you need to represent names in their romanized but still foreign form, use the letters with the different marks on them instead of adding combining diacritical marks, as they will be removed and are unsupported by the renderer.
+          | If you need to represent names in their romanized but still foreign form, use the letters with the different marks on them instead of adding combining diacritical marks, as they will be removed and are unsupported by the renderer. Get help if this is causing problems for you.
         +row(["_", "^", ",", "-", "(", "&", "/", "+"])
           | These characters will be removed if found at the end of a clause content block.
         +row(["|", ".", ",", "-", ")", "&", "/", "+"])
