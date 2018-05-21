@@ -110,7 +110,7 @@ block content
           if meta.clauseCount[2]
             +t-item("Subsubclauses:", meta.clauseCount[2])
       if meta.amendments && meta.amendments.length
-        +collapsible-item("Amentment History", "speaker_notes")
+        +collapsible-item("Amendment History", "speaker_notes")
           ul.collection
             - const now = Date.now();
             each amendment in meta.amendments
@@ -352,14 +352,17 @@ block content
             +icon(icons.code, "prefix")
             input#unlock-code-input(name="code" type="text" placeholder=placeholders.code)
             label(for="unlock-code-input") Enter access code
-        .col.xl9.l8.m7.s12.justify#no-load-mode Editing access to this resolution is restricted beyond your access level (#[a(href="/help#" + accessLevel)=accessLevel]). You can still view meta information and read-only versions of it however. The editor for this resolution can be opened by entering an access code with the levels
-          em=meta.stage < 7 ? " Chair-like" : " SG"
-          case meta.stage
-            when 2
-              | , #[em AP]
-            when 3
-              | , #[em FC]
-          |  or #[em MA]. See #[a(href="/help#access-levels") here] for a detailed description of all access levels.
+        .col.xl9.l8.m7.s12.justify#no-load-mode Editing access to this resolution is restricted beyond your access level (#[a(href="/help#" + accessLevel)=accessLevel]). You can still view meta information and read-only versions of it however. The editor for this resolution can be opened by entering an access code with the level
+          if meta.stage < 11
+            | s
+            em=meta.stage < 7 ? " Chair-like" : " SG"
+            case meta.stage
+              when 2
+                | , #[em AP]
+              when 3
+                | , #[em FC]
+            | or
+          |  #[em MA]. See #[a(href="/help#access-levels") here] for a detailed description of all access levels.
       .center: a.btn.waves-effect.waves-light#unlock-submit-btn(href="#" class=pri)&attributes(tooltip("Tries to open editor with the given code", "right")) Unlock
 block scripts
   +static("js", "/js/scrollintoview.js")
