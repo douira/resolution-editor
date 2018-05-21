@@ -1448,9 +1448,25 @@ function registerEventHandlers(loadedData) {
       elem.siblings(".add-clause-container").show();
     }
   })
-  .on("editInactive", function(e, amdUpdatePossible, noExtContHide) {
+  .on("editInactive", function(e, amdUpdatePossible, noExtCondUpdate) {
     e.stopPropagation();
     var elem = $(this);
+
+    //get content ext field and cond
+    var clauseExtCond = elem.children(".clause-ext-cond");
+    var clauseContentExt = elem.children(".clause-content-ext");
+    var contentExtVal = clauseContentExt.children("textarea").val();
+
+    //if we are allowed to update, there is no ext content, but the ext content field was visible
+    if (! noExtCondUpdate &&
+        ! contentExtVal.length && ! clauseContentExt.hasClass("hide-this")) {
+      //hide to include hidden in structure update
+      clauseContentExt.setHide(true);
+
+      //is either hidden by attemptRemove of subclause, or is just empty and thereby unused
+      //send lv structure update to signal removal of unused ext content field
+      sendLVUpdate("structure", "remext", elem);
+    }
 
     //hide input fields
     elem.children(".clause-content, .clause-content-ext, .phrase-input-wrapper").setHide(true);
@@ -1461,21 +1477,10 @@ function registerEventHandlers(loadedData) {
     //show condensed
     condensedWrapper.setHide(false);
 
-    //get content ext field
-    var contentExtVal = elem.children(".clause-content-ext").children("textarea").val();
-
     //if there is ext content
-    var clauseExtCond = elem.children(".clause-ext-cond");
     if (contentExtVal.length) {
       //fill ext content condensed with text from field and show
       clauseExtCond.text(contentExtVal).setHide(false);
-    } else if (clauseExtCond.text().length && ! noExtContHide) {
-      //empty text to not send this update again
-      clauseExtCond.text("");
-
-      //is either hidden by attemptRemove of subclause, or is just empty and thereby unused
-      //send lv structure update to signal removal of unused ext content field
-      sendLVUpdate("structure", "remext", elem);
     }
 
     //get text content
