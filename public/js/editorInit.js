@@ -372,20 +372,21 @@ $.fn.filterIllegalContent = function() {
       //normalize quotes
       .replace(/[“”‹›«»]/g, "\"")
 
-      //remove trailing _ and ^ (produce latex error), also remove trailing . , - ) &
-      .replace(/[_^.,\-)&]+$/gm, "")
+      //remove all non-space whitespace and/or at least two spaces surrounded by any whitespace
+      //(replace by single space to preserve words)
+      .replace(/\s*[^\S ]+| {2,}\s*/g, " ")
 
-      //replace newlines with spaces
-      .replace(/\n+/g, " ")
+      //remove trailing _ and ^ (produce latex error), also remove trailing .,-(&/+
+      .replace(/[_^,\-(&/+]+$/g, "")
+
+      //remove preceding |.,-)&/+
+      .replace(/^[|.,\-)&/+]+/g, "")
 
       //remove padding whitespace
       .trim()
 
       //filter characters
-      .replace(/[^a-zA-Z0-9*_^|&’"\-.,()/+\u00c0-\u024F ]+/g, "")
-
-      //remove bad whitespace
-      .replace(/\s*[^\S ]+\s*/g, " ");
+      .replace(/[^a-zA-Z0-9*_^|&’"\-.,()/+\u00c0-\u024F ]+/g, "");
 
     //append final " if there is an odd amount
     if ((newContent.match(/"/g) || []).length % 2) {
@@ -416,6 +417,9 @@ $.fn.filterIllegalContent = function() {
 
       //trigger autoresize to correct textarea size
       elem.trigger("autoresize");
+
+      //trigger content update for this changed content
+      sendLVUpdate("content", "charfilter", elem);
     }
   });
 };
@@ -1452,6 +1456,14 @@ function registerEventHandlers(loadedData) {
     e.stopPropagation();
     var elem = $(this);
 
+    //get EABs
+    var clauseTitle = elem.children(".clause-title");
+    var eabs = clauseTitle.children("#eab-wrapper");
+
+    //strip illegal characters and whitespace from textareas and inputs
+    //this is done on the server as well, but we want to discourage this behavior in the user
+    elem.find("textarea.required,input.required").filterIllegalContent();
+
     //get content ext field and cond
     var clauseExtCond = elem.children(".clause-ext-cond");
     var clauseContentExt = elem.children(".clause-content-ext");
@@ -1501,10 +1513,6 @@ function registerEventHandlers(loadedData) {
       .children(".cond-content")
       .html(textContent.length ? textContent : "<span class='red-text'>no content</span>");
 
-    //get EABs
-    var clauseTitle = elem.children(".clause-title");
-    var eabs = clauseTitle.children("#eab-wrapper");
-
     //if they are present, we were in edit just now
     //stop if we were already not in edit mode
     if (! eabs.length) {
@@ -1527,10 +1535,6 @@ function registerEventHandlers(loadedData) {
     if (elem.isSubClause()) {
       elem.siblings(".add-clause-container").hide();
     }
-
-    //strip illegal characters and whitespace from textareas and inputs
-    //this is done on the server as well, but we want to discourage this behavior in the user
-    elem.find("textarea.required,input.required").filterIllegalContent();
 
     //only check if message wasn't displayed yet
     if (! displayedPhraseContentMessage) {
