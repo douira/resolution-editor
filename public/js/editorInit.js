@@ -1448,7 +1448,7 @@ function registerEventHandlers(loadedData) {
       elem.siblings(".add-clause-container").show();
     }
   })
-  .on("editInactive", function(e, amdUpdatePossible) {
+  .on("editInactive", function(e, amdUpdatePossible, noExtContHide) {
     e.stopPropagation();
     var elem = $(this);
 
@@ -1465,10 +1465,18 @@ function registerEventHandlers(loadedData) {
     var contentExtVal = elem.children(".clause-content-ext").children("textarea").val();
 
     //if there is ext content
+    var clauseExtCond = elem.children(".clause-ext-cond");
     if (contentExtVal.length) {
       //fill ext content condensed with text from field and show
-      elem.children(".clause-ext-cond").text(contentExtVal).setHide(false);
-    } //is hidden by attemptRemove of subclause
+      clauseExtCond.text(contentExtVal).setHide(false);
+    } else if (clauseExtCond.text().length && ! noExtContHide) {
+      //empty text to not send this update again
+      clauseExtCond.text("");
+
+      //is either hidden by attemptRemove of subclause, or is just empty and thereby unused
+      //send lv structure update to signal removal of unused ext content field
+      sendLVUpdate("structure", "remext", elem);
+    }
 
     //get text content
     var textContent = elem.children(".clause-content").children("textarea").val().trim();
@@ -1614,7 +1622,7 @@ function registerEventHandlers(loadedData) {
         //hide ext content condensed field on parent and trigger inactivation to update cond fields
         var parentClause = parent.parent();
         parentClause.children(".clause-ext-cond").setHide(true);
-        parentClause.trigger("editInactive");
+        parentClause.trigger("editInactive", [false, true]);
       }
 
       //remove this clause
