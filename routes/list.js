@@ -6,6 +6,7 @@ const tokenProcessor = require("../lib/token");
 const { logger, issueError } = require("../lib/logger");
 const { validateAccessLevel } = require("../lib/resUtil");
 const generatePdf = require("../lib/generatePdf");
+const extDataPromise = require("../lib/extData");
 
 //get collections
 let resolutions, resolutionArchive, access, metadata, booklets;
@@ -61,51 +62,55 @@ router.use("/forum", (req, res, next) =>
 
 //GET overview of forums
 router.get("/forum", function(req, res) {
-  //forum select interface
-  res.render("forumselect");
+  //forum select interface, display possible forums
+  extDataPromise.then(extData => res.render("forumselect", { forums: extData.forums }));
 });
 
 //GET overview of forum resolutions
 router.get("/forum/:forumNameId", function(req, res) {
-  //get committee id
-  //const forumNameId = req.params.forumNameId;
+  //get forum name
+  const forumName = req.params.forumNameId.replace(/-/g, " ");
 
-  //TODO: error on wrong forum name (invalid name)
+  //verify that this is a valid name
+  extDataPromise.then(extData => {
+    //check that the given forums exists
+    if (forumName in extData.forums) {
+      //get all resolutions of that forum
+      resolutions.aggregate([
+        //find resolutions of this forum
+        { $match: {
+          "content.resolution.address.forum": forumName
+        }},
 
-  //TODO: get name of committee from data
-  const forumName = "Special Conference on Globalism"; //placeholder
+        //project to only transmit necessary data
+        { $project: {
+          token: 1,
+          stage: 1,
+          forum: "$content.resolution.address.forum",
+          sponsor: "$content.resolution.address.sponsor.main",
+          _id: 0,
+          resolutionId: 1,
+          idYear: 1
+        }},
 
-  //get all resolutions of that forum
-  resolutions.aggregate([
-    //find resolutions of this forum
-    { $match: {
-      "content.resolution.address.forum": forumName
-    }},
+        //group into stages
+        { $group: {
+          _id: "$stage",
+          list: { $push: "$$ROOT" } //append whole object to list
+        }},
 
-    //project to only transmit necessary data
-    { $project: {
-      token: 1,
-      stage: 1,
-      forum: "$content.resolution.address.forum",
-      sponsor: "$content.resolution.address.sponsor.main",
-      _id: 0,
-      resolutionId: 1,
-      idYear: 1
-    }},
-
-    //group into stages
-    { $group: {
-      _id: "$stage",
-      list: { $push: "$$ROOT" } //append whole object to list
-    }},
-
-    //sort by stage
-    { $sort: {
-      _id: 1
-    }}
-  ]).toArray().then(items => {
-    //display listoverview with resolutions
-    res.render("listoverview", { items: items, forumMode: true, forumName });
+        //sort by stage
+        { $sort: {
+          _id: 1
+        }}
+      ]).toArray().then(items => {
+        //display listoverview with resolutions
+        res.render("listoverview", { items: items, forumMode: true, forumName });
+      });
+    } else {
+      //bad, make an error
+      issueError(req, res, 400, "Invalid forum name given", { badForumName: forumName });
+    }
   });
 });
 

@@ -12,6 +12,6 @@ block content
     if forums
       ul
         each forum in forums
-          li: a(href="/list/committee/" + forum.nameId)=forum.name
+          li: a(href="/list/forum/" + forum.name.replace(/ /g, "-"))=forum.name
     else
       p.center: em.grey-text.text-darken-1 No forums to display.
