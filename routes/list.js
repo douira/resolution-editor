@@ -51,9 +51,64 @@ router.get("/overview", function(req, res) {
     }}
   ]).toArray().then(items => {
     //send data to client
-    res.render("listoverview", { items: items, isArchive: useArchive });
+    res.render("listoverview", { items: items, isArchive: useArchive, comMode: false });
   }, err => issueError(req, res, 500, "could not query resolution in overview", err));
 });
+
+//list of resolutions for chairs requires chair access
+router.use("/forum", (req, res, next) =>
+  routingUtil.requireSession("forum", req, res, () => next()));
+
+//GET overview of forums
+router.get("/forum", function(req, res) {
+  //forum select interface
+  res.render("forumselect");
+});
+
+//GET overview of forum resolutions
+router.get("/forum/:forumNameId", function(req, res) {
+  //get committee id
+  //const forumNameId = req.params.forumNameId;
+
+  //TODO: error on wrong forum name (invalid name)
+
+  //TODO: get name of committee from data
+  const forumName = "Special Conference on Globalism"; //placeholder
+
+  //get all resolutions of that forum
+  resolutions.aggregate([
+    //find resolutions of this forum
+    { $match: {
+      "content.resolution.address.forum": forumName
+    }},
+
+    //project to only transmit necessary data
+    { $project: {
+      token: 1,
+      stage: 1,
+      forum: "$content.resolution.address.forum",
+      sponsor: "$content.resolution.address.sponsor.main",
+      _id: 0,
+      resolutionId: 1,
+      idYear: 1
+    }},
+
+    //group into stages
+    { $group: {
+      _id: "$stage",
+      list: { $push: "$$ROOT" } //append whole object to list
+    }},
+
+    //sort by stage
+    { $sort: {
+      _id: 1
+    }}
+  ]).toArray().then(items => {
+    //display listoverview with resolutions
+    res.render("listoverview", { items: items, forumMode: true, forumName });
+  });
+});
+
 
 //gets the current insert group counter
 function getInsertGroupCounter() {
