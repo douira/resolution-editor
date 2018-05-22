@@ -14,8 +14,9 @@ block content
         | This is a list of archived(deleted) resolutions grouped by stage. Go back to the #[a(href="?") list] of regular resolutions.
       else
         | This is a list of all resolutions grouped by stage.
-        if comMode
-          |  These resolutions are in the committee #[b=comName].
+        if forumMode
+          //-isArchive is false if forumMode is active
+          |  These resolutions are in the forum #[b=forumName].
         else
           | View the #[a(href="?archive=1") list] of archived (deleted) resolutions.
     if items.length

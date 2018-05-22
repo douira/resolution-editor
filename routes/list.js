@@ -56,30 +56,30 @@ router.get("/overview", function(req, res) {
 });
 
 //list of resolutions for chairs requires chair access
-router.use("/committee", (req, res, next) =>
-  routingUtil.requireSession("committee", req, res, () => next()));
+router.use("/forum", (req, res, next) =>
+  routingUtil.requireSession("forum", req, res, () => next()));
 
-//GET overview of committees
-router.get("/committee", function(req, res) {
-  //select committee interface
-  res.render("committeeselect");
+//GET overview of forums
+router.get("/forum", function(req, res) {
+  //forum select interface
+  res.render("forumselect");
 });
 
-//GET overview of committee resolutions
-router.get("/committee/:comId", function(req, res) {
+//GET overview of forum resolutions
+router.get("/forum/:forumNameId", function(req, res) {
   //get committee id
-  //const comId = req.params.comId;
+  //const forumNameId = req.params.forumNameId;
 
-  //TODO: error on wrong committee id (missing name or similar)
+  //TODO: error on wrong forum name (invalid name)
 
   //TODO: get name of committee from data
-  const comName = "Special Conference on Globalism"; //placeholder
+  const forumName = "Special Conference on Globalism"; //placeholder
 
-  //get all resolutions of that committee
+  //get all resolutions of that forum
   resolutions.aggregate([
-    //find resolutions of this committee
+    //find resolutions of this forum
     { $match: {
-      "content.resolution.address.forum": comName
+      "content.resolution.address.forum": forumName
     }},
 
     //project to only transmit necessary data
@@ -105,7 +105,7 @@ router.get("/committee/:comId", function(req, res) {
     }}
   ]).toArray().then(items => {
     //display listoverview with resolutions
-    res.render("listoverview", { items: items, comMode: true, comName });
+    res.render("listoverview", { items: items, forumMode: true, forumName });
   });
 });
 
