@@ -104,6 +104,7 @@
     "Demands",
     "Urgently requests the committee"
   ],
+  "scopForums": ["Historical Security Council", "Security Council"],
   "prefix": {
     "op": [
       "Further",

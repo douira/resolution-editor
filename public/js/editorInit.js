@@ -1176,10 +1176,23 @@ function registerEventHandlers(loadedData) {
 
     //forum is now a valid name, check if it changed from the current mapping forum name
     //forum changed, update mappings: if change caused mapping update
-    if (value !== loadedData.selectedForum && loadedData.generateCountryMappings(value)) {
-      //re-init fields that use sponsor data
-      //check chips and sponsor fields for validity with new sponsor data
-      $("#main-spon, #co-spon, #amd-spon").triggerAll("init checkRequired");
+    if (value !== loadedData.selectedForum) {
+      //get outout from generator
+      var newDataFor = loadedData.generateAutofillData(value);
+
+      //if forums changed
+      if (newDataFor.countries) {
+        //re-init fields that use sponsor data
+        //check chips and sponsor fields for validity with new sponsor data
+        $("#main-spon, #co-spon, #amd-spon").triggerAll("init checkRequired");
+      }
+
+      //if phrases changed
+      if (newDataFor.phrases) {
+        //re-init op phrase autofill fields
+        $("#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input")
+          .triggerAll("init checkRequired");
+      }
     }
   });
   $("#main-spon, #amd-spon").on("change", function() {
@@ -2066,10 +2079,70 @@ $(document).ready(function() {
       //list of countries autocomplete format, only allowed named as no replacing happens in chips
       loadedData.simpleCountryList = { };
 
+      //original regular and sc extended op phrases
+      var opPhrases = {
+        regular: extData.op,
+        sc: extData.op.concat(extData.scop)
+      };
+
+      //plain phrase lists
+      loadedData.phrases = {
+        preamb: extData.preamb
+
+        //op is added by generateAutofillData
+      };
+
+      //generate prefix combinations
+      var phrases, prefixes, phrase, phraseIndex, prefixIndex, phrasesLength;
+      [{
+        phrases: opPhrases.regular,
+        prefixType: "op"
+      }, {
+        phrases: opPhrases.sc,
+        prefixType: "op"
+      }, {
+        phrases: loadedData.phrases.preamb,
+        prefixType: "preamb"
+      }].forEach(function(phraseGenConfig) {
+        //get list of phrases
+        phrases = phraseGenConfig.phrases;
+
+        //get list of prefixes for this type of phrase
+        prefixes = extData.prefix[phraseGenConfig.prefixType] || [];
+
+        //for all phrases
+        for (phraseIndex = 0, phrasesLength = phrases.length;
+             phraseIndex < phrasesLength; phraseIndex ++) {
+          //get current phrase
+          phrase = phrases[phraseIndex];
+
+          //change first char to lower case
+          phrase = phrase[0].toLowerCase() + phrase.substr(1);
+
+          //for all phrase prefixes
+          for (prefixIndex = 0; prefixIndex < prefixes.length; prefixIndex ++) {
+            //add prefixed phrase to list of phrases for this type
+            phrases.push(prefixes[prefixIndex] + " " + phrase);
+          }
+        }
+      });
+
+      //object ref converted for autofill op phrases
+      var opPhrasesConverted = {
+        regular: convertPropObj(opPhrases.regular),
+        sc: convertPropObj(opPhrases.sc)
+      };
+
       //function that generates country name mappings for a given selected forum name in loadedData
-      loadedData.generateCountryMappings = function(selectedForum) {
+      loadedData.generateAutofillData = function(selectedForum) {
         //get selected forum object
         var forumCountries = loadedData.forumMapping[selectedForum];
+
+        //keeps track of what things changed
+        var newDataFor = {
+          countries: false,
+          phrases: false
+        };
 
         //stop if not present
         if (forumCountries) {
@@ -2077,11 +2150,14 @@ $(document).ready(function() {
           forumCountries = forumCountries.countries;
         } else {
           //nothing changed
-          return false;
+          return newDataFor;
         }
 
-        //set the name of the forum these coutnry mappings are for
+        //set the name of the forum these country mappings are for
         loadedData.selectedForum = selectedForum;
+
+        //forum changed, this function is only called on forum change
+        newDataFor.countries = true;
 
         //generate mapping for all countries of this forum, reset to flush old values
         loadedData.countryMapping = { };
@@ -2109,48 +2185,41 @@ $(document).ready(function() {
           loadedData.simpleCountryList[country.name] = null;
         });
 
-        //return true to signal change
-        return true;
-      };
+        //check if forum is allowed to use sc phrases, if is part of scop forums
+        var scForum = extData.scopForums.indexOf(selectedForum) !== -1;
 
-      //plain phrase lists
-      loadedData.phrases = {
-        op: extData.op,
-        preamb: extData.preamb
-      };
+        //if situation changed
+        if (loadedData.scForum !== scForum) {
+          //update state for next run
+          loadedData.scForum = scForum;
 
-      //generate prefix combinations
-      var phrases, prefixes, phrase, phraseIndex, prefixIndex, phrasesLength;
-      for (var phraseType in loadedData.phrases) {
-        //get current list of phrases
-        phrases = extData[phraseType];
+          //get the current op phrases to use
+          var useOpPhrases = scForum ? opPhrases.sc : opPhrases.regular;
 
-        //get list of prefixes for this type of phrase
-        prefixes = extData.prefix[phraseType] || [];
+          //set op phrase list in loadedData.phrases
+          loadedData.phrases.op = useOpPhrases;
 
-        //for all phrases
-        for (phraseIndex = 0, phrasesLength = phrases.length;
-             phraseIndex < phrasesLength; phraseIndex ++) {
-          //get current phrase
-          phrase = phrases[phraseIndex];
+          //set op phrases in loadedData for reference lookup
+          loadedData.opPhrases = useOpPhrases;
 
-          //change first char to lower case
-          phrase = phrase[0].toLowerCase() + phrase.substr(1);
+          //also set converted op phrases
+          loadedData.opPhrasesConverted =
+            scForum ? opPhrasesConverted.sc : opPhrasesConverted.regular;
 
-          //for all phrase prefixes
-          for (prefixIndex = 0; prefixIndex < prefixes.length; prefixIndex ++) {
-            //add prefixed phrase to list of phrases for this type
-            phrases.push(prefixes[prefixIndex] + " " + phrase);
-          }
+          //updated data
+          newDataFor.phrases = true;
         }
-      }
+
+        //return change state
+        return newDataFor;
+      };
 
       //mapping between raw autofill data and input field selectors
       loadedData.autofillDataMapping = {
         "#main-spon,#co-spon,#amd-spon": "countryMapping", //only reference
         "#forum-name": loadedData.forumMapping, //use mapping object
         "#preamb-clauses .phrase-input": loadedData.phrases.preamb,
-        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": loadedData.phrases.op,
+        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": "opPhrases",
       };
 
       //data used to inititalize autocomplete fields/thingies and their other options
@@ -2158,8 +2227,7 @@ $(document).ready(function() {
         "#main-spon,#amd-spon": "countryAutofill", //only reference
         "#forum-name": loadedData.forumAutofill,
         "#preamb-clauses .phrase-input": convertPropObj(loadedData.phrases.preamb),
-        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input":
-          convertPropObj(loadedData.phrases.op),
+        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": "opPhrasesConverted",
       }; //co sponsor chips gets data on its own
 
       //register all event handlers
@@ -2173,7 +2241,7 @@ $(document).ready(function() {
         $("*:not(.autocomplete, .chips)").trigger("init");
 
         //initiate loading of resolution from server with preset token
-        serverLoad(resolutionToken, true, function(forum) {
+        serverLoad(resolutionToken, true, function(initForum) {
           //don't send update if still loading,
           //some events may be fake-fired in the process of getting
           $(".clause input, .clause textarea")
@@ -2182,8 +2250,8 @@ $(document).ready(function() {
             sendLVUpdate("content", "type", $(this));
           });
 
-          //create country mappings with forum
-          loadedData.generateCountryMappings(forum);
+          //create country mappings and phrases with forum
+          loadedData.generateAutofillData(initForum);
 
           //init autocomplete fields now, they require to be already in their final positions
           //to detect the correct dataset to use for completion,
