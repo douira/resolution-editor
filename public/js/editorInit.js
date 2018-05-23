@@ -21,7 +21,8 @@
   resolutionToken,
   resolutionAttributes,
   getAmendmentUpdate,
-  amdActionType*/
+  amdActionType,
+  allowLV*/
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -49,8 +50,8 @@ var metaChangesSaved = true;
 //token and access code for this resolution, used for saving
 var resolutionToken, resolutionCode;
 
-//access level and chair mode are later taken from document
-var accessLevel, chairMode;
+//access level is later taken from document
+var accessLevel;
 
 //is set to true if we need to send updates to LV viewers
 var sendLVUpdates = false;
@@ -72,6 +73,9 @@ var getAmendmentUpdate;
 
 //the current amendment action type
 var amdActionType;
+
+//true when lv is enabled
+var allowLV;
 
 //updates the disabling state of eab movement buttons, used as event handler
 function makeEabMoveUpdateDisabledHandler(isUpButton) {
@@ -372,20 +376,21 @@ $.fn.filterIllegalContent = function() {
       //normalize quotes
       .replace(/[“”‹›«»]/g, "\"")
 
-      //remove trailing _ and ^ (produce latex error), also remove trailing . , - ) &
-      .replace(/[_^.,\-)&]+$/gm, "")
+      //remove all non-space whitespace and/or at least two spaces surrounded by any whitespace
+      //(replace by single space to preserve words)
+      .replace(/\s*[^\S ]+| {2,}\s*/g, " ")
 
-      //replace newlines with spaces
-      .replace(/\n+/g, " ")
+      //remove trailing _ and ^ (produce latex error), also remove trailing .,-(&/+
+      .replace(/[_^,\-(&/+]+$/g, "")
+
+      //remove preceding |.,-)&/+
+      .replace(/^[|.,\-)&/+]+/g, "")
 
       //remove padding whitespace
       .trim()
 
       //filter characters
-      .replace(/[^a-zA-Z0-9*_^|&’"\-.,()/+\u00c0-\u024F ]+/g, "")
-
-      //remove bad whitespace
-      .replace(/\s*[^\S ]+\s*/g, " ");
+      .replace(/[^a-zA-Z0-9*_^|&’"\-.,()/+\u00c0-\u024F ]+/g, "");
 
     //append final " if there is an odd amount
     if ((newContent.match(/"/g) || []).length % 2) {
@@ -416,6 +421,9 @@ $.fn.filterIllegalContent = function() {
 
       //trigger autoresize to correct textarea size
       elem.trigger("autoresize");
+
+      //trigger content update for this changed content
+      sendLVUpdate("content", "charfilter", elem);
     }
   });
 };
@@ -542,6 +550,20 @@ $.fn.abbrevReplace = function(mapping) {
   return value;
 };
 
+//processes text for condensed clause display, highlights special chars
+function processCondText(text) {
+  //return right away if empty or falsy or if not in stage for FC
+  if (! text || ! text.length || resolutionStage !== 3) {
+    return text;
+  }
+
+  //enclose ^_|* with bold span tags
+  return text.replace(/[_^|*]+/g, function(match) {
+    //return enclosed in emphasis tags
+    return "<span class='bold deep-orange lighten-3'>" + match + "</span>";
+  });
+}
+
 //registers event handlers that are essential for the general function of the page
 function registerEssentialEventHandlers(doLoad) {
   //we can only load from file or delete if we loaded the resolution
@@ -635,10 +657,8 @@ function registerEventHandlers(loadedData) {
     $(this).material_select();
   });
 
-  //if chair or master access, amendments allowed
-  var doAmendments = accessLevel === "MA" ||
-      ! resolutionAttributes.readonly && accessLevel === "CH" && resolutionStage === 6;
-  if (doAmendments) {
+  //setup amd if lv is enabled
+  if (allowLV) {
     //the current amendment action type
     amdActionType = "noselection";
 
@@ -1461,9 +1481,33 @@ function registerEventHandlers(loadedData) {
       elem.siblings(".add-clause-container").show();
     }
   })
-  .on("editInactive", function(e, amdUpdatePossible) {
+  .on("editInactive", function(e, amdUpdatePossible, noExtCondUpdate) {
     e.stopPropagation();
     var elem = $(this);
+
+    //get EABs
+    var clauseTitle = elem.children(".clause-title");
+    var eabs = clauseTitle.children("#eab-wrapper");
+
+    //strip illegal characters and whitespace from textareas and inputs
+    //this is done on the server as well, but we want to discourage this behavior in the user
+    elem.find("textarea.required,input.required").filterIllegalContent();
+
+    //get content ext field and cond
+    var clauseExtCond = elem.children(".clause-ext-cond");
+    var clauseContentExt = elem.children(".clause-content-ext");
+    var contentExtVal = clauseContentExt.children("textarea").val();
+
+    //if we are allowed to update, there is no ext content, but the ext content field was visible
+    if (! noExtCondUpdate &&
+        ! contentExtVal.length && ! clauseContentExt.hasClass("hide-this")) {
+      //hide to include hidden in structure update
+      clauseContentExt.setHide(true);
+
+      //is either hidden by attemptRemove of subclause, or is just empty and thereby unused
+      //send lv structure update to signal removal of unused ext content field
+      sendLVUpdate("structure", "remext", elem);
+    }
 
     //hide input fields
     elem.children(".clause-content, .clause-content-ext, .phrase-input-wrapper").setHide(true);
@@ -1474,13 +1518,10 @@ function registerEventHandlers(loadedData) {
     //show condensed
     condensedWrapper.setHide(false);
 
-    //get content ext field
-    var contentExtVal = elem.children(".clause-content-ext").children("textarea").val();
-
     //if there is ext content
     if (contentExtVal.length) {
       //fill ext content condensed with text from field and show
-      elem.children(".clause-ext-cond").text(contentExtVal).setHide(false);
+      clauseExtCond.html(processCondText(contentExtVal)).setHide(false);
     }
 
     //get text content
@@ -1490,7 +1531,8 @@ function registerEventHandlers(loadedData) {
     var phraseFieldWrapper = elem.children(".phrase-input-wrapper");
     if (phraseFieldWrapper.length) {
       //put value into condensed element
-      condensedWrapper.children(".cond-phrase").text(phraseFieldWrapper.find("input").val());
+      condensedWrapper.children(".cond-phrase")
+        .html(processCondText(phraseFieldWrapper.find("input").val()));
 
       //add space to content, between phrase and content
       textContent = " " + textContent;
@@ -1499,11 +1541,8 @@ function registerEventHandlers(loadedData) {
     //also move content into condensed content element
     condensedWrapper
       .children(".cond-content")
-      .html(textContent.length ? textContent : "<span class='red-text'>no content</span>");
-
-    //get EABs
-    var clauseTitle = elem.children(".clause-title");
-    var eabs = clauseTitle.children("#eab-wrapper");
+      .html(textContent.length ?
+        processCondText(textContent) : "<span class='red-text'>no content</span>");
 
     //if they are present, we were in edit just now
     //stop if we were already not in edit mode
@@ -1527,10 +1566,6 @@ function registerEventHandlers(loadedData) {
     if (elem.isSubClause()) {
       elem.siblings(".add-clause-container").hide();
     }
-
-    //strip illegal characters and whitespace from textareas and inputs
-    //this is done on the server as well, but we want to discourage this behavior in the user
-    elem.find("textarea.required,input.required").filterIllegalContent();
 
     //only check if message wasn't displayed yet
     if (! displayedPhraseContentMessage) {
@@ -1623,6 +1658,11 @@ function registerEventHandlers(loadedData) {
 
         //clear ext field
         extField.trigger("reset");
+
+        //hide ext content condensed field on parent and trigger inactivation to update cond fields
+        var parentClause = parent.parent();
+        parentClause.children(".clause-ext-cond").setHide(true);
+        parentClause.trigger("editInactive", [false, true]);
       }
 
       //remove this clause
@@ -1944,8 +1984,6 @@ $(document).ready(function() {
 
   //check for chair or admin access
   accessLevel = $("#code-access-level").text();
-  chairMode = accessLevel === "MA" || accessLevel === "CH" && resolutionStage < 7 ||
-    accessLevel === "SG" && resolutionStage < 11;
 
   //autosave is aenabled if at non 0 stage
   autosaveEnabled = resolutionStage > 0;
@@ -1969,6 +2007,13 @@ $(document).ready(function() {
   resolutionAttributes.allowSave = ! resolutionAttributes.readonly || accessLevel === "MA";
   resolutionAttributes.allowAdvance = ! resolutionAttributes.noadvance || accessLevel === "MA";
 
+  //if chair, sg or master access, liveview allowed
+  allowLV =
+    ! resolutionAttributes.readonly && (
+    resolutionStage === 6 && (accessLevel === "CH" || accessLevel === "SG") ||
+    resolutionStage === 10 && accessLevel === "SG") ||
+    resolutionStage && accessLevel === "MA";
+
   //register an access input group for resolution advancement
   registerAccessInputs({
     url: "/resolution/advance/",
@@ -1980,7 +2025,7 @@ $(document).ready(function() {
 
     //additional validation to check for vote field values
     additionalValidation: function(setFieldState) {
-      //return true right away if we're not at stage 6
+      //return true right away if we're not at a voting/lv stage
       if (! (resolutionStage === 6 || resolutionStage === 10)) {
         return true;
       }
@@ -2243,7 +2288,7 @@ $(document).ready(function() {
         //initiate loading of resolution from server with preset token
         serverLoad(resolutionToken, true, function(initForum) {
           //don't send update if still loading,
-          //some events may be fake-fired in the process of getting
+          //some events may be fake-fired in the process of getting data into the clauses
           $(".clause input, .clause textarea")
           .on("paste keyup", function() {
             //send content update
@@ -2278,10 +2323,8 @@ $(document).ready(function() {
       }
 
       //if as MA or at stage 6/10 and authorized as CH/SG, start liveview editor websocket
-      if (resolutionStage === 6 && (accessLevel === "CH" || accessLevel === "SG") ||
-          resolutionStage === 10 && accessLevel === "SG" ||
-          resolutionStage && accessLevel === "MA") { //MA access to LV needs at least once saved
-        //disable autosave for liveview, we don't want to be accidenatlly saving undesired states
+      if (allowLV) {
+        //disable autosave for liveview, we don't want to be accidentally saving a undesired state
         autosaveEnabled = false;
 
         //give token and code, false for being editor type client
