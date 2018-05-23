@@ -3,15 +3,20 @@ extends layout
 block title
   title Forum Selection for Resolution Overview
 
+block styles
+  +static("css", "/css/forumSelectStyle.css")
+
 block content
   .container
-    +icon("description", "large left blue-text")
+    +icon("group_work", "large left blue-text")
     h3 Forum Selection
     .divider
     p.justify Select which forum you want to view the resolutions of.
     if forums
-      ul
+      ul.collection
         each forum in forums
-          li: a(href="/list/committee/" + forum.nameId)=forum.name
+          li.collection-item
+            span.grey-text.text-darken-1.forum-abbr=forum.abbr
+            a(href="/list/forum/" + forum.name.replace(/ /g, "-"))=forum.name
     else
       p.center: em.grey-text.text-darken-1 No forums to display.

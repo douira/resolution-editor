@@ -7,7 +7,11 @@ block content
   include stages
   .container
     +icon("description", "large left blue-text")
-    h3 List of Resolutions Overview
+    h3 List of Resolutions
+      if forumMode
+        |  by Forum
+      else
+        |  Overview
     .divider
     p.justify
       if isArchive
