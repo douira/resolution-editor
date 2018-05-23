@@ -551,17 +551,28 @@ $.fn.abbrevReplace = function(mapping) {
 };
 
 //processes text for condensed clause display, highlights special chars
-function processCondText(text) {
-  //return right away if empty or falsy or if not in stage for FC
-  if (! text || ! text.length || resolutionStage !== 3) {
+function processCondText(text, markInvalid) {
+  //return right away if empty or falsy
+  if (! text || ! text.length) {
     return text;
   }
 
-  //enclose ^_|* with bold span tags
-  return text.replace(/[_^|*]+/g, function(match) {
-    //return enclosed in emphasis tags
-    return "<span class='bold deep-orange lighten-3'>" + match + "</span>";
-  });
+  //if in stage for fc
+  if (resolutionStage === 3) {
+    //enclose ^_|* with bold colored span tags
+    text = text.replace(/[_^|*]+/g, function(match) {
+      //return enclosed in emphasis tags
+      return "<span class='bold deep-orange lighten-3'>" + match + "</span>";
+    });
+  }
+
+  //enclose in red text tags if marked as invalid
+  if (markInvalid) {
+    text = "<span class='red-text'>" + text + "</span>";
+  }
+
+  //return processed string
+  return text;
 }
 
 //registers event handlers that are essential for the general function of the page
@@ -1530,9 +1541,14 @@ function registerEventHandlers(loadedData) {
     //if a phrase field is present
     var phraseFieldWrapper = elem.children(".phrase-input-wrapper");
     if (phraseFieldWrapper.length) {
+      //get phrase input field
+      var phraseField = phraseFieldWrapper.find("input");
+
       //put value into condensed element
       condensedWrapper.children(".cond-phrase")
-        .html(processCondText(phraseFieldWrapper.find("input").val()));
+
+        //mark as invalid if field has invalid class
+        .html(processCondText(phraseField.val(), phraseField.hasClass("invalid")));
 
       //add space to content, between phrase and content
       textContent = " " + textContent;
@@ -1541,8 +1557,8 @@ function registerEventHandlers(loadedData) {
     //also move content into condensed content element
     condensedWrapper
       .children(".cond-content")
-      .html(textContent.length ?
-        processCondText(textContent) : "<span class='red-text'>no content</span>");
+      .html(textContent.length && textContent !== " " ?
+        processCondText(textContent) : textContent + "<em class='red-text'>no content</span>");
 
     //if they are present, we were in edit just now
     //stop if we were already not in edit mode

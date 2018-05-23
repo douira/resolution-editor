@@ -54,10 +54,10 @@ function validateFields(noAlert) {
   //make error message if necessary
   if (! fieldsOk && (typeof noAlert === "undefined" || ! noAlert)) {
     makeAlertMessage(
-      "warning", "Some field(s) invalid", "ok",
+      "warning", "Invalid Fields", "ok",
       "There are fields with missing or invalid values. " +
-      "Phrase fields must contain one of the suggested values only. " +
-      "<br>Invalid fields are marked <span class='red-underline'>red</span>.");
+      "Autocomplete fields must contain one of the suggested values only. " +
+      "<br>Invalid fields are marked <span class='red-text'>red</span>.");
   }
 
   //return value again
