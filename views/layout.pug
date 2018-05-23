@@ -162,7 +162,7 @@ html(lang="en")
       li: a(href="/help/support") Support
       li: a(href="/handytextbox") Handy Textbox
       li: a(href="/resolution/prenew?nonew=1") Read First Page
-      li: a(href="/session") Session Info
+      li: a(href="/session")=hasSession ? "Session Info" : "Login"
       li: a(href="/help/impressum") Impressum
       li: a(href="http://munol.org" target="_blank") MUNOL
     ul#lists-dropdown.dropdown-content
