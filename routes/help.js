@@ -2,11 +2,12 @@
 const express = require("express");
 const router = module.exports = express.Router();
 const resolutionFormat = require("../public/js/resolutionFormat").resolutionFormat;
+const phrases = require("../public/phrases.json");
 
 //GET help page
 router.get("/", function(req, res) {
   //render help page
-  res.render("help");
+  res.render("help", { phrases });
 });
 
 //GET resolution stucture definition
