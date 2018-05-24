@@ -330,8 +330,9 @@ function queueDisallowedCharInfo() {
   //show only once
   if (! showedDisallowedCharModal) {
     //display message
-    makeAlertMessage("font_download", "Resolution content was modified", "OK",
-      "Some characters were removed or changed from the text you entered into an input field." +
+    makeAlertMessage("font_download", "Resolution content warning", "OK",
+      "Some characters may haven been removed or changed. This message also serves as a word" +
+      " and content length warning." +
       " In general, unnecessary special characters and line breaks are removed." +
       " Please check the detailed <a href='/help#formatting'>help page section</a> on allowed" +
       " characters and formatting advice. This message will only be displayed once.");
