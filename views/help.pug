@@ -44,10 +44,10 @@ block content
           | This level represents unrestricted access to all available functions of the website including LiveView. This also includes changing access levels of specific codes or giving out new access codes.
     h4: +icon("font_download", "mediumsmall left blue-text")
     h4#formatting Formatting Advice and Special Characters
-    p This section will inform you about the formatting rules and special character restrictions in resolutions. This is about the formal and syntactical aspects only; for content advice, see the #[a(href="/help/contentguidelines") Content Guidelines]. Ask your Chair for assistance with formatting and if you are unsure of how to achieve a certain formal element of you resolution. #[span.grey-text Look in generatePdf.js and editorInit.js for the code.]
+    p This section will inform you about the formatting rules and special character restrictions in resolutions. This is about the formal and syntactical aspects only; for content advice, see the #[a(href="/help/contentguidelines") Content Guidelines]. Ask your Chair for assistance with formatting and if you are unsure of how to achieve a certain formal element of you resolution. #[span.grey-text The exact parser code can be found in generatePdf.js and editorInit.js.]
     p A basic clause consists of a phrase and a content body optionally followed a single enumeration. The enumeration items behave similarly to a regular clause, except for the lack of a phrase. Additionally, a single block of extended content can follow the enumeration. If you're trying to create a clause with more than two content blocks, more than one enumeration or a different ordering of these elements, restructure your clause to fit the formatting restrictions. This will also increase the legibility and semantic separation of your resolution.
     h5#special-syntax Special Syntax
-    p The Editor will attempt to make syntax become obvious to the user by providing interface elements that facilitate the different aspects of writing and formatting a resolution. However, in some special cases, it is unavoidable to use the special syntax to achieve some formatting types within clause content. Use this special formatting sparingly, only when necessary and not as a generic stylistic device. Special syntax only applies to the body of clauses and phrases will not be formatted.
+    p The Editor will attempt to make syntax become obvious to the user by providing interface elements that facilitate the different aspects of writing and formatting a resolution. However, in some special cases, it is unavoidable to use the special syntax to achieve some formatting types within clause content. Use this special formatting sparingly, only when necessary and not as a generic stylistic device. Formatting is automatically applied to phrases and is disallowed in phrase fields. Special syntax only applies to the body of clauses and phrases will not be formatted. Nested or semi-nested multi-character special syntax may produce unexpected results.
     - const codeTransform = arr => (typeof arr === "string" ? [arr] : arr).map(v => "<code>" + v + "</code>").join(", ");
     table.striped.responsive-table.responsive-formatted
       thead: tr
@@ -73,6 +73,8 @@ block content
           | Characters preceded by an circumflex #[code ^] will be rendered as superscript.
         +row("Multiple character superscript", "7<sup>th</sup> of May, 42<sup>nd</sup> edition", ["7^th| of May", "42^nd| edition"])
           | Use the circumflex character #[code ^], the text you want to be rendered as a superscript followed by the pipe character #[code |] to correctly display ordinal numbers.
+        +row("Faulty special syntax", "n/a", ["_^ba|r", "ba*z"])
+          | Faulty special syntax will be cleaned up in some way, but the exact behavior may be unexpected.
     h5#contentlength Content Length
     p If your resolution has a longer word or clause text content, restructure your clause to fit the length restrictions. This will also increase the legibility and semantic separation of your resolution. In order to prevent too long content from clogging up the rendering system, two length restrictions are automatically imposed:
     ol
