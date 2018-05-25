@@ -18,9 +18,9 @@ require("../lib/database").fullInit.then(collections => {
   booklets = collections.booklets;
 });
 
-//require admin session for overview and code management
-router.use(["/overview", "/codes"], (req, res, next) =>
-  routingUtil.requireSession("admin", req, res, () => next()));
+//require admin or SG session for resolution list
+router.use("/overview", (req, res, next) =>
+  routingUtil.requireSession("booklet", req, res, () => next()));
 
 //GET display overview of all resolutions
 router.get("/overview", function(req, res) {
@@ -114,6 +114,9 @@ router.get("/forum/:forumNameId", function(req, res) {
   });
 });
 
+//require admin session for code management
+router.use("/codes", (req, res, next) =>
+  routingUtil.requireSession("admin", req, res, () => next()));
 
 //gets the current insert group counter
 function getInsertGroupCounter() {
