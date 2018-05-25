@@ -9,7 +9,8 @@ module.exports = {
       out_file: "./log/db/out.log",
       kill_timeout: 5000,
       exec_mode: "fork",
-      merge_logs: true
+      merge_logs: true,
+      max_restarts: 30
     },
     {
       name: "webserver",
