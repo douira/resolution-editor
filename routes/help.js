@@ -1,7 +1,7 @@
 /*jshint esversion: 6, node: true */
 const express = require("express");
 const router = module.exports = express.Router();
-const resolutionFormat = require("../public/js/resolutionFormat").resolutionFormat;
+const resolutionFormat = require("../public/js/resolutionFormat");
 const phrases = require("../public/phrases.json");
 
 //GET help page
