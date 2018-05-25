@@ -1603,7 +1603,7 @@ function registerEventHandlers(loadedData) {
       //check if the content text area includes a phrase
       if (phrases.some(function(phrase) {
         //return true if it starts with the phrase
-        return clauseContent.trim().indexOf(phrase.toLowerCase()) === 0;
+        return clauseContent.indexOf(phrase.toLowerCase()) === 0;
       })) {
         //display message concerning phrase field
         makeAlertMessage("info", "Phrase found in content field", "OK",
@@ -1611,10 +1611,10 @@ function registerEventHandlers(loadedData) {
           " with a phrase. Please use the content text area only for the clause content and not" +
           " the phrase of the clause. The text input field labeled 'Phrase' will suggest " +
           " possible phrases when you start typing. This message will only be displayed once.");
-      }
 
-      //set flag to disabling state
-      displayedPhraseContentMessage = true;
+        //set flag to disabling state
+        displayedPhraseContentMessage = true;
+      }
     }
 
     //auto-save if not at stage 0 and has unsaved changes
