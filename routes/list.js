@@ -20,7 +20,7 @@ require("../lib/database").fullInit.then(collections => {
 
 //require admin or SG session for resolution list
 router.use("/overview", (req, res, next) =>
-  routingUtil.requireSession("booklet", req, res, () => next()));
+  routingUtil.requireSession("semi-admin", req, res, () => next()));
 
 //GET display overview of all resolutions
 router.get("/overview", function(req, res) {
@@ -489,7 +489,7 @@ router.get("/fcqueue/getitems", function(req, res) {
 
 //booklet actions require at least SG permission (booklet perm match mode)
 router.use("/booklet", (req, res, next) =>
-  routingUtil.requireSession("booklet", req, res, () => next()));
+  routingUtil.requireSession("semi-admin", req, res, () => next()));
 
 //booklet creation and selection page
 router.get("/booklet", function(req, res) {

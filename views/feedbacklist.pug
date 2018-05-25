@@ -1,0 +1,30 @@
+extends layout
+
+block title
+  title Feedback Form
+
+block styles
+  +static("css", "/css/bookletSelectStyle.css")
+
+block content
+  .container
+    +icon("feedback", "large left pink-text")
+    h3 Feedback Messages
+    .divider
+    p This is a list of all collected feedback submissions that included a message body, sorted by submission time.
+    if messages
+      ul.collection
+        each message in messages
+          li.collection-item
+            span.right.light=message.timestamp
+            if message.name
+              span By #[b=message.name]
+                if message.email
+                  |  (#[b=message.email])
+            else if message.email
+              span By #[b=message.email]
+            else
+              span.grey-text No name provided
+            div=message.message
+    else
+      .center: p.grey-text No messages to display; Check back later.
