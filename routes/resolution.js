@@ -5,6 +5,7 @@ const router = module.exports = express.Router();
 const generatePdf = require("../lib/generatePdf");
 const resUtil = require("../lib/resUtil");
 const routingUtil = require("../lib/routingUtil");
+const extDataPromise = require("../lib/extData");
 const { logger, issueError } = require("../lib/logger");
 
 //register callback to get collections on load
@@ -129,16 +130,26 @@ router.get("/new", function(req, res) {
 router.post("/save/:token", function(req, res) {
   //require resolution content to be present and valid
   routingUtil.checkBodyRes(req, res, resolutionSent => {
-    //authorize, doesn't do code auth if node code necessary
+    //authorize, doesn't do code auth if no code necessary (if session present)
     routingUtil.fullAuth(req, res, token => {
-      //save new document
-      resolutions.updateOne(
+      //plenary id to set
+      let plenaryId;
+
+      //require extData to be present
+      extDataPromise.then(extData => {
+        //get the plenary type for the forum of this resolution
+        plenaryId = extData.forums[resolutionSent.resolution.address.forum].plenary;
+      })
+
+      //save document
+      .then(() => resolutions.updateOne(
         { token: token },
         {
           $set: {
             content: resolutionSent, //update resolution content
             changed: Date.now(), //update changedate
-            unrenderedChanges: true //must be rendered
+            unrenderedChanges: true, //must be rendered
+            plenaryId: plenaryId
           },
           $max: {
             stage: 1 //first saved stage at least
@@ -147,9 +158,9 @@ router.post("/save/:token", function(req, res) {
             "stageHistory.1": Date.now() //set first save time (don't change if this is older)
           }
         }
-      ).then(() => {
+      )).then(() => {
         res.send("ok");
-      }, () => issueError(req, res, 500, "can't save resolution"));
+      }, err => issueError(req, res, 500, "can't save resolution", err));
     }, {
       //match mode save respects saving attrib restrictions
       matchMode: "save"
@@ -343,7 +354,7 @@ routingUtil.getAndPost(router, "/advance/:token", function(req, res) {
       collections.resolutionId.findOneAndUpdate({ year: new Date().getFullYear() }, {
         //count up one
         $inc: { counter: 1 }
-      }, { upsert: true })
+      })
 
       //advance resolution to next stage and set id
       .then(yearDoc => {

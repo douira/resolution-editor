@@ -6,6 +6,7 @@ const tokenProcessor = require("../lib/token");
 const { logger, issueError } = require("../lib/logger");
 const { validateAccessLevel } = require("../lib/resUtil");
 const generatePdf = require("../lib/generatePdf");
+const extDataPromise = require("../lib/extData");
 
 //get collections
 let resolutions, resolutionArchive, access, metadata, booklets;
@@ -51,9 +52,68 @@ router.get("/overview", function(req, res) {
     }}
   ]).toArray().then(items => {
     //send data to client
-    res.render("listoverview", { items: items, isArchive: useArchive });
+    res.render("listoverview", { items: items, isArchive: useArchive, comMode: false });
   }, err => issueError(req, res, 500, "could not query resolution in overview", err));
 });
+
+//list of resolutions for chairs requires chair access
+router.use("/forum", (req, res, next) =>
+  routingUtil.requireSession("forum", req, res, () => next()));
+
+//GET overview of forums
+router.get("/forum", function(req, res) {
+  //forum select interface, display possible forums
+  extDataPromise.then(extData => res.render("forumselect", { forums: extData.forums }));
+});
+
+//GET overview of forum resolutions
+router.get("/forum/:forumNameId", function(req, res) {
+  //get forum name
+  const forumName = req.params.forumNameId.replace(/-/g, " ");
+
+  //verify that this is a valid name
+  extDataPromise.then(extData => {
+    //check that the given forums exists
+    if (forumName in extData.forums) {
+      //get all resolutions of that forum
+      resolutions.aggregate([
+        //find resolutions of this forum
+        { $match: {
+          "content.resolution.address.forum": forumName
+        }},
+
+        //project to only transmit necessary data
+        { $project: {
+          token: 1,
+          stage: 1,
+          forum: "$content.resolution.address.forum",
+          sponsor: "$content.resolution.address.sponsor.main",
+          _id: 0,
+          resolutionId: 1,
+          idYear: 1
+        }},
+
+        //group into stages
+        { $group: {
+          _id: "$stage",
+          list: { $push: "$$ROOT" } //append whole object to list
+        }},
+
+        //sort by stage
+        { $sort: {
+          _id: 1
+        }}
+      ]).toArray().then(items => {
+        //display listoverview with resolutions
+        res.render("listoverview", { items: items, forumMode: true, forumName });
+      });
+    } else {
+      //bad, make an error
+      issueError(req, res, 400, "Invalid forum name given", { badForumName: forumName });
+    }
+  });
+});
+
 
 //gets the current insert group counter
 function getInsertGroupCounter() {
@@ -464,15 +524,21 @@ router.use(["/booklet/edit/:id", "/booklet/renderpdf/:id", "/booklet/save/:id"],
   next();
 });
 
+//the plenary ids and names
+const plenaryNames = ["none", "GA", "ECOSOC"];
+
 //base query for eligible resolutions for booklets
-const eligibleResolutionQuery = {
+const eligibleResolutionQuery = booklet => ({
   //must be within correct stage range
   //(finished committee debating - not yet begun plenary debate)
   stage: { $gte: 7, $lte: 9 },
 
   //must have passed the committee vote
-  "voteResults.committee.passed": true
-};
+  "voteResults.committee.passed": true,
+
+  //has to match the plenary type
+  plenaryId: plenaryNames.indexOf(booklet.type)
+});
 
 //edit and info page for a particular booklet
 router.get("/booklet/edit/:id", function(req, res) {
@@ -495,7 +561,7 @@ router.get("/booklet/edit/:id", function(req, res) {
           { token: { $in: booklet.resolutions } },
 
           //or a eligible resolution
-          eligibleResolutionQuery
+          eligibleResolutionQuery(booklet)
         ]
       }
     ).sort({
@@ -566,7 +632,7 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
       Object.assign({
         //token must be one of the ones specified in the booklet
         token: { $in: booklet.resolutions }
-      }, eligibleResolutionQuery)
+      }, eligibleResolutionQuery(booklet))
     ).toArray().then(
       results => {
         //there must be the correct amount of resolutions
@@ -682,8 +748,8 @@ router.post("/booklet/new", function(req, res) {
   //get the posted type
   const type = req.body.type;
 
-  //validate type to be one of the allowed types
-  if (! ["GA", "ECOSOC"].includes(type)) {
+  //validate type to be one of the allowed types and not none
+  if (plenaryNames.indexOf(type) <= 0) {
     //error and stop
     issueError(req, res, 400, "invalid type for new booklet given: " + type);
     return;

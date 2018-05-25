@@ -21,7 +21,8 @@
   resolutionToken,
   resolutionAttributes,
   getAmendmentUpdate,
-  amdActionType*/
+  amdActionType,
+  allowLV*/
 //registers events and data, controls interaction behavior
 
 var dataPrefix = "resEd"; //prefix for data stored in elements
@@ -49,8 +50,8 @@ var metaChangesSaved = true;
 //token and access code for this resolution, used for saving
 var resolutionToken, resolutionCode;
 
-//access level and chair mode are later taken from document
-var accessLevel, chairMode;
+//access level is later taken from document
+var accessLevel;
 
 //is set to true if we need to send updates to LV viewers
 var sendLVUpdates = false;
@@ -73,63 +74,8 @@ var getAmendmentUpdate;
 //the current amendment action type
 var amdActionType;
 
-//transforms arrays containign a certain flag in an object and array json structure
-function transformMarkedArrays(structure, flag, propValue, depth) {
-  //propValue is null if not given otherwise
-  if (typeof propValue === "undefined") {
-    propValue = null;
-  }
-
-  //start at depth if not given
-  if (typeof depth === "undefined") {
-    depth = 0;
-  }
-
-  //don't recurse if at max depth and is actually an array or object
-  if (depth < 10 && typeof structure === "object") {
-    //is an array
-    if (structure instanceof Array) {
-      //if it actually has anything to deal with
-      if (structure.length) {
-        //check if this array should be converted
-        if (structure[0] === flag) {
-          //remove flag
-          structure.shift();
-
-          //convert to prop object
-          var obj = {};
-          structure.forEach(function(str) {
-            //if is array
-            if (str instanceof Array) {
-              //add all of array
-              str.forEach(function(s) {
-                obj[s] = propValue;
-              });
-            } else {
-              //normal prop add
-              obj[str] = propValue;
-            }
-          });
-          structure = obj;
-        } else {
-          //recurse deeper
-          structure.map(function(obj) {
-            return transformMarkedArrays(obj, flag, propValue, depth + 1);
-          });
-        }
-      }
-    } else {
-      //call for all properties
-      for (var propName in structure) {
-        structure[propName] = transformMarkedArrays(structure[propName],
-                                                    flag, propValue, depth + 1);
-      }
-    }
-  }
-
-  //return object back
-  return structure;
-}
+//true when lv is enabled
+var allowLV;
 
 //updates the disabling state of eab movement buttons, used as event handler
 function makeEabMoveUpdateDisabledHandler(isUpButton) {
@@ -384,8 +330,9 @@ function queueDisallowedCharInfo() {
   //show only once
   if (! showedDisallowedCharModal) {
     //display message
-    makeAlertMessage("font_download", "Resolution content was modified", "OK",
-      "Some characters were removed or changed from the text you entered into an input field." +
+    makeAlertMessage("font_download", "Resolution content warning", "OK",
+      "Some characters may haven been removed or changed. This message also serves as a word" +
+      " and content length warning." +
       " In general, unnecessary special characters and line breaks are removed." +
       " Please check the detailed <a href='/help#formatting'>help page section</a> on allowed" +
       " characters and formatting advice. This message will only be displayed once.");
@@ -430,20 +377,21 @@ $.fn.filterIllegalContent = function() {
       //normalize quotes
       .replace(/[“”‹›«»]/g, "\"")
 
-      //remove trailing _ and ^ (produce latex error), also remove trailing . , - ) &
-      .replace(/[_^.,\-)&]+$/gm, "")
+      //remove all non-space whitespace and/or at least two spaces surrounded by any whitespace
+      //(replace by single space to preserve words)
+      .replace(/\s*[^\S ]+| {2,}\s*/g, " ")
 
-      //replace newlines with spaces
-      .replace(/\n+/g, " ")
+      //remove trailing _ and ^ (produce latex error), also remove trailing .,-(&/+
+      .replace(/[_^,\-(&/+]+$/g, "")
+
+      //remove preceding |.,-)&/+
+      .replace(/^[|.,\-)&/+]+/g, "")
 
       //remove padding whitespace
       .trim()
 
       //filter characters
-      .replace(/[^a-zA-Z0-9*_^|&’"\-.,()/+\u00c0-\u024F ]+/g, "")
-
-      //remove bad whitespace
-      .replace(/\s*[^\S ]+\s*/g, " ");
+      .replace(/[^a-zA-Z0-9*_^|&’"\-.,()/+\u00c0-\u024F ]+/g, "");
 
     //append final " if there is an odd amount
     if ((newContent.match(/"/g) || []).length % 2) {
@@ -474,6 +422,9 @@ $.fn.filterIllegalContent = function() {
 
       //trigger autoresize to correct textarea size
       elem.trigger("autoresize");
+
+      //trigger content update for this changed content
+      sendLVUpdate("content", "charfilter", elem);
     }
   });
 };
@@ -527,7 +478,7 @@ $.fn.setSelectValueId = function(setValueId) {
   select.material_select();
 };
 
-//checks if a input field has a autocompletable value
+//checks if a input field has an autocompletable and ok value
 $.fn.checkAutoCompValue = function(loadedData) {
   var elem = this;
 
@@ -547,7 +498,7 @@ $.fn.checkAutoCompValue = function(loadedData) {
     return false;
   }
 
-  //keep track if value ok
+  //keep track of value ok
   var valueOk = true;
 
   //check for presence of value
@@ -564,13 +515,66 @@ $.fn.checkAutoCompValue = function(loadedData) {
 
     //only if there actually is a selector for this element in the data mappings
     if (matchDataSelector) {
-      valueOk = loadedData.autofillDataMapping[matchDataSelector].includes(value);
+      //get data to match value in
+      var matchData = loadedData.autofillDataMapping[matchDataSelector];
+
+      //resolve reference to loadedData if given as string
+      if (typeof matchData === "string") {
+        matchData = loadedData[matchData];
+      }
+
+      //for array type data match check if its contained, otherwise must have value 1 to be valid
+      valueOk = matchData instanceof Array ?
+        matchData.indexOf(value) !== -1 :
+        matchData[value] === 1 || typeof matchData[value] === "object";
     }
   }
 
   //return determined state
   return valueOk;
 };
+
+//does autocomplete abbreviation replacement
+$.fn.abbrevReplace = function(mapping) {
+  var value = this.val();
+  var unabbreviated = mapping[abbrevMappingPrep(value)];
+  if (typeof unabbreviated === "object") {
+    //set value to new unabbreviated name
+    value = unabbreviated.to;
+
+    //replace with non-abbreviated version
+    this.val(value);
+
+    //make field check for validity now
+    this.trigger("checkRequired");
+  }
+  return value;
+};
+
+//processes text for condensed clause display, highlights special chars
+function processCondText(text, markInvalid) {
+  //return right away if empty or falsy
+  if (! text || ! text.length) {
+    return text;
+  }
+
+  //if in stage for fc
+  if (resolutionStage === 3) {
+    //enclose ^_|* with bold colored span tags
+    text = text.replace(/[_^|*]+/g, function(match) {
+      //return enclosed in emphasis tags
+      return "<span class='bold deep-orange lighten-3'>" + match + "</span>";
+    });
+  }
+
+  //enclose in red text tags if marked as invalid
+  if (markInvalid) {
+    text = "<span class='red-text'>" + text + "</span>";
+  }
+
+  //return processed string
+  return text;
+}
 
 //registers event handlers that are essential for the general function of the page
 function registerEssentialEventHandlers(doLoad) {
@@ -665,10 +669,8 @@ function registerEventHandlers(loadedData) {
     $(this).material_select();
   });
 
-  //if chair or master access, amendments allowed
-  var doAmendments = accessLevel === "MA" ||
-      ! resolutionAttributes.readonly && accessLevel === "CH" && resolutionStage === 6;
-  if (doAmendments) {
+  //setup amd if lv is enabled
+  if (allowLV) {
     //the current amendment action type
     amdActionType = "noselection";
 
@@ -1168,14 +1170,17 @@ function registerEventHandlers(loadedData) {
       }
     }
 
-    //check if there actually was any data for this element
+    //if there actually was any data for this element
     if (foundData) {
-      //prepare the autocomplete init options object
+      //get data from loadedData if it is string attrib reference
+      if (typeof foundData === "string") {
+        foundData = loadedData[foundData];
+      }
+
+      //prepare the autocomplete init options object, other settings are taken from autofillSettings
       var autoOpts = {
         //init the autocomplete on this field with the data for this field's autocomplete role
-        data: foundData,
-
-        //other settings are taken from autofillSettings
+        data: foundData
       };
 
       //if this is a editor-relevant field that tracks changes and must be in a clause
@@ -1193,6 +1198,49 @@ function registerEventHandlers(loadedData) {
       log({ msg: "no autocomplete data found for field", elem: this });
     }
   });
+  $("input#forum-name")
+  .on("change", function(e) {
+    e.stopPropagation();
+
+    //replace if there is unabbreviated version
+    var elem = $(this);
+    var value = elem.abbrevReplace(loadedData.forumMapping);
+
+    //forum is now a valid name, check if it changed from the current mapping forum name
+    //forum changed, update mappings: if change caused mapping update
+    if (value !== loadedData.selectedForum) {
+      //get outout from generator
+      var newDataFor = loadedData.generateAutofillData(value);
+
+      //if forums changed
+      if (newDataFor.countries) {
+        //re-init fields that use sponsor data
+        //check chips and sponsor fields for validity with new sponsor data
+        $("#main-spon, #co-spon, #amd-spon").triggerAll("init checkRequired");
+      }
+
+      //if phrases changed
+      if (newDataFor.phrases) {
+        //re-init op phrase autofill fields
+        $("#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input")
+          .triggerAll("init checkRequired");
+      }
+    }
+  });
+  $("#main-spon, #amd-spon").on("change", function() {
+    //replace if there is unabbreviated version
+    var elem = $(this);
+    elem.abbrevReplace(loadedData.countryMapping);
+  });
+  $("#main-spon").on("change", function() {
+    //update chips on main sponsor change
+    $("#co-spon").trigger("checkRequired");
+  });
+  $("input.required, textarea.required")
+  .on("change", function() {
+    //check again on changed value
+    $(this).trigger("checkRequired");
+  });
   var requiredContainers = $("#meta-data, #preamb-clauses, #op-clauses");
   requiredContainers.on("checkRequired", "input.required, textarea.required", function() {
     var elem = $(this);
@@ -1203,11 +1251,6 @@ function registerEventHandlers(loadedData) {
 
     //apply to global flag
     badFieldPresent = badFieldPresent || ! valueOk;
-  });
-  $("input.required, textarea.required")
-  .on("change", function() {
-    //check again on changed value
-    $(this).trigger("checkRequired");
   });
   $("input[type='file']")
   .on("reset", function(e) {
@@ -1251,21 +1294,6 @@ function registerEventHandlers(loadedData) {
     //set meta canges unsaved flag
     metaChangesSaved = true;
   });
-  $("input#forum-name")
-  .on("change", function(e) {
-    e.stopPropagation();
-
-    //replace if has abbreviation extension
-    var elem = $(this);
-    var unabbreviated = loadedData.forumAbbrevMapping[elem.val().trim().toLowerCase()];
-    if (unabbreviated) {
-      //replace with non-abbreviated version
-      elem.val(unabbreviated);
-
-      //make field check for validity now
-      elem.trigger("checkRequired");
-    }
-  });
   $("input:not(.not-editor *)")
   .on("reset", function(e) {
     e.stopPropagation();
@@ -1304,23 +1332,24 @@ function registerEventHandlers(loadedData) {
     e.stopPropagation();
     var elem = $(this);
 
+    //get already present data (re-init is happening if this is an object)
+    var prevData = elem.material_chip("data");
+
     //init the chips thing with autocomplete options
     elem.material_chip({
-      //chips prefilled data
-      data: elem.getData().initData,
+      //chips prefilled data (loaded document)
+      data: prevData || elem.getData().initData,
 
       //autocomplete options for the input field
       autocompleteOptions: $.extend({
         //have it use the correct autocomplete data
-        data: loadedData.autofillInitData.sponsors,
+        data: loadedData.simpleCountryList,
 
         //don't send content updates for header information
 
         //other settings are taken from autofillSettings
       }, autofillSettings)
     });
-
-    elem.getData().initData = [];
   })
   .on("reset", function(e) {
     e.stopPropagation();
@@ -1345,30 +1374,23 @@ function registerEventHandlers(loadedData) {
 
     //check that all entries are ok sponsors in autofill data
     if (! valueBad) {
-      //get the data selector we have to match to
-      var matchDataSelector = Object.keys(loadedData.autofillDataMapping)
-        .find(function(selector) {
-          //check if element matches this selector
-          return elem.is(selector);
-        });
+      var matchData = loadedData.countryMapping;
 
-      //only if there actually is a selector for this element in the data mappings
-      if (matchDataSelector) {
-        var matchData = loadedData.autofillDataMapping[matchDataSelector];
+      //check all chips values for being included
+      var mainSponsor = $("#main-spon").val().trim();
+      valueBad = ! value.reduce(function(allOk, item, index) {
+        //get tag item content
+        var value = item.tag.trim();
 
-        //check all chips values for being included
-        valueBad = ! value.reduce(function(allOk, item, index) {
-          //must be included in data and not equal the main sponsor
-          var value = item.tag.trim();
-          var isOk = matchData.includes(value) && $("#main-spon").val().trim() !== value;
+        //must not be main sponsor and have an non-valid (not mapping) value in the data
+        var isOk = value !== mainSponsor && matchData[value] === 1;
 
-          //color-mark tag object
-          elem.children(".chip:eq(" + index + ")").classState(! isOk, "red white-text");
+        //color-mark tag object
+        elem.children(".chip:eq(" + index + ")").classState(! isOk, "red white-text");
 
-          //return for validation of whole array
-          return allOk && isOk;
-        }, true) || valueBad;
-      }
+        //return for validation of whole array
+        return allOk && isOk;
+      }, true) || valueBad;
     }
 
     //apply to global flag
@@ -1471,9 +1493,33 @@ function registerEventHandlers(loadedData) {
       elem.siblings(".add-clause-container").show();
     }
   })
-  .on("editInactive", function(e, amdUpdatePossible) {
+  .on("editInactive", function(e, amdUpdatePossible, noExtCondUpdate) {
     e.stopPropagation();
     var elem = $(this);
+
+    //get EABs
+    var clauseTitle = elem.children(".clause-title");
+    var eabs = clauseTitle.children("#eab-wrapper");
+
+    //strip illegal characters and whitespace from textareas and inputs
+    //this is done on the server as well, but we want to discourage this behavior in the user
+    elem.find("textarea.required,input.required").filterIllegalContent();
+
+    //get content ext field and cond
+    var clauseExtCond = elem.children(".clause-ext-cond");
+    var clauseContentExt = elem.children(".clause-content-ext");
+    var contentExtVal = clauseContentExt.children("textarea").val();
+
+    //if we are allowed to update, there is no ext content, but the ext content field was visible
+    if (! noExtCondUpdate &&
+        ! contentExtVal.length && ! clauseContentExt.hasClass("hide-this")) {
+      //hide to include hidden in structure update
+      clauseContentExt.setHide(true);
+
+      //is either hidden by attemptRemove of subclause, or is just empty and thereby unused
+      //send lv structure update to signal removal of unused ext content field
+      sendLVUpdate("structure", "remext", elem);
+    }
 
     //hide input fields
     elem.children(".clause-content, .clause-content-ext, .phrase-input-wrapper").setHide(true);
@@ -1484,13 +1530,10 @@ function registerEventHandlers(loadedData) {
     //show condensed
     condensedWrapper.setHide(false);
 
-    //get content ext field
-    var contentExtVal = elem.children(".clause-content-ext").children("textarea").val();
-
     //if there is ext content
     if (contentExtVal.length) {
       //fill ext content condensed with text from field and show
-      elem.children(".clause-ext-cond").text(contentExtVal).setHide(false);
+      clauseExtCond.html(processCondText(contentExtVal)).setHide(false);
     }
 
     //get text content
@@ -1499,8 +1542,14 @@ function registerEventHandlers(loadedData) {
     //if a phrase field is present
     var phraseFieldWrapper = elem.children(".phrase-input-wrapper");
     if (phraseFieldWrapper.length) {
+      //get phrase input field
+      var phraseField = phraseFieldWrapper.find("input");
+
       //put value into condensed element
-      condensedWrapper.children(".cond-phrase").text(phraseFieldWrapper.find("input").val());
+      condensedWrapper.children(".cond-phrase")
+
+        //mark as invalid if field has invalid class
+        .html(processCondText(phraseField.val(), phraseField.hasClass("invalid")));
 
       //add space to content, between phrase and content
       textContent = " " + textContent;
@@ -1509,11 +1558,8 @@ function registerEventHandlers(loadedData) {
     //also move content into condensed content element
     condensedWrapper
       .children(".cond-content")
-      .html(textContent.length ? textContent : "<span class='red-text'>no content</span>");
-
-    //get EABs
-    var clauseTitle = elem.children(".clause-title");
-    var eabs = clauseTitle.children("#eab-wrapper");
+      .html(textContent.length && textContent !== " " ?
+        processCondText(textContent) : textContent + "<em class='red-text'>no content</span>");
 
     //if they are present, we were in edit just now
     //stop if we were already not in edit mode
@@ -1537,10 +1583,6 @@ function registerEventHandlers(loadedData) {
     if (elem.isSubClause()) {
       elem.siblings(".add-clause-container").hide();
     }
-
-    //strip illegal characters and whitespace from textareas and inputs
-    //this is done on the server as well, but we want to discourage this behavior in the user
-    elem.find("textarea.required,input.required").filterIllegalContent();
 
     //only check if message wasn't displayed yet
     if (! displayedPhraseContentMessage) {
@@ -1633,6 +1675,11 @@ function registerEventHandlers(loadedData) {
 
         //clear ext field
         extField.trigger("reset");
+
+        //hide ext content condensed field on parent and trigger inactivation to update cond fields
+        var parentClause = parent.parent();
+        parentClause.children(".clause-ext-cond").setHide(true);
+        parentClause.trigger("editInactive", [false, true]);
       }
 
       //remove this clause
@@ -1919,6 +1966,23 @@ function registerEventHandlers(loadedData) {
   });
 }
 
+//converts an array of strings into an object with each string as a null prop
+function convertPropObj(orig) {
+  //convert to prop object
+  var obj = {};
+  orig.forEach(function(str) {
+    //prop add, 1 signals ok value
+    obj[str] = null;
+  });
+  return obj;
+}
+
+//prepares string for lookup in abbreviation mapping
+function abbrevMappingPrep(str) {
+  //lower case and remove other chars
+  return str.toLowerCase().replace(/[^a-z0-9]+/g, "");
+}
+
 //do things when the document has finished loading
 $(document).ready(function() {
   //get token and, if present, code from document
@@ -1937,8 +2001,6 @@ $(document).ready(function() {
 
   //check for chair or admin access
   accessLevel = $("#code-access-level").text();
-  chairMode = accessLevel === "MA" || accessLevel === "CH" && resolutionStage < 7 ||
-    accessLevel === "SG" && resolutionStage < 11;
 
   //autosave is aenabled if at non 0 stage
   autosaveEnabled = resolutionStage > 0;
@@ -1962,6 +2024,13 @@ $(document).ready(function() {
   resolutionAttributes.allowSave = ! resolutionAttributes.readonly || accessLevel === "MA";
   resolutionAttributes.allowAdvance = ! resolutionAttributes.noadvance || accessLevel === "MA";
 
+  //if chair, sg or master access, liveview allowed
+  allowLV =
+    ! resolutionAttributes.readonly && (
+    resolutionStage === 6 && (accessLevel === "CH" || accessLevel === "SG") ||
+    resolutionStage === 10 && accessLevel === "SG") ||
+    resolutionStage && accessLevel === "MA";
+
   //register an access input group for resolution advancement
   registerAccessInputs({
     url: "/resolution/advance/",
@@ -1973,7 +2042,7 @@ $(document).ready(function() {
 
     //additional validation to check for vote field values
     additionalValidation: function(setFieldState) {
-      //return true right away if we're not at stage 6
+      //return true right away if we're not at a voting/lv stage
       if (! (resolutionStage === 6 || resolutionStage === 10)) {
         return true;
       }
@@ -2029,8 +2098,8 @@ $(document).ready(function() {
     //trigger all init events
     $("*").trigger("init");
   } else { //proceed normally
-    //load external sponsor, phrase and forum name data
-    $.getJSON("/autofillData.json")
+    //load external sponsor and forum ext data and phrases
+    $.getJSON("/extData")
     .fail(function(xhr, status, error) {
       //log the error we have with getting the data
       log({ msg: "error loading autofill data", status: status, err: error });
@@ -2041,63 +2110,187 @@ $(document).ready(function() {
         "(The editor won't work until you reload the page and the data is downloaded)",
         "data_load_fail");
     })
-    .done(function(data) {
-      //data object to pass to scope of event handlers
+    .done(function(extData) {
+      //data object to pass to event handlers
       var loadedData = {};
 
-      //map forums with Chair code mode in mind
-      data.forums = data.forums.map(function(forum) {
-        //process only if array of length 3
-        if (forum instanceof Array && forum[2] === true) {
-          //in Chair mode, return normally, otherwise mark to be removed
-          return chairMode ? forum : false;
-        } else {
-          //return normally
-          return forum;
-        }
-      }) //filter out falsy ones that were selected to be removed
-      .filter(function(forum) { return forum; });
+      //maps from forum abbreviation to name and has forum object for real names, allows value check
+      loadedData.forumMapping = { };
+      loadedData.forumAutofill = { };
 
-      //mapping between autofill data and input field selectors
-      loadedData.autofillDataMapping = {
-        "#forum-name": data.forums.map(function(pair) { return pair[0]; }), //only full name ok
-        "#main-spon,#co-spon,#amd-spon": data.sponsors.slice(),
-        "#preamb-clauses .phrase-input": data.phrases.preamb.slice(),
-        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": data.phrases.op.slice(),
+      //for all forums
+      for (var forumId in extData.forumsFlat) {
+        //get the current forum
+        var forum = extData.forumsFlat[forumId];
+
+        //create mapping to name for abbr
+        loadedData.forumMapping[abbrevMappingPrep(forum.abbr)] = { to: forum.name };
+
+        //signal ok with forum object
+        loadedData.forumMapping[forum.name] = forum;
+
+        //create null props for autofill
+        loadedData.forumAutofill[forum.abbr] = null;
+        loadedData.forumAutofill[forum.name] = null;
+      }
+
+      //mapping (like forumMapping) from alt names to id name, id name has value 1
+      loadedData.countryMapping = { };
+      loadedData.countryAutofill = { };
+
+      //list of countries autocomplete format, only allowed named as no replacing happens in chips
+      loadedData.simpleCountryList = { };
+
+      //original regular and sc extended op phrases
+      var opPhrases = {
+        regular: extData.op,
+        sc: extData.op.concat(extData.scop)
       };
 
-      //get forum abbreviation mapping data
-      loadedData.forumAbbreviations = data.forums.slice();
-      loadedData.forumAbbreviations.shift();
+      //plain phrase lists
+      loadedData.phrases = {
+        preamb: extData.preamb
 
-      //convert to mapping object
-      loadedData.forumAbbrevMapping = {};
-      loadedData.forumAbbreviations.forEach(function(nameSet) {
-        //attach mapping
-        loadedData.forumAbbrevMapping[nameSet[1].trim().toLowerCase()] = nameSet[0];
+        //op is added by generateAutofillData
+      };
+
+      //generate prefix combinations
+      var phrases, prefixes, phrase, phraseIndex, prefixIndex, phrasesLength;
+      [{
+        phrases: opPhrases.regular,
+        prefixType: "op"
+      }, {
+        phrases: opPhrases.sc,
+        prefixType: "op"
+      }, {
+        phrases: loadedData.phrases.preamb,
+        prefixType: "preamb"
+      }].forEach(function(phraseGenConfig) {
+        //get list of phrases
+        phrases = phraseGenConfig.phrases;
+
+        //get list of prefixes for this type of phrase
+        prefixes = extData.prefix[phraseGenConfig.prefixType] || [];
+
+        //for all phrases
+        for (phraseIndex = 0, phrasesLength = phrases.length;
+             phraseIndex < phrasesLength; phraseIndex ++) {
+          //get current phrase
+          phrase = phrases[phraseIndex];
+
+          //change first char to lower case
+          phrase = phrase[0].toLowerCase() + phrase.substr(1);
+
+          //for all phrase prefixes
+          for (prefixIndex = 0; prefixIndex < prefixes.length; prefixIndex ++) {
+            //add prefixed phrase to list of phrases for this type
+            phrases.push(prefixes[prefixIndex] + " " + phrase);
+          }
+        }
       });
 
-      //make copies in loadedData
-      loadedData.phrases = {
-        op: data.phrases.op.slice(),
-        preamb: data.phrases.preamb.slice()
+      //object ref converted for autofill op phrases
+      var opPhrasesConverted = {
+        regular: convertPropObj(opPhrases.regular),
+        sc: convertPropObj(opPhrases.sc)
       };
 
-      //remove _convert element
-      loadedData.phrases.op.shift();
-      loadedData.phrases.preamb.shift();
+      //function that generates country name mappings for a given selected forum name in loadedData
+      loadedData.generateAutofillData = function(selectedForum) {
+        //get selected forum object
+        var forumCountries = loadedData.forumMapping[selectedForum];
 
-      //transform into correct data structure when gotten data
-      transformMarkedArrays(data, "_convert", null);
+        //keeps track of what things changed
+        var newDataFor = {
+          countries: false,
+          phrases: false
+        };
+
+        //stop if not present
+        if (forumCountries) {
+          //get list of countries
+          forumCountries = forumCountries.countries;
+        } else {
+          //nothing changed
+          return newDataFor;
+        }
+
+        //set the name of the forum these country mappings are for
+        loadedData.selectedForum = selectedForum;
+
+        //forum changed, this function is only called on forum change
+        newDataFor.countries = true;
+
+        //generate mapping for all countries of this forum, reset to flush old values
+        loadedData.countryMapping = { };
+        loadedData.countryAutofill = { };
+        loadedData.simpleCountryList = { };
+
+        //for all countries of this forum
+        forumCountries.forEach(function(countryId) {
+          //get country object
+          var country = extData.countriesFlat[countryId];
+
+          //add full and placard name as mapping to real name
+          loadedData.countryMapping[abbrevMappingPrep(country.placardname)] = { to: country.name };
+          loadedData.countryMapping[abbrevMappingPrep(country.fullname)] = { to: country.name };
+
+          //id name maps to 1 for signaling ok name
+          loadedData.countryMapping[country.name] = 1;
+
+          //create null props for autofill
+          loadedData.countryAutofill[country.placardname] = null;
+          loadedData.countryAutofill[country.fullname] = null;
+          loadedData.countryAutofill[country.name] = null;
+
+          //also add to simple autofill list
+          loadedData.simpleCountryList[country.name] = null;
+        });
+
+        //check if forum is allowed to use sc phrases, if is part of scop forums
+        var scForum = extData.scopForums.indexOf(selectedForum) !== -1;
+
+        //if situation changed
+        if (loadedData.scForum !== scForum) {
+          //update state for next run
+          loadedData.scForum = scForum;
+
+          //get the current op phrases to use
+          var useOpPhrases = scForum ? opPhrases.sc : opPhrases.regular;
+
+          //set op phrase list in loadedData.phrases
+          loadedData.phrases.op = useOpPhrases;
+
+          //set op phrases in loadedData for reference lookup
+          loadedData.opPhrases = useOpPhrases;
+
+          //also set converted op phrases
+          loadedData.opPhrasesConverted =
+            scForum ? opPhrasesConverted.sc : opPhrasesConverted.regular;
+
+          //updated data
+          newDataFor.phrases = true;
+        }
+
+        //return change state
+        return newDataFor;
+      };
+
+      //mapping between raw autofill data and input field selectors
+      loadedData.autofillDataMapping = {
+        "#main-spon,#co-spon,#amd-spon": "countryMapping", //only reference
+        "#forum-name": loadedData.forumMapping, //use mapping object
+        "#preamb-clauses .phrase-input": loadedData.phrases.preamb,
+        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": "opPhrases",
+      };
 
       //data used to inititalize autocomplete fields/thingies and their other options
       loadedData.autofillInitData = {
-        "#forum-name": data.forums,
-        "#main-spon,#co-spon,#amd-spon": data.sponsors,
-        "sponsors": data.sponsors, //shortcut for chips init
-        "#preamb-clauses .phrase-input": data.phrases.preamb,
-        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": data.phrases.op,
-      };
+        "#main-spon,#amd-spon": "countryAutofill", //only reference
+        "#forum-name": loadedData.forumAutofill,
+        "#preamb-clauses .phrase-input": convertPropObj(loadedData.phrases.preamb),
+        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": "opPhrasesConverted",
+      }; //co sponsor chips gets data on its own
 
       //register all event handlers
       registerEssentialEventHandlers(true);
@@ -2110,18 +2303,22 @@ $(document).ready(function() {
         $("*:not(.autocomplete, .chips)").trigger("init");
 
         //initiate loading of resolution from server with preset token
-        serverLoad(resolutionToken, true, function() {
+        serverLoad(resolutionToken, true, function(initForum) {
           //don't send update if still loading,
-          //some events may be fake-fired in the process of getting
+          //some events may be fake-fired in the process of getting data into the clauses
           $(".clause input, .clause textarea")
           .on("paste keyup", function() {
             //send content update
             sendLVUpdate("content", "type", $(this));
           });
 
+          //create country mappings and phrases with forum
+          loadedData.generateAutofillData(initForum);
+
           //init autocomplete fields now, they require to be already in their final positions
-          //to detect the correct dataset to use for completion
-          $(".autocomplete").trigger("init");
+          //to detect the correct dataset to use for completion,
+          //the forum is also necessary to create the correct country autofill data
+          $(".autocomplete, #co-spon").trigger("init");
         });
       } else {
         //trigger init on all
@@ -2143,10 +2340,8 @@ $(document).ready(function() {
       }
 
       //if as MA or at stage 6/10 and authorized as CH/SG, start liveview editor websocket
-      if (resolutionStage === 6 && (accessLevel === "CH" || accessLevel === "SG") ||
-          resolutionStage === 10 && accessLevel === "SG" ||
-          resolutionStage && accessLevel === "MA") { //MA access to LV needs at least once saved
-        //disable autosave for liveview, we don't want to be accidenatlly saving undesired states
+      if (allowLV) {
+        //disable autosave for liveview, we don't want to be accidentally saving a undesired state
         autosaveEnabled = false;
 
         //give token and code, false for being editor type client

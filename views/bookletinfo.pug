@@ -20,6 +20,7 @@ block content
         p.center.no-cotent-msg(class=resList.length && "hide-this")
           em.grey-text.text-darken-1 No resolutions to display.
       mixin res-info(res)
+        block
         - const address = res.content.resolution.address;
         a.token(href="/resolution/editor/" + res.token target="_blank")=res.token
         =" "
@@ -31,7 +32,6 @@ block content
         span.forum  #{address.forum}
         span.grey-text  by
         span.sponsor  #{address.sponsor.main}
-        block
       mixin selected-icons
         +icon("clear", "right red-text remove-icon selected-icons")
         +icon("arrow_upward", "right blue-text up-icon selected-icons")

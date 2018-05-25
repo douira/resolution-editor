@@ -13,6 +13,7 @@
   getAmendmentUpdate,
   amdActionType,
   log,
+  allowLV,
   resolutionFormat*/
 /* exported loadFilePick,
   serverLoad,
@@ -53,10 +54,10 @@ function validateFields(noAlert) {
   //make error message if necessary
   if (! fieldsOk && (typeof noAlert === "undefined" || ! noAlert)) {
     makeAlertMessage(
-      "warning", "Some field(s) invalid", "ok",
+      "warning", "Invalid Fields", "ok",
       "There are fields with missing or invalid values. " +
-      "Phrase fields must contain one of the suggested values only. " +
-      "<br>Invalid fields are marked <span class='red-underline'>red</span>.");
+      "Autocomplete fields must contain one of the suggested values only. " +
+      "<br>Invalid fields are marked <span class='red-text'>red</span>.");
   }
 
   //return value again
@@ -152,8 +153,10 @@ function loadJson(json, callbackOnSuccess) {
   $(".clause").trigger("attemptRemove");
   $("input, textarea").trigger("reset");
 
-  //put author data into field
-  $("#author-name").val(obj.author).trigger("activateLabel");
+  //put author data into field if any present
+  if (obj.author) {
+    $("#author-name").val(obj.author).trigger("activateLabel");
+  }
 
   //get resolution object
   var res = obj.resolution;
@@ -181,7 +184,7 @@ function loadJson(json, callbackOnSuccess) {
 
   //call success callback
   if (typeof callbackOnSuccess === "function") {
-    callbackOnSuccess();
+    callbackOnSuccess(res.address.forum);
   }
 }
 
@@ -224,7 +227,7 @@ function serverLoad(token, doToast, callback) {
   $.ajax(ajaxSettings)
   .done(function(response) {
     //attempt to load json into editor
-    loadJson(response, function() {
+    loadJson(response, function(forum) {
       //display toast
       if (doToast) {
         displayToast("Successfully loaded");
@@ -232,7 +235,7 @@ function serverLoad(token, doToast, callback) {
 
       //call callback if there is one
       if (typeof callback === "function") {
-        callback();
+        callback(forum);
       }
 
       //set flag, loaded resolution is fully saved already
@@ -262,7 +265,8 @@ function generatePdf() {
     makeAlertMessage(
       "description", "Generated PDF file", "done",
       "Click <b><a href='" + response +
-      "' target='_blank'>here</a></b> to view your resolution as a PDF file.");
+      "' target='_blank'>here</a></b> to view your resolution as a PDF file." +
+      " If the PDF does not reflect a recent change, reload the PDF viewer page.");
   })
   .fail(function() {
     //stop showing spinner
@@ -329,8 +333,9 @@ $.fn.clauseAsObject = function(allowEmpty) {
   }
 
   //check for visible extended clause content
-  var contentExtVal = this.children(".clause-content-ext").find("textarea").val().trim();
-  if (contentExtVal.length) {
+  var contentExt = this.children(".clause-content-ext");
+  var contentExtVal = contentExt.find("textarea").val().trim();
+  if (contentExtVal.length || ! contentExt.hasClass("hide-this")) {
     clauseData.contentExt = contentExtVal;
   }
 
@@ -652,6 +657,11 @@ type: structure
   clear, content cleared, ext content removed but subclauses stay
 */
 function sendLVUpdate(type, eventType, elem) {
+  //stop if not allowed
+  if (! allowLV) {
+    return;
+  }
+
   //sends a structure update to server
   if (type === "structure") {
     //empty path cache as the structure has changed and cache of paths is invalid now

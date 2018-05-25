@@ -80,6 +80,18 @@ if (! devEnv) {
   app.use(express.static(path.join(__dirname, "public")));
 }
 
+//attach request local session present info
+app.use(function(req, res, next) {
+  //check for present code in session
+  if (typeof req.session.code === "string") {
+    //signal true in session
+    res.locals.hasSession = true;
+  }
+
+  //continue processing request
+  next();
+});
+
 //attach routes
 app.use("/", index);
 app.use("/help", help);

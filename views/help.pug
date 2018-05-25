@@ -15,7 +15,7 @@ block content
     .divider
     h4: +icon(icons.code, "mediumsmall left" + colors.session)
     h4#access-levels Access Levels
-    | These are the access levels of access codes that are displayed on the editor page of each resolution.
+    | These are the access levels of access codes that are displayed on the Editor page of each resolution.
     table.striped
       thead: tr
         th Holder
@@ -35,7 +35,7 @@ block content
         +row("The Formal Clearing", "FC")
           | Editing is restricted to the Formal Clearing. Resolutions are restricted to this access level when they are in stage #[a(href="#rstage3") #3]. The FC also has access to the print queue.
         +row("The Secretariat", "SC")
-          | The Secretariat enters its access code in stage #[a(href="#rstage4") #4] to signify that the resolution is being printed and is to be advanced to stage #5. It doesn't have editing access though.
+          | The Secretariat enters its access code in stage #[a(href="#rstage4") #4] to signify that the resolution is being printed and is to be advanced to stage #[a(href="#rstage5") #5]. It doesn't have editing access though.
         +row("Chairs", "CH")
           | Chairs always have access to resolutions before they reach stage #[a(href="#rstage7") #7]. This overrides other restrictions, such as the levels FC and AP. Chairs can use LiveView when a resolution is being debated in a committee.
         +row("Secretaries General", "SG")
@@ -44,10 +44,10 @@ block content
           | This level represents unrestricted access to all available functions of the website including LiveView. This also includes changing access levels of specific codes or giving out new access codes.
     h4: +icon("font_download", "mediumsmall left blue-text")
     h4#formatting Formatting Advice and Special Characters
-    p This section will inform you about the formatting rules and special character restrictions in resolutions. This is about the formal and syntactical aspects only; for content advice, see the #[a(href="/help/contentguidelines") Content Guidelines]. Ask your Chair for assistance with formatting and if you are unsure of how to achieve a certain formal element of you resolution. #[span.grey-text Look in generatePdf.js and editorInit.js for the code.]
+    p This section will inform you about the formatting rules and special character restrictions in resolutions. This is about the formal and syntactical aspects only; for content advice, see the #[a(href="/help/contentguidelines") Content Guidelines]. Ask your Chair for assistance with formatting and if you are unsure of how to achieve a certain formal element of you resolution. #[span.grey-text The exact parser code can be found in generatePdf.js and editorInit.js.]
     p A basic clause consists of a phrase and a content body optionally followed a single enumeration. The enumeration items behave similarly to a regular clause, except for the lack of a phrase. Additionally, a single block of extended content can follow the enumeration. If you're trying to create a clause with more than two content blocks, more than one enumeration or a different ordering of these elements, restructure your clause to fit the formatting restrictions. This will also increase the legibility and semantic separation of your resolution.
     h5#special-syntax Special Syntax
-    p The editor will attempt to make syntax become obvious to the user by providing interface elements that facilitate the different aspects of writing and formatting a resolution. However, in some special cases, it is unavoidable to use the special syntax to achieve some formatting types within clause content. Use this special formatting sparingly, only when necessary and not as a generic stylistic device. Special syntax only applies to the body of clauses and phrases will not be formatted.
+    p The Editor will attempt to make syntax become obvious to the user by providing interface elements that facilitate the different aspects of writing and formatting a resolution. However, in some special cases, it is unavoidable to use the special syntax to achieve some formatting types within clause content. Use this special formatting sparingly, only when necessary and not as a generic stylistic device. Formatting is automatically applied to phrases and is disallowed in phrase fields. Special syntax only applies to the body of clauses and phrases will not be formatted. Nested or semi-nested multi-character special syntax may produce unexpected results.
     - const codeTransform = arr => (typeof arr === "string" ? [arr] : arr).map(v => "<code>" + v + "</code>").join(", ");
     table.striped.responsive-table.responsive-formatted
       thead: tr
@@ -73,15 +73,17 @@ block content
           | Characters preceded by an circumflex #[code ^] will be rendered as superscript.
         +row("Multiple character superscript", "7<sup>th</sup> of May, 42<sup>nd</sup> edition", ["7^th| of May", "42^nd| edition"])
           | Use the circumflex character #[code ^], the text you want to be rendered as a superscript followed by the pipe character #[code |] to correctly display ordinal numbers.
+        +row("Faulty special syntax", "n/a", ["_^ba|r", "ba*z"])
+          | Faulty special syntax will be cleaned up in some way, but the exact behavior may be unexpected.
     h5#contentlength Content Length
     p If your resolution has a longer word or clause text content, restructure your clause to fit the length restrictions. This will also increase the legibility and semantic separation of your resolution. In order to prevent too long content from clogging up the rendering system, two length restrictions are automatically imposed:
     ol
-      li A single word may not exceed #[b 45] characters (includes whitespace) and any longer words are not rendered in the PDF document. They are not immediately removed from the editor but will trigger a notification. (The #[em Question Of] field will allow up to 100 characters though.)
+      li A single word may not exceed #[b 45] characters (includes whitespace) and any longer words are not rendered in the PDF document. They are not immediately removed from the Editor but will trigger a notification. (The #[em Question Of] field will allow up to 100 characters though.)
       li A single text content may not exceed #[b 2500] characters (includes whitespace and special syntax). A text content is, for example, the main body of a clause, the content continuation of any clause like structure, an enumeration item or a sub-enumeration item.
     h5#whitespace Whitespace
-    p Please refrain from inserting any #[b abnormal whitespace] into clause text areas or any other input field. The editor will most likely remove all unnecessary whitespace before rendering the resolution. Line breaks, tabs and more obscure whitespace characters will be removed from clauses in order to preserve formatting and aesthetics in the rendered document. Do not use tabs for indentation of sub clauses and instead use the integrated button, that appears in the clause when you click the edit button or start typing, to create sub clauses.
+    p Please refrain from inserting any #[b abnormal whitespace] into clause text areas or any other input field. The Editor will most likely remove all unnecessary whitespace before rendering the resolution. Line breaks, tabs and more obscure whitespace characters will be removed from clauses in order to preserve formatting and aesthetics in the rendered document. Do not use tabs for indentation of sub clauses and instead use the integrated button, that appears in the clause when you click the edit button or start typing, to create sub clauses.
     h5#special-chars Special Characters
-    p Some characters have a special meaning and are removed or transformed by the editor and the renderer. Try to find another way of expressing the meaning of a special character if it doesn't have the expected purpose of the editor. Phrases will be stripped of all non-alphanumeric characters. If any character is observed to behave differently than described here or produces an error, please immediately contact your Chair and IT-Management!
+    p Some characters have a special meaning and are removed or transformed by the Editor and the renderer. Try to find another way of expressing the meaning of a special character if it doesn't have the expected purpose of the editor. Phrases will be stripped of all non-alphanumeric characters. If any character is observed to behave differently than described here, produces an error or is necessary for correct display of the resolution although it is disallowed, please immediately contact your Chair and IT-Management!
     table.striped
       thead: tr
         th Character(s)
@@ -113,7 +115,11 @@ block content
         +row(["_", "^", "*", "|"])
           | See #[a(href="#special-syntax") Special Syntax]. These characters are used to denote the application of special styling in the rendered document. Using them for a different purpose will produce unexpected results.
         +row(["ö", "é", "ì"])
-          | If you need to represent names in their romanized but still foreign form, use the letters with the different marks on them instead of adding combining diacritical marks, as they will be removed and are unsupported by the renderer.
+          | If you need to represent names in their romanized but still foreign form, use the letters with the different marks on them instead of adding combining diacritical marks, as they will be removed and are unsupported by the renderer. Get help if this is causing problems for you.
+        +row(["_", "^", ",", "-", "(", "&", "/", "+"])
+          | These characters will be removed if found at the end of a clause content block.
+        +row(["|", ".", ",", "-", ")", "&", "/", "+"])
+          | These characters will be removed if found at the beginning of a clause content block.
         tr
           td.center: em other
           td
@@ -127,13 +133,28 @@ block content
               | 0123456789
               br
               | *_^|&’"-.,()/+
+    h4: +icon("text_rotation_none", "mediumsmall left orange-text text-lighten-1")
+    h4#phrases Phrases
+    p For each clause a phrase for the corresponding type of clause can be used. All phrases can be combined with one prefix. In the certain special forums, additional operative phrases can be used. The Editor keeps track of which phrases can be used where. Refrain from putting phrases in clause content fields, as they will be detected by the Editor and/or removed in fruther processing of the resolution.
+      |  The forums allowed to use additional phrases are: #{phrases.scopForums.join(", ")}
+    mixin phrase-section(name, array)
+      p
+        b=name + ": "
+        =array.join(", ")
+    h5#preamb-phrases Preambulatory
+    +phrase-section("Optional Prefixes", phrases.prefix.preamb)
+    +phrase-section("Phrases", phrases.preamb)
+    h5#op-phrases Operative
+    +phrase-section("Optional Prefixes", phrases.prefix.op)
+    +phrase-section("Phrases", phrases.op)
+    +phrase-section("Additional Phrases in special forums", phrases.scop)
     h4: +icon(icons.handytextbox, "mediumsmall left" + colors.handytextbox)
     h4#handytextbox Handy Textbox
-    p Use this #[a(href="/handytextbox") handy textbox] for whatever you want. It's meant to be used as a temporary text area in which you can type amendments before copying them into editor's amendment interface to debate them.
+    p Use this #[a(href="/handytextbox") handy textbox] for whatever you want. It's meant to be used as a temporary text area in which you can type amendments before copying them into Editor's amendment interface to debate them.
     h4: +icon(icons.liveview, "mediumsmall left " + colors.liveview)
     h4#liveview LiveView
     h5#amdcolors Colors in Amendments
-    p Amendments change the resolution by adding, removing or changing content. In order to better display these changes, the affected sections are colorized according to what's happening with them.
+    p Amendments change the resolution by adding, removing or changing content. In order to better display these changes, the affected sections are colorized according to what's happening with them. Reordering of elements in an enumeration (sub clause) list usually marks all items that changed their position as #[span.mark-yellow changed].
     ul
       li
         span.mark-red Text marked Red
@@ -157,7 +178,7 @@ block content
     - var i = 0;
     while i <= 11
       +stage-info-index(i++, false)
-    p: em Please note that users with the access level MA have unrestricted access to all applicable functions of the editor in all stages. See #[a(href="#access-levels") Access Levels]
+    p: em Please note that users with the access level MA have unrestricted access to all applicable functions of the Editor in all stages. See #[a(href="#access-levels") Access Levels]
     h4: +icon("build", "mediumsmall left text-darken-2 grey-text")
     h4#structure-definition Resolution Structure Format Definition
     p Click

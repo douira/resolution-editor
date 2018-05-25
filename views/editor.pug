@@ -21,7 +21,7 @@ block modal
           input.file-path.validate(type="text" placeholder="File Path" pattern="^.*\.rso")
     .modal-footer
       a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
-      a#delete-action-confirm.red-text.modal-action.modal-close.waves-effect.btn-flat.hide-this(class=priwaves) Delete forever
+      a#delete-action-confirm.red-text.modal-action.modal-close.waves-effect.btn-flat.hide-this(class=priwaves) Delete
 
 block content
   .section: .container
@@ -70,7 +70,7 @@ block content
     if doLoad
       h5.light Important: Concurrent Editing
         +icon("announcement", "mediumsmall left red-text")
-      p.justify Please be aware of the fact that #[b opening the same resolution on multiple devices can have adverse effects on the integrity of the resolution] because the changes aren't updated on other devices until the page is reloaded and all unsaved local changes are thereby deleted.
+      p.justify Please be aware of the fact that #[span.bold opening the same resolution on multiple devices can have adverse effects on the integrity of the resolution] because the changes aren't updated on other devices until the page is reloaded and all unsaved local changes are thereby deleted.
     h5.light Meta-Information
     mixin collapsible-item(title, icon)
       li
@@ -110,7 +110,7 @@ block content
           if meta.clauseCount[2]
             +t-item("Subsubclauses:", meta.clauseCount[2])
       if meta.amendments && meta.amendments.length
-        +collapsible-item("Amentment History", "speaker_notes")
+        +collapsible-item("Amendment History", "speaker_notes")
           ul.collection
             - const now = Date.now();
             each amendment in meta.amendments
@@ -138,22 +138,22 @@ block content
                 else
                   +icon("cancel", "mediumsmall red-text text-darken-1")
                 h5.light#resolution-pass-status The resolution has
-                  b=voteResult.passed ? " passed" : " failed"
+                  span.bold=voteResult.passed ? " passed" : " failed"
                   =" the " + voteResult.voteType + " vote."
                 if voteResult.importantQuestion
                   p This resolution was declared an #[em important question] and needs a 2/3 majority to pass.
               .row.no-bottom-mrg
                 .col.s12.l6
                   span.light-green-text
-                    b=voteResult.inFavor
+                    span.bold=voteResult.inFavor
                     |  Vote#{meta.voteResults.inFavor === 1 ? "" : "s"} in favor
                   |  •
                   span.deep-orange-text
-                    b=" " + voteResult.against
+                    span.bold=" " + voteResult.against
                     |  Vote#{meta.voteResults.against === 1 ? "" : "s"} against
                   |  •
                   span.light-blue-text
-                    b=" " + voteResult.abstention
+                    span.bold=" " + voteResult.abstention
                     |  Abstention#{meta.voteResults.abstention === 1 ? "" : "s"}
                 .col.s12.l6
                   #vote-bar.z-depth-2
@@ -323,7 +323,7 @@ block content
           h5 General Data
           .divider.reduced-width-divider
           .input-field
-            input.required#author-name(type="text")
+            input#author-name(type="text")
             label(for="author-name") Document Author
           .divider
           .row
@@ -352,14 +352,17 @@ block content
             +icon(icons.code, "prefix")
             input#unlock-code-input(name="code" type="text" placeholder=placeholders.code)
             label(for="unlock-code-input") Enter access code
-        .col.xl9.l8.m7.s12.justify#no-load-mode Editing access to this resolution is restricted beyond your access level (#[a(href="/help#" + accessLevel)=accessLevel]). You can still view meta information and read-only versions of it however. The editor for this resolution can be opened by entering an access code with the levels
-          em=meta.stage < 7 ? " Chair-like" : " SG"
-          case meta.stage
-            when 2
-              | , #[em AP]
-            when 3
-              | , #[em FC]
-          |  or #[em MA]. See #[a(href="/help#access-levels") here] for a detailed description of all access levels.
+        .col.xl9.l8.m7.s12.justify#no-load-mode Editing access to this resolution is restricted beyond your access level (#[a(href="/help#" + accessLevel)=accessLevel]). You can still view meta information and read-only versions of it however. The editor for this resolution can be opened by entering an access code with the level
+          if meta.stage < 11
+            | s
+            em=meta.stage < 7 ? " Chair-like" : " SG"
+            case meta.stage
+              when 2
+                | , #[em AP]
+              when 3
+                | , #[em FC]
+            | or
+          |  #[em MA]. See #[a(href="/help#access-levels") here] for a detailed description of all access levels.
       .center: a.btn.waves-effect.waves-light#unlock-submit-btn(href="#" class=pri)&attributes(tooltip("Tries to open editor with the given code", "right")) Unlock
 block scripts
   +static("js", "/js/scrollintoview.js")

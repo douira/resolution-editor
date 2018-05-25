@@ -53,7 +53,8 @@
     handytextbox: " text-lighten-1 brown-text",
     help: " text-darken-1 amber-text",
     plaintext: " text-darken-1 purple-text",
-    session: " text-darken-3 amber-text"
+    session: " text-darken-3 amber-text",
+    logoutButton: " red lighten-1"
   };
 
   //placeholders, for adjusting the length
@@ -160,14 +161,15 @@ html(lang="en")
       li: a(href="/help/contentguidelines") Content Guidelines
       li: a(href="/help/support") Support
       li: a(href="/handytextbox") Handy Textbox
-      li: a(href="/resolution/prenew?nonew=1") Please Read Page
-      li: a(href="/session") Session Info
+      li: a(href="/resolution/prenew?nonew=1") Read First Page
+      li: a(href="/session")=hasSession ? "Session Info" : "Login"
       li: a(href="/help/impressum") Impressum
       li: a(href="http://munol.org" target="_blank") MUNOL
     ul#lists-dropdown.dropdown-content
       li: a(href="/list/print") Print Queue
       li: a(href="/list/fcqueue") FC Work-Queue
       li: a(href="/list/overview") Resolutions
+      li: a(href="/list/forum") Forums
       li: a(href="/list/booklet") Booklets
       li: a(href="/list/codes") Codes
     nav.lighten-2(class=pri role="navigation"): .nav-wrapper
