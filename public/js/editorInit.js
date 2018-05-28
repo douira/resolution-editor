@@ -2336,6 +2336,33 @@ $(document).ready(function() {
           //to detect the correct dataset to use for completion,
           //the forum is also necessary to create the correct country autofill data
           $(".autocomplete, #co-spon").trigger("init");
+
+          //if as MA or at stage 6/10 and authorized as CH/SG, start liveview editor websocket
+          //wait for document to start loading completely before doing lv
+          if (allowLV) {
+            //disable autosave for liveview,
+            //we don't want to be accidentally saving a undesired state
+            autosaveEnabled = false;
+
+            //give token and code, false for being editor type client
+            startLiveviewWS(false, resolutionToken, resolutionCode, function(type, newSendStatus) {
+              //act on update
+              if (type === "sendUpdates") {
+                //if now set to true and previously false,
+                //send structure update to catch server up on made changes
+                if (! sendLVUpdates && newSendStatus) {
+                  sendLVUpdates = true;
+                  sendLVUpdate("structure", "catchup");
+                }
+
+                //copy value and use a new current
+                sendLVUpdates = newSendStatus;
+              } else if (type === "disconnect") {
+                //set send updates to false because we want to resend after connection failure
+                sendLVUpdates = false;
+              }
+            });
+          }
         });
       } else {
         //trigger init on all
@@ -2354,31 +2381,6 @@ $(document).ready(function() {
             " by saving it for the first time, auto-save will not be active. Please remember to" +
             " save your resolution if it was actually your intention to start writing a new one.");
         }, 1000 * 60 * 5); //5 minutes
-      }
-
-      //if as MA or at stage 6/10 and authorized as CH/SG, start liveview editor websocket
-      if (allowLV) {
-        //disable autosave for liveview, we don't want to be accidentally saving a undesired state
-        autosaveEnabled = false;
-
-        //give token and code, false for being editor type client
-        startLiveviewWS(false, resolutionToken, resolutionCode, function(type, newSendStatus) {
-          //act on update
-          if (type === "sendUpdates") {
-            //if now set to true and previously false,
-            //send structure update to catch server up on made changes
-            if (! sendLVUpdates && newSendStatus) {
-              sendLVUpdates = true;
-              sendLVUpdate("structure", "catchup");
-            }
-
-            //copy value and use a new current
-            sendLVUpdates = newSendStatus;
-          } else if (type === "disconnect") {
-            //set send updates to false because we want to resend after connection failure
-            sendLVUpdates = false;
-          }
-        });
       }
 
       //check if localStorage is supported and no flag is found
