@@ -65,7 +65,7 @@ function startWS(isViewer, updateListener) {
 
   //determine location of ws server
   var wsUrl = "ws://" +
-    (window.location.port === 3000 ? "intern.tms-hl.org:17750" : "pad.tms-hl.de:8080") +
+    (window.location.port === "3000" ? "intern.tms-hl.org:17750" : "pad.tms-hl.de:8080") +
     "/liveview";
 
   //open websocket connection to server
