@@ -249,7 +249,7 @@ router.post("/setattribs/:token", function(req, res) {
 //POST (no view) delete a resolution
 router.post("/delete/:token", function(req, res) {
   //get token from req (see above)
-  const token = req.token;
+  const token = req.params.token;
 
   //remove resolution with that token by moving to the archive
   resolutions.findOne( { token: token } )
