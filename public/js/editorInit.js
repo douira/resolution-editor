@@ -94,12 +94,12 @@ function makeEabMoveUpdateDisabledHandler(isUpButton) {
 }
 
 //checks if required fields have values, return true for all fields ok
-function checkRequiredFields(advanceMode) {
+function checkRequiredFields() {
   //reset flag
   badFieldPresent = false;
 
   //call check on all required elements
-  $(".required").trigger("checkRequired", advanceMode);
+  $(".required").trigger("checkRequired");
 
   //return for use of result
   return ! badFieldPresent;
@@ -1357,7 +1357,7 @@ function registerEventHandlers(loadedData) {
     $(this).trigger("init");
   });
   requiredContainers
-  .on("checkRequired", ".chips.required", function(e, advanceMode) {
+  .on("checkRequired", ".chips.required", function() {
     var elem = $(this);
 
     //get value of field
@@ -1367,10 +1367,7 @@ function registerEventHandlers(loadedData) {
     var valueBad = false;
 
     //check for presence of values
-    valueBad = ! (
-      value && value.length &&
-      (! advanceMode || value.length >= loadedData.minCoSponsors)
-    );
+    valueBad = ! (value && value.length);
 
     //color label according to status
     elem.siblings("label").classState(valueBad, "red-text");
@@ -2045,17 +2042,6 @@ $(document).ready(function() {
 
     //additional validation to check for vote field values
     additionalValidation: function(setFieldState) {
-      //if in stage 1, check co sponsor amount
-      if (resolutionStage === 1) {
-        //validate resolution
-        checkRequiredFields(true);
-
-        //stop if invalid
-        if (badFieldPresent) {
-          return false;
-        }
-      }
-
       //return true right away if we're not at a voting/lv stage
       if (! (resolutionStage === 6 || resolutionStage === 10)) {
         return true;
@@ -2228,9 +2214,6 @@ $(document).ready(function() {
           //nothing changed
           return newDataFor;
         }
-
-        //save minimum amount of required co-sponsors (20%)
-        loadedData.minCoSponsors = Math.ceil(0.2 * forumCountries.length);
 
         //set the name of the forum these country mappings are for
         loadedData.selectedForum = selectedForum;
