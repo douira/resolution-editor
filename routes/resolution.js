@@ -252,13 +252,14 @@ router.post("/delete/:token", function(req, res) {
   const token = req.token;
 
   //remove resolution with that token by moving to the archive
-  resolutions.findOneAndDelete( { token: token } ).then(resDoc => {
-    //insert into archive collection, unpack returned object with .value!
-    resolutionArchive.insertOne(resDoc.value).then(() => {
+  resolutions.findOne( { token: token } )
+    .then(resDoc => Promise.all([
+      resolutionArchive.insertOne(resDoc), resolutions.deleteOne({ token })
+    ]))
+    .then(() => {
       //acknowledge
       res.send("ok. deleted " + token);
-    }, err => issueError(req, res, 500, "can't insert into archive", err));
-  }, err => issueError(req, res, 500, "can't delete", err));
+  }, err => issueError(req, res, 500, "can't query for delete", err));
 });
 
 //POST, GET for liveview page (GET may be ok when session with auth is present)
