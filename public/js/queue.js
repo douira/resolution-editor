@@ -106,10 +106,10 @@ function updateList() {
       setBasicAttribs(firstItem, firstElem);
 
       //set print amount of pages per document, question mark if not given
-      setPageAmount("#item-print-length", firstElem.pageAmount, ["page", "pages"]);
+      setPageAmount("#item-print-length", firstItem.pageAmount, ["page", "pages"]);
 
       //set item print copies
-      setPageAmount("#item-print-copies", firstElem.copyAmount, ["copy", "copies"]);
+      setPageAmount("#item-print-copies", firstItem.copyAmount, ["copy", "copies"]);
 
       //remove all list items that exceed the amount of items in the list
       list.children(".list-item").slice(data.length).remove();
