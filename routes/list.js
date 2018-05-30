@@ -421,7 +421,10 @@ function mapListItems(items, stageHistoryIndex, forums) {
     delete i.content;
 
     //determine copyAmount with extData
-    i.copyAmount = forums[i.address.sponsor.main].countries.length + 7;
+    const selectedForum = forums[i.address.forum];
+    if (selectedForum) {
+      i.copyAmount = selectedForum.countries.length + 7;
+    }
 
     //return original object
     return i;
