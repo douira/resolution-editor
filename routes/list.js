@@ -408,7 +408,6 @@ router.get("/print", function(req, res) {
 function mapListItems(items, stageHistoryIndex, forums) {
   //map items and return modified
   return items.map(i => {
-    console.log(i);
     //set new property with value at index
     i.waitTime = i.stageHistory[stageHistoryIndex];
 
@@ -457,7 +456,6 @@ router.get("/print/getitems", function(req, res) {
   }).toArray().catch(
     err => issueError(req, res, 500, "could not query print queue items", err)
   ), extDataPromise]).then(results => {
-    console.log(results[0]);
     //send data to client, rewrite and address
     res.send(mapListItems(results[0], 4, results[1].forums));
   }, () => issueError(req, res, 500, "could not prepare print queue items"));
