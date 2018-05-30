@@ -67,11 +67,11 @@ function updateTimer() {
 }
 
 //sets page amount in page amount field
-function setPageAmount(selector, pageAmount) {
+function setPageAmount(selector, pageAmount, names) {
   //get item and set page amount in label if set
   $(selector).text(
-    (pageAmount && pageAmount + (pageAmount === 1 ? " page" : " pages") //correct plural
-  ) || "? pages");
+    (pageAmount && pageAmount + " " + (pageAmount === 1 ? names[0] : names[1]) //correct plural
+  ) || "? " + names[1]);
 }
 
 //updates the list of resolutions
@@ -106,10 +106,10 @@ function updateList() {
       setBasicAttribs(firstItem, firstElem);
 
       //set print amount of pages per document, question mark if not given
-      setPageAmount("#item-print-length", firstElem.pageAmount);
+      setPageAmount("#item-print-length", firstElem.pageAmount, ["page", "pages"]);
 
       //set item print copies
-      setPageAmount("#item-print-copies", firstElem.copyAmount);
+      setPageAmount("#item-print-copies", firstElem.copyAmount, ["copy", "copies"]);
 
       //remove all list items that exceed the amount of items in the list
       list.children(".list-item").slice(data.length).remove();
