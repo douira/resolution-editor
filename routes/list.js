@@ -453,6 +453,7 @@ router.get("/print/getitems", function(req, res) {
   }).toArray().catch(
     err => issueError(req, res, 500, "could not query print queue items", err)
   ), extDataPromise]).then(results => {
+    console.log(results);
     //send data to client, rewrite and address
     res.send(mapListItems(results[0], 4, results[1].forums));
   });
