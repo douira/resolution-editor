@@ -420,11 +420,13 @@ function mapListItems(items, stageHistoryIndex, forums) {
     //remove unused property
     delete i.content;
 
-    //determine copyAmount with extData
-    const selectedForum = forums[i.address.forum];
-    if (selectedForum) {
-      console.log(selectedForum);
-      i.copyAmount = selectedForum.countries.length + 7;
+    //only if forums given
+    if (forums) {
+      //determine copyAmount with extData
+      const selectedForum = forums[i.address.forum];
+      if (selectedForum) {
+        i.copyAmount = selectedForum.countries.length + 7;
+      }
     }
 
     //return original object
@@ -491,7 +493,6 @@ router.get("/fcqueue/getitems", function(req, res) {
     //sort by time in stage 3, most necessary first
     "stageHistory.3": -1
   }).toArray().then(items => {
-    console.log(items);
     //send data to client, rewrite stageHistory and address
     res.send(mapListItems(items, 3));
   }, err => issueError(req, res, 500, "could not query fc work queue items", err));
