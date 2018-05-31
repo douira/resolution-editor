@@ -1600,6 +1600,16 @@ function registerEventHandlers(loadedData) {
       //get the list of phrases that applies to this clause
       var phrases = loadedData.phrases[elem.attr("data-clause-type")];
 
+      //log to server for info
+      if (! phrases) {
+        log({
+          phrases: phrases,
+          clauseType: elem.attr("data-clause-type"),
+          phraseNames: Object.keys(loadedData.phrases),
+          clauseElem: elem
+        }, "info");
+      }
+
       //check if the content text area includes a phrase
       if (phrases.some(function(phrase) {
         //return true if it starts with the phrase
