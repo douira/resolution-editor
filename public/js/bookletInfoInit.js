@@ -101,7 +101,7 @@ $(document).ready(function() {
 
     //remove the eigth signature if it's empty
     var lastSignature = bookletData.signatures[7];
-    if (! (lastSignature.name.length && lastSignature.position.length)) {
+    if (! (lastSignature.name.length || lastSignature.position.length)) {
       //remove from signatures
       delete bookletData.signatures[7];
     }
