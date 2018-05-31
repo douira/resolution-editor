@@ -667,7 +667,7 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
         }
 
         //make url to output pdf
-        const pdfUrl = "/rendered/booklet" + booklet._id + ".pdf";
+        const pdfUrl = "/rendered/booklet" + booklet._id + ".pdf?c=" + Date.now();
 
         //simply return url without rendering if the booklet
         //and all resolutions don't have unrendered changes

@@ -158,7 +158,7 @@ $(document).ready(function() {
         printBtn.removeClass("btn-flat").addClass("btn")
 
         //and set url to pdf
-        .attr("href", "/rendered/booklet" + bookletId + ".pdf");
+        .attr("href", "/rendered/booklet" + bookletId + ".pdf?c=" + Date.now());
 
         //set text and icon to display rendering done
         printBtnText.text("View PDF");
