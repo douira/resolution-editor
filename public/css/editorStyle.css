@@ -107,11 +107,11 @@
 }
 
 #preamb-clauses .cond-phrase {
-  text-decoration: underline;
+  font-style: italic;
 }
 
 #op-clauses .cond-phrase, #amd-clause-wrapper .cond-phrase {
-  font-style: italic;
+  text-decoration: underline;
 }
 
 #amd-apply-btn {
