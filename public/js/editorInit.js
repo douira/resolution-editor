@@ -1642,7 +1642,7 @@ function registerEventHandlers(loadedData) {
     //updates the tree depth of this clause and adds "Sub"s to the clause name
     var subClauseDepth = $(this).amountAbove(".clause-list-sub");
     if (subClauseDepth) {
-      $(this).find(".clause-prefix").text("Sub".repeat(subClauseDepth) + "-");
+      $(this).find(".clause-prefix").text("Sub" + (subClauseDepth === 2 ? "Sub" : "") + "-");
     }
   })
   .on("attemptRemove", function(e) {
