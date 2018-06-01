@@ -1911,7 +1911,10 @@ function registerEventHandlers(loadedData) {
     e.stopPropagation();
 
     //load file from computer file system
-    loadFilePick();
+    loadFilePick(function(newForum) {
+      //update mappings
+      loadedData.generateAutofillData(newForum);
+    });
   });
   $("#legacy-action-save")
   .on("click", function(e) {
