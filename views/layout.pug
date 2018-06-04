@@ -65,7 +65,7 @@
 
 //-static file serve with cache control
 mixin static(type, url)
-  - url += "?v=0" //add version to url
+  - url += "?v=4" //add version to url
   case type
     when "css"
       link(href=url type="text/css" rel="stylesheet")
@@ -157,20 +157,17 @@ html(lang="en")
 
     //-navigation, prepend with .navbar-fixed: for sticky navbar
     ul#help-dropdown.dropdown-content
-      li: a(href="/help") Help
+      li: a(href="/help") Help Page
       li: a(href="/help/contentguidelines") Content Guidelines
-      li: a(href="/help/support") Support
       li: a(href="/handytextbox") Handy Textbox
       li: a(href="/resolution/prenew?nonew=1") Read First Page
-      li: a(href="/session")=hasSession ? "Session Info" : "Login"
-      li: a(href="/help/impressum") Impressum
-      li: a(href="http://munol.org" target="_blank") MUNOL
+      li: a(href="/help/feedback") Feedback
     ul#lists-dropdown.dropdown-content
-      li: a(href="/list/print") Print Queue
-      li: a(href="/list/fcqueue") FC Work-Queue
-      li: a(href="/list/overview") Resolutions
       li: a(href="/list/forum") Forums
+      li: a(href="/list/fcqueue") FC Work-Queue
+      li: a(href="/list/print") Print Queue
       li: a(href="/list/booklet") Booklets
+      li: a(href="/list/overview") Resolutions
       li: a(href="/list/codes") Codes
     nav.lighten-2(class=pri role="navigation"): .nav-wrapper
       .container
@@ -178,11 +175,12 @@ html(lang="en")
           li: a(href="/") Front Page
           li: a(href="/resolution/prenew") New Resolution
           li: a(href="/resolution") Editor
-          li: a(href="/about") About
+          //-li: a(href="/about") About
           li: a.dropdown-button(href="#" data-activates="lists-dropdown") Lists
             +icon("arrow_drop_down", "right")
           li: a.dropdown-button(href="#" data-activates="help-dropdown") Help
             +icon("arrow_drop_down", "right")
+          li: a(href="/session")=hasSession ? "Session Info" : "Login"
         ul.right.hide-on-med-and-down
           +navList(navElements)
         ul.side-nav#nav-mobile
@@ -224,6 +222,7 @@ html(lang="en")
                 li: a.white-text(href="https://github.com/douira/resolution-editor/pulls") Contribute
                 li: a.white-text(href="http://munol.org") MUNOL
                 li: a.white-text(href="http://app.munol.org") MUNOL-App
+                li: a.white-text(href="https://munol.org/legal-notice/") Impressum
             .col.xl3.l3.m4.s6
               h5.white-text Stack
               ul

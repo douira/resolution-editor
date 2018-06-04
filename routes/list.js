@@ -18,9 +18,9 @@ require("../lib/database").fullInit.then(collections => {
   booklets = collections.booklets;
 });
 
-//require admin session for overview and code management
-router.use(["/overview", "/codes"], (req, res, next) =>
-  routingUtil.requireSession("admin", req, res, () => next()));
+//require admin or SG session for resolution list
+router.use("/overview", (req, res, next) =>
+  routingUtil.requireSession("semi-admin", req, res, () => next()));
 
 //GET display overview of all resolutions
 router.get("/overview", function(req, res) {
@@ -114,6 +114,9 @@ router.get("/forum/:forumNameId", function(req, res) {
   });
 });
 
+//require admin session for code management
+router.use("/codes", (req, res, next) =>
+  routingUtil.requireSession("admin", req, res, () => next()));
 
 //gets the current insert group counter
 function getInsertGroupCounter() {
@@ -402,7 +405,7 @@ router.get("/print", function(req, res) {
 
 //maps the stage history entry from it's nexted form to a property
 //also moves the address to a top level property
-function mapListItems(items, stageHistoryIndex) {
+function mapListItems(items, stageHistoryIndex, forums) {
   //map items and return modified
   return items.map(i => {
     //set new property with value at index
@@ -414,8 +417,17 @@ function mapListItems(items, stageHistoryIndex) {
     //unwrap address
     i.address = i.content.resolution.address;
 
-    //remove old property
+    //remove unused property
     delete i.content;
+
+    //only if forums given
+    if (forums) {
+      //determine copyAmount with extData
+      const selectedForum = forums[i.address.forum];
+      if (selectedForum) {
+        i.copyAmount = selectedForum.countries.length + 7;
+      }
+    }
 
     //return original object
     return i;
@@ -425,7 +437,7 @@ function mapListItems(items, stageHistoryIndex) {
 //POST return list of items to be printed
 router.get("/print/getitems", function(req, res) {
   //query resolutions in stage 4 that are advanceable (and thereby non-static)
-  resolutions.find({
+  Promise.all([resolutions.find({
     stage: 4,
     $nor: [
       { attributes: "noadvance" },
@@ -444,10 +456,12 @@ router.get("/print/getitems", function(req, res) {
   }).sort({
     //sort by time in stage 4 (most necessary first), index 4 becase 0 is also a stage
     "stageHistory.4": -1
-  }).toArray().then(items => {
+  }).toArray().catch(
+    err => issueError(req, res, 500, "could not query print queue items", err)
+  ), extDataPromise]).then(results => {
     //send data to client, rewrite and address
-    res.send(mapListItems(items, 4));
-  }, err => issueError(req, res, 500, "could not query print queue items", err));
+    res.send(mapListItems(results[0], 4, results[1].forums));
+  }, () => issueError(req, res, 500, "could not prepare print queue items"));
 });
 
 //uses session auth for FC queue
@@ -486,7 +500,7 @@ router.get("/fcqueue/getitems", function(req, res) {
 
 //booklet actions require at least SG permission (booklet perm match mode)
 router.use("/booklet", (req, res, next) =>
-  routingUtil.requireSession("booklet", req, res, () => next()));
+  routingUtil.requireSession("semi-admin", req, res, () => next()));
 
 //booklet creation and selection page
 router.get("/booklet", function(req, res) {
@@ -653,7 +667,7 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
         }
 
         //make url to output pdf
-        const pdfUrl = "/rendered/booklet" + booklet._id + ".pdf";
+        const pdfUrl = "/rendered/booklet" + booklet._id + ".pdf?c=" + Date.now();
 
         //simply return url without rendering if the booklet
         //and all resolutions don't have unrendered changes

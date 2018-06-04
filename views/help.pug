@@ -78,7 +78,7 @@ block content
     h5#contentlength Content Length
     p If your resolution has a longer word or clause text content, restructure your clause to fit the length restrictions. This will also increase the legibility and semantic separation of your resolution. In order to prevent too long content from clogging up the rendering system, two length restrictions are automatically imposed:
     ol
-      li A single word may not exceed #[b 45] characters (includes whitespace) and any longer words are not rendered in the PDF document. They are not immediately removed from the Editor but will trigger a notification. (The #[em Question Of] field will allow up to 100 characters though.)
+      li A single word may not exceed #[b 45] characters (includes whitespace) and any longer words are not rendered in the PDF document. They are not immediately removed from the Editor but will trigger a notification.
       li A single text content may not exceed #[b 2500] characters (includes whitespace and special syntax). A text content is, for example, the main body of a clause, the content continuation of any clause like structure, an enumeration item or a sub-enumeration item.
     h5#whitespace Whitespace
     p Please refrain from inserting any #[b abnormal whitespace] into clause text areas or any other input field. The Editor will most likely remove all unnecessary whitespace before rendering the resolution. Line breaks, tabs and more obscure whitespace characters will be removed from clauses in order to preserve formatting and aesthetics in the rendered document. Do not use tabs for indentation of sub clauses and instead use the integrated button, that appears in the clause when you click the edit button or start typing, to create sub clauses.
@@ -116,8 +116,8 @@ block content
           | See #[a(href="#special-syntax") Special Syntax]. These characters are used to denote the application of special styling in the rendered document. Using them for a different purpose will produce unexpected results.
         +row(["ö", "é", "ì"])
           | If you need to represent names in their romanized but still foreign form, use the letters with the different marks on them instead of adding combining diacritical marks, as they will be removed and are unsupported by the renderer. Get help if this is causing problems for you.
-        +row(["_", "^", ",", "-", "(", "&", "/", "+"])
-          | These characters will be removed if found at the end of a clause content block.
+        +row(["_", "^", ".", ",", "-", "(", "&", "/", "+"])
+          | These characters will be removed if found at the end of a clause content block. If a clause ends with an abbreviation, simply omit the last full stop of the abbreviation.
         +row(["|", ".", ",", "-", ")", "&", "/", "+"])
           | These characters will be removed if found at the beginning of a clause content block.
         tr

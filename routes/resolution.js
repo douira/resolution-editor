@@ -42,7 +42,7 @@ router.get("/renderpdf/:token", function(req, res) {
     }
 
     //url to pdf
-    const pdfUrl = "/rendered/" + token + ".pdf";
+    const pdfUrl = "/rendered/" + token + ".pdf?c=" + Date.now();
 
     //don't render if there hasn't been a save since the last render
     if (! document.unrenderedChanges) {
@@ -249,16 +249,17 @@ router.post("/setattribs/:token", function(req, res) {
 //POST (no view) delete a resolution
 router.post("/delete/:token", function(req, res) {
   //get token from req (see above)
-  const token = req.token;
+  const token = req.params.token;
 
   //remove resolution with that token by moving to the archive
-  resolutions.findOneAndDelete( { token: token } ).then(resDoc => {
-    //insert into archive collection, unpack returned object with .value!
-    resolutionArchive.insertOne(resDoc.value).then(() => {
+  resolutions.findOne( { token: token } )
+    .then(resDoc => Promise.all([
+      resolutionArchive.insertOne(resDoc), resolutions.deleteOne({ token })
+    ]))
+    .then(() => {
       //acknowledge
       res.send("ok. deleted " + token);
-    }, err => issueError(req, res, 500, "can't insert into archive", err));
-  }, err => issueError(req, res, 500, "can't delete", err));
+  }, err => issueError(req, res, 500, "can't query for delete", err));
 });
 
 //POST, GET for liveview page (GET may be ok when session with auth is present)

@@ -168,7 +168,8 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
   function updateButtonState() {
     //check all validation states
     allOk = fieldStates.token.valid && (fieldStates.code.valid &&
-      (fieldStates.code.valid === true || typeof presetToken === "undefined")) &&
+      (fieldStates.code.valid || ! presetToken)) &&
+
       //check with additional validation callback if given
       (typeof inputOpts.additionalValidation === "function" ?
        inputOpts.additionalValidation(setInputValidState) : true);
@@ -226,7 +227,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
   }
 
   //token and code input validation
-  fieldElem.on("keyup paste checkValidation", function(e) {
+  fieldElem.on("keyup paste click checkValidation", function(e) {
     var elem = $(this);
 
     //get value of current input field and remove any whitespace, make capitalized

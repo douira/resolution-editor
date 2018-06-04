@@ -189,7 +189,7 @@ function loadJson(json, callbackOnSuccess) {
 }
 
 //load file from computer file system
-function loadFilePick() {
+function loadFilePick(loadDone) {
   //make alert message file select
   makeAlertMessage(
     "file_upload", "Open resolution file", "cancel", function(body, modal) {
@@ -202,7 +202,7 @@ function loadFilePick() {
         modal.modal("close");
 
         //load text into editor
-        loadJson(text);
+        loadJson(text, loadDone);
 
         //changes loaded from file are not "really" server saved
         //(and flag isn't reset because of this)

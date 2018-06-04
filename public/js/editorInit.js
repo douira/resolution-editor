@@ -1600,10 +1600,20 @@ function registerEventHandlers(loadedData) {
       //get the list of phrases that applies to this clause
       var phrases = loadedData.phrases[elem.attr("data-clause-type")];
 
+      //log to server for info
+      if (! phrases) {
+        log({
+          phrases: phrases,
+          clauseType: elem.attr("data-clause-type"),
+          phraseNames: Object.keys(loadedData.phrases),
+          clauseElem: elem
+        }, "info");
+      }
+
       //check if the content text area includes a phrase
       if (phrases.some(function(phrase) {
         //return true if it starts with the phrase
-        return clauseContent.trim().indexOf(phrase.toLowerCase()) === 0;
+        return clauseContent.indexOf(phrase.toLowerCase()) === 0;
       })) {
         //display message concerning phrase field
         makeAlertMessage("info", "Phrase found in content field", "OK",
@@ -1611,10 +1621,10 @@ function registerEventHandlers(loadedData) {
           " with a phrase. Please use the content text area only for the clause content and not" +
           " the phrase of the clause. The text input field labeled 'Phrase' will suggest " +
           " possible phrases when you start typing. This message will only be displayed once.");
-      }
 
-      //set flag to disabling state
-      displayedPhraseContentMessage = true;
+        //set flag to disabling state
+        displayedPhraseContentMessage = true;
+      }
     }
 
     //auto-save if not at stage 0 and has unsaved changes
@@ -1642,7 +1652,7 @@ function registerEventHandlers(loadedData) {
     //updates the tree depth of this clause and adds "Sub"s to the clause name
     var subClauseDepth = $(this).amountAbove(".clause-list-sub");
     if (subClauseDepth) {
-      $(this).find(".clause-prefix").text("Sub".repeat(subClauseDepth) + "-");
+      $(this).find(".clause-prefix").text("Sub" + (subClauseDepth === 2 ? "Sub" : "") + "-");
     }
   })
   .on("attemptRemove", function(e) {
@@ -1901,7 +1911,10 @@ function registerEventHandlers(loadedData) {
     e.stopPropagation();
 
     //load file from computer file system
-    loadFilePick();
+    loadFilePick(function(newForum) {
+      //update mappings
+      loadedData.generateAutofillData(newForum);
+    });
   });
   $("#legacy-action-save")
   .on("click", function(e) {
@@ -2319,6 +2332,33 @@ $(document).ready(function() {
           //to detect the correct dataset to use for completion,
           //the forum is also necessary to create the correct country autofill data
           $(".autocomplete, #co-spon").trigger("init");
+
+          //if as MA or at stage 6/10 and authorized as CH/SG, start liveview editor websocket
+          //wait for document to start loading completely before doing lv
+          if (allowLV) {
+            //disable autosave for liveview,
+            //we don't want to be accidentally saving a undesired state
+            autosaveEnabled = false;
+
+            //give token and code, false for being editor type client
+            startLiveviewWS(false, resolutionToken, resolutionCode, function(type, newSendStatus) {
+              //act on update
+              if (type === "sendUpdates") {
+                //if now set to true and previously false,
+                //send structure update to catch server up on made changes
+                if (! sendLVUpdates && newSendStatus) {
+                  sendLVUpdates = true;
+                  sendLVUpdate("structure", "catchup");
+                }
+
+                //copy value and use a new current
+                sendLVUpdates = newSendStatus;
+              } else if (type === "disconnect") {
+                //set send updates to false because we want to resend after connection failure
+                sendLVUpdates = false;
+              }
+            });
+          }
         });
       } else {
         //trigger init on all
@@ -2337,31 +2377,6 @@ $(document).ready(function() {
             " by saving it for the first time, auto-save will not be active. Please remember to" +
             " save your resolution if it was actually your intention to start writing a new one.");
         }, 1000 * 60 * 5); //5 minutes
-      }
-
-      //if as MA or at stage 6/10 and authorized as CH/SG, start liveview editor websocket
-      if (allowLV) {
-        //disable autosave for liveview, we don't want to be accidentally saving a undesired state
-        autosaveEnabled = false;
-
-        //give token and code, false for being editor type client
-        startLiveviewWS(false, resolutionToken, resolutionCode, function(type, newSendStatus) {
-          //act on update
-          if (type === "sendUpdates") {
-            //if now set to true and previously false,
-            //send structure update to catch server up on made changes
-            if (! sendLVUpdates && newSendStatus) {
-              sendLVUpdates = true;
-              sendLVUpdate("structure", "catchup");
-            }
-
-            //copy value and use a new current
-            sendLVUpdates = newSendStatus;
-          } else if (type === "disconnect") {
-            //set send updates to false because we want to resend after connection failure
-            sendLVUpdates = false;
-          }
-        });
       }
 
       //check if localStorage is supported and no flag is found
