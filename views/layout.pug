@@ -65,7 +65,7 @@
 
 //-static file serve with cache control
 mixin static(type, url)
-  - url += "?v=0" //add version to url
+  - url += "?v=4" //add version to url
   case type
     when "css"
       link(href=url type="text/css" rel="stylesheet")

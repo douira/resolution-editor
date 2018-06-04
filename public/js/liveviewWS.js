@@ -63,8 +63,11 @@ function startWS(isViewer, updateListener) {
   //decrement try counter
   connectTriesLeftLV --;
 
+  //determine location of ws server
+  var wsUrl = "ws://" + window.location.hostname + ":17750/liveview";
+
   //open websocket connection to server
-  currentWS = new WebSocket("ws://" + window.location.hostname + ":17750/liveview");
+  currentWS = new WebSocket(wsUrl);
 
   //get the token and code given in the page if not already present
   presetTokenLV = presetTokenLV || $("#token-preset").text();

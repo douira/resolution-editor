@@ -101,7 +101,7 @@ $(document).ready(function() {
 
     //remove the eigth signature if it's empty
     var lastSignature = bookletData.signatures[7];
-    if (! (lastSignature.name.length && lastSignature.position.length)) {
+    if (! (lastSignature.name.length || lastSignature.position.length)) {
       //remove from signatures
       delete bookletData.signatures[7];
     }
@@ -158,7 +158,7 @@ $(document).ready(function() {
         printBtn.removeClass("btn-flat").addClass("btn")
 
         //and set url to pdf
-        .attr("href", "/rendered/booklet" + bookletId + ".pdf");
+        .attr("href", "/rendered/booklet" + bookletId + ".pdf?c=" + Date.now());
 
         //set text and icon to display rendering done
         printBtnText.text("View PDF");

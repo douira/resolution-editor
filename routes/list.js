@@ -405,7 +405,7 @@ router.get("/print", function(req, res) {
 
 //maps the stage history entry from it's nexted form to a property
 //also moves the address to a top level property
-function mapListItems(items, stageHistoryIndex) {
+function mapListItems(items, stageHistoryIndex, forums) {
   //map items and return modified
   return items.map(i => {
     //set new property with value at index
@@ -417,8 +417,17 @@ function mapListItems(items, stageHistoryIndex) {
     //unwrap address
     i.address = i.content.resolution.address;
 
-    //remove old property
+    //remove unused property
     delete i.content;
+
+    //only if forums given
+    if (forums) {
+      //determine copyAmount with extData
+      const selectedForum = forums[i.address.forum];
+      if (selectedForum) {
+        i.copyAmount = selectedForum.countries.length + 7;
+      }
+    }
 
     //return original object
     return i;
@@ -428,7 +437,7 @@ function mapListItems(items, stageHistoryIndex) {
 //POST return list of items to be printed
 router.get("/print/getitems", function(req, res) {
   //query resolutions in stage 4 that are advanceable (and thereby non-static)
-  resolutions.find({
+  Promise.all([resolutions.find({
     stage: 4,
     $nor: [
       { attributes: "noadvance" },
@@ -447,10 +456,12 @@ router.get("/print/getitems", function(req, res) {
   }).sort({
     //sort by time in stage 4 (most necessary first), index 4 becase 0 is also a stage
     "stageHistory.4": -1
-  }).toArray().then(items => {
+  }).toArray().catch(
+    err => issueError(req, res, 500, "could not query print queue items", err)
+  ), extDataPromise]).then(results => {
     //send data to client, rewrite and address
-    res.send(mapListItems(items, 4));
-  }, err => issueError(req, res, 500, "could not query print queue items", err));
+    res.send(mapListItems(results[0], 4, results[1].forums));
+  }, () => issueError(req, res, 500, "could not prepare print queue items"));
 });
 
 //uses session auth for FC queue
@@ -656,7 +667,7 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
         }
 
         //make url to output pdf
-        const pdfUrl = "/rendered/booklet" + booklet._id + ".pdf";
+        const pdfUrl = "/rendered/booklet" + booklet._id + ".pdf?c=" + Date.now();
 
         //simply return url without rendering if the booklet
         //and all resolutions don't have unrendered changes
