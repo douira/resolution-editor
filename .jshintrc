@@ -1,6 +1,6 @@
 {
   "asi": false,
-  "esversion": 5,
+  "esversion": 6,
   "browser": false,
   "node": false,
   "jquery": false,
