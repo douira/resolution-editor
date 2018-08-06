@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "mongod --auth --port 27017 --dbpath data & node ./bin/www.js"
+    "start": "pm2 start ecosystem.config.js",
+    "restart": "pm2 reload ecosystem.config.js",
+    "stop": "pm2 stop ecosystem.config.js",
+    "test": "mocha"
   },
   "dependencies": {
     "body-parser": "^1.18.3",
@@ -33,7 +36,10 @@
   },
   "description": "Guides the creation of a correctly formatted resolution document",
   "main": "bin/www.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.1.1"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/douira/resolution-editor.git"
