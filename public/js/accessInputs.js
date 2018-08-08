@@ -29,11 +29,11 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
   //states of the two fields
   const fieldStates = {
     token: {
-      valid: false, //field validation states
+      valid: true, //field validation states
       checkedValues: [] //array of already queried values
     },
     code: {
-      valid: false,
+      valid: true,
       checkedValues: []
     }
   };
@@ -46,6 +46,9 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
   if (inputOpts.tokenFieldSelector) {
     //get field element
     fields.token = $(inputOpts.tokenFieldSelector);
+
+    //not valid by default
+    fields.token.valid = false;
   } else if ("presetToken" in inputOpts) {
     //get token
     presetToken = inputOpts.presetToken;
@@ -59,6 +62,9 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
   if (inputOpts.codeFieldSelector) {
     //get selector from ops and find element
     fields.code = $(inputOpts.codeFieldSelector);
+
+    //not valid by default
+    fields.code.valid = false;
   } else if ("presetCode" in inputOpts) {
     //make hidden field above submit button, code is expected to be valid
     submitElem.before(
@@ -233,6 +239,9 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
         setInputValidState(fields.token, false, "token");
       } else if (fields.token) {
         setInputValidState(fields.code, "onlyToken", "code");
+      } else {
+        //is code field alone
+        setInputValidState(fields.code, false, "code");
       }
     }
 
