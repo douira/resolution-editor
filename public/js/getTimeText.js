@@ -1,10 +1,10 @@
-/*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
+/*jshint browser: true, jquery: true */
 /*exported getTimeText*/
 /*global module*/
 
 //returns a nice time text description, set useAgo to append suffix to all not just now times
 //time has to be passed in seconds
-function getTimeText(time, suffix) {
+const getTimeText = (time, suffix) => {
   //suffix is empty string if not given, add space if suffix present
   suffix = suffix && " " + suffix || "";
 
@@ -37,7 +37,7 @@ function getTimeText(time, suffix) {
 
   //really long: any amount of days
   return Math.round(time / 24) + " days" + suffix;
-}
+};
 
 //export as module if possible
 if (typeof module === "object") {
