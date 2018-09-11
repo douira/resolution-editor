@@ -1,8 +1,8 @@
-/*jshint esversion: 5, browser: false, varstmt: false, jquery: false */
+/*jshint esversion: 6, browser: false, jquery: false */
 /*global module */
 
 //string used to identify files saved by this website, mild effect
-var magicIdentifier = "PG52QE1AM4LACMX9";
+const magicIdentifier = "PG52QE1AM4LACMX9";
 
 //debugging logger
 /*function log(val) {
@@ -10,14 +10,14 @@ var magicIdentifier = "PG52QE1AM4LACMX9";
   return log;
 }*/
 
-//pattern of the resolution format - VERSION 2
+//pattern of the resolution format - VERSION 2 (?)
 /*File format version history: (incremented when compatibility changes or with large differences)
 1: start
 2: typo fix (from edited to edited)
 3: typo fix (from form to forum)
 6: removed clauses of just strings, must always be objects
 */
-var resolutionFileFormat = {
+const resolutionFileFormat = {
   types: {
     phraseClause: [
       {
@@ -43,7 +43,7 @@ var resolutionFileFormat = {
         name: "contentExt",
         type: "string",
         required: false,
-        requiresField: "sub"
+        requiresField: "sub" //require S Field is correct spelling, the field sub is required
       }
     ],
     phraselessClause: [
@@ -183,48 +183,37 @@ var resolutionFileFormat = {
 
 //validates an object (parsed json for example) with given format spec
 //the format of the format is implied to be correct
-function validateObjectStructure(obj, format) {
+const validateObjectStructure = (obj, format) => {
   //fall back to default format if none given
   if (typeof format === "undefined") {
     format = resolutionFileFormat;
   }
 
   //built-in type validators
-  var typeValidators = {
+  const typeValidators = {
     //basic types only need typeof
-    string: function(val) {
-      return typeof val === "string";
-    },
-    number: function(val) {
-      return typeof val === "number";
-    },
-    boolean: function(val) {
-      return typeof val === "boolean";
-    },
+    string: val => typeof val === "string",
+    number: val => typeof val === "number",
+    boolean: val => typeof val === "boolean",
 
     //object validation does all the work concerning object fields
-    object: function(val, format) {
+    object: (val, format) => {
       //stop if not of type object
       if (typeof val !== "object") {
         return false;
       }
 
       //get present fields and their values
-      var fields = Object.keys(val);
-      fields = fields.map(function(key) {
-        return {
-          name: key,
-          presentValue: val[key],
-          present: true
-        };
-      });
+      let fields = Object.keys(val).map(key => ({
+        name: key,
+        presentValue: val[key],
+        present: true
+      }));
 
       //add or expand with required and optional fields or values
-      format.forEach(function(fieldSpec) {
+      format.forEach(fieldSpec => {
         //try find matching element from present object
-        var field = fields.find(function(presentField) {
-          return presentField.name === fieldSpec.name;
-        });
+        let field = fields.find(presentField => presentField.name === fieldSpec.name);
 
         //check if a present field was found
         if (! field) {
@@ -244,66 +233,59 @@ function validateObjectStructure(obj, format) {
         field.required = fieldSpec.required;
 
         //add value propertly if present in spec
-        if (fieldSpec.hasOwnProperty("value")) {
+        if ("value" in fieldSpec) {
           field.requiredValue = fieldSpec.value;
         }
 
         //add requiresField propertly if present in spec
-        if (fieldSpec.hasOwnProperty("requiresField")) {
+        if ("requiresField" in fieldSpec) {
           field.requiresField = fieldSpec.requiresField;
         }
       });
 
       //check all fields to be ok
-      return fields.every(function(field) {
+      return fields.every(field =>
         //check for fields that are present but not in the spec (requiredType must be a property)
-        return field.hasOwnProperty("requiredType") &&
+        "requiredType" in field &&
 
           //check for missing required fields
           (field.required ? field.present : true) &&
 
           //check for mismatching values (for primitives comparable with ===)
-          (! field.hasOwnProperty("requiredValue") ||
+          (! ("requiredValue" in field) ||
             field.requiredValue === field.presentValue) &&
 
           //required fields are present
-          (! field.hasOwnProperty("requiresField") ||
-            fields.some(function(f) { return f.name === field.requiresField; })) &&
+          (! ("requiresField" in field) ||
+            fields.some(f => f.name === field.requiresField )) &&
 
           //check for valid types with content if present
           (! field.present ||
-            typeValidators[field.requiredType](field.presentValue, field.content));
-      });
+            typeValidators[field.requiredType](field.presentValue, field.content))
+      );
     },
 
     //array validation validates types of all indexes and length
-    array: function(val, format) {
+    array: (val, format) =>
       //is of type array
-      return (val instanceof Array) &&
+      (val instanceof Array) &&
 
         //minimum and maxmimum length is correct
         (! format.hasOwnProperty("minLength") || val.length >= format.minLength) &&
         (! format.hasOwnProperty("maxLength") || val.length <= format.maxLength) &&
 
         //only allowed types are used
-        val.every(function(entry) {
+        val.every(entry =>
           //valid as any of the allowed types (can't have content descriptor like object type)
-          return format.contentTypes.some(function(type) {
-            return typeValidators[type](entry);
-          });
-        });
-    }
+          format.contentTypes.some(type => typeValidators[type](entry))
+        )
   };
 
   //function that returns a function that validates an object with the given format
-  function makeObjectFormatValidator(format) {
-    return function(val) {
-      return typeValidators.object(val, format);
-    };
-  }
+  const makeObjectFormatValidator = format => val => typeValidators.object(val, format);
 
   //add other types
-  for (var typeName in format.types) {
+  for (const typeName in format.types) {
     //register function that validates object with this format specifier
     typeValidators[typeName] = makeObjectFormatValidator(format.types[typeName]);
   }
@@ -322,13 +304,13 @@ function validateObjectStructure(obj, format) {
 
   //return validation result of root object node
   return typeValidators.object(obj, format.structure);
-}
+};
 
 //create object to export
-var resolutionFormat = {
+const resolutionFormat = {
   check: validateObjectStructure,
-  magicIdentifier: magicIdentifier,
-  resolutionFileFormat: resolutionFileFormat
+  magicIdentifier,
+  resolutionFileFormat
 };
 
 //extra nodejs module exporting
