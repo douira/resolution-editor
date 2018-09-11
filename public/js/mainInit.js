@@ -1,4 +1,4 @@
-/*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
+/*jshint browser: true, jquery: true */
 
 //sets the state of a class (adding or removing)
 $.fn.classState = function(state, className) {
@@ -6,6 +6,8 @@ $.fn.classState = function(state, className) {
   this.each(function() {
     $(this)[state ? "addClass" : "removeClass"](className);
   });
+
+  //chaining
   return this;
 };
 
@@ -24,9 +26,7 @@ $.fn.disabledState = function(makeDisabled) {
 //triggers several events in order
 $.fn.triggerAll = function(eventNames, params) {
   //trigger all events with params
-  eventNames.split(/[ ,]+/).forEach(function(event) {
-    this.trigger(event, params);
-  }, this);
+  eventNames.split(/[ ,]+/).forEach(event => this.trigger(event, params));
 
   //return this for chaining
   return this;
@@ -52,8 +52,9 @@ $(document).ready(function() {
 });
 
 //check for old browser and alert
-if (typeof Array.prototype.map !== "function") {
-  alert("You are using a severely outdated browser and we strongly encourage you to update" +
-        " it immediately. Because of that, this website may not work as expected and you may face" +
-        " security issues (not just with this website, but in general).");
+if (typeof Array.prototype.find !== "function") {
+  alert("You are using an outdated browser and we strongly encourage you to update" +
+        " it immediately. Because of that, this website may not work as expected" +
+        " or not at all and you may face security issues (not just with this website," +
+        " but in general).");
 }
