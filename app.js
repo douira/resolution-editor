@@ -81,7 +81,7 @@ if (! devEnv) {
 }
 
 //attach request local session present info
-app.use(function(req, res, next) {
+app.use((req, res, next) => {
   //check for present code in session
   if (typeof req.session.code === "string") {
     //signal true in session
