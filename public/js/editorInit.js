@@ -25,76 +25,75 @@
   allowLV*/
 //registers events and data, controls interaction behavior
 
-var dataPrefix = "resEd"; //prefix for data stored in elements
+const dataPrefix = "resEd"; //prefix for data stored in elements
 
 //global autofill settings
-var autofillSettings = {
+const autofillSettings = {
   limit: 10,
   minLength: 2
 };
 
 //number of subclauses allowed for op and preamb clauses with 0 being no subclauses allowed
-var allowedSubclauseDepth = {
+const allowedSubclauseDepth = {
   preamb: 1,
   op: 2
 };
 
 //keeps track of any invalid fields that are marked as such
-var badFieldPresent = true;
+let badFieldPresent = true;
 
 //set to true when there are unsaved changes that the user has to be alerted about
-var changesSaved = false;
-var noChangesMade = true;
-var metaChangesSaved = true;
+let changesSaved = false;
+let noChangesMade = true;
+let metaChangesSaved = true;
 
 //token and access code for this resolution, used for saving
-var resolutionToken, resolutionCode;
+let resolutionToken, resolutionCode;
 
 //access level is later taken from document
-var accessLevel;
+let accessLevel;
 
 //is set to true if we need to send updates to LV viewers
-var sendLVUpdates = false;
+let sendLVUpdates = false;
 
 //stage of the resolution, parsed from the rendered html page
-var resolutionStage;
+let resolutionStage;
 
 //attribute string of resolution, gotten from page
-var resolutionAttributes, attributesString;
+let resolutionAttributes, attributesString;
 
 //if automatic saving is enabled or not, determined from other state variables
-var autosaveEnabled;
+let autosaveEnabled;
 
 //is set to true after the phrase in the content message has been displayed
-var displayedPhraseContentMessage;
+let displayedPhraseContentMessage;
 
 //filled by amendment handler to generate an amendment descriptor object
-var getAmendmentUpdate;
+let getAmendmentUpdate;
 
 //the current amendment action type
-var amdActionType;
+let amdActionType;
 
 //true when lv is enabled
-var allowLV;
+let allowLV;
 
 //updates the disabling state of eab movement buttons, used as event handler
-function makeEabMoveUpdateDisabledHandler(isUpButton) {
+const makeEabMoveUpdateDisabledHandler = isUpButton =>
   //return event handler function, type flag is preserved in closure
-  return function(e) {
+  function(e) {
     e.stopPropagation();
 
     //get index of enclosing clause in list of clauses
-    var enclosingClause = $(this).closest(".clause");
-    var clauses = enclosingClause.parent().children(".clause");
-    var clauseIndex = clauses.index(enclosingClause);
+    const enclosingClause = $(this).closest(".clause");
+    const clauses = enclosingClause.parent().children(".clause");
+    const clauseIndex = clauses.index(enclosingClause);
 
     //depending on direction flag, decide whether or not to disable
     $(this).disabledState(isUpButton ? ! clauseIndex : clauseIndex === clauses.length - 1);
   };
-}
 
 //checks if required fields have values, return true for all fields ok
-function checkRequiredFields() {
+const checkRequiredFields = () => {
   //reset flag
   badFieldPresent = false;
 
@@ -103,7 +102,7 @@ function checkRequiredFields() {
 
   //return for use of result
   return ! badFieldPresent;
-}
+};
 
 //register jquery plugins
 //resets sibling labels
@@ -116,7 +115,7 @@ $.fn.resetSiblingLabels = function() {
 
 //gets resolution-editor specific data from given dom element
 $.fn.getData = function() {
-  var gottenData = this.data(dataPrefix);
+  let gottenData = this.data(dataPrefix);
 
   //make data if none present
   if (typeof gottenData === "undefined") {
@@ -210,7 +209,7 @@ $.fn.addSubClause = function(activationStateChanges) {
   }
 
   //prepare sublause list, extend already present one if found
-  var subList = this.children(".clause-list");
+  let subList = this.children(".clause-list");
   if (! subList.length) {
     //get a clause list and attach to clause
     subList = this
@@ -234,7 +233,7 @@ $.fn.addSubClause = function(activationStateChanges) {
   }
 
   //clone the clause as a base for the new clause
-  var strippedClause = this.clone(true, true);
+  const strippedClause = this.clone(true, true);
 
   //remove the phrase field
   //(prevent failing to autocomplete init on "floating" element through reset)
@@ -274,7 +273,7 @@ $.fn.addSubClause = function(activationStateChanges) {
 //adds a clause to the clause list the button was clicked in, see addSubClause for state flag
 $.fn.addClause = function(amount, activationStateChanges) {
   //if not a add clause button container, try to find it
-  var addClauseContainer = this;
+  let addClauseContainer = this;
   if (! this.is(".add-clause-container")) {
     if (this.is(".clause-list")) {
       addClauseContainer = this.children(".add-clause-container").last();
@@ -290,10 +289,10 @@ $.fn.addClause = function(amount, activationStateChanges) {
   }
 
   //last clause added to the list
-  var addedClause;
+  let addedClause;
 
   //for number of clauses to be added
-  for (var i = 0; i < amount; i ++) {
+  for (let i = 0; i < amount; i ++) {
     //add a new clause to the enclosing list by
     //duplicating and resetting the first one of the current type
     addedClause = addClauseContainer
@@ -325,8 +324,8 @@ $.fn.addClause = function(amount, activationStateChanges) {
 };
 
 //makes a modal pop up that informs the user about disallowed characters
-var showedDisallowedCharModal = false;
-function queueDisallowedCharInfo() {
+let showedDisallowedCharModal = false;
+const queueDisallowedCharInfo = () => {
   //show only once
   if (! showedDisallowedCharModal) {
     //display message
@@ -340,19 +339,19 @@ function queueDisallowedCharInfo() {
     //set flag
     showedDisallowedCharModal = true;
   }
-}
+};
 
 //removes illegal characters from inputs and textareas
 $.fn.filterIllegalContent = function() {
   //for every passed element
   this.each(function() {
-    var elem = $(this);
+    const elem = $(this);
 
     //get field content
-    var content = elem.val();
+    const content = elem.val();
 
     //extra flag without modifying content
-    var contentInvalid = false;
+    let contentInvalid = false;
 
     //stop if there is no content, handled by validity checker
     if (! content.trim().length) {
@@ -360,7 +359,7 @@ $.fn.filterIllegalContent = function() {
     }
 
     //check if normalization is possible in this environment
-    var newContent;
+    let newContent;
     if (String.prototype.normalize) {
       //apply normalization to prevent added diacritical marks from being lost
       newContent = content.normalize("NFKC");
@@ -432,10 +431,10 @@ $.fn.filterIllegalContent = function() {
 //gets the current id value of the select container this was called on
 $.fn.getSelectValueId = function() {
   //get the actual wrapper element generated by materialize
-  var selectWrapper = this.find(".select-wrapper");
+  const selectWrapper = this.find(".select-wrapper");
 
   //check which li element of the select wrapper is active
-  var activeOption = selectWrapper.find("li.active");
+  const activeOption = selectWrapper.find("li.active");
 
   //any must be active
   if (! activeOption.length) {
@@ -444,8 +443,8 @@ $.fn.getSelectValueId = function() {
   }
 
   //get text of that option and get id for it
-  var activeId = selectWrapper.find("option:contains(" +
-    activeOption.children("span").text() + ")").val();
+  const activeId = selectWrapper.find(`option:contains(${
+    activeOption.children("span").text()})`).val();
 
   //must be one of the possible states
   if (["noselection", "add", "change", "replace", "remove"].indexOf(activeId) === -1) {
@@ -460,7 +459,7 @@ $.fn.getSelectValueId = function() {
 //sets the value id of a select container by re-initializing
 $.fn.setSelectValueId = function(setValueId) {
   //get the select element from the select container
-  var select = this.find("select");
+  const select = this.find("select");
 
   //on all options in select
   select
@@ -470,7 +469,7 @@ $.fn.setSelectValueId = function(setValueId) {
     .prop("active selected", false)
 
     //find option with given id and activate
-    .filter("[value='" + setValueId + "']")
+    .filter(`[value='${setValueId}']`)
     .prop("selected", true);
 
   //re-initialize
@@ -480,7 +479,7 @@ $.fn.setSelectValueId = function(setValueId) {
 
 //checks if a input field has an autocompletable and ok value
 $.fn.checkAutoCompValue = function(loadedData) {
-  var elem = this;
+  let elem = this;
 
   //require to ba called on a single element
   if (this.length > 1) {
@@ -491,7 +490,7 @@ $.fn.checkAutoCompValue = function(loadedData) {
   }
 
   //get value of required field
-  var value = elem.val().trim();
+  const value = elem.val().trim();
 
   //stop on missing value
   if (! value.length) {
@@ -499,7 +498,7 @@ $.fn.checkAutoCompValue = function(loadedData) {
   }
 
   //keep track of value ok
-  var valueOk = true;
+  let valueOk = true;
 
   //check for presence of value
   valueOk = value && value.length;
@@ -507,16 +506,14 @@ $.fn.checkAutoCompValue = function(loadedData) {
   //check for presence in autofill data mapping and require value to be in data if so
   if (valueOk) {
     //get the data we have to match to
-    var matchDataSelector = Object.keys(loadedData.autofillDataMapping)
-      .find(function(selector) {
-        //check if element matches this selector
-        return elem.is(selector);
-      });
+    const matchDataSelector = Object.keys(loadedData.autofillDataMapping)
+      //check if element matches this selector
+      .find(selector => elem.is(selector));
 
     //only if there actually is a selector for this element in the data mappings
     if (matchDataSelector) {
       //get data to match value in
-      var matchData = loadedData.autofillDataMapping[matchDataSelector];
+      let matchData = loadedData.autofillDataMapping[matchDataSelector];
 
       //resolve reference to loadedData if given as string
       if (typeof matchData === "string") {
@@ -534,10 +531,15 @@ $.fn.checkAutoCompValue = function(loadedData) {
   return valueOk;
 };
 
+//prepares string for lookup in abbreviation mapping
+const abbrevMappingPrep = str =>
+  //lower case and remove other chars
+  str.toLowerCase().replace(/[^a-z0-9]+/g, "");
+
 //does autocomplete abbreviation replacement
 $.fn.abbrevReplace = function(mapping) {
-  var value = this.val();
-  var unabbreviated = mapping[abbrevMappingPrep(value)];
+  let value = this.val();
+  const unabbreviated = mapping[abbrevMappingPrep(value)];
   if (typeof unabbreviated === "object") {
     //set value to new unabbreviated name
     value = unabbreviated.to;
@@ -552,7 +554,7 @@ $.fn.abbrevReplace = function(mapping) {
 };
 
 //processes text for condensed clause display, highlights special chars
-function processCondText(text, markInvalid) {
+const processCondText = (text, markInvalid) => {
   //return right away if empty or falsy
   if (! text || ! text.length) {
     return text;
@@ -561,28 +563,28 @@ function processCondText(text, markInvalid) {
   //if in stage for fc
   if (resolutionStage === 3) {
     //enclose ^_|* with bold colored span tags
-    text = text.replace(/[_^|*]+/g, function(match) {
+    text = text.replace(/[_^|*]+/g, match =>
       //return enclosed in emphasis tags
-      return "<span class='bold deep-orange lighten-3'>" + match + "</span>";
-    });
+      `<span class='bold deep-orange lighten-3'>${match}</span>`
+    );
   }
 
   //enclose in red text tags if marked as invalid
   if (markInvalid) {
-    text = "<span class='red-text'>" + text + "</span>";
+    text = `<span class='red-text'>${text}</span>`;
   }
 
   //return processed string
   return text;
-}
+};
 
 //registers event handlers that are essential for the general function of the page
-function registerEssentialEventHandlers(doLoad) {
+const registerEssentialEventHandlers = doLoad => {
   //we can only load from file or delete if we loaded the resolution
   if (doLoad) {
     $(".modal").on("reset", function(e) {
       e.stopPropagation();
-      var elem = $(this);
+      const elem = $(this);
       elem.find("input,textarea").trigger("reset");
       elem.find("#delete-action-confirm").hide();
       elem.find("#file-selector").hide();
@@ -600,11 +602,8 @@ function registerEssentialEventHandlers(doLoad) {
       //no saving necessary, register to run after save completes
       onAllSaveDone(generatePdf);
     } else {
-      //save json to server first
-      serverSave(function() {
-        //display pdf directly after generating
-        generatePdf();
-      });
+      //save json to server first and display pdf directly after generating
+      serverSave(generatePdf); //why was this function call encapsulated?
     }
   });
   $("#action-plaintext")
@@ -619,19 +618,16 @@ function registerEssentialEventHandlers(doLoad) {
       //no saving necessary
       generatePlaintext();
     } else {
-      //save json to server first
-      serverSave(function() {
-        //display pdf directly after generating
-        generatePlaintext();
-      }, true);
+      //save json to server first and display pdf directly after generating
+      serverSave(generatePlaintext, true); //why was this function call encapsulated?
     }
   });
-}
+};
 
 //registers event handlers necessary for the editor
 //we can be sure this is loaded after all the data is gotten from the page and
 //other data loaded from the server (like autofill data)
-function registerEventHandlers(loadedData) {
+const registerEventHandlers = loadedData => {
   $(window)
   .on("beforeunload", function(e) {
     //stop close if flag set that there are unsaved changes
@@ -644,11 +640,12 @@ function registerEventHandlers(loadedData) {
     }
   });
 
+  //hide liveview hint logic
   $("#hide-liveview-hint")
   .on("click", function(e) {
     //toggle visibility of liveview hint
-    var clickText = $(this);
-    var hint = $("#liveview-hint");
+    const clickText = $(this);
+    const hint = $("#liveview-hint");
 
     //for both states, set visivility state and modify click text
     if (hint.is(":visible")) {
@@ -675,34 +672,34 @@ function registerEventHandlers(loadedData) {
     amdActionType = "noselection";
 
     //flag is set to true when an amendment can be displayed properly (clause and type selected)
-    var amdDisplayable = false;
+    let amdDisplayable = false;
 
     //the current selected clause (in a clause-list), start with none
     //the amendment clone, not the original
-    var amdClauseListSelection = $();
+    let amdClauseListSelection = $();
 
     //the top level clause in amdClauseListSelection
-    var amdClauseElem = $();
+    let amdClauseElem = $();
 
     //the current original selected clause
-    var amdOrigClause = $();
+    let amdOrigClause = $();
 
     //query elements
-    var sponsorInput = $("#amd-spon");
-    var applyAmdBtn = $("#amd-apply-btn");
-    var rejectAmdBtn = $("#amd-reject-btn");
-    var amdClauseWrapper = $("#amd-clause-wrapper");
-    var amdNoSelectionMsg = $("#amd-no-selection");
-    var amdTypeSelect = $("#amd-type-select-box");
+    const sponsorInput = $("#amd-spon");
+    const applyAmdBtn = $("#amd-apply-btn");
+    const rejectAmdBtn = $("#amd-reject-btn");
+    const amdClauseWrapper = $("#amd-clause-wrapper");
+    const amdNoSelectionMsg = $("#amd-no-selection");
+    const amdTypeSelect = $("#amd-type-select-box");
 
     //define here for satisfaction of declaraton order prettiness
-    var updateAmd;
+    let updateAmd;
 
     //if it is ok to reject or apply the amendment right now
-    var amdActionBtnsEnabled = false;
+    let amdActionBtnsEnabled = false;
 
     //updates the amd reject and apply button states
-    var updateActionBtnState = function() {
+    const updateActionBtnState = () => {
       //check validitiy of amendments
       amdActionBtnsEnabled =
         //ok if amd is displayable
@@ -720,9 +717,9 @@ function registerEventHandlers(loadedData) {
     };
 
     //send a saveAmd message abd then resets the amd display
-    var saveAmd = function(saveType) {
+    const saveAmd = saveType => {
       //validation has already been done, get amd update object
-      var saveAmdUpdate = getAmendmentUpdate();
+      const saveAmdUpdate = getAmendmentUpdate();
 
       //make sure we actually got something
       if (! saveAmdUpdate) {
@@ -782,14 +779,14 @@ function registerEventHandlers(loadedData) {
 
     //called by sendLVUpdate in dataInteraction.js to generate the object that is sent to the server
     //and the liveview clients containing all information describing the current amendment
-    getAmendmentUpdate = function(noData) {
+    getAmendmentUpdate = noData => {
       //no update when nothing there to update or no action is selected
       if (! amdClauseElem.length) {
         return false;
       }
 
       //add index of the current clause
-      var clauseIndex;
+      let clauseIndex;
       if (amdActionType === "add") {
         //update index of clause in add mode
         if (amdClauseElem.length === 1) {
@@ -826,7 +823,7 @@ function registerEventHandlers(loadedData) {
       }
 
       //start object with required fields
-      var amdUpdate = {
+      const amdUpdate = {
         type: amdActionType,
         sponsor: sponsorInput.val().trim() //get value from input field
       };
@@ -852,7 +849,7 @@ function registerEventHandlers(loadedData) {
     //resets the amendment display with the current type and selected clause
     //also shows the no selection message if no clause is selected or the
     //selected clause has been removed in the mean time
-    updateAmd = function(sendNoUpdate) {
+    updateAmd = sendNoUpdate => {
       //trigger edit inactive on the current selection to avoid removing the eabs
       amdClauseListSelection.find(".clause").trigger("editInactive");
 
@@ -898,7 +895,7 @@ function registerEventHandlers(loadedData) {
         .clone(true, true);
 
       //extract add clause container
-      var addClauseContainer = amdClauseListSelection
+      const addClauseContainer = amdClauseListSelection
         .children(".add-clause-container")
         .clone(true, true);
 
@@ -959,7 +956,7 @@ function registerEventHandlers(loadedData) {
     //amendment action type selection
     amdTypeSelect.on("change", function() {
       //update action type
-      var newAmdActionType = $(this).getSelectValueId();
+      const newAmdActionType = $(this).getSelectValueId();
 
       //if change away from add, remove orig clause, because the reference is actually the first
       //clause but it wasn't selected as such
@@ -982,7 +979,7 @@ function registerEventHandlers(loadedData) {
       e.stopPropagation();
 
       //get parent clause
-      var clause = $(this).closest(".clause");
+      const clause = $(this).closest(".clause");
 
       //only change if a different clause was chosen than the already selected clause
       //we need to compare the actual com objects here because the jquery object isn't persistent
@@ -1008,7 +1005,7 @@ function registerEventHandlers(loadedData) {
       e.stopPropagation();
 
       //get closest enclosing clause
-      var clause = $(this).closest(".clause");
+      const clause = $(this).closest(".clause");
 
       //only enabled if in top level op clause that isn't already in the amendment display
       $(this).disabledState(
@@ -1024,7 +1021,7 @@ function registerEventHandlers(loadedData) {
     });
 
     //sponsor field change
-    sponsorInput.on("change", function() {
+    sponsorInput.on("change", () => {
       //send amendment update
       sendLVUpdate("amendment");
 
@@ -1033,10 +1030,8 @@ function registerEventHandlers(loadedData) {
     });
 
     //update button state of change of phrase field in amendment display
-    amdClauseWrapper.on("change", ".phrase-input", function() {
-      //also update on change of phrase input
-      updateActionBtnState();
-    });
+    // and also update on change of phrase input
+    amdClauseWrapper.on("change", ".phrase-input", updateActionBtnState); //why encapsulated?
 
     //on clicking reject button
     rejectAmdBtn.on("click", function(e) {
@@ -1071,21 +1066,21 @@ function registerEventHandlers(loadedData) {
 
   //the attribute selector, only allow one handler to be set
   if (accessLevel === "MA") {
-    $("#attribute-select-box > select").one("init", function() {
+    $("#attribute-select-box > select").one("init", () => {
       //container for all of this
-      var selectBox = $("#attribute-select-box");
-      var selectBoxContainer = selectBox.find(".select-wrapper");
+      const selectBox = $("#attribute-select-box");
+      const selectBoxContainer = selectBox.find(".select-wrapper");
 
       //get the input element to set validation classes
-      var selectBoxInput = selectBoxContainer.children("input");
+      const selectBoxInput = selectBoxContainer.children("input");
 
       //get the submit button
-      var selectBoxSubmitButton = $("#attribute-submit-btn");
+      const selectBoxSubmitButton = $("#attribute-submit-btn");
 
       //gets the value of the selector (false returned if bad value or none selected)
-      var getSelectValue = function() {
+      const getSelectValue = () => {
         //check which li element of the select wrapper is active
-        var activeOption = selectBoxContainer.find("li.active");
+        const activeOption = selectBoxContainer.find("li.active");
 
         //any must be active
         if (! activeOption.length) {
@@ -1098,8 +1093,8 @@ function registerEventHandlers(loadedData) {
         }
 
         //get text of that option and get id for it
-        var activeId = selectBoxContainer.find("option:contains(" +
-          activeOption.children("span").text() + ")").val();
+        const activeId = selectBoxContainer.find(`option:contains(${
+          activeOption.children("span").text()})`).val();
 
         //must be one of the four possible states and not the current one
         if (activeId === attributesString ||
@@ -1122,46 +1117,43 @@ function registerEventHandlers(loadedData) {
 
       //attribute select and submission
       selectBoxSubmitButton
-      .on("click", function(e) {
+      .on("click", e => {
         //prevent default link following
         e.preventDefault();
 
         //get value from validation
-        var selectedValue = getSelectValue();
+        const selectedValue = getSelectValue();
 
         //proceed to submission if the value is truthy and selection thereby valid
         if (selectedValue) {
           //inject code input element
-          selectBox.append("<input type='hidden' name='code' value='" +
-                           resolutionCode + "'>");
+          selectBox.append(`<input type='hidden' name='code' value='${resolutionCode}'>`);
 
           //add action url to form with token
-          selectBox.attr("action", "/resolution/setattribs/" + resolutionToken);
+          selectBox.attr("action", `/resolution/setattribs/${resolutionToken}`);
 
           //submit form to set attributes and then be redirected back here
           selectBox.submit();
         }
       })
-      .on("mouseover", function() {
-        //validation only
-        getSelectValue();
-      });
 
-      //trigger on change of selecter
-      selectBox.find("select").on("change", function() {
-        //validation only
-        getSelectValue();
-      });
+      //on mouseover only validation
+      .on("mouseover", getSelectValue);
+
+      //trigger on change of selecter, validation only
+      selectBox.find("select").on("change", getSelectValue);
     });
   }
+
+  //autocomplete init hanlder
   $(".autocomplete")
   .on("init", function(e) {
     e.stopPropagation();
-    var elem = $(this);
+    const elem = $(this);
 
     //get the autofill data that matches a selector in autofillInitData
-    var foundData;
-    for (var selector in loadedData.autofillInitData) {
+    let foundData;
+    for (const selector in loadedData.autofillInitData) {
       //if this element matches the selector, use that data
       if (elem.is(selector)) {
         //store data and stop looking
@@ -1178,7 +1170,7 @@ function registerEventHandlers(loadedData) {
       }
 
       //prepare the autocomplete init options object, other settings are taken from autofillSettings
-      var autoOpts = {
+      const autoOpts = {
         //init the autocomplete on this field with the data for this field's autocomplete role
         data: foundData
       };
@@ -1187,9 +1179,7 @@ function registerEventHandlers(loadedData) {
       //do not send content updates for amendment display clauses, those are handled seperately
       if (elem.is(".clause .autocomplete")) {
         //attach a handler that makes a content update happen when a autocomplete field changes
-        autoOpts.onAutocomplete = function() {
-          sendLVUpdate("content", "autocomplete", elem);
-        };
+        autoOpts.onAutocomplete = () => sendLVUpdate("content", "autocomplete", elem);
       }
 
       //init with prepared data and predefined settings
@@ -1198,19 +1188,21 @@ function registerEventHandlers(loadedData) {
       log({ msg: "no autocomplete data found for field", elem: this });
     }
   });
+
+  //forum change handler
   $("input#forum-name")
   .on("change", function(e) {
     e.stopPropagation();
 
     //replace if there is unabbreviated version
-    var elem = $(this);
-    var value = elem.abbrevReplace(loadedData.forumMapping);
+    const elem = $(this);
+    const value = elem.abbrevReplace(loadedData.forumMapping);
 
     //forum is now a valid name, check if it changed from the current mapping forum name
     //forum changed, update mappings: if change caused mapping update
     if (value !== loadedData.selectedForum) {
       //get outout from generator
-      var newDataFor = loadedData.generateAutofillData(value);
+      const newDataFor = loadedData.generateAutofillData(value);
 
       //if forums changed
       if (newDataFor.countries) {
@@ -1227,51 +1219,57 @@ function registerEventHandlers(loadedData) {
       }
     }
   });
+
+  //replace if there is unabbreviated version
   $("#main-spon, #amd-spon").on("change", function() {
-    //replace if there is unabbreviated version
-    var elem = $(this);
-    elem.abbrevReplace(loadedData.countryMapping);
+    $(this).abbrevReplace(loadedData.countryMapping);
   });
-  $("#main-spon").on("change", function() {
-    //update chips on main sponsor change
-    $("#co-spon").trigger("checkRequired");
-  });
+
+  //update co sponsor chips on main sponsor change
+  $("#main-spon").on("change", () => $("#co-spon").trigger("checkRequired"));
+
+  //check required input text fields again on changed value
   $("input.required, textarea.required")
   .on("change", function() {
-    //check again on changed value
     $(this).trigger("checkRequired");
   });
-  var requiredContainers = $("#meta-data, #preamb-clauses, #op-clauses");
+
+  //delegate handler on top containers of required fields
+  const requiredContainers = $("#meta-data, #preamb-clauses, #op-clauses");
   requiredContainers.on("checkRequired", "input.required, textarea.required", function() {
-    var elem = $(this);
+    const elem = $(this);
 
     //change validation state to wether or not this field contains a correct value
-    var valueOk = elem.checkAutoCompValue(loadedData);
+    const valueOk = elem.checkAutoCompValue(loadedData);
     elem.classState(! valueOk, "invalid");
 
     //apply to global flag
     badFieldPresent = badFieldPresent || ! valueOk;
   });
+
+  //file input field
   $("input[type='file']")
   .on("reset", function(e) {
+    //clear on reset
     e.stopPropagation();
     $(this).val("");
   })
   .on("change", function() {
     //get file
-    var file = this.files[0];
+    const file = this.files[0];
 
     //stop if wrong extension
     if (file.name.match(/^.*\.rso/)) {
       //load file
-      var reader = new FileReader();
-      var callback = $(this).getData().fileLoadCallback;
+      const reader = new FileReader();
+      const callback = $(this).getData().fileLoadCallback;
       reader.onload = function(e) {
         callback(e.target.result);
       };
       reader.readAsText(file);
     }
   });
+
   //don't bind on inputs that are descendants of a not-editor classed element
   $("textarea,input").not(".not-editor *")
   .on("activateLabel", function(e) {
@@ -1284,29 +1282,32 @@ function registerEventHandlers(loadedData) {
     //reset invalid labels
     $(this).removeClass("invalid");
   })
-  .on("change paste keyup", function() {
+  .on("change paste keyup", () => {
     //register changed content and set flag for user alert
     changesSaved = false;
     noChangesMade = false;
   });
+
+  //set meta changes unsaved flag
   $(".meta-input-wrapper")
-  .on("change", "input", function() {
-    //set meta canges unsaved flag
-    metaChangesSaved = true;
+  .on("change", "input", () => {
+    metaChangesSaved = false; //is false correct here? (was true previously)
   });
+
+  //also reset sibling labels on all not non-editor input fields
   $("input:not(.not-editor *)")
   .on("reset", function(e) {
     e.stopPropagation();
     $(this).val("").resetSiblingLabels();
   });
+
+  //textareas in general
   $("textarea")
   .on("click", function() {
-    var triggerOn = $(this);
+    const triggerOn = $(this);
 
     //set on timeout to trigger after extension has finished doing things
-    window.setTimeout(function() {
-      triggerOn.trigger("removeForeign");
-    }, 200);
+    window.setTimeout(() => triggerOn.trigger("removeForeign"), 200);
   })
   .on("reset", function(e) {
     e.stopPropagation();
@@ -1327,13 +1328,15 @@ function registerEventHandlers(loadedData) {
     //cleanup textarea element
     $(this).removeAttr("data-gramm");
   });
+
+  //cosponsor list
   $(".chips#co-spon")
   .on("init", function(e) {
     e.stopPropagation();
-    var elem = $(this);
+    const elem = $(this);
 
     //get already present data (re-init is happening if this is an object)
-    var prevData = elem.material_chip("data");
+    const prevData = elem.material_chip("data");
 
     //init the chips thing with autocomplete options
     elem.material_chip({
@@ -1354,17 +1357,21 @@ function registerEventHandlers(loadedData) {
   .on("reset", function(e) {
     e.stopPropagation();
     $(this).val("");
+
+    //reinit on reset
     $(this).trigger("init");
   });
+
+  //delegated handler on container of required things, for (co sponsor) chips
   requiredContainers
   .on("checkRequired", ".chips.required", function() {
-    var elem = $(this);
+    const elem = $(this);
 
     //get value of field
-    var value = elem.material_chip("data");
+    const value = elem.material_chip("data");
 
     //keep track if value invalid
-    var valueBad = false;
+    let valueBad = false;
 
     //check for presence of values
     valueBad = ! (value && value.length);
@@ -1374,19 +1381,19 @@ function registerEventHandlers(loadedData) {
 
     //check that all entries are ok sponsors in autofill data
     if (! valueBad) {
-      var matchData = loadedData.countryMapping;
+      const matchData = loadedData.countryMapping;
 
       //check all chips values for being included
-      var mainSponsor = $("#main-spon").val().trim();
-      valueBad = ! value.reduce(function(allOk, item, index) {
+      const mainSponsor = $("#main-spon").val().trim();
+      valueBad = ! value.reduce((allOk, item, index) => {
         //get tag item content
-        var value = item.tag.trim();
+        const value = item.tag.trim();
 
         //must not be main sponsor and have an non-valid (not mapping) value in the data
-        var isOk = value !== mainSponsor && matchData[value] === 1;
+        const isOk = value !== mainSponsor && matchData[value] === 1;
 
         //color-mark tag object
-        elem.children(".chip:eq(" + index + ")").classState(! isOk, "red white-text");
+        elem.children(`.chip:eq(${index})`).classState(! isOk, "red white-text");
 
         //return for validation of whole array
         return allOk && isOk;
@@ -1395,10 +1402,9 @@ function registerEventHandlers(loadedData) {
 
     //apply to global flag
     badFieldPresent = badFieldPresent || valueBad;
-  });
-  $(".chips.required")
-  .on("chip.add chip.delete", function() {
-    //change action
+  })//;$(".chips.required")
+  .on("chip.add chip.delete", () => {
+    //register change action
     changesSaved = false;
     noChangesMade = false;
   })
@@ -1408,11 +1414,13 @@ function registerEventHandlers(loadedData) {
     //check again on changed value
     $(this).trigger("checkRequired");
   });
+
+  //the clause item
   $(".clause")
   .on("reset", function(e) {
     //resets this clause after cloning
     e.stopPropagation();
-    var elem = $(this);
+    const elem = $(this);
     elem.trigger("clear");
     elem.find(".clause-list").remove();
 
@@ -1425,7 +1433,7 @@ function registerEventHandlers(loadedData) {
   .on("clear", function(e) {
     //clears field content
     e.stopPropagation();
-    var elem = $(this);
+    const elem = $(this);
 
     //clear fields
     elem
@@ -1447,7 +1455,7 @@ function registerEventHandlers(loadedData) {
   })
   .on("editActive click", function(e) {
     e.stopPropagation();
-    var elem = $(this);
+    const elem = $(this);
 
     //prevent activation of disabled clauses or their children
     if (elem.closest(".disabled-clause").length) {
@@ -1466,7 +1474,7 @@ function registerEventHandlers(loadedData) {
     elem.children(".clause-ext-cond, .clause-cond").setHide(true);
 
     //get ext content element and unhide when if it has content
-    var extContentElem = elem.children(".clause-content-ext");
+    const extContentElem = elem.children(".clause-content-ext");
     if (extContentElem.children("textarea").val().length) {
       extContentElem.setHide(false);
     }
@@ -1475,7 +1483,7 @@ function registerEventHandlers(loadedData) {
     $(".clause").not(this).trigger("editInactive", true);
 
     //find the edit mode button for this clause (not descendants!)
-    var editModeBtn = elem.children(".clause-title").children(".edit-mode-btn");
+    const editModeBtn = elem.children(".clause-title").children(".edit-mode-btn");
 
     //hide edit button
     editModeBtn
@@ -1495,20 +1503,20 @@ function registerEventHandlers(loadedData) {
   })
   .on("editInactive", function(e, amdUpdatePossible, noExtCondUpdate) {
     e.stopPropagation();
-    var elem = $(this);
+    const elem = $(this);
 
     //get EABs
-    var clauseTitle = elem.children(".clause-title");
-    var eabs = clauseTitle.children("#eab-wrapper");
+    const clauseTitle = elem.children(".clause-title");
+    const eabs = clauseTitle.children("#eab-wrapper");
 
     //strip illegal characters and whitespace from textareas and inputs
     //this is done on the server as well, but we want to discourage this behavior in the user
     elem.find("textarea.required,input.required").filterIllegalContent();
 
     //get content ext field and cond
-    var clauseExtCond = elem.children(".clause-ext-cond");
-    var clauseContentExt = elem.children(".clause-content-ext");
-    var contentExtVal = clauseContentExt.children("textarea").val();
+    const clauseExtCond = elem.children(".clause-ext-cond");
+    const clauseContentExt = elem.children(".clause-content-ext");
+    const contentExtVal = clauseContentExt.children("textarea").val();
 
     //if we are allowed to update, there is no ext content, but the ext content field was visible
     if (! noExtCondUpdate &&
@@ -1525,7 +1533,7 @@ function registerEventHandlers(loadedData) {
     elem.children(".clause-content, .clause-content-ext, .phrase-input-wrapper").setHide(true);
 
     //get condensed wrapper element
-    var condensedWrapper = elem.children(".clause-cond");
+    const condensedWrapper = elem.children(".clause-cond");
 
     //show condensed
     condensedWrapper.setHide(false);
@@ -1537,13 +1545,13 @@ function registerEventHandlers(loadedData) {
     }
 
     //get text content
-    var textContent = elem.children(".clause-content").children("textarea").val().trim();
+    let textContent = elem.children(".clause-content").children("textarea").val().trim();
 
     //if a phrase field is present
-    var phraseFieldWrapper = elem.children(".phrase-input-wrapper");
+    const phraseFieldWrapper = elem.children(".phrase-input-wrapper");
     if (phraseFieldWrapper.length) {
       //get phrase input field
-      var phraseField = phraseFieldWrapper.find("input");
+      const phraseField = phraseFieldWrapper.find("input");
 
       //put value into condensed element
       condensedWrapper.children(".cond-phrase")
@@ -1552,14 +1560,14 @@ function registerEventHandlers(loadedData) {
         .html(processCondText(phraseField.val(), phraseField.hasClass("invalid")));
 
       //add space to content, between phrase and content
-      textContent = " " + textContent;
+      textContent = ` ${textContent}`;
     }
 
     //also move content into condensed content element
     condensedWrapper
       .children(".cond-content")
       .html(textContent.length && textContent !== " " ?
-        processCondText(textContent) : textContent + "<em class='red-text'>no content</span>");
+        processCondText(textContent) : `${textContent}<em class='red-text'>no content</span>`);
 
     //if they are present, we were in edit just now
     //stop if we were already not in edit mode
@@ -1587,7 +1595,7 @@ function registerEventHandlers(loadedData) {
     //only check if message wasn't displayed yet
     if (! displayedPhraseContentMessage) {
       //get text of textarea
-      var clauseContent = elem
+      const clauseContent = elem
         //get the textarea
         .children(".clause-content")
         .children("textarea")
@@ -1598,7 +1606,7 @@ function registerEventHandlers(loadedData) {
         .toLowerCase();
 
       //get the list of phrases that applies to this clause
-      var phrases = loadedData.phrases[elem.attr("data-clause-type")];
+      const phrases = loadedData.phrases[elem.attr("data-clause-type")];
 
       //log to server for info
       if (! phrases) {
@@ -1611,10 +1619,10 @@ function registerEventHandlers(loadedData) {
       }
 
       //check if the content text area includes a phrase
-      if (phrases.some(function(phrase) {
+      if (phrases.some(phrase =>
         //return true if it starts with the phrase
-        return clauseContent.indexOf(phrase.toLowerCase()) === 0;
-      })) {
+        clauseContent.indexOf(phrase.toLowerCase()) === 0
+      )) {
         //display message concerning phrase field
         makeAlertMessage("info", "Phrase found in content field", "OK",
           "The editor has detected that a clause content field in this resolution begins" +
@@ -1650,14 +1658,14 @@ function registerEventHandlers(loadedData) {
   .on("updateTreeDepth", function(e) {
     e.stopPropagation();
     //updates the tree depth of this clause and adds "Sub"s to the clause name
-    var subClauseDepth = $(this).amountAbove(".clause-list-sub");
+    const subClauseDepth = $(this).amountAbove(".clause-list-sub");
     if (subClauseDepth) {
-      $(this).find(".clause-prefix").text("Sub" + (subClauseDepth === 2 ? "Sub" : "") + "-");
+      $(this).find(".clause-prefix").text(`Sub${subClauseDepth === 2 ? "Sub" : ""}-`);
     }
   })
   .on("attemptRemove", function(e) {
     e.stopPropagation();
-    var elem = $(this);
+    const elem = $(this);
 
     //tries to remove this clause
     if (elem.clauseRemovable()) {
@@ -1665,20 +1673,20 @@ function registerEventHandlers(loadedData) {
       elem.trigger("editInactive");
 
       //save parent
-      var parent = elem.parent();
+      const parent = elem.parent();
 
       //check if this clause is the last subclause in its list
       if (parent.children(".clause").length === 1) {
         //get enclosing clause
-        var clause = parent.closest(".clause");
+        const clause = parent.closest(".clause");
 
         //remove continuation content from parent and add onto normal clause content
-        var extField = clause
+        const extField = clause
           .children(".clause-content-ext")
           .setHide(true)
           .children("textarea");
-        var contentField = clause.children(".clause-content").children("textarea");
-        contentField.val(contentField.val().trim() + " " + extField.val().trim());
+        const contentField = clause.children(".clause-content").children("textarea");
+        contentField.val(`${contentField.val().trim()} ${extField.val().trim()}`);
 
         //trigger autoresize on modified field
         contentField.trigger("autoresize");
@@ -1687,7 +1695,7 @@ function registerEventHandlers(loadedData) {
         extField.trigger("reset");
 
         //hide ext content condensed field on parent and trigger inactivation to update cond fields
-        var parentClause = parent.parent();
+        const parentClause = parent.parent();
         parentClause.children(".clause-ext-cond").setHide(true);
         parentClause.trigger("editInactive", [false, true]);
       }
@@ -1709,8 +1717,8 @@ function registerEventHandlers(loadedData) {
     e.stopPropagation();
 
     //fill with data
-    var elem = $(this);
-    var data = elem.getData().loadedData;
+    const elem = $(this);
+    const data = elem.getData().loadedData;
 
     //fill phrase field if present
     if ("phrase" in data) {
@@ -1732,7 +1740,7 @@ function registerEventHandlers(loadedData) {
     if ("sub" in data) {
       //make subclause list, give data and trigger to continue
       elem.addSubClause(false);
-      var subclauseList = elem.find(".clause-list-sub");
+      const subclauseList = elem.find(".clause-list-sub");
       subclauseList.getData().loadedData = data.sub;
       subclauseList.trigger("fromLoadedData");
 
@@ -1747,13 +1755,15 @@ function registerEventHandlers(loadedData) {
       }
     }
   });
+
+  //the clause list
   $(".clause-list")
   .on("fromLoadedData", function(e) {
     e.stopPropagation();
-    var elem = $(this);
+    const elem = $(this);
 
     //make needed number of clauses
-    var data = $(this).getData().loadedData;
+    const data = $(this).getData().loadedData;
     elem.addClause(data.length - 1, false); //one less, we already have one there by default
 
     //give them their data and trigger to continue
@@ -1762,10 +1772,12 @@ function registerEventHandlers(loadedData) {
       $(this).trigger("fromLoadedData");
     });
   });
+
+  //the add clause button (container)
   $(".add-clause-container")
   .on("click", function(e) {
     e.stopPropagation();
-    var elem = $(this);
+    const elem = $(this);
 
     //only respond if button itself was clicked and not just the enclosing div
     if ($(e.target).is("a")) {
@@ -1776,12 +1788,14 @@ function registerEventHandlers(loadedData) {
       sendLVUpdate("structure", "add", elem.parent());
     }
   });
+
+  //starts edit mode for a clause
   $(".edit-mode-btn")
   .on("click", function(e) {
     e.stopPropagation();
 
     //get current clause we are in
-    var thisClause = $(this).closest(".clause");
+    const thisClause = $(this).closest(".clause");
 
     //set edit mode for this clause to true
     thisClause.trigger("editActive");
@@ -1792,12 +1806,14 @@ function registerEventHandlers(loadedData) {
       .children()
       .trigger("updateDisabled");
   });
+
+  //resets a clause
   $(".reset-button")
   .on("click", function(e) {
     e.stopPropagation();
 
     //trigger reset for all contained elements
-    $("#" + $(this).attr("for"))
+    $(`#${$(this).attr("for")}`)
       .find("*")
       .trigger("reset");
 
@@ -1807,10 +1823,12 @@ function registerEventHandlers(loadedData) {
     //also set meta changes unsaved flag to allow next focus on clause to autosave
     metaChangesSaved = false;
   });
+
+  //eab move down button
   $("#eab-move-down")
   .on("click", function(e) {
     e.stopPropagation();
-    var clause = $(this).closest(".clause");
+    const clause = $(this).closest(".clause");
     clause.next(".clause").after(clause);
 
     //made a change
@@ -1822,11 +1840,13 @@ function registerEventHandlers(loadedData) {
     //send structure update
     sendLVUpdate("structure", "move", clause);
   })
-  .on("updateDisabled", makeEabMoveUpdateDisabledHandler(false));
+  .on("updateDisabled", makeEabMoveUpdateDisabledHandler(false)); //create disabled handler
+
+  //eab move up button
   $("#eab-move-up")
   .on("click", function(e) {
     e.stopPropagation();
-    var clause = $(this).closest(".clause");
+    const clause = $(this).closest(".clause");
     clause.prev(".clause").before(clause);
 
     //made a change
@@ -1839,13 +1859,13 @@ function registerEventHandlers(loadedData) {
     sendLVUpdate("structure", "move", clause);
   })
   .on("updateDisabled", makeEabMoveUpdateDisabledHandler(true));
+
+  //eab add a subclause to the clause button
   $("#eab-add-sub")
   .on("click", function(e) {
     e.stopPropagation();
-    var elem = $(this);
-
     //get enclosing clause and make inactive to prevent cloning of eab and add subclause
-    var clause = elem.closest(".clause");
+    const clause = $(this).closest(".clause");
     clause.addSubClause(true);
 
     //send structure update
@@ -1857,13 +1877,15 @@ function registerEventHandlers(loadedData) {
     //set disabled state according to whether or not a subclause can be added
     $(this).disabledState(! $(this).canReceiveSubclause());
   });
+
+  //eab add ext content field to clause button
   $("#eab-add-ext")
   .on("click", function(e) {
     e.stopPropagation();
-    var elem = $(this);
+    const elem = $(this);
 
     //un-hide extended clause content field
-    var clause = elem.closest(".clause").children(".clause-content-ext").setHide(false);
+    const clause = elem.closest(".clause").children(".clause-content-ext").setHide(false);
 
     //make disabled after action performed
     elem.disabledState(true);
@@ -1876,19 +1898,23 @@ function registerEventHandlers(loadedData) {
 
     //set disabled state according to whether or not a subclause can be added
     //also can't un-hide again (disabled if visible)
-    var clause = $(this).closest(".clause");
+    const clause = $(this).closest(".clause");
     $(this).disabledState(
       ! clause.find(".clause").length || //disable if doesn't already have subclause
       clause.children(".clause-content-ext:visible").length); //disable if already there
   });
+
+  //eab clear own fields button
   $("#eab-clear")
   .on("click", function(e) {
     e.stopPropagation();
-    var clause = $(this).closest(".clause").trigger("clear");
+    const clause = $(this).closest(".clause").trigger("clear");
 
     //send structure update because ext cont is removed
     sendLVUpdate("structure", "clear", clause);
   });
+
+  //eab remove clause button
   $("#eab-delete")
   .on("click", function(e) {
     e.stopPropagation();
@@ -1900,22 +1926,28 @@ function registerEventHandlers(loadedData) {
     //check if enclosing clause can be removed
     $(this).disabledState(! $(this).closest(".clause").clauseRemovable());
   });
+
+  //eab finish editing clause button
   $("#eab-done")
   .on("click", function(e) {
     e.stopPropagation();
     $(this).closest(".clause").trigger("editInactive", true);
   });
+
+  //open file modal to load resolution from file
   $("#legacy-action-load")
   .on("click", function(e) {
     //file actions are defined in a seperate file
     e.stopPropagation();
 
     //load file from computer file system
-    loadFilePick(function(newForum) {
+    loadFilePick(newForum =>
       //update mappings
-      loadedData.generateAutofillData(newForum);
-    });
+      loadedData.generateAutofillData(newForum)
+    );
   });
+
+  //downloads the resolution as a file (json)
   $("#legacy-action-save")
   .on("click", function(e) {
     e.stopPropagation();
@@ -1926,6 +1958,8 @@ function registerEventHandlers(loadedData) {
     //download editor json
     downloadJson();
   });
+
+  //saves the resolution to the server
   $("#action-save")
   .on("click", function(e) {
     e.stopPropagation();
@@ -1947,16 +1981,8 @@ function registerEventHandlers(loadedData) {
       serverSave(null, true);
     }
   });
-  $("#delete-action-confirm")
-  .on("click", function(e) {
-    e.stopPropagation();
 
-    //send the delete request
-    $.post("/resolution/delete/" + resolutionToken, { code: resolutionCode }, function() {
-      //go back to front page
-      location.href = "/";
-    });
-  });
+  //delete button opens a model asking for confirmation
   $("#action-delete")
   .on("click", function(e) {
     e.stopPropagation();
@@ -1964,7 +1990,7 @@ function registerEventHandlers(loadedData) {
     //ask for confirmation
     makeAlertMessage(
       "delete_forever", "Really Delete?!", "Keep",
-      function(contentBody, modal) {
+      (contentBody, modal) => {
         //set text
         contentBody.html(
           "Are you really sure you want to delete this resolution forever? It will be gone" +
@@ -1977,30 +2003,36 @@ function registerEventHandlers(loadedData) {
         modal.find("#delete-action-confirm").show();
       });
   });
-}
+
+  //button to actually do the deletion
+  $("#delete-action-confirm")
+  .on("click", function(e) {
+    e.stopPropagation();
+
+    //send the delete request and go back to front page
+    $.post(
+      `/resolution/delete/${resolutionToken}`, { code: resolutionCode },
+      () => location.href = "/");
+  });
+};
 
 //converts an array of strings into an object with each string as a null prop
-function convertPropObj(orig) {
+const convertPropObj = orig => {
   //convert to prop object
-  var obj = {};
-  orig.forEach(function(str) {
-    //prop add, 1 signals ok value
-    obj[str] = null;
-  });
-  return obj;
-}
+  const obj = {};
 
-//prepares string for lookup in abbreviation mapping
-function abbrevMappingPrep(str) {
-  //lower case and remove other chars
-  return str.toLowerCase().replace(/[^a-z0-9]+/g, "");
-}
+  //for all objects, add null prop
+  orig.forEach(str => obj[str] = null);
+
+  //return created prop object
+  return obj;
+};
 
 //do things when the document has finished loading
-$(document).ready(function() {
+$(document).ready(() => {
   //get token and, if present, code from document
   resolutionToken = $("#token-preset").text();
-  var codeElement = $("#code-preset");
+  const codeElement = $("#code-preset");
   if (codeElement) {
     //get code
     resolutionCode = codeElement.text();
@@ -2023,9 +2055,9 @@ $(document).ready(function() {
 
   //parse what that attribute string means
   resolutionAttributes = {};
-  ["readonly", "noadvance", "static"].forEach(function(name) {
-    resolutionAttributes[name] = name === attributesString;
-  });
+  ["readonly", "noadvance", "static"].forEach(name =>
+    resolutionAttributes[name] = name === attributesString
+  );
 
   //set other both is static is set
   if (resolutionAttributes.static) {
@@ -2056,34 +2088,30 @@ $(document).ready(function() {
       codeFieldSelector: "#advance-code-input",
 
       //additional validation to check for vote field values
-      additionalValidation: function(setFieldState) {
+      additionalValidation: setFieldState => {
         //return true right away if we're not at a voting/lv stage
         if (! (resolutionStage === 6 || resolutionStage === 10)) {
           return true;
         }
 
         //get input elements by selecting elements with their ids
-        var fields = ["#infavor-vote-input", "#against-vote-input", "#abstention-vote-input"]
-          .map(function(selector) { return $(selector); });
+        const fields = ["#infavor-vote-input", "#against-vote-input", "#abstention-vote-input"]
+          .map($); //map selector to selected
 
-        //get values from all fields
-        var values = fields.map(function(e) {
-          //return gotten number if above 0
-          return e.val();
-        });
+        //get values from all fields and return gotten number
+        const values = fields.map(e => e.val());
 
         //all of them are not positive
-        var anyPositive = ! values.every(function(v) { return v <= 0; });
+        const anyPositive = ! values.every(v => v <= 0);
 
         //mark with validation signs
-        fields.forEach(function(e, index) {
+        fields.forEach((e, index) =>
           //take individual value into consideration, all invalid if none positive
-          setFieldState(e, values[index] > 0 || (anyPositive && ! values[index]));
-        });
+          setFieldState(e, values[index] > 0 || (anyPositive && ! values[index]))
+        );
 
         //check that there is at least one ok value and no bad value
-        return values.some(function(v) { return v; }) &&
-            values.every(function(v) { return v >= 0; });
+        return values.some(v => v) && values.every(v => v >= 0);
       },
 
       //additional trigger fields
@@ -2116,28 +2144,28 @@ $(document).ready(function() {
   } else { //proceed normally
     //load external sponsor and forum ext data and phrases
     $.getJSON("/extData")
-    .fail(function(xhr, status, error) {
+    .fail((xhr, status, error) => {
       //log the error we have with getting the data
       log({ msg: "error loading autofill data", status: status, err: error });
       makeAlertMessage(
         "error_outline", "Error loading necessary data!", "ok",
         "Failed to download data! Check the console for more info." +
-        " Please file a " + bugReportLink("data_load_fail") + " and describe this problem." +
-        "(The editor won't work until you reload the page and the data is downloaded)",
+        ` Please file a ${bugReportLink("data_load_fail")} and describe this problem.` +
+        " (The editor won't work until you reload the page and the data is downloaded)",
         "data_load_fail");
     })
-    .done(function(extData) {
+    .done(extData => {
       //data object to pass to event handlers
-      var loadedData = {};
+      const loadedData = {};
 
       //maps from forum abbreviation to name and has forum object for real names, allows value check
       loadedData.forumMapping = { };
       loadedData.forumAutofill = { };
 
       //for all forums
-      for (var forumId in extData.forumsFlat) {
+      for (const forumId in extData.forumsFlat) {
         //get the current forum
-        var forum = extData.forumsFlat[forumId];
+        const forum = extData.forumsFlat[forumId];
 
         //create mapping to name for abbr
         loadedData.forumMapping[abbrevMappingPrep(forum.abbr)] = { to: forum.name };
@@ -2158,7 +2186,7 @@ $(document).ready(function() {
       loadedData.simpleCountryList = { };
 
       //original regular and sc extended op phrases
-      var opPhrases = {
+      const opPhrases = {
         regular: extData.op,
         sc: extData.op.concat(extData.scop)
       };
@@ -2171,7 +2199,6 @@ $(document).ready(function() {
       };
 
       //generate prefix combinations
-      var phrases, prefixes, phrase, phraseIndex, prefixIndex, phrasesLength;
       [{
         phrases: opPhrases.regular,
         prefixType: "op"
@@ -2181,43 +2208,52 @@ $(document).ready(function() {
       }, {
         phrases: loadedData.phrases.preamb,
         prefixType: "preamb"
-      }].forEach(function(phraseGenConfig) {
+      }].forEach(phraseGenConfig => {
         //get list of phrases
-        phrases = phraseGenConfig.phrases;
+        const phrases = phraseGenConfig.phrases;
 
         //get list of prefixes for this type of phrase
-        prefixes = extData.prefix[phraseGenConfig.prefixType] || [];
+        const prefixes = extData.prefix[phraseGenConfig.prefixType] || [];
+
+        //get current length of phrases as it will be changed inthe process
+        const phrasesLength = phrases.length;
 
         //for all phrases
-        for (phraseIndex = 0, phrasesLength = phrases.length;
-             phraseIndex < phrasesLength; phraseIndex ++) {
+        for (let phraseIndex = 0; phraseIndex < phrasesLength; phraseIndex ++) {
           //get current phrase
-          phrase = phrases[phraseIndex];
+          let phrase = phrases[phraseIndex];
 
           //change first char to lower case
           phrase = phrase[0].toLowerCase() + phrase.substr(1);
 
           //for all phrase prefixes
-          for (prefixIndex = 0; prefixIndex < prefixes.length; prefixIndex ++) {
-            //add prefixed phrase to list of phrases for this type
-            phrases.push(prefixes[prefixIndex] + " " + phrase);
+          for (let prefixIndex = 0; prefixIndex < prefixes.length; prefixIndex ++) {
+            //get current prefix
+            const prefix = prefixes[prefixIndex];
+
+            //make combination of prefix doesn't appear in phrase
+            //(to prevent things like "further having considered further")
+            if (phrase.toLowerCase().indexOf(prefix.toLowerCase()) === -1) {
+              //add prefixed phrase to list of phrases for this type
+              phrases.push(`${prefix} ${phrase}`);
+            }
           }
         }
       });
 
       //object ref converted for autofill op phrases
-      var opPhrasesConverted = {
+      const opPhrasesConverted = {
         regular: convertPropObj(opPhrases.regular),
         sc: convertPropObj(opPhrases.sc)
       };
 
       //function that generates country name mappings for a given selected forum name in loadedData
-      loadedData.generateAutofillData = function(selectedForum) {
+      loadedData.generateAutofillData = selectedForum => {
         //get selected forum object
-        var forumCountries = loadedData.forumMapping[selectedForum];
+        let forumCountries = loadedData.forumMapping[selectedForum];
 
         //keeps track of what things changed
-        var newDataFor = {
+        const newDataFor = {
           countries: false,
           phrases: false
         };
@@ -2243,9 +2279,9 @@ $(document).ready(function() {
         loadedData.simpleCountryList = { };
 
         //for all countries of this forum
-        forumCountries.forEach(function(countryId) {
+        forumCountries.forEach(countryId => {
           //get country object
-          var country = extData.countriesFlat[countryId];
+          const country = extData.countriesFlat[countryId];
 
           //add full and placard name as mapping to real name
           loadedData.countryMapping[abbrevMappingPrep(country.placardname)] = { to: country.name };
@@ -2264,7 +2300,7 @@ $(document).ready(function() {
         });
 
         //check if forum is allowed to use sc phrases, if is part of scop forums
-        var scForum = extData.scopForums.indexOf(selectedForum) !== -1;
+        const scForum = extData.scopForums.indexOf(selectedForum) !== -1;
 
         //if situation changed
         if (loadedData.scForum !== scForum) {
@@ -2272,7 +2308,7 @@ $(document).ready(function() {
           loadedData.scForum = scForum;
 
           //get the current op phrases to use
-          var useOpPhrases = scForum ? opPhrases.sc : opPhrases.regular;
+          const useOpPhrases = scForum ? opPhrases.sc : opPhrases.regular;
 
           //set op phrase list in loadedData.phrases
           loadedData.phrases.op = useOpPhrases;
@@ -2319,7 +2355,7 @@ $(document).ready(function() {
         $("*:not(.autocomplete, .chips)").trigger("init");
 
         //initiate loading of resolution from server with preset token
-        serverLoad(resolutionToken, true, function(initForum) {
+        serverLoad(resolutionToken, true, initForum => {
           //don't send update if still loading,
           //some events may be fake-fired in the process of getting data into the clauses
           $(".clause input, .clause textarea")
@@ -2344,7 +2380,7 @@ $(document).ready(function() {
             autosaveEnabled = false;
 
             //give token and code, false for being editor type client
-            startLiveviewWS(false, resolutionToken, resolutionCode, function(type, newSendStatus) {
+            startLiveviewWS(false, resolutionToken, resolutionCode, (type, newSendStatus) => {
               //act on update
               if (type === "sendUpdates") {
                 //if now set to true and previously false,
@@ -2371,15 +2407,15 @@ $(document).ready(function() {
         $("#preamb-clauses").find(".clause").trigger("editActive");
 
         //start timer for save reminder
-        setTimeout(function() {
+        setTimeout(() =>
           //display alert modal with alert message
           makeAlertMessage(
             "backup", "Save Reminder", "Yes, I will do that now",
             "The page will attempt to prevent you" +
             " from accidentally leaving, but before registering your resolution token permanently" +
             " by saving it for the first time, auto-save will not be active. Please remember to" +
-            " save your resolution if it was actually your intention to start writing a new one.");
-        }, 1000 * 60 * 5); //5 minutes
+            " save your resolution if it was actually your intention to start writing a new one."),
+          1000 * 60 * 5); //5 minutes
       }
 
       //check if localStorage is supported and no flag is found
@@ -2387,7 +2423,7 @@ $(document).ready(function() {
         //set to false when an error happens while setting the flag in the local storage
         //we won't display the hint if we can't prevent it
         //from being shown every time the page is reloaded
-        var canSetFlag = true;
+        let canSetFlag = true;
 
         //set the flag
         try {
@@ -2401,12 +2437,12 @@ $(document).ready(function() {
         if (canSetFlag) {
           //provide links to help page and formatting section
           makeAlertMessage(
-            "help", "Read the Help Page", "I'm informed now",
+            "help", "Read the Help Page", "I've read it",
             "It is strongly recommended for all users who have't yet accustomed themselves to" +
             " this editor to read the <a href='/help'>help page</a> before writing a resolution." +
             " Specifically, the section <a href='/help#formatting'>Formatting Advice and Special" +
             " Characters</a> helps to avoid confusion that arises from special syntax and" +
-            " disallowed characcters. Read the help page before asking any questions about how" +
+            " disallowed characters. Read the help page before asking any questions about how" +
             " to use the editor. This message will only be displayed once.");
         }
       }

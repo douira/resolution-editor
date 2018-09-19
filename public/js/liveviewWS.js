@@ -1,4 +1,4 @@
-/*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
+/*jshint browser: true, jquery: true */
 /*exported startLiveviewWS, sendJsonLV*/
 /* global
 makeAlertMessage,
@@ -6,65 +6,62 @@ log,
 displayToast*/
 
 //how many times we will try to connect
-var connectTriesLV = 3;
+const connectTriesLV = 3;
 
 //how many tries are left, reset to LVConnectTries when a connection is established
-var connectTriesLeftLV = connectTriesLV;
+let connectTriesLeftLV = connectTriesLV;
 
 //reference to the current WebSocket for closing it on page unload
-var currentWS;
+let currentWS;
 
 //token and code given on page
-var presetTokenLV;
-var presetCodeLV;
+let presetTokenLV, presetCodeLV;
 
 //lv access token to authenticate communication with the server
-var accessToken;
+let accessToken;
+
+//message queue to send
+const messageQueue = [];
 
 //seends an object json encoded to the server
-var sendJsonLV = (function() {
-  //message queue to send
-  var messageQueue = [];
-
-  return function(obj, isInit) {
-    //if obj is "empty" the queue should be attempted to be emptied
-    if (obj === "empty") {
-      //send messages from the queue until none are left
-      while (messageQueue.length) {
-        //send oldest message, preserve queue ordering
-        sendJsonLV(messageQueue.shift());
-      }
-
-      //return because this function call wasn't for sending a message
-      return;
+const sendJsonLV = (obj = "empty", isInit = false) => {
+  //if obj is "empty" the queue should be attempted to be emptied
+  if (obj === "empty") {
+    //send messages from the queue until none are left
+    while (messageQueue.length) {
+      //send oldest message, preserve queue ordering
+      sendJsonLV(messageQueue.shift());
     }
 
-    //send if we have an accessToken
-    if (accessToken || isInit) {
-      //add access token for auth, if present, do not add to init message
-      if (accessToken && ! isInit) {
-        obj.accessToken = accessToken;
-      }
+    //return because this function call wasn't for sending a message
+    return;
+  }
 
-      //send prepared object after stringify
-      currentWS.send(JSON.stringify(obj));
-
-      //work on emptying queue
-      sendJsonLV("empty");
-    } else {
-      //put in queue
-      messageQueue.push(obj);
+  //send if we have an accessToken
+  if (accessToken || isInit) {
+    //add access token for auth, if present, do not add to init message
+    if (accessToken && ! isInit) {
+      obj.accessToken = accessToken;
     }
-  };
-})();
+
+    //send prepared object after stringify
+    currentWS.send(JSON.stringify(obj));
+
+    //work on emptying queue
+    sendJsonLV();
+  } else {
+    //put in queue
+    messageQueue.push(obj);
+  }
+};
 
 //starts a websockets connection to the server
-function startWS(isViewer, updateListener) {
+const startWS = (isViewer, updateListener) => {
   //decrement try counter
   connectTriesLeftLV --;
 
   //determine location of ws server
-  var wsUrl = "ws://" + window.location.hostname + ":17750/liveview";
+  const wsUrl = `ws://${window.location.hostname}:17750/liveview`;
 
   //open websocket connection to server
   currentWS = new WebSocket(wsUrl);
@@ -73,13 +70,13 @@ function startWS(isViewer, updateListener) {
   presetTokenLV = presetTokenLV || $("#token-preset").text();
   if (! presetCodeLV) {
     //get code from page and remove element
-    var codeElement = $("#code-preset");
+    const codeElement = $("#code-preset");
     presetCodeLV = codeElement.text();
     codeElement.remove();
   }
 
   //on finished opening connection, send token and code to register as listener
-  currentWS.onopen = function() {
+  currentWS.onopen = () => {
     //initial request for content updates
     sendJsonLV({
       type: isViewer ? "initViewer" : "initEditor", //request for connection of correct type
@@ -92,19 +89,19 @@ function startWS(isViewer, updateListener) {
   };
 
   //when connection is closed by one of the parties
-  currentWS.onclose = function() {
+  currentWS.onclose = () => {
     //reset access token
     accessToken = null;
 
     //if wtill tries left
     if (connectTriesLeftLV > 0) {
-      displayToast("LV: Connection error (" + connectTriesLeftLV + " tries left)");
+      displayToast(`LV: Connection error ${connectTriesLeftLV} tries left)`);
 
       //notify custom event handling
       updateListener("disconnect");
 
       //try again
-      setTimeout(function() { startWS(isViewer, updateListener); }, 5000);
+      setTimeout(() => startWS(isViewer, updateListener), 5000);
     } else if (connectTriesLeftLV === 0) {
       //stop now
       makeAlertMessage("error_outline", "Connection failed", "ok", "The connection to the server" +
@@ -114,13 +111,13 @@ function startWS(isViewer, updateListener) {
   };
 
   //when a message appears
-  currentWS.onmessage = function(event) {
+  currentWS.onmessage = event => {
     //parse sent object
-    var data;
+    let data;
     try {
       data = JSON.parse(event.data);
     } catch (err) {
-      log({ msg: "non-json data received/error", eventData: event.data, err: err });
+      log({ msg: "non-json data received/error", eventData: event.data, err });
       return;
     }
 
@@ -148,7 +145,7 @@ function startWS(isViewer, updateListener) {
 
         //alert user
         makeAlertMessage("error_outline", "Received Error", "ok", "The server has reponded with" +
-                         " an error: " + data.errorMsg, "liveview_client_got_server_error");
+                         ` an error: ${data.errorMsg}`, "liveview_client_got_server_error");
         break;
       case "ackInit": //both, get access token for auth
         //get token from data, we are now ready to send and receive data
@@ -158,10 +155,9 @@ function startWS(isViewer, updateListener) {
         displayToast("LV: Connection established");
 
         //build notification message
-        var displayString = "LV: " + data.viewerAmount +
-            " Viewer" + (data.viewerAmount === 1 ? "" : "s");
+        let displayString = `LV: ${data.viewerAmount} Viewer${data.viewerAmount === 1 ? "" : "s"}`;
         if (isViewer) {
-          displayString += " and " + (data.editorPresent ? "an" : "no") + " Editor";
+          displayString += ` and ${data.editorPresent ? "an" : "no"} Editor`;
         }
         displayString += " connected";
 
@@ -172,7 +168,7 @@ function startWS(isViewer, updateListener) {
         displayToast(displayString);
 
         //work on emptying queue now that an access token has been received
-        sendJsonLV("empty");
+        sendJsonLV();
         break;
       case "editorReplaced": //viewer
         displayToast("LV: Editor replaced");
@@ -184,10 +180,10 @@ function startWS(isViewer, updateListener) {
         displayToast("LV: Editor disconnected");
         break;
       case "viewerJoined": //both
-        displayToast("LV: Viewer joined, now: " + data.amount);
+        displayToast(`LV: Viewer joined, now: ${data.amount}`);
         break;
       case "viewerLeft": //editor
-        displayToast("LV: Viewer left, now: " + data.amount);
+        displayToast(`LV: Viewer left, now: ${data.amount}`);
         break;
       case "replacedByOther": //editor
         displayToast("LV: Editor replaced by server");
@@ -199,7 +195,7 @@ function startWS(isViewer, updateListener) {
         //no special action, handling done by update listener
         break;
       default: //both client types
-        log({ msg: "lv: unrecognised message type", data: data });
+        log({ msg: "lv: unrecognised message type", data });
         return;
     }
 
@@ -208,11 +204,11 @@ function startWS(isViewer, updateListener) {
       updateListener(data.type, data);
     }
   };
-}
+};
 
 //starts liveview websocket operations, given if this client is editor or viewer
 //should be called in document ready
-function startLiveviewWS(isViewer, token, code, updateListener) {
+const startLiveviewWS = (isViewer, token, code, updateListener) => {
   //use given token and code if given
   if (typeof token === "string") {
     presetTokenLV = token;
@@ -234,11 +230,11 @@ function startLiveviewWS(isViewer, token, code, updateListener) {
   startWS(isViewer, updateListener);
 
   //close websocket on page unload/close, do it on both just to be sure
-  $(window).on("unload beforeunload", function() {
+  $(window).on("unload beforeunload", () => {
     //prevent reopen and alert
     connectTriesLeftLV = -1;
 
     //close the websocket
     currentWS.close();
   });
-}
+};
