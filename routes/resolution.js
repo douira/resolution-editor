@@ -19,12 +19,10 @@ require("../lib/database").fullInit.then(c => {
 });
 
 //GET (view) to /resolution displays front page (token and code input) without promo
-router.get("/", function(req, res) {
-  res.render("index", { promo: false });
-});
+router.get("/", (req, res) => res.render("index", { promo: false }));
 
 //GET (responds with url, no view) render pdf
-router.get("/renderpdf/:token", function(req, res) {
+router.get("/renderpdf/:token", (req, res) => {
   //check for token and save new resolution content
   routingUtil.checkToken(req, res, {
     $set: {
@@ -76,7 +74,7 @@ router.get("/renderpdf/:token", function(req, res) {
 });
 
 //GET (responds with url, no view) render plaintext, not really render but similar
-router.get("/renderplain/:token", function(req, res) {
+router.get("/renderplain/:token", (req, res) =>
   //check for token and save new resolution content
   routingUtil.checkToken(req, res, (token, document) => {
     //don't render if nothing saved yet
@@ -90,17 +88,17 @@ router.get("/renderplain/:token", function(req, res) {
       data: resUtil.renderPlaintext(document),
       token: token
     });
-  });
-});
+  })
+);
 
 //landing page is displayed statically and only displays information for the user to read
-router.get("/prenew", function(req, res) {
+router.get("/prenew", (req, res) =>
   //render landing page, no new resolution button if accessed from menu
-  res.render("newreslanding", { noNew: req.query.nonew === "1" });
-});
+  res.render("newreslanding", { noNew: req.query.nonew === "1" })
+);
 
 //GET (no view, processor) redirects to editor page with new registered token
-router.get("/new", function(req, res) {
+router.get("/new", (req, res) =>
   //make a new unique token, true flag for being a token
   resUtil.makeNewThing(req, res, true).then(token => {
     //get now (consistent)
@@ -123,11 +121,11 @@ router.get("/new", function(req, res) {
       //redirect to editor page (because URL is right then)
       res.redirect("/resolution/editor/" + token);
     }, () => issueError(req, res, 500, "can't create new"));
-  });
-});
+  })
+);
 
 //POST (no view) save resolution
-router.post("/save/:token", function(req, res) {
+router.post("/save/:token", (req, res) =>
   //require resolution content to be present and valid
   routingUtil.checkBodyRes(req, res, resolutionSent => {
     //authorize, doesn't do code auth if no code necessary (if session present)
@@ -165,24 +163,22 @@ router.post("/save/:token", function(req, res) {
       //match mode save respects saving attrib restrictions
       matchMode: "save"
     });
-  });
-});
+  })
+);
 
 //return the render param object for the editor view
-function getEditorViewParams(doLoad, resDoc, token, codeDoc) {
+const getEditorViewParams = (doLoad, resDoc, token, codeDoc) => ({
   //send rendered editor page with the token set
-  return {
-    token: token,
-    meta: resUtil.getMetaInfo(resDoc),
-    doLoad: doLoad,
-    code: codeDoc.hasOwnProperty("code") ? codeDoc.code : null,
-    accessLevel: codeDoc.level
-  };
-}
+  token,
+  meta: resUtil.getMetaInfo(resDoc),
+  doLoad,
+  code: codeDoc.hasOwnProperty("code") ? codeDoc.code : null,
+  accessLevel: codeDoc.level
+});
 
 //POST/GET (editor view) redirected to here to send editor with set token
 //(also only displays meta info if code necessary but not given or invalid)
-routingUtil.getAndPost(router, "/editor/:token", function(req, res) {
+routingUtil.getAndPost(router, "/editor/:token", (req, res) =>
   //check for token and code (check with DE perm is no code given)
   routingUtil.fullAuth(req, res,
     (token, resDoc, codeDoc) =>
@@ -196,8 +192,8 @@ routingUtil.getAndPost(router, "/editor/:token", function(req, res) {
       //editor match mode
       matchMode: "editor"
     }
-  );
-});
+  )
+);
 
 //both admin actions setattribs and delete need the same admin full auth
 router.use(["/setattribs/:token", "/delete/:token"], (req, res, next) =>
@@ -221,7 +217,7 @@ router.use(["/setattribs/:token", "/delete/:token"], (req, res, next) =>
 );
 
 //POST (no view) update attributes and redirect back to editor page
-router.post("/setattribs/:token", function(req, res) {
+router.post("/setattribs/:token", (req, res) => {
   //get token from req as it was attached to the middleware for setattribs and delete
   const token = req.resToken;
 
@@ -247,7 +243,7 @@ router.post("/setattribs/:token", function(req, res) {
 });
 
 //POST (no view) delete a resolution
-router.post("/delete/:token", function(req, res) {
+router.post("/delete/:token", (req, res) => {
   //get token from req (see above)
   const token = req.params.token;
 
@@ -263,7 +259,7 @@ router.post("/delete/:token", function(req, res) {
 });
 
 //POST, GET for liveview page (GET may be ok when session with auth is present)
-routingUtil.getAndPost(router, "/liveview/:token", function(req, res) {
+routingUtil.getAndPost(router, "/liveview/:token", (req, res) =>
   //check for token and code and correct stage (liveview permission mode)
   routingUtil.fullAuth(req, res,
     (token, resDoc, codeDoc) =>
@@ -285,29 +281,29 @@ routingUtil.getAndPost(router, "/liveview/:token", function(req, res) {
         }),
       matchMode: "liveview"
     }
-  );
-});
+  )
+);
 
 //GET and POST (no view) to send resolution data
-routingUtil.getAndPost(router, "/load/:token", function(req, res) {
+routingUtil.getAndPost(router, "/load/:token", (req, res) =>
   //authorize, absence of code is detected in fullAuth
-  routingUtil.fullAuth(req, res, (token, resolutionDoc) => {
+  routingUtil.fullAuth(req, res, (token, resolutionDoc) =>
     //send resolution to client, remove database wrapper
-    res.send(resolutionDoc.content);
-  });
-});
+    res.send(resolutionDoc.content)
+  )
+);
 
 //pads with leading zeros (returns a string)
-function padNumber(number, amount) {
+const padNumber = (number, amount) => {
   //convert to string
   number = "" + number;
 
   //return 0 repeated until the right length
   return amount < number.length ? number : "0".repeat(amount - number.length) + number;
-}
+};
 
 //POST (no view) to advance resolution, redirect to editor without code after completion
-routingUtil.getAndPost(router, "/advance/:token", function(req, res) {
+routingUtil.getAndPost(router, "/advance/:token", (req, res) =>
   //authorize, absence of code is detected in fullAuth
   routingUtil.fullAuth(req, res, (token, resDoc) => {
     //query object to be possibly extended by a vote result setter
@@ -411,11 +407,11 @@ routingUtil.getAndPost(router, "/advance/:token", function(req, res) {
     },
     //use advance match mode because advancement has specific permission requirements
     matchMode: "advance"
-  });
-});
+  })
+);
 
 //GET (no view, validation response) checks if sent token or code is valid (for form display)
-router.get("/checkinput/:thing", function(req, res) {
+router.get("/checkinput/:thing", (req, res) => {
   //respond with token/code ok or not
   if (req.params.thing[0] === "@") {
     routingUtil.checkToken(req, res, () => {

@@ -20,10 +20,11 @@ require("../lib/database").fullInit.then(collections => {
 
 //require admin or SG session for resolution list
 router.use("/overview", (req, res, next) =>
-  routingUtil.requireSession("semi-admin", req, res, () => next()));
+  routingUtil.requireSession("semi-admin", req, res, () => next())
+);
 
 //GET display overview of all resolutions
-router.get("/overview", function(req, res) {
+router.get("/overview", (req, res) => {
   //check if the archive was requested
   const useArchive = req.query.archive == "1"; //jshint ignore: line
 
@@ -58,16 +59,17 @@ router.get("/overview", function(req, res) {
 
 //list of resolutions for chairs requires chair access
 router.use("/forum", (req, res, next) =>
-  routingUtil.requireSession("forum", req, res, () => next()));
+  routingUtil.requireSession("forum", req, res, () => next())
+);
 
 //GET overview of forums
-router.get("/forum", function(req, res) {
+router.get("/forum", (req, res) =>
   //forum select interface, display possible forums
-  extDataPromise.then(extData => res.render("forumselect", { forums: extData.forums }));
-});
+  extDataPromise.then(extData => res.render("forumselect", { forums: extData.forums }))
+);
 
 //GET overview of forum resolutions
-router.get("/forum/:forumNameId", function(req, res) {
+router.get("/forum/:forumNameId", (req, res) => {
   //get forum name
   const forumName = req.params.forumNameId.replace(/-/g, " ");
 
@@ -116,15 +118,14 @@ router.get("/forum/:forumNameId", function(req, res) {
 
 //require admin session for code management
 router.use("/codes", (req, res, next) =>
-  routingUtil.requireSession("admin", req, res, () => next()));
+  routingUtil.requireSession("admin", req, res, () => next())
+);
 
 //gets the current insert group counter
-function getInsertGroupCounter() {
-  return metadata.findOne({ _id: "codeInsertGroupCounter" });
-}
+const getInsertGroupCounter = () => metadata.findOne({ _id: "codeInsertGroupCounter" });
 
 //GET display overview of all codes and associated information
-router.get("/codes", function(req, res) {
+router.get("/codes", (req, res) =>
   Promise.all([
     //get current insert group counter
     getInsertGroupCounter(),
@@ -171,11 +172,11 @@ router.get("/codes", function(req, res) {
       sessionCode: req.session.code
     });
   }, err => issueError(req, res, 500,
-    "could not query codes or insert group id for overview", err));
-});
+    "could not query codes or insert group id for overview", err))
+);
 
 //GET print codes displays items in a plaintext table view that can be easily printed
-router.get("/codes/print/:group", function(req, res, next) {
+router.get("/codes/print/:group", (req, res, next) => {
   //the given print group type
   const printGroupType = req.params.group;
 
@@ -224,7 +225,7 @@ router.get("/codes/print/:group", function(req, res, next) {
 const maximumCodeGenerationTries = 50;
 
 //post to codes page performs action and then sends ok message for page reload
-router.post("/codes/:action", function(req, res) {
+router.post("/codes/:action", (req, res) => {
   //for revoke and change action type
   if (req.params.action === "change" || req.params.action === "revoke") {
     //get the list of codes to process
@@ -305,14 +306,12 @@ router.post("/codes/:action", function(req, res) {
         _id: "codeInsertGroupCounter"
       }, {
         $inc: { value: 1 }
-      }, { returnOriginal: false, upsert: true }).then(result => {
+      }, { returnOriginal: false, upsert: true }).then(result => Promise.resolve({
         //pass gotten counter value to next step
-        return Promise.resolve({
-          remainingCodes: codesArr,
-          depth: 0, //init with depth 0
-          insertGroupId: result.value.value
-        });
-      }).then(function handleRemaining(opts) { //insert codes until all codes are inserted
+        remainingCodes: codesArr,
+        depth: 0, //init with depth 0
+        insertGroupId: result.value.value
+      })).then(function handleRemaining(opts) { //insert codes until all codes are inserted
         //remaining codes are in opts
         const remainingCodes = opts.remainingCodes;
 
@@ -397,15 +396,12 @@ router.post("/codes/:action", function(req, res) {
 router.use("/print", (req, res, next) =>
   routingUtil.requireSession("printqueue", req, res, () => next()));
 
-//POST secreteriat print queue page, gets code from post
-router.get("/print", function(req, res) {
-  //render the list page
-  res.render("printqueue");
-});
+//GET secreteriat print queue page, gets code with post
+router.get("/print", (req, res) => res.render("printqueue"));
 
 //maps the stage history entry from it's nexted form to a property
 //also moves the address to a top level property
-function mapListItems(items, stageHistoryIndex, forums) {
+const mapListItems = (items, stageHistoryIndex, forums) => {
   //map items and return modified
   return items.map(i => {
     //set new property with value at index
@@ -432,10 +428,10 @@ function mapListItems(items, stageHistoryIndex, forums) {
     //return original object
     return i;
   });
-}
+};
 
 //POST return list of items to be printed
-router.get("/print/getitems", function(req, res) {
+router.get("/print/getitems", (req, res) =>
   //query resolutions in stage 4 that are advanceable (and thereby non-static)
   Promise.all([resolutions.find({
     stage: 4,
@@ -461,21 +457,18 @@ router.get("/print/getitems", function(req, res) {
   ), extDataPromise]).then(results => {
     //send data to client, rewrite and address
     res.send(mapListItems(results[0], 4, results[1].forums));
-  }, () => issueError(req, res, 500, "could not prepare print queue items"));
-});
+  }, () => issueError(req, res, 500, "could not prepare print queue items"))
+);
 
 //uses session auth for FC queue
 router.use("/fcqueue", (req, res, next) =>
   routingUtil.requireSession("fcqueue", req, res, () => next()));
 
 //GET fc work queue display
-router.get("/fcqueue", function(req, res) {
-  //render fc work queue page
-  res.render("fcqueue");
-});
+router.get("/fcqueue", (req, res) => res.render("fcqueue"));
 
 //GET fc work queue data
-router.get("/fcqueue/getitems", function(req, res) {
+router.get("/fcqueue/getitems", (req, res) =>
   //query resolutions that are in stage 3 and can be advanced
   resolutions.find({
     stage: 3,
@@ -492,18 +485,18 @@ router.get("/fcqueue/getitems", function(req, res) {
   }).sort({
     //sort by time in stage 3, most necessary first
     "stageHistory.3": -1
-  }).toArray().then(items => {
-    //send data to client, rewrite stageHistory and address
-    res.send(mapListItems(items, 3));
-  }, err => issueError(req, res, 500, "could not query fc work queue items", err));
-});
+  })
+  //send data to client, rewrite stageHistory and address
+  .toArray().then(items => res.send(mapListItems(items, 3)),
+  err => issueError(req, res, 500, "could not query fc work queue items", err))
+);
 
 //booklet actions require at least SG permission (booklet perm match mode)
 router.use("/booklet", (req, res, next) =>
   routingUtil.requireSession("semi-admin", req, res, () => next()));
 
 //booklet creation and selection page
-router.get("/booklet", function(req, res) {
+router.get("/booklet", (req, res) => {
   //parse year or take current as default
   const year = (req.query && parseInt(req.query.year)) || new Date().getFullYear();
 
@@ -520,7 +513,7 @@ router.get("/booklet", function(req, res) {
 
 //requires and validates the given booklet id
 router.use(["/booklet/edit/:id", "/booklet/renderpdf/:id", "/booklet/save/:id"],
-  function(req, res, next) {
+  (req, res, next) => {
   //get id to query booklet with
   const bookletId = parseInt(req.params.id);
 
@@ -555,7 +548,7 @@ const eligibleResolutionQuery = booklet => ({
 });
 
 //edit and info page for a particular booklet
-router.get("/booklet/edit/:id", function(req, res) {
+router.get("/booklet/edit/:id", (req, res) => {
   //get the current booklet
   booklets.findOne({
     _id: req.bookletId
@@ -619,7 +612,7 @@ router.get("/booklet/edit/:id", function(req, res) {
 });
 
 //renders the booklet
-router.get("/booklet/renderpdf/:id", function(req, res) {
+router.get("/booklet/renderpdf/:id", (req, res) =>
   //get the current booklet
   booklets.findOne({
     _id: req.bookletId
@@ -722,11 +715,11 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
       err => issueError(req, res, 500, "could not query resolutions in booklet with id " +
         req.bookletId, err)
     );
-  });
-});
+  })
+);
 
 //saves the booklet
-router.post("/booklet/save/:id", function(req, res) {
+router.post("/booklet/save/:id", (req, res) => {
   //if resolutions were given
   if (req.body && req.body.resolutions && req.body.resolutions instanceof Array) {
     //deduplicate resolution tokens given in booklet
@@ -758,7 +751,7 @@ router.post("/booklet/save/:id", function(req, res) {
 });
 
 //makes a new booklet and redirects to the edit page of that booklet
-router.post("/booklet/new", function(req, res) {
+router.post("/booklet/new", (req, res) => {
   //get the posted type
   const type = req.body.type;
 

@@ -5,7 +5,7 @@ const { logger, issueError } = require("../lib/logger");
 const { getAndPost } = require("../lib/routingUtil");
 
 //POST or GET an error
-getAndPost(router, "/", function(req, res) {
+getAndPost(router, "/", (req, res) => {
   //messages array
   let messages;
 

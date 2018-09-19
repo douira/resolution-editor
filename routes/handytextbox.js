@@ -2,8 +2,5 @@
 const express = require("express");
 const router = module.exports = express.Router();
 
-//GET textbox page
-router.get("/", function(req, res) {
-  //render textbox page
-  res.render("handytextbox");
-});
+//GET render textbox page
+router.get("/", (req, res) => res.render("handytextbox"));
