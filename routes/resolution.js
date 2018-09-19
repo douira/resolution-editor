@@ -22,7 +22,7 @@ require("../lib/database").fullInit.then(c => {
 router.get("/", (req, res) => res.render("index", { promo: false }));
 
 //GET (responds with url, no view) render pdf
-router.get("/renderpdf/:token", (req, res) => {
+router.get("/renderpdf/:token", (req, res) =>
   //check for token and save new resolution content
   routingUtil.checkToken(req, res, {
     $set: {
@@ -70,8 +70,8 @@ router.get("/renderpdf/:token", (req, res) => {
       //print and notify of error
       err => issueError(req, res, 500, "render problem", err)
     );
-  });
-});
+  })
+);
 
 //GET (responds with url, no view) render plaintext, not really render but similar
 router.get("/renderplain/:token", (req, res) =>
