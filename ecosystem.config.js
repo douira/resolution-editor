@@ -32,7 +32,7 @@ module.exports = {
       kill_timeout: 3000,
       wait_ready: true,
       exec_mode: "cluster",
-      instances: "max",
+      instances: "3",
       merge_logs: true
     },
     {
