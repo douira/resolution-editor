@@ -171,7 +171,27 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
 
   //token and code input validation
   function onFieldActivity(e) {
-    const elem = $(this);
+    //called on collection
+    let elem;
+    if (this.length) {
+      //if called on more than one element
+      if (this.length > 1) {
+        //call seperately on all other elements
+        for (let i = 0; i < this.length - 2; i++) {
+          //call with current element and same event data
+          onFieldActivity.call(this[i], e);
+        }
+
+        //take last from collection
+        elem = this.eq(this.length - 1);
+      } else {
+        //simply the same (called on collection of one element)
+        elem = this;
+      }
+    } else {
+      //single dom element
+      elem = $(this);
+    }
 
     //get value of current input field and remove any whitespace, make capitalized
     let value = elem.val().replace(/\s/g, "").toUpperCase();
