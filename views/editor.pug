@@ -39,12 +39,8 @@ block content
     .divider
     h5.light
       +icon(icons.token, "mediumsmall left text-darken-3 amber-text")
-      if doLoad
-        | Your Token:
-      else
-        | Token:
       //-git removes spaces at end of lines so this is necessary
-      =" "
+      ="Document Token: "
       span#token-preset.lighten-3(class=sec)=token
     p.justify Please write this token down, because it will be used to identify your resolution when you want to continue working on it later. Talk to your Chair if you've forgotten your resolution token.
       em  Looking at your browser's history can be helpful too.
