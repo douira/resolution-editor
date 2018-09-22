@@ -1,4 +1,3 @@
-/*jshint browser: true, jquery: true */
 /* global Materialize*/
 /* exported makeAlertMessage, displayToast */
 //queue of alert message we want to display
@@ -25,8 +24,9 @@ const checkAlertDisplay = () => {
       //set error code if given
       modalElement
         .find(".error-code")
-        .text(modalData.hasErrorCode ? "error #" + modalData.errorCode : "")
-        [modalData.hasErrorCode ? "show" : "hide"]();
+        .text(modalData.hasErrorCode ? "error #" + modalData.errorCode : "")[
+          modalData.hasErrorCode ? "show" : "hide"
+        ]();
 
       //call callback for content if given
       const contentBody = modalElement.find(".modal-content-body");

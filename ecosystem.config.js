@@ -1,4 +1,4 @@
-//jshint ignore: start
+/* eslint-disable */
 module.exports = {
   apps: [
     {
@@ -22,7 +22,7 @@ module.exports = {
         SERVE_LOCAL: "off",
         PRINT_ERR: "on",
         LOG_NORM_ACCESS: "off",
-        NODE_ENV: "production"
+        NODE_ENV: "dev"
       },
       env_offline: {
         SERVE_LOCAL: "on"

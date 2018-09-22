@@ -1,4 +1,3 @@
-/*jshint esversion: 6, node: true */
 const express = require("express");
 const router = module.exports = express.Router();
 const { logger, issueError } = require("../lib/logger");
@@ -13,8 +12,9 @@ getAndPost(router, "/", (req, res) => {
   if (req.body && req.body.messages && req.body.messages.length) {
     //unwrap from body
     messages = req.body.messages;
-  } //alternatively allow passing of message as url object
-  else if (req.query) {
+  } else if (req.query) {
+    //alternatively allow passing of message as url object
+
     //use query as messages
     messages = req.query;
   }

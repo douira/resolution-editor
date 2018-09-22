@@ -1,4 +1,3 @@
-/*jshint browser: true, jquery: true*/
 /*exported log*/
 
 //list of log messages
@@ -79,7 +78,7 @@ const sendBufferItems = () => {
       //only retry if not retried too many times
       if (logSendSchedule.failedSends < logSendSchedule.maxSendRetries) {
         //alert user
-        alert(
+        alert( //eslint-disable-line no-alert
           "Failed to log error messages to server!" +
           " Please file an issues with the errors from the console." +
           " See the Bug Report Link at the bottom of the page.");

@@ -1,4 +1,3 @@
-/*jshint browser: true, jquery: true */
 /*exported getTimeText*/
 /*global module*/
 

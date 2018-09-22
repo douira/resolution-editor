@@ -1,4 +1,3 @@
-/*jshint esversion: 6, browser: false, jquery: false */
 /*global module */
 
 //string used to identify files saved by this website, mild effect
@@ -204,7 +203,7 @@ const validateObjectStructure = (obj, format) => {
       }
 
       //get present fields and their values
-      let fields = Object.keys(val).map(key => ({
+      const fields = Object.keys(val).map(key => ({
         name: key,
         presentValue: val[key],
         present: true
@@ -268,7 +267,7 @@ const validateObjectStructure = (obj, format) => {
     //array validation validates types of all indexes and length
     array: (val, format) =>
       //is of type array
-      (val instanceof Array) &&
+      val instanceof Array &&
 
         //minimum and maxmimum length is correct
         (! format.hasOwnProperty("minLength") || val.length >= format.minLength) &&

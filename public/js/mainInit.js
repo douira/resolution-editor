@@ -1,5 +1,3 @@
-/*jshint browser: true, jquery: true */
-
 //sets the state of a class (adding or removing)
 $.fn.classState = function(state, className) {
   //add or remove class depending on flag value
@@ -53,6 +51,7 @@ $(document).ready(function() {
 
 //check for old browser and alert
 if (typeof Array.prototype.find !== "function") {
+  //eslint-disable-next-line no-alert
   alert("You are using an outdated browser and we strongly encourage you to update" +
         " it immediately. Because of that, this website may not work as expected" +
         " or not at all and you may face security issues (not just with this website," +

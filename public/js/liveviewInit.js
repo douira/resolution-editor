@@ -1,4 +1,3 @@
-/*jshint browser: true, jquery: true */
 /*global
 startLiveviewWS,
 getTimeText,
@@ -95,8 +94,9 @@ const applyDocumentChange = (resolution, path, content) => {
           //get element with selector
           currentElem = elementFinder(currentElem);
         }
-      } //is a number and needs to be within length of elements
-      else if (typeof pathProp === "number" && pathProp < currentElem.length) {
+      } else if (typeof pathProp === "number" && pathProp < currentElem.length) {
+        //is a number and needs to be within length of elements
+
         //select nth element using given index
         currentElem = currentElem.eq(pathProp);
       } else {
@@ -206,28 +206,25 @@ const updateLastAmdList = () => {
       if (amdItem) {
         //unhide element
         amdElem.removeClass("hide-this");
+
+        //set time text in display element
+        amdElem.find(".item-age").text(getTimeText((Date.now() - amdItem.timestamp) / 1000, "ago"));
+
+        //get the apply status
+        const applyStatus = amdItem.saveType === "apply";
+
+        //apply attributes of item to display element
+        amdElem.find(".item-sponsor").text(amdItem.sponsor);
+        amdElem.find(".item-clause").text(amdItem.clauseIndex + 1); //convert to 1-start counting
+        amdElem.find(".item-action").text(amdActionTexts[amdItem.type]);
+        const itemStatus = amdElem.find(".item-status").text(applyStatus ? "Accepted" : "Rejected");
+
+        //apply color class to accepted/rejected text
+        itemStatus.classState(applyStatus, "green-text").classState(! applyStatus, "red-text");
       } else {
         //nothing there, hide element
         amdElem.addClass("hide-this");
-
-        //continue to next element
-        continue;
       }
-
-      //set time text in display element
-      amdElem.find(".item-age").text(getTimeText((Date.now() - amdItem.timestamp) / 1000, "ago"));
-
-      //get the apply status
-      const applyStatus = amdItem.saveType === "apply";
-
-      //apply attributes of item to display element
-      amdElem.find(".item-sponsor").text(amdItem.sponsor);
-      amdElem.find(".item-clause").text(amdItem.clauseIndex + 1); //convert to 1-start counting
-      amdElem.find(".item-action").text(amdActionTexts[amdItem.type]);
-      const itemStatus = amdElem.find(".item-status").text(applyStatus ? "Accepted" : "Rejected");
-
-      //apply color class to accepted/rejected text
-      itemStatus.classState(applyStatus, "green-text").classState(! applyStatus, "red-text");
     }
   }
 };
@@ -263,8 +260,9 @@ const render = () => {
 
       //add it the end of the resolution
       opClauses.push(amendment.newClause);
-    } //add new clause after index of targeted clause as replacement
-    else if (amendment.type === "replace") {
+    } else if (amendment.type === "replace") {
+      //add new clause after index of targeted clause as replacement
+
       //make the new clause a replacement clause so it's rendered as one
       amendment.newClause.isReplacement = true;
 

@@ -1,4 +1,3 @@
-/*jshint esversion: 6, node: true, mocha: true, expr: true*/
 const { expect } = require("chai");
 const tokenProcessor = require("../lib/token");
 const credentials = require("../lib/credentials");

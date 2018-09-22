@@ -1,4 +1,3 @@
-/*jshint browser: true, jquery: true */
 /*global
 firstItem,
 updateList,
@@ -34,7 +33,7 @@ $(document).ready(() => {
     firstItemPdfStage = newStage;
 
     //switch to stage
-    switch(firstItemPdfStage) {
+    switch (firstItemPdfStage) {
       case "unrendered":
         printBtnText.text("Hover to Generate PDF");
         printBtnIcon.text("refresh");

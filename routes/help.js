@@ -1,4 +1,3 @@
-/*jshint esversion: 6, node: true */
 const express = require("express");
 const router = module.exports = express.Router();
 const resolutionFormat = require("../public/js/resolutionFormat");
@@ -76,7 +75,7 @@ router.use("/feedback/list", (req, res, next) =>
 //GET display all feedback with booklet rights
 router.get("/feedback/list", (req, res) =>
   //get all feedback from db
-  feedbackCollection.find({}, { sort: [ "timestamp" ]}).toArray().then(messages => {
+  feedbackCollection.find({}, { sort: ["timestamp"]}).toArray().then(messages => {
     //respond with rendered list of feedback items
     res.render("feedbacklist", {
       //format all timestamps

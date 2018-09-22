@@ -1,4 +1,3 @@
-/*jshint browser: true, jquery: true */
 /*exported startLiveviewWS, sendJsonLV*/
 /* global
 makeAlertMessage,
@@ -147,7 +146,7 @@ const startWS = (isViewer, updateListener) => {
         makeAlertMessage("error_outline", "Received Error", "ok", "The server has reponded with" +
                          ` an error: ${data.errorMsg}`, "liveview_client_got_server_error");
         break;
-      case "ackInit": //both, get access token for auth
+      case "ackInit": { //both, get access token for auth
         //get token from data, we are now ready to send and receive data
         accessToken = data.accessToken;
 
@@ -170,6 +169,7 @@ const startWS = (isViewer, updateListener) => {
         //work on emptying queue now that an access token has been received
         sendJsonLV();
         break;
+      }
       case "editorReplaced": //viewer
         displayToast("LV: Editor replaced");
         break;

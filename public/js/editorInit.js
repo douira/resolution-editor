@@ -1,4 +1,3 @@
-/*jshint browser: true, jquery: true */
 /*global
   loadFilePick,
   generatePdf,
@@ -692,9 +691,6 @@ const registerEventHandlers = loadedData => {
     const amdNoSelectionMsg = $("#amd-no-selection");
     const amdTypeSelect = $("#amd-type-select-box");
 
-    //define here for satisfaction of declaraton order prettiness
-    let updateAmd;
-
     //if it is ok to reject or apply the amendment right now
     let amdActionBtnsEnabled = false;
 
@@ -849,7 +845,7 @@ const registerEventHandlers = loadedData => {
     //resets the amendment display with the current type and selected clause
     //also shows the no selection message if no clause is selected or the
     //selected clause has been removed in the mean time
-    updateAmd = sendNoUpdate => {
+    const updateAmd = sendNoUpdate => {
       //trigger edit inactive on the current selection to avoid removing the eabs
       amdClauseListSelection.find(".clause").trigger("editInactive");
 
@@ -860,8 +856,9 @@ const registerEventHandlers = loadedData => {
       if (amdActionType === "add") {
         //add clause is first op clause, id is modified later and
         amdOrigClause = $("#op-clauses").children(".clause-list").children(".clause").eq(0);
-      } //show no-selection-message if no clause is selected
-      else if (! amdOrigClause.length) {
+      } else if (! amdOrigClause.length) {
+        //show no-selection-message if no clause is selected
+
         //show message and hide amd clause container
         amdClauseWrapper.hide();
         amdNoSelectionMsg.show();
@@ -935,8 +932,9 @@ const registerEventHandlers = loadedData => {
       if (amdActionType === "add" || amdActionType === "replace") {
         //by triggering the reset event
         amdClauseElem.trigger("reset");
-      } //change is the only other action type that doesn't reset the clause
-      else if (amdActionType === "change") {
+      } else if (amdActionType === "change") {
+        //change is the only other action type that doesn't reset the clause
+
         //re-init the autocompleting phrase field
         amdClauseElem.find(".phrase-input").trigger("init");
       }
@@ -1346,7 +1344,7 @@ const registerEventHandlers = loadedData => {
       //autocomplete options for the input field
       autocompleteOptions: $.extend({
         //have it use the correct autocomplete data
-        data: loadedData.simpleCountryList,
+        data: loadedData.simpleCountryList
 
         //don't send content updates for header information
 
@@ -2107,7 +2105,7 @@ $(document).ready(() => {
         //mark with validation signs
         fields.forEach((e, index) =>
           //take individual value into consideration, all invalid if none positive
-          setFieldState(e, values[index] > 0 || (anyPositive && ! values[index]))
+          setFieldState(e, values[index] > 0 || anyPositive && ! values[index])
         );
 
         //check that there is at least one ok value and no bad value
@@ -2333,7 +2331,7 @@ $(document).ready(() => {
         "#main-spon,#co-spon,#amd-spon": "countryMapping", //only reference
         "#forum-name": loadedData.forumMapping, //use mapping object
         "#preamb-clauses .phrase-input": loadedData.phrases.preamb,
-        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": "opPhrases",
+        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": "opPhrases"
       };
 
       //data used to inititalize autocomplete fields/thingies and their other options
@@ -2341,7 +2339,7 @@ $(document).ready(() => {
         "#main-spon,#amd-spon": "countryAutofill", //only reference
         "#forum-name": loadedData.forumAutofill,
         "#preamb-clauses .phrase-input": convertPropObj(loadedData.phrases.preamb),
-        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": "opPhrasesConverted",
+        "#op-clauses .phrase-input,#amd-clause-wrapper .phrase-input": "opPhrasesConverted"
       }; //co sponsor chips gets data on its own
 
       //register all event handlers

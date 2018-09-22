@@ -1,4 +1,3 @@
-/*jshint esversion: 6, node: true */
 const express = require("express");
 const router = module.exports = express.Router();
 
@@ -109,7 +108,7 @@ router.get("/new", (req, res) =>
       token: token, //identifier
       created: timeNow, //time of creation
       changed: timeNow, //last time it was changed = saved, stage advances don't count
-      stageHistory: [ timeNow ], //index is resolution stage, time when reached that stage
+      stageHistory: [timeNow], //index is resolution stage, time when reached that stage
       lastRender: 0, //logs pdf render events
       lastLiveview: 0, //last time a liveview session happened with this resolution
       stage: 0, //current workflow stage (see phase 2 notes)
@@ -336,7 +335,7 @@ routingUtil.getAndPost(router, "/advance/:token", (req, res) =>
       //add whole thing to query
       query.$set = {
         //set result depending on which vote this is
-        [ "voteResults." + voteType]: voteResults
+        ["voteResults." + voteType]: voteResults
       };
     } else if (resDoc.stage === 6 || resDoc.stage === 10) {
       //needed vote results but got none

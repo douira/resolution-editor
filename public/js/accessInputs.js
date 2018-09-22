@@ -1,4 +1,3 @@
-/*jshint browser: true, jquery: true */
 /*exported registerAccessInputs*/
 
 //deals with UI for input of token and access codes
@@ -83,7 +82,7 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
   }
 
   //both field elements
-  let fieldElems = (fields.code.elem || $()).add(fields.token.elem || $());
+  const fieldElems = (fields.code.elem || $()).add(fields.token.elem || $());
 
   //true if all fields are valid
   let allOk = false;
@@ -103,8 +102,8 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
     }
 
     //add or remove class
-    element[isValid ? "removeClass" : "addClass"]("invalid")
-      [isValid ? "addClass" : "removeClass"]("valid");
+    element[isValid ? "removeClass" : "addClass"]("invalid")[
+      isValid ? "addClass" : "removeClass"]("valid");
   };
 
   //updates the button state after checking the validation state of both fields
@@ -137,7 +136,7 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
       //to make url path, find opt with that selector and return its specified url
       const buttonUrl = submitOptions.find(opt => elem.is(opt.selector)).url +
         (typeof presetToken === "undefined" ?
-         (fields.token.elem ? fields.token.elem.val() : "") : presetToken);
+          fields.token.elem ? fields.token.elem.val() : "" : presetToken);
 
       //send combined get and post request with token and code (if there is a code)
       //use only get request if no code given
@@ -177,7 +176,7 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
       //if called on more than one element
       if (this.length > 1) {
         //call seperately on all other elements
-        for (let i = 0; i < this.length - 2; i++) {
+        for (let i = 0; i < this.length - 2; i ++) {
           //call with current element and same event data
           onFieldActivity.call(this[i], e);
         }
@@ -225,10 +224,10 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
           if (checkedValues[value] === null) {
             //just wait
             return;
-          } else {
-            //apply state with previously gotten validation answer
-            setInputValidState(elem, checkedValues[value], fieldId);
           }
+
+          //apply state with previously gotten validation answer
+          setInputValidState(elem, checkedValues[value], fieldId);
         } else { //ask server
           //make non displaying but invalid because we're waiting for a response
           elem.removeClass("valid invalid");

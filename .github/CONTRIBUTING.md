@@ -12,11 +12,11 @@ Including but not limited to the following:
 - use semicolons where possible
 - name JS stuff and events in lowerCamelCase and pug IDs and classes with-hyphenation.
 - JSON is also to be formatted appropriately (unless never looked at), use an online formatter if necessary
-- Use JSHint with the given configuration file to validate your code before committing (and remove all errors!)
+- Use ESLint with the given configuration file to validate your code before committing (and remove all errors!)
 - HoundCi checks that all pull requests comply with the linting rules
 - JS version is ES5 in browsers (so it's still mostly ok with IE10) and latest stable feature set in node.js (so without harmony flag) This will change when Materialize is updated to 1.0 and support for non-ES6 browsers will be dropped!
 - enable bitwise operators and other special options per-file
-- each js file must include a jsHint header to specify its use in browser or server
+- client js files may have to declare globals imported from other files loaded or exported for other files. Even if an exported variable is used also used within the same file it should be declared as exported.
 
 Typo fixes or small bugs are worthy of an issue too. So, if you find any bug that doesn't already have an issue, report it!
 

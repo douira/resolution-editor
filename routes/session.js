@@ -1,4 +1,3 @@
-/*jshint esversion: 6, node: true */
 const express = require("express");
 const router = module.exports = express.Router();
 const routingUtil = require("../lib/routingUtil");
@@ -49,7 +48,7 @@ router.post("/open", function(req, res) {
     req.session.doc.isSessionDoc = true;
 
     //redirect to where the get query param backto refers to, use main page as default
-    res.redirect((req.query && req.query.backto) || "/");
+    res.redirect(req.query && req.query.backto || "/");
   });
 });
 

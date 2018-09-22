@@ -1,4 +1,3 @@
-/*jshint esversion: 6, node: true */
 const express = require("express");
 const path = require("path");
 const compression = require("compression");
@@ -117,7 +116,7 @@ app.use((req, res) => {
 
 //general error handler, express needs the error handler signature to be exactly like this!
 //the default error page is displayed too sometimes though, when worse errors happen
-app.use((err, req, res, next) => { //jshint ignore: line
+app.use((err, req, res, next) => {
   //render the error page
   res.status(err.status || 500);
   res.render("error", {

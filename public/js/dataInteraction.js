@@ -1,4 +1,3 @@
-/*jshint browser: true, jquery: true */
 /* global makeAlertMessage,
   checkRequiredFields,
   changesSaved:true,
@@ -66,7 +65,7 @@ const validateFields = (noAlert = false) => {
 //returns the maximum subclause depth found in given clause list (top list is non-sub)
 const getMaxSubclauseDepth = (clauseList, depthOffset = -1) => {
   //increment with deeper level, at 0 on default
-   depthOffset ++;
+  depthOffset ++;
 
   //maximum depth for all clauses in list
   return Math.max.apply(null, clauseList.map(clause => {
@@ -74,9 +73,10 @@ const getMaxSubclauseDepth = (clauseList, depthOffset = -1) => {
     if (clause.hasOwnProperty("sub")) {
       //recurse
       return getMaxSubclauseDepth(clause.sub, depthOffset);
-    } else {
-      return depthOffset;
     }
+
+    //contributes 0 depth
+    return depthOffset;
   }));
 };
 
@@ -88,6 +88,8 @@ const validateEditorData = obj => {
     return getMaxSubclauseDepth(clauses.preambulatory) <= allowedSubclauseDepth.preamb &&
            getMaxSubclauseDepth(clauses.operative) <= allowedSubclauseDepth.op;
   }
+
+  //failed format check
   return false;
 };
 
@@ -601,7 +603,7 @@ $.fn.getContentPath = function() {
   elem.attr("data-path-id", nextPathId);
 
   //cache the path and increment for next path cache operation
-  pathCache[nextPathId++] = path;
+  pathCache[nextPathId ++] = path;
 
   //return calculated path
   return path;

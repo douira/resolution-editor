@@ -1,4 +1,3 @@
-/*jshint browser: true, jquery: true */
 /*exported firstItem, updateList, updateListConfig, queueElems*/
 /*global displayToast, makeAlertMessage, getTimeText*/
 
@@ -46,9 +45,9 @@ const setBasicAttribs = (data, elem) => {
 const setPageAmount = (selector, pageAmount, names) => {
   //get item and set page amount in label if set
   $(selector).text(
-    (pageAmount && pageAmount +
-      (names ? " " + (pageAmount === 1 ? names[0] : names[1]) : "") //correct plural
-    ) || "? " + names[1]
+    pageAmount && pageAmount +
+      //correct plural
+      (names ? " " + (pageAmount === 1 ? names[0] : names[1]) : "") || "? " + names[1]
   );
 };
 

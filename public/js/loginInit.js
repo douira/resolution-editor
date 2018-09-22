@@ -1,4 +1,3 @@
-/*jshint browser: true, jquery: true */
 /*global registerAccessInputs*/
 
 //on document ready

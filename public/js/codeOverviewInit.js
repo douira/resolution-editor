@@ -1,4 +1,3 @@
-/*jshint browser: true, jquery: true */
 /*global makeAlertMessage*/
 
 //gets the value of the selector (false returned if bad value or none selected)

@@ -1,4 +1,3 @@
-/*jshint esversion: 6, node: true */
 const express = require("express");
 const router = module.exports = express.Router();
 const routingUtil = require("../lib/routingUtil");
@@ -26,7 +25,7 @@ router.use("/overview", (req, res, next) =>
 //GET display overview of all resolutions
 router.get("/overview", (req, res) => {
   //check if the archive was requested
-  const useArchive = req.query.archive == "1"; //jshint ignore: line
+  const useArchive = req.query.archive == "1"; // eslint-disable-line eqeqeq
 
   //aggregate resolutions, use archive if get flag set
   (useArchive ? resolutionArchive : resolutions).aggregate([
@@ -401,9 +400,9 @@ router.get("/print", (req, res) => res.render("printqueue"));
 
 //maps the stage history entry from it's nexted form to a property
 //also moves the address to a top level property
-const mapListItems = (items, stageHistoryIndex, forums) => {
+const mapListItems = (items, stageHistoryIndex, forums) =>
   //map items and return modified
-  return items.map(i => {
+  items.map(i => {
     //set new property with value at index
     i.waitTime = i.stageHistory[stageHistoryIndex];
 
@@ -428,7 +427,6 @@ const mapListItems = (items, stageHistoryIndex, forums) => {
     //return original object
     return i;
   });
-};
 
 //POST return list of items to be printed
 router.get("/print/getitems", (req, res) =>
@@ -437,7 +435,7 @@ router.get("/print/getitems", (req, res) =>
     stage: 4,
     $nor: [
       { attributes: "noadvance" },
-      { attributes: "static" },
+      { attributes: "static" }
     ]
   }).project({
     //project to only transmit necessary data, basically only want meta data
@@ -474,7 +472,7 @@ router.get("/fcqueue/getitems", (req, res) =>
     stage: 3,
     $nor: [
       { attributes: "noadvance" },
-      { attributes: "static" },
+      { attributes: "static" }
     ]
   }).project({
     //only need some data
@@ -498,7 +496,7 @@ router.use("/booklet", (req, res, next) =>
 //booklet creation and selection page
 router.get("/booklet", (req, res) => {
   //parse year or take current as default
-  const year = (req.query && parseInt(req.query.year)) || new Date().getFullYear();
+  const year = req.query && parseInt(req.query.year) || new Date().getFullYear();
 
   //query all booklets of the current year
   booklets.find({

@@ -1,4 +1,3 @@
-/*jshint browser: true, jquery: true */
 /*global makeAlertMessage, displayToast*/
 
 //gets the enclosing resolution collection item
@@ -147,7 +146,7 @@ $(document).ready(() => {
   //checks if objects are the same, expects structure to stay identical
   const objectsDiffer = (a, b) => {
     //check all props
-    for (let prop in a) {
+    for (const prop in a) {
       //get values of prop
       const aValue = a[prop];
       const bValue = b[prop];
