@@ -304,7 +304,7 @@
     "quote-props": "off",
     "quotes": "off",
     "radix": "error",
-    "require-atomic-updates": "off",
+    "require-atomic-updates": "warn",
     "require-await": "error",
     "require-jsdoc": "off",
     "require-unicode-regexp": "off",
