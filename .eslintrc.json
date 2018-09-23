@@ -245,8 +245,13 @@
     "no-throw-literal": "error",
     "no-undef-init": "error",
     "no-undefined": "warn",
-    "no-underscore-dangle": "off",
-    "no-unmodified-loop-condition": "off",
+    "no-underscore-dangle": [
+      "warn",
+      {
+        "allow": ["_id"]
+      }
+    ],
+    "no-unmodified-loop-condition": "warn",
     "no-unneeded-ternary": [
       "warn",
       {
@@ -279,7 +284,7 @@
       "always",
       { "objectsInObjects": false }
     ],
-    "object-shorthand": "off",
+    "object-shorthand": "warn",
     "one-var": "off",
     "one-var-declaration-per-line": "off",
     "operator-assignment": "off",

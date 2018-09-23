@@ -53,7 +53,7 @@ router.get("/overview", (req, res) => {
     }}
   ]).toArray().then(items => {
     //send data to client
-    res.render("listoverview", { items: items, isArchive: useArchive, comMode: false });
+    res.render("listoverview", { items, isArchive: useArchive, comMode: false });
   }, err => issueError(req, res, 500, "could not query resolution in overview", err));
 });
 
@@ -107,7 +107,7 @@ router.get("/forum/:forumNameId", (req, res) => {
         }}
       ]).toArray().then(items => {
         //display listoverview with resolutions
-        res.render("listoverview", { items: items, forumMode: true, forumName });
+        res.render("listoverview", { items, forumMode: true, forumName });
       });
     } else {
       //bad, make an error
@@ -167,8 +167,8 @@ router.get("/codes", (req, res) =>
     
     //display code overview page
     res.render("codeoverview", {
-      codes: codes,
-      latestCodes: latestCodes,
+      codes,
+      latestCodes,
       sessionCode: req.session.code
     });
   }, err => issueError(req, res, 500,
@@ -283,7 +283,7 @@ router.post("/codes/:action", (req, res) => {
         //use names a already given objects in codes
         codesArr = codesArr
           .filter(name => typeof name === "string")
-          .map(name => ({ name: name }));
+          .map(name => ({ name }));
       } else {
         //init empty
         codesArr = [];
@@ -502,7 +502,7 @@ router.get("/booklet", (req, res) => {
   //query all booklets of the current year
   booklets.find({
     //use current year as default
-    year: year
+    year
   }).toArray().then(
     //display booklet select page with all found booklets
     booklets => res.render("bookletselect", { booklets, year }),
@@ -600,7 +600,7 @@ router.get("/booklet/edit/:id", (req, res) => {
 
       //render info and edit page for booklet
       res.render("bookletinfo", {
-        booklet: booklet,
+        booklet,
         resolutions: eligibleResolutions
       });
     },
@@ -698,7 +698,7 @@ router.get("/booklet/renderpdf/:id", (req, res) =>
               //save number of pages in booklet and unset unrendered changes
               booklets.updateOne({ _id: booklet._id }, {
                 $set: {
-                  pageAmount: pageAmount,
+                  pageAmount,
                   unrenderedChanges: false
                 }
               }).catch( //not interested in result

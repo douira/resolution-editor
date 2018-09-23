@@ -74,7 +74,7 @@ router.get("/getaccess/" + credentials.makeCodesSuffix, function(req, res) {
         //make a new valid code
         resUtil.makeNewThing(req, res, false).then(code =>
           //add to the database
-          access.insertOne({ level: "MA", code: code }).then(
+          access.insertOne({ level: "MA", code }).then(
             //respond with code as content
             () => res.send("MA: " + code),
             err => issueError(req, res, 500, "Error inserting getaccess code", err))

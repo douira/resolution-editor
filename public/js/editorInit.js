@@ -1609,7 +1609,7 @@ const registerEventHandlers = loadedData => {
       //log to server for info
       if (! phrases) {
         log({
-          phrases: phrases,
+          phrases,
           clauseType: elem.attr("data-clause-type"),
           phraseNames: Object.keys(loadedData.phrases),
           clauseElem: elem
@@ -2144,7 +2144,7 @@ $(document).ready(() => {
     $.getJSON("/extData")
     .fail((xhr, status, error) => {
       //log the error we have with getting the data
-      log({ msg: "error loading autofill data", status: status, err: error });
+      log({ msg: "error loading autofill data", status, err: error });
       makeAlertMessage(
         "error_outline", "Error loading necessary data!", "ok",
         "Failed to download data! Check the console for more info." +

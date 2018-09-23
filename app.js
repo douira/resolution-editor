@@ -59,7 +59,7 @@ app.use(session({
   saveUninitialized: false,
   //rolling: true, //reset ttl on every opening of a page
   store: new MongoStore({
-    dbPromise: dbPromise, //pass the already created mongodb connection promise
+    dbPromise, //pass the already created mongodb connection promise
     autoRemove: "disabled", //we implement our own removal index in database.js
     collection: "sessions", //make sure this collection is used
 
@@ -111,7 +111,7 @@ app.use((req, res) => {
   res.status(err.status);
   res.render("error", {
     error: err,
-    devEnv: devEnv
+    devEnv
   });
 });
 
@@ -122,7 +122,7 @@ app.use(function(err, req, res, next) { //eslint-disable-line no-unused-vars
   res.status(err.status || 500);
   res.render("error", {
     error: err,
-    devEnv: devEnv
+    devEnv
   });
 
   //log error with logger

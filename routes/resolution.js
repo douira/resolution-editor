@@ -58,8 +58,8 @@ router.get("/renderpdf/:token", (req, res) =>
         //check if the page amount could be determined
         if (pageAmount) {
           //put in database for work queue display
-          resolutions.updateOne({ token: token }, {
-            $set: { pageAmount: pageAmount }
+          resolutions.updateOne({ token }, {
+            $set: { pageAmount }
           }).catch( //not interested in result
             err => logger.error("could not update page amount", { stack: err.stack })
           );
@@ -85,7 +85,7 @@ router.get("/renderplain/:token", (req, res) =>
     //respond with plaintext form of resolution
     res.render("plainview", {
       data: resUtil.renderPlaintext(document),
-      token: token
+      token
     });
   })
 );
@@ -105,7 +105,7 @@ router.get("/new", (req, res) =>
 
     //put new resolution into database
     resolutions.insertOne({
-      token: token, //identifier
+      token, //identifier
       created: timeNow, //time of creation
       changed: timeNow, //last time it was changed = saved, stage advances don't count
       stageHistory: [timeNow], //index is resolution stage, time when reached that stage
@@ -140,13 +140,13 @@ router.post("/save/:token", (req, res) =>
 
       //save document
       .then(() => resolutions.updateOne(
-        { token: token },
+        { token },
         {
           $set: {
             content: resolutionSent, //update resolution content
             changed: Date.now(), //update changedate
             unrenderedChanges: true, //must be rendered
-            plenaryId: plenaryId
+            plenaryId
           },
           $max: {
             stage: 1 //first saved stage at least
@@ -225,7 +225,7 @@ router.post("/setattribs/:token", (req, res) => {
       ["none", "noadvance", "readonly", "static"].includes(req.body.attrib)) {
     //set to new value in database
     resolutions.updateOne(
-      { token: token },
+      { token },
       {
         $set: {
           //set attrib string as found in post body
@@ -247,7 +247,7 @@ router.post("/delete/:token", (req, res) => {
   const token = req.params.token;
 
   //remove resolution with that token by moving to the archive
-  resolutions.findOne( { token: token } )
+  resolutions.findOne( { token } )
     .then(resDoc => Promise.all([
       resolutionArchive.insertOne(resDoc), resolutions.deleteOne({ token })
     ]))
@@ -264,7 +264,7 @@ routingUtil.getAndPost(router, "/liveview/:token", (req, res) =>
     (token, resDoc, codeDoc) =>
       //send rendered editor page with token set
       res.render("liveview", {
-        token: token,
+        token,
         code: codeDoc.code,
         accessLevel: codeDoc.level,
         stage: resDoc.stage
@@ -368,11 +368,11 @@ routingUtil.getAndPost(router, "/advance/:token", (req, res) =>
         query.$set.unrenderedChanges = true;
 
         //execute query and return resulting promise
-        return resolutions.updateOne({ token: token }, query);
+        return resolutions.updateOne({ token }, query);
       }) :
 
       //execute and return query without adding resolution id
-      resolutions.updateOne({ token: token }, query)
+      resolutions.updateOne({ token }, query)
     )
 
     //redirect to editor without code, prevent form resubmission
