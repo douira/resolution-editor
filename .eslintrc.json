@@ -287,9 +287,12 @@
     "object-shorthand": "warn",
     "one-var": "off",
     "one-var-declaration-per-line": "off",
-    "operator-assignment": "off",
-    "operator-linebreak": "off",
-    "padded-blocks": "off",
+    "operator-assignment": "error",
+    "operator-linebreak": "warn",
+    "padded-blocks": [
+      "warn",
+      "never"
+    ],
     "padding-line-between-statements": "error",
     "prefer-arrow-callback": "off",
     "prefer-const": "warn",
