@@ -260,9 +260,8 @@
         "allowTaggedTemplates": true
       }
     ],
-
     "no-unused-vars": "off",
-    "no-use-before-define": "off",
+    "no-use-before-define": "warn",
     "no-useless-call": "off",
     "no-useless-computed-key": "error",
     "no-useless-concat": "error",

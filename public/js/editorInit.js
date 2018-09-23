@@ -712,6 +712,115 @@ const registerEventHandlers = loadedData => {
       applyAmdBtn.disabledState(! amdActionBtnsEnabled);
     };
 
+    //resets the amendment display with the current type and selected clause
+    //also shows the no selection message if no clause is selected or the
+    //selected clause has been removed in the mean time
+    const updateAmd = sendNoUpdate => {
+      //trigger edit inactive on the current selection to avoid removing the eabs
+      amdClauseListSelection.find(".clause").trigger("editInactive");
+
+      //empty clause wrapper to remove any leftover from last amd display
+      amdClauseWrapper.empty();
+
+      //use new clause as selection if add type
+      if (amdActionType === "add") {
+        //add clause is first op clause, id is modified later and
+        amdOrigClause = $("#op-clauses").children(".clause-list").children(".clause").eq(0);
+      } else if (! amdOrigClause.length) {
+        //show no-selection-message if no clause is selected
+
+        //show message and hide amd clause container
+        amdClauseWrapper.hide();
+        amdNoSelectionMsg.show();
+      }
+
+      //displayable if a clause is given
+      amdDisplayable = amdOrigClause.length === 1;
+
+      //stop if not displayable
+      if (! amdDisplayable) {
+        //update action buttons
+        updateActionBtnState();
+        return;
+      }
+
+      //hide select message
+      amdNoSelectionMsg.hide();
+
+      //show clause container
+      amdClauseWrapper.show();
+
+      //move into amendment display section
+      amdClauseListSelection = amdOrigClause
+        //prevent cloning of eabs
+        .trigger("editInactive")
+
+        //clone the parent list, clause needs to be in list to make subclauses
+        .parent(".clause-list")
+
+        //clone clause list
+        .clone(true, true);
+
+      //extract add clause container
+      const addClauseContainer = amdClauseListSelection
+        .children(".add-clause-container")
+        .clone(true, true);
+
+      //and empty
+      amdClauseListSelection
+        .empty()
+
+        //re-add the single clause we want
+        .append(amdOrigClause.clone(true, true))
+
+        //re-add clause container
+        .append(addClauseContainer)
+
+        //insert prepared list into wrapper
+        .appendTo(amdClauseWrapper);
+
+      //reinit tooltips on cloned elements
+      amdClauseListSelection.cleanupClonedTooltips();
+
+      //preselect main clause
+      amdClauseElem = amdClauseListSelection.children(".clause");
+
+      //disable if in remove mode to prevent editing, only display what will be removed
+      if (amdActionType === "remove") {
+        //by adding the disabled class the all contained input fields and textarea inputs
+        amdClauseListSelection.find("input,textarea").attr("disabled", "");
+
+        //mark clause as a whole as disabled, flag for event handlers of clause
+        amdClauseElem.addClass("disabled-clause");
+      } else {
+        //reset to normal state if not remove type
+        amdClauseListSelection.find("input,textarea").removeAttr("disabled");
+        amdClauseElem.removeClass("disabled-clause");
+      }
+
+      //reset (and thereby empty) if add or replace type
+      if (amdActionType === "add" || amdActionType === "replace") {
+        //by triggering the reset event
+        amdClauseElem.trigger("reset");
+      } else if (amdActionType === "change") {
+        //change is the only other action type that doesn't reset the clause
+
+        //re-init the autocompleting phrase field
+        amdClauseElem.find(".phrase-input").trigger("init");
+      }
+
+      //activate new amendment clause
+      amdClauseElem.trigger("editActive");
+
+      //update actions buttons now that clause is present
+      updateActionBtnState();
+
+      //send amendment update if allowed
+      if (! sendNoUpdate) {
+        sendLVUpdate("amendment");
+      }
+    };
+
     //send a saveAmd message abd then resets the amd display
     const saveAmd = saveType => {
       //validation has already been done, get amd update object
@@ -840,115 +949,6 @@ const registerEventHandlers = loadedData => {
 
       //return object
       return amdUpdate;
-    };
-
-    //resets the amendment display with the current type and selected clause
-    //also shows the no selection message if no clause is selected or the
-    //selected clause has been removed in the mean time
-    const updateAmd = sendNoUpdate => {
-      //trigger edit inactive on the current selection to avoid removing the eabs
-      amdClauseListSelection.find(".clause").trigger("editInactive");
-
-      //empty clause wrapper to remove any leftover from last amd display
-      amdClauseWrapper.empty();
-
-      //use new clause as selection if add type
-      if (amdActionType === "add") {
-        //add clause is first op clause, id is modified later and
-        amdOrigClause = $("#op-clauses").children(".clause-list").children(".clause").eq(0);
-      } else if (! amdOrigClause.length) {
-        //show no-selection-message if no clause is selected
-
-        //show message and hide amd clause container
-        amdClauseWrapper.hide();
-        amdNoSelectionMsg.show();
-      }
-
-      //displayable if a clause is given
-      amdDisplayable = amdOrigClause.length === 1;
-
-      //stop if not displayable
-      if (! amdDisplayable) {
-        //update action buttons
-        updateActionBtnState();
-        return;
-      }
-
-      //hide select message
-      amdNoSelectionMsg.hide();
-
-      //show clause container
-      amdClauseWrapper.show();
-
-      //move into amendment display section
-      amdClauseListSelection = amdOrigClause
-        //prevent cloning of eabs
-        .trigger("editInactive")
-
-        //clone the parent list, clause needs to be in list to make subclauses
-        .parent(".clause-list")
-
-        //clone clause list
-        .clone(true, true);
-
-      //extract add clause container
-      const addClauseContainer = amdClauseListSelection
-        .children(".add-clause-container")
-        .clone(true, true);
-
-      //and empty
-      amdClauseListSelection
-        .empty()
-
-        //re-add the single clause we want
-        .append(amdOrigClause.clone(true, true))
-
-        //re-add clause container
-        .append(addClauseContainer)
-
-        //insert prepared list into wrapper
-        .appendTo(amdClauseWrapper);
-
-      //reinit tooltips on cloned elements
-      amdClauseListSelection.cleanupClonedTooltips();
-
-      //preselect main clause
-      amdClauseElem = amdClauseListSelection.children(".clause");
-
-      //disable if in remove mode to prevent editing, only display what will be removed
-      if (amdActionType === "remove") {
-        //by adding the disabled class the all contained input fields and textarea inputs
-        amdClauseListSelection.find("input,textarea").attr("disabled", "");
-
-        //mark clause as a whole as disabled, flag for event handlers of clause
-        amdClauseElem.addClass("disabled-clause");
-      } else {
-        //reset to normal state if not remove type
-        amdClauseListSelection.find("input,textarea").removeAttr("disabled");
-        amdClauseElem.removeClass("disabled-clause");
-      }
-
-      //reset (and thereby empty) if add or replace type
-      if (amdActionType === "add" || amdActionType === "replace") {
-        //by triggering the reset event
-        amdClauseElem.trigger("reset");
-      } else if (amdActionType === "change") {
-        //change is the only other action type that doesn't reset the clause
-
-        //re-init the autocompleting phrase field
-        amdClauseElem.find(".phrase-input").trigger("init");
-      }
-
-      //activate new amendment clause
-      amdClauseElem.trigger("editActive");
-
-      //update actions buttons now that clause is present
-      updateActionBtnState();
-
-      //send amendment update if allowed
-      if (! sendNoUpdate) {
-        sendLVUpdate("amendment");
-      }
     };
 
     //amendment action type selection
