@@ -172,7 +172,7 @@ const handleUnload = () => {
   const client = new XMLHttpRequest();
 
   //set type and url with data (false is for using sync)
-  client.open("GET", "/log?" + $.param(messageObj, false), false);
+  client.open("GET", `/log?${$.param(messageObj, false)}`, false);
 
   //send messages
   client.send(null);

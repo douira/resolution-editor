@@ -88,7 +88,7 @@ $(document).ready(() => {
         elems.printBtn.removeClass("btn-flat").addClass("btn")
 
         //and set url to pdf
-        .attr("href", "/rendered/booklet" + bookletId + ".pdf?c=" + Date.now());
+        .attr("href", `/rendered/booklet${bookletId}.pdf?c=${Date.now()}`);
 
         //set text and icon to display rendering done
         elems.printBtnText.text("View PDF");
@@ -210,7 +210,7 @@ $(document).ready(() => {
     }
 
     //send data to server and return promise
-    return $.post("/list/booklet/save/" + bookletId, currentBookletState).done(() => {
+    return $.post(`/list/booklet/save/${bookletId}`, currentBookletState).done(() => {
       //reset flag
       unsavedChanges = false;
 
@@ -283,7 +283,7 @@ $(document).ready(() => {
       //save first
       saveBooklet().done(() =>
         //ask the server to render
-        $.get("/list/booklet/renderpdf/" + bookletId).always(() =>
+        $.get(`/list/booklet/renderpdf/${bookletId}`).always(() =>
           //finished rendering, sets url
           //on fail: maybe there is a older pdf to look at
           setRenderState("rendered")

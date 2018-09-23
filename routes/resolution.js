@@ -39,7 +39,7 @@ router.get("/renderpdf/:token", (req, res) =>
     }
 
     //url to pdf
-    const pdfUrl = "/rendered/" + token + ".pdf?c=" + Date.now();
+    const pdfUrl = `/rendered/${token}.pdf?c=${Date.now()}`;
 
     //don't render if there hasn't been a save since the last render
     if (! document.unrenderedChanges) {
@@ -118,7 +118,7 @@ router.get("/new", (req, res) =>
       amendments: [] //stores all amendments made to the resolution
     }).then(() => {
       //redirect to editor page (because URL is right then)
-      res.redirect("/resolution/editor/" + token);
+      res.redirect(`/resolution/editor/${token}`);
     }, () => issueError(req, res, 500, "can't create new"));
   })
 );
@@ -207,7 +207,7 @@ router.use(["/setattribs/:token", "/delete/:token"], (req, res, next) =>
     //just make no DB query on auth fail
     permissionMissmatch: token => {
       //just go back to editor
-      res.redirect("/resolution/editor/" + token);
+      res.redirect(`/resolution/editor/${token}`);
     },
 
     //use attribute setting permission set (resticted to MA level)
@@ -234,7 +234,7 @@ router.post("/setattribs/:token", (req, res) => {
       }
     ).then(() => {
       //redirect back to editor page
-      res.redirect("/resolution/editor/" + token);
+      res.redirect(`/resolution/editor/${token}`);
     }, err => issueError(req, res, 500, "can't set attribute", err));
   } else {
     issueError(req, res, 400, "missing or incorrect fields");
@@ -253,7 +253,7 @@ router.post("/delete/:token", (req, res) => {
     ]))
     .then(() => {
       //acknowledge
-      res.send("ok. deleted " + token);
+      res.send(`ok. deleted ${token}`);
   }, err => issueError(req, res, 500, "can't query for delete", err));
 });
 
@@ -295,7 +295,7 @@ routingUtil.getAndPost(router, "/load/:token", (req, res) =>
 //pads with leading zeros (returns a string)
 const padNumber = (number, amount) => {
   //convert to string
-  number = "" + number;
+  number = String(number);
 
   //return 0 repeated until the right length
   return amount < number.length ? number : "0".repeat(amount - number.length) + number;
@@ -322,7 +322,7 @@ routingUtil.getAndPost(router, "/advance/:token", (req, res) =>
         inFavor: parseInt(req.body.inFavor, 10) || 0,
         against: parseInt(req.body.against, 10) || 0,
         abstention: parseInt(req.body.abstention, 10) || 0,
-        importantQuestion: !! req.body.importantQuestion, //convert to boolean
+        importantQuestion: Boolean(req.body.importantQuestion), //convert to boolean
         voteType
       };
 
@@ -335,7 +335,7 @@ routingUtil.getAndPost(router, "/advance/:token", (req, res) =>
       //add whole thing to query
       query.$set = {
         //set result depending on which vote this is
-        ["voteResults." + voteType]: voteResults
+        [`voteResults.${voteType}`]: voteResults
       };
     } else if (resDoc.stage === 6 || resDoc.stage === 10) {
       //needed vote results but got none
@@ -383,7 +383,7 @@ routingUtil.getAndPost(router, "/advance/:token", (req, res) =>
           res.send("ok");
         } else {
           //regular redirect
-          res.redirect("/resolution/editor/" + token);
+          res.redirect(`/resolution/editor/${token}`);
         }
       },
       err => issueError(req, res, 500, "advance db error", err));

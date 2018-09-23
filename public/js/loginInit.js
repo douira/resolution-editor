@@ -5,7 +5,7 @@ $(document).ready(() =>
   //register an access input group for the code input
   registerAccessInputs({
       //continue to /session/open and preserve get query
-      url: "/session/open" + document.location.search,
+      url: `/session/open${document.location.search}`,
       selector: "#login-btn"
     }, "#code-form", {
 

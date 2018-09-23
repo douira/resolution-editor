@@ -247,7 +247,7 @@ const generatePdf = () => {
   const spinner = $("#pdf-wait-spinner").removeClass("hide-this");
 
   //send to server
-  $.get("/resolution/renderpdf/" + resolutionToken)
+  $.get(`/resolution/renderpdf/${resolutionToken}`)
   .done(response => {
     //stop showing spinner
     spinner.addClass("hide-this");
@@ -495,7 +495,7 @@ const saveFileDownload = str => {
     $("<a/>")
       .addClass("waves-effect waves-light btn white-text center-align")
       .attr("download", fileName)
-      .text("Download Resolution: " + fileName)
+      .text(`Download Resolution: ${fileName}`)
       .attr("href", URL.createObjectURL(new Blob([str], { type: "application/json" })))
       .appendTo($("<div class='.clear-and-center'></div>").appendTo(body))
       .on("click", function(e) {

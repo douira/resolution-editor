@@ -25,7 +25,7 @@ const updateListConfig = { };
 //sets the basic attributes of a list item with a given data object
 const setBasicAttribs = (data, elem) => {
   //set token
-  elem.find(".item-token").text(data.token).attr("href", "/resolution/editor/" + data.token);
+  elem.find(".item-token").text(data.token).attr("href", `/resolution/editor/${data.token}`);
 
   //id and year only if present in data
   if (data.idYear && data.resolutionId) {
@@ -47,7 +47,7 @@ const setPageAmount = (selector, pageAmount, names) => {
   $(selector).text(
     pageAmount && pageAmount +
       //correct plural
-      (names ? " " + (pageAmount === 1 ? names[0] : names[1]) : "") || "? " + names[1]
+      (names ? ` ${pageAmount === 1 ? names[0] : names[1]}` : "") || `? ${names[1]}`
   );
 };
 
@@ -207,7 +207,7 @@ $(document).ready(() => {
     e.preventDefault();
 
     //send an advance request to the server
-    $.get("/resolution/advance/" + firstItem.token + "?noui=1").done(() => {
+    $.get(`/resolution/advance/${firstItem.token}?noui=1`).done(() => {
       //make a toast to notify
       displayToast("Advanced Resolution");
 

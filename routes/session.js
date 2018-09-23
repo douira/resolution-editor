@@ -60,7 +60,7 @@ router.get("/logout", (req, res) => {
 });
 
 //GET a master code with the key stored in keys.json
-router.get("/getaccess/" + credentials.makeCodesSuffix, (req, res) => {
+router.get(`/getaccess/${credentials.makeCodesSuffix}`, (req, res) => {
   //try to find a existing MA code
   access.findOne({
     level: "MA"
@@ -69,14 +69,14 @@ router.get("/getaccess/" + credentials.makeCodesSuffix, (req, res) => {
       //if there is a result
       if (result) {
         //respond with gotten code
-        res.send("MA: " + result.code);
+        res.send(`MA: ${result.code}`);
       } else {
         //make a new valid code
         resUtil.makeNewThing(req, res, false).then(code =>
           //add to the database
           access.insertOne({ level: "MA", code }).then(
             //respond with code as content
-            () => res.send("MA: " + code),
+            () => res.send(`MA: ${code}`),
             err => issueError(req, res, 500, "Error inserting getaccess code", err))
         );
       }

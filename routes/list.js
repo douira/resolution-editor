@@ -256,10 +256,10 @@ router.post("/codes/:action", (req, res) => {
             { code: { $in: codes }},
             { $set: { level: setLevel }}
           ).then(() => res.send("ok"), err => {
-            issueError(req, res, 500, "couldn't change specified codes to " + setLevel, err);
+            issueError(req, res, 500, `couldn't change specified codes to ${setLevel}`, err);
           });
         } else {
-          issueError(req, res, 400, "invalid code level set " + setLevel + " for change op");
+          issueError(req, res, 400, `invalid code level set ${setLevel} for change op`);
         }
       }
     } else {
@@ -273,7 +273,7 @@ router.post("/codes/:action", (req, res) => {
       const useLevel = req.body.accessLevel;
       if (! validateAccessLevel(useLevel)) {
         //complain and stop
-        issueError(req, res, 400, "invalid code level set " + useLevel + " for new codes op");
+        issueError(req, res, 400, `invalid code level set ${useLevel} for new codes op`);
         return;
       }
 
@@ -388,7 +388,7 @@ router.post("/codes/:action", (req, res) => {
     }
   } else {
     //error for unhandled (invalid) action type
-    issueError(req, res, 404, "no such code action " + req.params.action);
+    issueError(req, res, 404, `no such code action ${req.params.action}`);
   }
 });
 
@@ -555,7 +555,7 @@ router.get("/booklet/edit/:id", (req, res) => {
     //make sure we found a booklet
     if (! booklet) {
       //error and stop
-      issueError(req, res, 400, "(renderpdf) no booklet exists with id " + req.bookletId);
+      issueError(req, res, 400, `(renderpdf) no booklet exists with id ${req.bookletId}`);
       return;
     }
 
@@ -594,7 +594,7 @@ router.get("/booklet/edit/:id", (req, res) => {
       //make sure we found a booklet
       if (! booklet) {
         //error and stop
-        issueError(req, res, 400, "(edit) no booklet exists with id " + req.bookletId);
+        issueError(req, res, 400, `(edit) no booklet exists with id ${req.bookletId}`);
         return;
       }
 
@@ -604,8 +604,8 @@ router.get("/booklet/edit/:id", (req, res) => {
         resolutions: eligibleResolutions
       });
     },
-    err => issueError(req, res, 500, "could not query booklet with id " + req.bookletId +
-      " or query eligible resolutions for booklet", err)
+    err => issueError(req, res, 500, `could not query booklet with id ${req.bookletId
+      } or query eligible resolutions for booklet`, err)
     );
   });
 });
@@ -619,7 +619,7 @@ router.get("/booklet/renderpdf/:id", (req, res) =>
     //make sure we found a booklet
     if (! booklet) {
       //error and stop
-      issueError(req, res, 400, "(renderpdf) no booklet exists with id " + req.bookletId);
+      issueError(req, res, 400, `(renderpdf) no booklet exists with id ${req.bookletId}`);
       return;
     }
 
@@ -627,7 +627,7 @@ router.get("/booklet/renderpdf/:id", (req, res) =>
     if (! booklet.resolutions.length) {
       //error and stop
       issueError(req, res, 400,
-        "will not render booklet without any resolutions, id " + req.bookletId);
+        `will not render booklet without any resolutions, id ${req.bookletId}`);
       return;
     }
 
@@ -645,7 +645,7 @@ router.get("/booklet/renderpdf/:id", (req, res) =>
         if (results.length !== booklet.resolutions.length) {
           //error and stop
           issueError(req, res, 500,
-            "amount of found and specified resolutions in booklet not equal, id " + req.bookletId);
+            `amount of found and specified resolutions in booklet not equal, id ${req.bookletId}`);
           return;
         }
 
@@ -653,13 +653,13 @@ router.get("/booklet/renderpdf/:id", (req, res) =>
         if (! results.every(r => r.stage >= 7 && r.stage <= 9)) {
           //error and stop
           issueError(req, res, 400,
-            "will not render booklet with resolutions outside of stage range [7, 9], id " +
-            req.bookletId);
+            `will not render booklet with resolutions outside of stage range [7, 9], id ${
+            req.bookletId}`);
           return;
         }
 
         //make url to output pdf
-        const pdfUrl = "/rendered/booklet" + booklet._id + ".pdf?c=" + Date.now();
+        const pdfUrl = `/rendered/booklet${booklet._id}.pdf?c=${Date.now()}`;
 
         //simply return url without rendering if the booklet
         //and all resolutions don't have unrendered changes
@@ -682,7 +682,7 @@ router.get("/booklet/renderpdf/:id", (req, res) =>
         if (! booklet.resolutions.every(res => typeof res === "object" && res.token)) {
           //error and stop
           issueError(req, res, 500,
-            "did not find all resolutions for booklet with id " + req.bookletId);
+            `did not find all resolutions for booklet with id ${req.bookletId}`);
           return;
         }
 
@@ -711,8 +711,8 @@ router.get("/booklet/renderpdf/:id", (req, res) =>
           err => issueError(req, res, 500, "render problem", err)
         );
       },
-      err => issueError(req, res, 500, "could not query resolutions in booklet with id " +
-        req.bookletId, err)
+      err => issueError(req, res, 500, `could not query resolutions in booklet with id ${
+        req.bookletId}`, err)
     );
   })
 );
@@ -745,7 +745,7 @@ router.post("/booklet/save/:id", (req, res) => {
   }).then(
     //send ok when update happens without error
     () => res.send("ok"),
-    err => issueError(req, res, 500, "could not save booklet with id " + req.bookletId, err)
+    err => issueError(req, res, 500, `could not save booklet with id ${req.bookletId}`, err)
   );
 });
 
@@ -757,7 +757,7 @@ router.post("/booklet/new", (req, res) => {
   //validate type to be one of the allowed types and not none
   if (plenaryNames.indexOf(type) <= 0) {
     //error and stop
-    issueError(req, res, 400, "invalid type for new booklet given: " + type);
+    issueError(req, res, 400, `invalid type for new booklet given: ${type}`);
     return;
   }
 
@@ -781,7 +781,7 @@ router.post("/booklet/new", (req, res) => {
     //there must be a valid result
     if (result && result.ops instanceof Array) {
       //redirect to edit page for that booklet
-      res.redirect("/list/booklet/edit/" + result.ops[0]._id);
+      res.redirect(`/list/booklet/edit/${result.ops[0]._id}`);
     } else {
       issueError(req, res, 500, "error after booklet insert: did not get result");
     }

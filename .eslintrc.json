@@ -161,14 +161,7 @@
     "no-extra-parens": "warn",
     "no-extra-semi": "error",
     "no-floating-decimal": "error",
-    "no-implicit-coercion": [
-      "error",
-      {
-        "boolean": false,
-        "number": false,
-        "string": false
-      }
-    ],
+    "no-implicit-coercion": "error",
     "no-implicit-globals": "off",
     "no-implied-eval": "error",
     "no-inline-comments": "off",
@@ -305,10 +298,9 @@
     "prefer-numeric-literals": "error",
     "prefer-object-spread": "off",
     "prefer-promise-reject-errors": "warn",
-    "prefer-reflect": "off",
     "prefer-rest-params": "off",
-    "prefer-spread": "off",
-    "prefer-template": "off",
+    "prefer-spread": "warn",
+    "prefer-template": "warn",
     "quote-props": "off",
     "quotes": "off",
     "radix": "error",

@@ -57,7 +57,7 @@ $(document).ready(() => {
 
         //setup button
         printBtn
-          .attr("href", "/rendered/" + useItem.token + ".pdf?c=" + Date.now())
+          .attr("href", `/rendered/${useItem.token}.pdf?c=${Date.now()}`)
           .removeClass("btn-flat")
           .addClass("btn");
         printBtnIcon.text("print");

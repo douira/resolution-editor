@@ -241,7 +241,7 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
 
           //console.log("checked", fieldId, value, e.type);
           //query server for validation
-          $.get("/resolution/checkinput/" + value, responseData => {
+          $.get(`/resolution/checkinput/${value}`, responseData => {
             //set to ok or not
             const valid = responseData.substring(0, 2) === "ok";
             setInputValidState(elem, valid, fieldId);
