@@ -1,5 +1,6 @@
 const express = require("express");
-const router = module.exports = express.Router();
+const router = express.Router();
+module.exports = router;
 const extDataPromise = require("../lib/extData");
 const phrases = require("../public/phrases.json");
 

@@ -260,16 +260,14 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
         //flag as invalid, is too short
         setInputValidState(elem, false, fieldId);
       }
-    } else {
+    } else if (isTokenField) {
       //ok being empty if in code field, because it's optional
-      if (isTokenField) {
-        setInputValidState(fields.token.elem, false, "token");
-      } else if (fields.token.elem) {
-        setInputValidState(fields.code.elem, "onlyToken", "code");
-      } else {
-        //is code field alone
-        setInputValidState(fields.code.elem, false, "code");
-      }
+      setInputValidState(fields.token.elem, false, "token");
+    } else if (fields.token.elem) {
+      setInputValidState(fields.code.elem, "onlyToken", "code");
+    } else {
+      //is code field alone
+      setInputValidState(fields.code.elem, false, "code");
     }
 
     //update button state with current validation state

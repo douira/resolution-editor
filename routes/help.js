@@ -1,5 +1,6 @@
 const express = require("express");
-const router = module.exports = express.Router();
+const router = express.Router();
+module.exports = router;
 const resolutionFormat = require("../public/js/resolutionFormat");
 const phrases = require("../public/phrases.json");
 const { issueError } = require("../lib/logger");

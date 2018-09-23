@@ -1,5 +1,6 @@
 const express = require("express");
-const router = module.exports = express.Router();
+const router = express.Router();
+module.exports = router;
 const routingUtil = require("../lib/routingUtil");
 const credentials = require("../lib/credentials");
 const resUtil = require("../lib/resUtil");

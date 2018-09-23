@@ -21,7 +21,8 @@ const sessionRoute = require("./routes/session");
 const logRoute = require("./routes/log");
 
 //make express app
-const app = module.exports = express();
+const app = express();
+module.exports = app;
 
 //view engine setup
 app.set("views", path.join(__dirname, "views"));

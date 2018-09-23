@@ -1,6 +1,6 @@
 const express = require("express");
-const router = module.exports = express.Router();
-
+const router = express.Router();
+module.exports = router;
 const generatePdf = require("../lib/generatePdf");
 const resUtil = require("../lib/resUtil");
 const routingUtil = require("../lib/routingUtil");
