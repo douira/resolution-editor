@@ -21,10 +21,6 @@
     ],
     "array-bracket-spacing": ["error", "never"],
     "array-callback-return": "warn",
-    "array-element-newline": [
-      "warn",
-      "consistent"
-    ],
     "arrow-body-style": "warn",
     "arrow-parens": ["warn", "as-needed"],
     "arrow-spacing": [
