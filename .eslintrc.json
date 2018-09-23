@@ -188,7 +188,6 @@
     "no-mixed-requires": "error",
     "no-multi-assign": "warn",
     "no-multi-spaces": "warn",
-
     "no-multi-str": "error",
     "no-multiple-empty-lines": [
       "warn",
@@ -202,6 +201,7 @@
     "no-negated-condition": "warn",
     "no-negated-in-lhs": "error",
     "no-nested-ternary": "off",
+
     "no-new": "error",
     "no-new-func": "off",
     "no-new-object": "error",
@@ -248,8 +248,19 @@
     "no-undefined": "off",
     "no-underscore-dangle": "off",
     "no-unmodified-loop-condition": "off",
-    "no-unneeded-ternary": "off",
-    "no-unused-expressions": "off",
+    "no-unneeded-ternary": [
+      "warn",
+      {
+        "defaultAssignment": false
+      }
+    ],
+    "no-unused-expressions": [
+      "warn",
+      {
+        "allowTaggedTemplates": true
+      }
+    ],
+
     "no-unused-vars": "off",
     "no-use-before-define": "off",
     "no-useless-call": "off",

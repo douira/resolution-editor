@@ -322,7 +322,7 @@ routingUtil.getAndPost(router, "/advance/:token", (req, res) =>
         inFavor: parseInt(req.body.inFavor, 10) || 0,
         against: parseInt(req.body.against, 10) || 0,
         abstention: parseInt(req.body.abstention, 10) || 0,
-        importantQuestion: req.body.importantQuestion ? true : false,
+        importantQuestion: !! req.body.importantQuestion, //convert to boolean
         voteType
       };
 
