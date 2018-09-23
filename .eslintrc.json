@@ -159,6 +159,7 @@
     "no-extra-bind": "error",
     "no-extra-label": "error",
     "no-extra-parens": "warn",
+    "no-extra-semi": "error",
     "no-floating-decimal": "error",
     "no-implicit-coercion": [
       "error",
@@ -199,11 +200,9 @@
     ],
     "no-native-reassign": "error",
     "no-negated-condition": "warn",
-    "no-negated-in-lhs": "error",
     "no-nested-ternary": "off",
-
     "no-new": "error",
-    "no-new-func": "off",
+    "no-new-func": "error",
     "no-new-object": "error",
     "no-new-require": "error",
     "no-new-wrappers": "error",
@@ -229,8 +228,8 @@
         "props": false
       }
     ],
-    "no-self-compare": "off",
-    "no-sequences": "off",
+    "no-self-compare": "warn",
+    "no-sequences": "error",
     "no-shadow": "off",
     "no-shadow-restricted-names": "error",
     "no-spaced-func": "error",
@@ -245,7 +244,7 @@
     "no-ternary": "off",
     "no-throw-literal": "error",
     "no-undef-init": "error",
-    "no-undefined": "off",
+    "no-undefined": "warn",
     "no-underscore-dangle": "off",
     "no-unmodified-loop-condition": "off",
     "no-unneeded-ternary": [
