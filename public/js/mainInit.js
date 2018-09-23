@@ -31,7 +31,7 @@ $.fn.triggerAll = function(eventNames, params) {
 };
 
 //navigation collapse
-$(document).ready(function() {
+$(document).ready(() => {
   //init collapsable navbar
   $(".button-collapse").sideNav();
 
@@ -43,7 +43,7 @@ $(document).ready(function() {
 
   //register event handlers
   $("body")
-  .on("touchstart", function() {
+  .on("touchstart", () => {
     //register touch event and remove tooltips for touch-devices
     $(".tooltipped").tooltip("remove");
   });

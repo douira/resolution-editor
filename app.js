@@ -117,7 +117,7 @@ app.use((req, res) => {
 
 //general error handler, express needs the error handler signature to be exactly like this!
 //the default error page is displayed too sometimes though, when worse errors happen
-app.use(function(err, req, res, next) { //eslint-disable-line no-unused-vars
+app.use(function(err, req, res, next) { //eslint-disable-line no-unused-vars, prefer-arrow-callback
   //render the error page
   res.status(err.status || 500);
   res.render("error", {

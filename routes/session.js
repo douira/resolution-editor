@@ -13,7 +13,7 @@ require("../lib/database").fullInit.then(collections => {
 });
 
 //GET session display info
-router.get("/", function(req, res) {
+router.get("/", (req, res) => {
   //require session auth
   routingUtil.requireSession("any", req, res, codeDoc => {
     //render info page
@@ -22,7 +22,7 @@ router.get("/", function(req, res) {
 });
 
 //GET display enter access code page
-router.get("/login", function(req, res) {
+router.get("/login", (req, res) => {
   //whether or not there is an existing session
   const renderOpts = { loggedIn: typeof req.session.code === "string" };
 
@@ -38,7 +38,7 @@ router.get("/login", function(req, res) {
 });
 
 //POST access code to auth
-router.post("/open", function(req, res) {
+router.post("/open", (req, res) => {
   //code must be valid, any valid code can create a session
   routingUtil.checkCode(req, res, codeDoc => {
     //register permission in session
@@ -54,13 +54,13 @@ router.post("/open", function(req, res) {
 });
 
 //GET closes login and directs to login page
-router.get("/logout", function(req, res) {
+router.get("/logout", (req, res) => {
   //destroy the session and redirect to login
   req.session.destroy(() => res.redirect("/session/login"));
 });
 
 //GET a master code with the key stored in keys.json
-router.get("/getaccess/" + credentials.makeCodesSuffix, function(req, res) {
+router.get("/getaccess/" + credentials.makeCodesSuffix, (req, res) => {
   //try to find a existing MA code
   access.findOne({
     level: "MA"

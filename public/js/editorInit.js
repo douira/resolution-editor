@@ -590,7 +590,7 @@ const registerEssentialEventHandlers = doLoad => {
     });
   }
   $("#action-pdf")
-  .on("click", function(e) {
+  .on("click", e => {
     e.stopPropagation();
 
     //finalize editing on all fields
@@ -606,7 +606,7 @@ const registerEssentialEventHandlers = doLoad => {
     }
   });
   $("#action-plaintext")
-  .on("click", function(e) {
+  .on("click", e => {
     e.stopPropagation();
 
     //finalize editing on all fields
@@ -628,7 +628,7 @@ const registerEssentialEventHandlers = doLoad => {
 //other data loaded from the server (like autofill data)
 const registerEventHandlers = loadedData => {
   $(window)
-  .on("beforeunload", function(e) {
+  .on("beforeunload", e => {
     //stop close if flag set that there are unsaved changes
     if (! (changesSaved || noChangesMade)) {
       e.preventDefault();
@@ -1032,7 +1032,7 @@ const registerEventHandlers = loadedData => {
     amdClauseWrapper.on("change", ".phrase-input", updateActionBtnState); //why encapsulated?
 
     //on clicking reject button
-    rejectAmdBtn.on("click", function(e) {
+    rejectAmdBtn.on("click", e => {
       e.stopPropagation();
 
       //check that button was enabled
@@ -1047,7 +1047,7 @@ const registerEventHandlers = loadedData => {
     });
 
     //on clicking apply amendment button
-    applyAmdBtn.on("click", function(e) {
+    applyAmdBtn.on("click", e => {
       e.stopPropagation();
 
       //check that button was enabled
@@ -1935,7 +1935,7 @@ const registerEventHandlers = loadedData => {
 
   //open file modal to load resolution from file
   $("#legacy-action-load")
-  .on("click", function(e) {
+  .on("click", e => {
     //file actions are defined in a seperate file
     e.stopPropagation();
 
@@ -1948,7 +1948,7 @@ const registerEventHandlers = loadedData => {
 
   //downloads the resolution as a file (json)
   $("#legacy-action-save")
-  .on("click", function(e) {
+  .on("click", e => {
     e.stopPropagation();
 
     //finalize editing on all fields
@@ -1960,7 +1960,7 @@ const registerEventHandlers = loadedData => {
 
   //saves the resolution to the server
   $("#action-save")
-  .on("click", function(e) {
+  .on("click", e => {
     e.stopPropagation();
 
     //display message before triggering save on clauses, will probably be in saved state afterward
@@ -1983,7 +1983,7 @@ const registerEventHandlers = loadedData => {
 
   //delete button opens a model asking for confirmation
   $("#action-delete")
-  .on("click", function(e) {
+  .on("click", e => {
     e.stopPropagation();
 
     //ask for confirmation
@@ -2005,7 +2005,7 @@ const registerEventHandlers = loadedData => {
 
   //button to actually do the deletion
   $("#delete-action-confirm")
-  .on("click", function(e) {
+  .on("click", e => {
     e.stopPropagation();
 
     //send the delete request and go back to front page

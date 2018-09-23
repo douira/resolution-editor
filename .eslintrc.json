@@ -294,7 +294,7 @@
       "never"
     ],
     "padding-line-between-statements": "error",
-    "prefer-arrow-callback": "off",
+    "prefer-arrow-callback": "warn",
     "prefer-const": "warn",
     "prefer-destructuring": "off",
     "prefer-numeric-literals": "error",
