@@ -296,17 +296,22 @@
     "padding-line-between-statements": "error",
     "prefer-arrow-callback": "warn",
     "prefer-const": "warn",
-    "prefer-destructuring": "off",
+    "prefer-destructuring": [
+      "warn",
+      {
+        "array": false
+      }
+    ],
     "prefer-numeric-literals": "error",
     "prefer-object-spread": "off",
-    "prefer-promise-reject-errors": "off",
+    "prefer-promise-reject-errors": "warn",
     "prefer-reflect": "off",
     "prefer-rest-params": "off",
     "prefer-spread": "off",
     "prefer-template": "off",
     "quote-props": "off",
     "quotes": "off",
-    "radix": "off",
+    "radix": "error",
     "require-atomic-updates": "off",
     "require-await": "error",
     "require-jsdoc": "off",

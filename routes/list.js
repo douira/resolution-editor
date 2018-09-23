@@ -290,7 +290,7 @@ router.post("/codes/:action", (req, res) => {
       }
 
       //number of codes specified
-      const amountSpecified = parseInt(req.body.amount);
+      const amountSpecified = parseInt(req.body.amount, 10);
 
       //normalize to number and cap at max value
       const codeAmount = Math.min(100, Math.max(codesArr.length, amountSpecified || 0));
@@ -497,7 +497,7 @@ router.use("/booklet", (req, res, next) =>
 //booklet creation and selection page
 router.get("/booklet", (req, res) => {
   //parse year or take current as default
-  const year = req.query && parseInt(req.query.year) || new Date().getFullYear();
+  const year = req.query && parseInt(req.query.year, 10) || new Date().getFullYear();
 
   //query all booklets of the current year
   booklets.find({
@@ -514,7 +514,7 @@ router.get("/booklet", (req, res) => {
 router.use(["/booklet/edit/:id", "/booklet/renderpdf/:id", "/booklet/save/:id"],
   (req, res, next) => {
   //get id to query booklet with
-  const bookletId = parseInt(req.params.id);
+  const bookletId = parseInt(req.params.id, 10);
 
   //must be non-negative int
   if (isNaN(bookletId) || bookletId < 0) {

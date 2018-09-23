@@ -253,7 +253,7 @@ $(document).ready(() => {
     //must have at least one resolution and all resolutions in stage range [7, 9]
     if (listLength && selectedRes.get().every(el => {
       //get the stage of this resolution item
-      const stage = parseInt($(el).find(".res-stage").text());
+      const stage = parseInt($(el).find(".res-stage").text(), 10);
 
       //when the stage matches the range
       return stage >= 7 && stage <= 9;
