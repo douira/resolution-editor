@@ -171,10 +171,10 @@ const diffForEach = (obj, callback) => {
 
 //diff type color class map converts between diff types and color marking classes
 const diffTypeColorMap = {
-  "updated": "mark-yellow",
-  "added": "mark-green",
-  "deleted": "mark-red",
-  "none": "mark-grey"
+  updated: "mark-yellow",
+  added: "mark-green",
+  deleted: "mark-red",
+  none: "mark-grey"
 };
 
 //marks an element with diff colors according to the passed diff type
@@ -360,7 +360,7 @@ const render = () => {
 
       //add the phrase span
       content.prepend($("<span/>", {
-        "class": "phrase",
+        class: "phrase",
         text: clauseData.phrase.trim()
       }));
 
@@ -485,12 +485,12 @@ const render = () => {
           if (subContentExtPresent) {
             //create another span with the text
             const subContentExt = $("<div/>", {
-              "class": "ext-content"
+              class: "ext-content"
             }).appendTo(subClause);
 
             //add text inside
             subContentExt.append($("<span/>", {
-              "class": "ext-text-content",
+              class: "ext-text-content",
               text: subClauseData.contentExt
             }));
 
@@ -513,12 +513,12 @@ const render = () => {
       if (contentExtPresent) {
         //create another span with the text
         const contentExt = $("<div/>", {
-          "class": "ext-content"
+          class: "ext-content"
         }).appendTo(clause);
 
         //add text inside
         contentExt.append($("<span/>", {
-          "class": "ext-text-content",
+          class: "ext-text-content",
           text: clauseData.contentExt
         }));
 

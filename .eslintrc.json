@@ -301,7 +301,10 @@
     "prefer-rest-params": "off",
     "prefer-spread": "warn",
     "prefer-template": "warn",
-    "quote-props": "off",
+    "quote-props": [
+      "error",
+      "as-needed"
+    ],
     "quotes": "off",
     "radix": "error",
     "require-atomic-updates": "warn",

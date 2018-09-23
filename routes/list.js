@@ -244,7 +244,7 @@ router.post("/codes/:action", (req, res) => {
       //for specified action
       if (req.params.action === "revoke") {
         //remove all codes that were given
-        access.deleteMany({ code: { "$in": codes }}).then(() => res.send("ok"), err => {
+        access.deleteMany({ code: { $in: codes }}).then(() => res.send("ok"), err => {
           issueError(req, res, 500, "couldn't remove specified codes", err);
         });
       } else { //change action
