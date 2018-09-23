@@ -344,10 +344,10 @@ routingUtil.getAndPost(router, "/advance/:token", (req, res) =>
     }
 
     //add resolution id if going from stage 3 (FC) to 4 (print), regular advance otherwise
-    (resDoc.stage === 3 ?
+    (resDoc.stage === 3
       //get and increment resolution id for this year
       //needs findOneAndUpdate because we need the value of the modified doc
-      collections.resolutionId.findOneAndUpdate({ year: new Date().getFullYear() }, {
+      ? collections.resolutionId.findOneAndUpdate({ year: new Date().getFullYear() }, {
         //count up one
         $inc: { counter: 1 }
       })
@@ -369,10 +369,10 @@ routingUtil.getAndPost(router, "/advance/:token", (req, res) =>
 
         //execute query and return resulting promise
         return resolutions.updateOne({ token }, query);
-      }) :
+      })
 
       //execute and return query without adding resolution id
-      resolutions.updateOne({ token }, query)
+      : resolutions.updateOne({ token }, query)
     )
 
     //redirect to editor without code, prevent form resubmission

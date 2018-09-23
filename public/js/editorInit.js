@@ -520,9 +520,9 @@ $.fn.checkAutoCompValue = function(loadedData) {
       }
 
       //for array type data match check if its contained, otherwise must have value 1 to be valid
-      valueOk = matchData instanceof Array ?
-        matchData.indexOf(value) !== -1 :
-        matchData[value] === 1 || typeof matchData[value] === "object";
+      valueOk = matchData instanceof Array
+        ? matchData.indexOf(value) !== -1
+        : matchData[value] === 1 || typeof matchData[value] === "object";
     }
   }
 
@@ -1564,8 +1564,9 @@ const registerEventHandlers = loadedData => {
     //also move content into condensed content element
     condensedWrapper
       .children(".cond-content")
-      .html(textContent.length && textContent !== " " ?
-        processCondText(textContent) : `${textContent}<em class='red-text'>no content</span>`);
+      .html(textContent.length && textContent !== " "
+        ? processCondText(textContent)
+        : `${textContent}<em class='red-text'>no content</span>`);
 
     //if they are present, we were in edit just now
     //stop if we were already not in edit mode

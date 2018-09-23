@@ -62,15 +62,17 @@ const applyDocumentChange = (resolution, path, content) => {
     //for amendment content update
     if (pathProp === "amendment") {
       //element is amendment clause
-      currentElem = (amendmentElements.replacementClause.length ?
-        amendmentElements.replacementClause : amendmentElements.clause).children("li");
+      currentElem = (amendmentElements.replacementClause.length
+        ? amendmentElements.replacementClause
+        : amendmentElements.clause).children("li");
 
       //use new clause as object to modify
       structureObj = amendment.newClause;
     } else {
       //the current element we are searching in, start off with preamb/op seperation
-      currentElem = $(pathProp === "operative" ?
-        "#op-clauses > .op-wrapper > li" : "#preamb-clauses > div.preamb-clause");
+      currentElem = $(pathProp === "operative"
+        ? "#op-clauses > .op-wrapper > li"
+        : "#preamb-clauses > div.preamb-clause");
 
       //get object for first step from resolution
       structureObj = resolution.clauses[pathProp];

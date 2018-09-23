@@ -112,8 +112,8 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
     allOk = fields.token.valid && fields.code.valid &&
 
       //check with additional validation callback if given
-      (typeof inputOpts.additionalValidation === "function" ?
-       inputOpts.additionalValidation(setInputValidState) : true);
+      (typeof inputOpts.additionalValidation === "function"
+       ? inputOpts.additionalValidation(setInputValidState) : true);
 
     //apply to button state
     submitElem[allOk ? "removeClass" : "addClass"]("disabled");
@@ -135,8 +135,10 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
 
       //to make url path, find opt with that selector and return its specified url
       const buttonUrl = submitOptions.find(opt => elem.is(opt.selector)).url +
-        (typeof presetToken === "undefined" ?
-          fields.token.elem ? fields.token.elem.val() : "" : presetToken);
+        (typeof presetToken === "undefined"
+          ? fields.token.elem
+            ? fields.token.elem.val() : ""
+          : presetToken);
 
       //send combined get and post request with token and code (if there is a code)
       //use only get request if no code given
@@ -197,8 +199,9 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
     elem.val(value);
 
     //check if it's the token or the code field
-    const isTokenField = fields.token.elem ?
-      elem.is(fields.token.elem) : ! elem.is(fields.code.elem);
+    const isTokenField = fields.token.elem
+      ? elem.is(fields.token.elem)
+      : ! elem.is(fields.code.elem);
     const fieldId = isTokenField ? "token" : "code";
 
     //proceed checking only if there is anything filled in
