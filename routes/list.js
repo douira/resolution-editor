@@ -564,7 +564,7 @@ router.get("/booklet/edit/:id", (req, res) => {
       {
         $or: [
           //token is one of the ones specified in the booklet
-          { token: { $in: booklet.resolutions } },
+          { token: { $in: booklet.resolutions }},
 
           //or a eligible resolution
           eligibleResolutionQuery(booklet)
