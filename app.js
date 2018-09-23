@@ -72,12 +72,12 @@ app.use(session({
 }));
 
 //set specific caching params if in production mode
-if (! devEnv) {
-  //cache regular content for a week, see pug mixin static for cache busting
-  app.use(express.static(path.join(__dirname, "public"), { maxage: "7d" }));
-} else {
+if (devEnv) {
   //static serve on anything in public with no caching in dev mode
   app.use(express.static(path.join(__dirname, "public")));
+} else {
+  //cache regular content for a week, see pug mixin static for cache busting
+  app.use(express.static(path.join(__dirname, "public"), { maxage: "7d" }));
 }
 
 //attach request local session present info
