@@ -247,7 +247,7 @@ router.post("/delete/:token", (req, res) => {
   const token = req.params.token;
 
   //remove resolution with that token by moving to the archive
-  resolutions.findOne( { token } )
+  resolutions.findOne({ token })
     .then(resDoc => Promise.all([
       resolutionArchive.insertOne(resDoc), resolutions.deleteOne({ token })
     ]))

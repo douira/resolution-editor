@@ -256,7 +256,7 @@ const validateObjectStructure = (obj, format) => {
 
           //required fields are present
           (! ("requiresField" in field) ||
-            fields.some(f => f.name === field.requiresField )) &&
+            fields.some(f => f.name === field.requiresField)) &&
 
           //check for valid types with content if present
           (! field.present ||

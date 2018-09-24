@@ -305,7 +305,8 @@
       "error",
       "as-needed"
     ],
-    "quotes": "off",
+
+    "quotes": "error",
     "radix": "error",
     "require-atomic-updates": "warn",
     "require-await": "error",
@@ -316,7 +317,7 @@
       "never"
     ],
     "semi": ["error", "always"],
-    "semi-spacing": "off",
+    "semi-spacing": "error",
     "semi-style": [
       "error",
       "last"
@@ -324,10 +325,13 @@
     "sort-imports": "error",
     "sort-keys": "off",
     "sort-vars": "off",
-    "space-before-blocks": "off",
-    "space-before-function-paren": "off",
-    "space-in-parens": "off",
-    "space-infix-ops": "off",
+    "space-before-blocks": "warn",
+    "space-before-function-paren": [
+      "warn",
+      "never"
+    ],
+    "space-in-parens": "warn",
+    "space-infix-ops": "warn",
     "space-unary-ops": [
       "error",
       {
