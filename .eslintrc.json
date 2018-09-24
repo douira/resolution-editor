@@ -76,6 +76,7 @@
     "dot-notation": "off",
     "eol-last": "error",
     "eqeqeq": "warn",
+    "for-direction": "warn",
     "func-call-spacing": "error",
     "func-name-matching": "warn",
     "func-names": "off",
@@ -367,9 +368,13 @@
       }
     ],
     "vars-on-top": "off",
-    "wrap-iife": "off",
+    "wrap-iife": [
+      "warn",
+      "inside",
+      { "functionPrototypeMethods": true }
+    ],
     "wrap-regex": "off",
     "yield-star-spacing": "error",
-    "yoda": "off"
+    "yoda": "warn"
   }
 }
