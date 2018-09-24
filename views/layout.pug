@@ -64,27 +64,33 @@
   };
 
 //-static file serve with cache control
-mixin static(type, url)
-  - url += "?v=4" //add version to url
+mixin static(type, url, noVersion)
+  -
+    //add version to url if allowed
+    if (! noVersion) {
+      url += "?v=4";
+    }
   case type
     when "css"
-      link(href=url type="text/css" rel="stylesheet")
+      link(href=url rel="stylesheet")
     when "js"
       script(src=url)
 
 //-icon maker, more icons here if necessary: https://materialdesignicons.com/
 mixin icon(name, classes, id)
-  i.material-icons(class=classes id=id)=name
+  if name.startsWith("mdi-")
+    i.mdi(aria-hidden=true class=name + " " + (classes || "") id=id)
+  else
+    i.material-icons(aria-hidden=true class=classes id=id)=name
+
 
 //-colorized spinner
 mixin spinner(colorCode, size)
+  if ! size
+    - size = "medium"
+  if ! colorCode
+    - colorCode = "blue"
   -
-    if (typeof size === "undefined") {
-      size = "medium";
-    }
-    if (typeof colorCode === "undefined") {
-      colorCode = "blue";
-    }
     colorCode = ({
       "blue": "spinner-blue-only",
       "red": "spinner-red-only",
@@ -107,19 +113,23 @@ html(lang="en")
     meta(charset="utf-8")
 
     //-setup for materialize
-    meta(name="viewport" content="width=device-width, initial-scale=1")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
 
+    //-set default page title, overwritten by extending templates
     block title
       title Resolution Editor
 
     //-custom and materialize style sheets
     if serveLocalExt
-      +static("css", "/ext/material-icons-2.2.0.css")
-      +static("css", "/ext/materialize-0.100.2.min.css")
+      //-uses both icons sets until transitioned
+      +static("css", "/materialicons/css/materialdesignicons.min.css")
+      +static("css", "/ext/material-icons.css")
+      +static("css", "/ext/materialize.min.css")
     else
-      link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
+      +static("css", "https://cdn.materialdesignicons.com/2.8.94/css/materialdesignicons.min.css", true)
+      +static("css", "https://fonts.googleapis.com/icon?family=Material+Icons", true)
       //-link(href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700" rel="stylesheet")
-      link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css")
+      +static("css", "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css", true)
     +static("css", "/css/mainStyle.css")
 
     //-critical styles are inlined
@@ -246,10 +256,10 @@ html(lang="en")
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous")
     +static("js", "/js/log.js")
     if serveLocalExt
-      +static("js", "/ext/materialize-0.100.2.min.js")
+      +static("js", "/ext/materialize.min.js")
     else
-      script(src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js")
+      script(src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js" integrity="sha256-U/cHDMTIHCeMcvehBv1xQ052bPSbJtbuiw4QA9cTKz0=" crossorigin="anonymous")
     +static("js", "/js/mainInit.js")
 
-    //-specific scripts
+    //-page specific scripts
     block scripts

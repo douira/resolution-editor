@@ -71,6 +71,11 @@ app.use(session({
   })
 }));
 
+//material icons installed in modules
+app.use(
+  "/materialicons",
+  express.static(path.join(__dirname, "node_modules/@mdi/font/"), { maxage: "7d" }));
+
 //set specific caching params if in production mode
 if (devEnv) {
   //static serve on anything in public with no caching in dev mode

@@ -10,6 +10,7 @@
     "test": "mocha"
   },
   "dependencies": {
+    "@mdi/font": "^2.8.94",
     "body-parser": "^1.18.3",
     "co": "^4.6.0",
     "compression": "^1.7.3",
