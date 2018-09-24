@@ -4,18 +4,16 @@ We're really happy you'd like to contribute to this project! You can help us mak
 ## How to contribute
 Drop me (douira) a line if you are part of/affiliated with MUNOL or otherwise think you should have the right to directly contribute. You can also make a fork and create a pull request after having implemented the feature you really really want or fixed some bug or just helped out. Bug reports are possible through the editor itself. (it directs to the new issue page) You can also simply create an issue for this repo and we'll look into it.
 
-Code style has to be adapted to the already used style and kept as consistent as possible.
-Including but not limited to the following:
-- Indent everything with 2 spaces
-- Curly opening bracket right after closing round one (in functions)
-- new features only on server side code (like arrow functions)
+Some conventions:  
+
+- Indent using 2 spaces
 - use semicolons where possible
-- name JS stuff and events in lowerCamelCase and pug IDs and classes with-hyphenation.
-- JSON is also to be formatted appropriately (unless never looked at), use an online formatter if necessary
-- Use ESLint with the given configuration file to validate your code before committing (and remove all errors!)
-- HoundCi checks that all pull requests comply with the linting rules
-- JS version is ES5 in browsers (so it's still mostly ok with IE10) and latest stable feature set in node.js (so without harmony flag) This will change when Materialize is updated to 1.0 and support for non-ES6 browsers will be dropped!
-- enable bitwise operators and other special options per-file
+- name JS identifiers and events in lowerCamelCase
+- name pug IDs/classes with-hyphenation.
+- JSON is also to be formatted appropriately, use a beautifier if necessary
+- Use ESLint with the given configuration file to check your code before committing (and deal with all errors or warnings) `eslint .`
+- ~~HoundCi checks that all pull requests comply with the linting rules~~ HoundCI is using an old eslint version. I'm waiting for TravisCI to migrate the repo to the new Checks API so we can use eslint there. (See note on Refactoring project)
+- Using ES6 in browsers and a recent (non harmony-flag) node release
 - client js files may have to declare globals imported from other files loaded or exported for other files. Even if an exported variable is used also used within the same file it should be declared as exported.
 
 Typo fixes or small bugs are worthy of an issue too. So, if you find any bug that doesn't already have an issue, report it!
