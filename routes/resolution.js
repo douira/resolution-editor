@@ -318,7 +318,7 @@ routingUtil.getAndPost(router, "/advance/:token", (req, res) =>
 
       //make voting reults object
       const voteResults = {
-        // "|| 0" convert to number or 0
+        //"|| 0" parse to number or use 0
         inFavor: parseInt(req.body.inFavor, 10) || 0,
         against: parseInt(req.body.against, 10) || 0,
         abstention: parseInt(req.body.abstention, 10) || 0,

@@ -343,7 +343,10 @@
         }
       }
     ],
-    "spaced-comment": "off",
+    "spaced-comment": [
+      "warn",
+      "never"
+    ],
     "strict": "off",
     "switch-colon-spacing": "error",
     "symbol-description": "error",

@@ -1,5 +1,5 @@
-/* global Materialize*/
-/* exported makeAlertMessage, displayToast */
+/*global Materialize*/
+/*exported makeAlertMessage, displayToast */
 //queue of alert message we want to display
 const alertQueue = [];
 

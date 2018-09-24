@@ -1,5 +1,5 @@
 /*exported startLiveviewWS, sendJsonLV*/
-/* global
+/*global
 makeAlertMessage,
 log,
 displayToast*/

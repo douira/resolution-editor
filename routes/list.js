@@ -26,7 +26,7 @@ router.use("/overview", (req, res, next) =>
 //GET display overview of all resolutions
 router.get("/overview", (req, res) => {
   //check if the archive was requested
-  const useArchive = req.query.archive == "1"; // eslint-disable-line eqeqeq
+  const useArchive = req.query.archive == "1"; //eslint-disable-line eqeqeq
 
   //aggregate resolutions, use archive if get flag set
   (useArchive ? resolutionArchive : resolutions).aggregate([

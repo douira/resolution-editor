@@ -13,7 +13,7 @@
   sendLVUpdate,
   log,
   onAllSaveDone*/
-/* exported
+/*exported
   checkRequiredFields,
   sendLVUpdates,
   resolutionStage,
@@ -1028,8 +1028,9 @@ const registerEventHandlers = loadedData => {
     });
 
     //update button state of change of phrase field in amendment display
-    // and also update on change of phrase input
-    amdClauseWrapper.on("change", ".phrase-input", updateActionBtnState); //why encapsulated?
+    //and also update on change of phrase input
+    amdClauseWrapper.on("change", ".phrase-input", updateActionBtnState);
+    //why was updateActionBtnState enclosed in another function?
 
     //on clicking reject button
     rejectAmdBtn.on("click", e => {

@@ -1,4 +1,4 @@
-/* global makeAlertMessage,
+/*global makeAlertMessage,
   checkRequiredFields,
   changesSaved:true,
   resolutionToken,
@@ -14,7 +14,7 @@
   log,
   allowLV,
   resolutionFormat*/
-/* exported loadFilePick,
+/*exported loadFilePick,
   serverLoad,
   generatePdf,
   generatePlaintext,
@@ -631,7 +631,7 @@ const doAmdUpdate = () => {
 //sends edit updates or handles them through another part
 //given elem can also be enclosing clause list on structure update,
 //elem must be given if not in catchup event type
-/* eventTypes, there apply to all types of clauses (mostly)
+/*eventTypes, there apply to all types of clauses (mostly)
 type: content
   type,
   autocomplete,
