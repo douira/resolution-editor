@@ -35,15 +35,28 @@
 
   //icons
   const icons = {
-    reset: "clear",
-    code: "supervisor_account",
-    token: "my_location",
-    liveview: "dvr",
-    handytextbox: "format_size",
-    help: "help",
-    weakperm: "block",
+    reset: "close",
+    code: "account-key",
+    token: "crosshairs-gps",
+    liveview: "presentation-play",
+    handytextbox: "format-size",
+    help: "help-circle",
+    weakperm: "cancel",
     plaintext: "receipt",
-    contentguidelines: "gavel"
+    contentguidelines: "bullhorn",
+    menuDropDown: "menu-down",
+    moveUp: "arrow-up",
+    moveDown: "arrow-down",
+    doneCheck: "check",
+    add: "plus",
+    amendment: "message-draw",
+    search: "magnify",
+    print: "printer",
+    edit: "pencil",
+    feedback: "message-alert",
+    formatDef: "wrench",
+    forward: "forward",
+    clock: "clock-outline"
   };
 
   //colors for icons
@@ -77,12 +90,9 @@ mixin static(type, url, noVersion)
       script(src=url)
 
 //-icon maker, more icons here if necessary: https://materialdesignicons.com/
+//-we need to reinstate -material-icons and try to adapt the mimic to preserve compatability
 mixin icon(name, classes, id)
-  if name.startsWith("mdi-")
-    i.mdi(aria-hidden=true class=name + " " + (classes || "") id=id)
-  else
-    i.material-icons(aria-hidden=true class=classes id=id)=name
-
+  i.mdi.material-icons(class="mdi-" + name + " " + (classes || "") id=id aria-hidden)
 
 //-colorized spinner
 mixin spinner(colorCode, size)
@@ -119,6 +129,8 @@ html(lang="en")
     block title
       title Resolution Editor
 
+    +static("css", "https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700", true)
+
     //-custom and materialize style sheets
     if serveLocalExt
       //-uses both icons sets until transitioned
@@ -127,8 +139,7 @@ html(lang="en")
       +static("css", "/ext/materialize.min.css")
     else
       +static("css", "https://cdn.materialdesignicons.com/2.8.94/css/materialdesignicons.min.css", true)
-      +static("css", "https://fonts.googleapis.com/icon?family=Material+Icons", true)
-      //-link(href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700" rel="stylesheet")
+      //-+static("css", "https://fonts.googleapis.com/icon?family=Material+Icons", true)
       +static("css", "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css", true)
     +static("css", "/css/mainStyle.css")
 
@@ -187,9 +198,9 @@ html(lang="en")
           li: a(href="/resolution") Editor
           //-li: a(href="/about") About
           li: a.dropdown-button(href="#" data-activates="lists-dropdown") Lists
-            +icon("arrow_drop_down", "right")
+            +icon(icons.menuDropDown, "right")
           li: a.dropdown-button(href="#" data-activates="help-dropdown") Help
-            +icon("arrow_drop_down", "right")
+            +icon(icons.menuDropDown, "right")
           li: a(href="/session")=hasSession ? "Session Info" : "Login"
         ul.right.hide-on-med-and-down
           +navList(navElements)
@@ -199,6 +210,9 @@ html(lang="en")
             .divider
           +navList(navElements)
       a.button-collapse(href="#" data-activates="nav-mobile"): +icon("menu")
+
+    //-new nav:
+
 
     //-necessary for dropdown to work, idk why. removing this prevents the dropdown from apearing
     a.dropdown-button(href="#" data-activates="help-dropdown")
@@ -230,20 +244,24 @@ html(lang="en")
                 li: a.white-text(href="https://github.com/douira/resolution-editor") Repository
                 li: a.white-text(href=bugReportLink) File a Bug
                 li: a.white-text(href="https://github.com/douira/resolution-editor/pulls") Contribute
-                li: a.white-text(href="http://munol.org") MUNOL
-                li: a.white-text(href="http://app.munol.org") MUNOL-App
+                li: a.white-text(href="https://munol.org") MUNOL
+                li: a.white-text(href="https://app.munol.org") MUNOL-App
                 li: a.white-text(href="https://munol.org/legal-notice/") Impressum
             .col.xl3.l3.m4.s6
               h5.white-text Stack
               ul
-                li: a.white-text(href="https://material.io") Material Design (+Icons)
+                li: a.white-text(href="https://material.io") Material Design
+                li: a.white-text(href="https://materialdesignicons.com/") Material Design Icons
                 li: a.white-text(href="http://materializecss.com") Materialize
                 li: a.white-text(href="https://jquery.com") jQuery
                 li: a.white-text(href="https://pugjs.org") Pug
+                li: a.white-text(href="https://www.mongodb.com/") MongoDB
+                li: a.white-text(href="https://expressjs.com/") Express
                 li: a.white-text(href="https://nodejs.org/en") node.js
                 li: a.white-text(href="https://github.com") GitHub
         .footer-copyright
-          .container Copyright © 2017 by the
+          - const year = (new Date()).getFullYear()
+          .container Copyright © 2017#{year === 2017 ? "" : "-" + year} by the
             a.text-lighten-3(class=sectext href="https://github.com/douira/resolution-editor/graphs/contributors")  Contributors
             |  on
             a.text-lighten-3(class=sectext href="https://github.com/douira/resolution-editor")  Github

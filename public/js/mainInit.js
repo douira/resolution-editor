@@ -33,7 +33,7 @@ $.fn.triggerAll = function(eventNames, params) {
 //navigation collapse
 $(document).ready(() => {
   //init collapsable navbar
-  $(".button-collapse").sideNav();
+  $(".button-collapse").sidenav();
 
   //init help dropdown menu
   $(".dropdown-button").dropdown({

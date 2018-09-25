@@ -42,7 +42,7 @@ block content
           | The Secretaries General have access to resolutions until they are completed in stage #[a(href="#rstage11") #11] and can also use LiveView in plenary debates. They can also manage the creation of the resolution booklet.
         +row("Administration", "MA")
           | This level represents unrestricted access to all available functions of the website including LiveView. This also includes changing access levels of specific codes or giving out new access codes.
-    h4: +icon("font_download", "mediumsmall left blue-text")
+    h4: +icon("format-font", "mediumsmall left blue-text")
     h4#formatting Formatting Advice and Special Characters
     p This section will inform you about the formatting rules and special character restrictions in resolutions. This is about the formal and syntactical aspects only; for content advice, see the #[a(href="/help/contentguidelines") Content Guidelines]. Ask your Chair for assistance with formatting and if you are unsure of how to achieve a certain formal element of you resolution. #[span.grey-text The exact parser code can be found in generatePdf.js and editorInit.js.]
     p A basic clause consists of a phrase and a content body optionally followed a single enumeration. The enumeration items behave similarly to a regular clause, except for the lack of a phrase. Additionally, a single block of extended content can follow the enumeration. If you're trying to create a clause with more than two content blocks, more than one enumeration or a different ordering of these elements, restructure your clause to fit the formatting restrictions. This will also increase the legibility and semantic separation of your resolution.
@@ -133,7 +133,7 @@ block content
               | 0123456789
               br
               | *_^|&’"-.,()/+
-    h4: +icon("text_rotation_none", "mediumsmall left orange-text text-lighten-1")
+    h4: +icon("message-processing", "mediumsmall left orange-text text-lighten-1")
     h4#phrases Phrases
     p For each clause a phrase for the corresponding type of clause can be used. All phrases can be combined with one prefix. In the certain special forums, additional operative phrases can be used. The Editor keeps track of which phrases can be used where. Refrain from putting phrases in clause content fields, as they will be detected by the Editor and/or removed in fruther processing of the resolution.
       |  The forums allowed to use additional phrases are: #{phrases.scopForums.join(", ")}
@@ -165,7 +165,7 @@ block content
       li
         span.mark-yellow Text marked Yellow
         |  is being changed and will be modified as proposed if the Amendment is accepted. The section this applies to may be changed completely but will remain in the same position.
-    h4: +icon("lock", "mediumsmall left text-lighten-1 indigo-text")
+    h4: +icon("file-lock", "mediumsmall left text-lighten-1 indigo-text")
     h4#attribute-states Attribute States
     mixin attrib-display(name)
       p: +attribute-descr(name, true)
@@ -179,7 +179,7 @@ block content
     while i <= 11
       +stage-info-index(i++, false)
     p: em Please note that users with the access level MA have unrestricted access to all applicable functions of the Editor in all stages. See #[a(href="#access-levels") Access Levels]
-    h4: +icon("build", "mediumsmall left text-darken-2 grey-text")
+    h4: +icon(icons.formatDef, "mediumsmall left text-darken-2 grey-text")
     h4#structure-definition Resolution Structure Format Definition
     p Click
       a(href="/help/formatdefinition")  here

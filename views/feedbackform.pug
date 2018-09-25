@@ -8,7 +8,7 @@ block styles
 
 block content
   .container
-    +icon("feedback", "large left pink-text")
+    +icon(icons.feedback, "large left pink-text")
     h3 Give Feedback
     .divider
     p
@@ -24,7 +24,7 @@ block content
           input.validate#email(name="email" type="email" autocomplete="email")
           label(for="email") Email
         .input-field.col.s12
-          +icon("mode_edit", "prefix")
+          +icon(icons.edit, "prefix")
           textarea.validate.materialize-textarea#message(name="message" required)
           label(for="message") Your Feedback Message
         .col.s12.center

@@ -117,3 +117,7 @@
 #amd-apply-btn {
   margin-left: 1em;
 }
+
+.introtext i.mediumsmall:before {
+  font-size: 2.5rem;
+}

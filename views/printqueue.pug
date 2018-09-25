@@ -8,7 +8,7 @@ block styles
 
 block content
   .container
-    +icon("print", "large left blue-text")
+    +icon(icons.print, "large left blue-text")
     h3 Print Queue
     .divider
     p.justify This is a queue of all resolutions that are in stage #[a(href="/help#rstage4") 4] and need to be printed. After printing the generated PDF file, you can advance the resolution to the next stage. Once the resolution has been advanced to the next stage, it cannot be brought back into this list. Resolutions that cannot be advanced (or are static) will not appear on this list. The time a particular resolution has been waiting to print is displayed in the upper right corner of the item list.
@@ -42,9 +42,9 @@ block content
             |  Rendering...
           #print-btn-inner
             span#print-btn-text Loading
-            +icon("access_time", "left")
+            +icon(icons.clock, "left")
         a.waves-effect.waves-light.btn.disabled#advance-btn(href="#") Advance Resolution
-          +icon("forward", "left")
+          +icon(icons.forward, "left")
       li.collection-item.hide-this.list-item#item-template
         +item-core
           |  in #[b.item-forum ffff] by #[b.item-sponsor ssss]

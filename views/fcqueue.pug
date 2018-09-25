@@ -9,7 +9,7 @@ block styles
 block content
   .container
     #code-preset.hide-this=code
-    +icon("how_to_reg", "large left blue-text")
+    +icon("file-check", "large left blue-text")
     h3 Formal Clearing Work-Queue
     .divider
     p.justify This is a queue of all resolutions that are in stage #[a(href="/help#rstage3") 3] and need to be reviewed by the Formal Clearing. After reviewing the resolution, you can advance the resolution to the next stage. Once the resolution has been advanced to the next stage, it cannot be brought back into this list. Resolutions that cannot be advanced (or are static) will not appear on this list. The time a particular resolution has been waiting to print is displayed in the upper right corner of the item list.
@@ -41,7 +41,7 @@ block content
         +item-core(true)
         br
         a.waves-effect.waves-light.btn.disabled#advance-btn(href="#") Advance Resolution
-          +icon("forward", "left")
+          +icon(icons.forward, "left")
       li.collection-item.hide-this.list-item#item-template
         +item-core
     .center.hide-this#no-items-msg

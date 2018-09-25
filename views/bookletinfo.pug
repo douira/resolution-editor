@@ -8,7 +8,7 @@ block styles
 
 block content
   .container
-    +icon("collections_bookmark", "large left blue-text")
+    +icon("book-open-variant", "large left blue-text")
     h3 Resolution Booklet #
       span#booklet-id=booklet._id
     .divider
@@ -33,9 +33,9 @@ block content
         span.grey-text  by
         span.sponsor  #{address.sponsor.main}
       mixin selected-icons
-        +icon("clear", "right red-text remove-icon selected-icons")
-        +icon("arrow_upward", "right blue-text up-icon selected-icons")
-        +icon("arrow_downward", "right blue-text down-icon selected-icons")
+        +icon(icons.reset, "right red-text remove-icon selected-icons")
+        +icon(icons.moveUp, "right blue-text up-icon selected-icons")
+        +icon(icons.moveDown, "right blue-text down-icon selected-icons")
       #icon-block-template.hide-this
         +selected-icons
       .col.s12.l6
@@ -45,8 +45,8 @@ block content
           each resolution, index in resolutions
             li.collection-item(class=(resolution.selected && "selected-res") + (getForum(resolution) !== getForum(resolutions[index + 1]) ? " item-group-divider" : ""))
               +res-info(resolution)
-                +icon("check", "right green-text text-darken-1 selected-icon eligible-icons")
-                +icon("add", "right grey-text add-icon eligible-icons")
+                +icon(icons.doneCheck, "right green-text text-darken-1 selected-icon eligible-icons")
+                +icon(icons.add, "right grey-text add-icon eligible-icons")
         +check-nothing(resolutions)
       .col.s12.l6
         h5.light Selected Resolutions
@@ -95,7 +95,7 @@ block content
         |  Rendering...
       #print-btn-inner
         span#print-btn-text Loading
-        +icon("", "left")
+        //-+icon("", "left")
     p: a(href="/rendered/booklet" + booklet._id + ".pdf" target="_blank") View outdated PDF
 block scripts
   +static("js", "/js/dialogs.js")
