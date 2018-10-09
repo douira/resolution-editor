@@ -57,7 +57,7 @@ db.createUser(
 )
 ```
 (You may have to enter these commands separately.) Replace the `xyz` placeholders with the default passwords from `lib/credentials.js` or specify your own credentials a file in the same directory `resources/keys.json`. This file should not be committed and is ignored through .gitignore. The structure of the key file is the same as the object that specifies the default credentials. The server will read the specified credentials and use them to authenticate as `resolutionEditor` to the database.  
-The database has to be updated as the binary version updates. See [the mongoDB docs](https://docs.mongodb.com/manual/release-notes/4.0-upgrade-standalone/) for more info. Use `db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } )` to get the current version of the data and `db.adminCommand( { setFeatureCompatibilityVersion: "3.6" } )` to change the version and upgrade the data.
+The database has to be updated as the binary version updates. See [the mongoDB docs](https://docs.mongodb.com/manual/release-notes/4.0-upgrade-standalone/) for more info. Use `db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } )` to get the current version of the data and `db.adminCommand( { setFeatureCompatibilityVersion: "4.0" } )` to change the version and upgrade the data. Do this in steps while updating the mongodb binary and checking the changelog.
 
 ### Using PM2
 We use the process manager PM2 to manage automatic running of the server and the database.
