@@ -43,7 +43,7 @@ html, button, input, optgroup, select, textarea {
   font-family: Roboto, BlinkMacSystemFont, "Segoe UI", Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif !important;
 }
 
-.mdi:before, .mdi-set, .material-icons {
+.mdi:before, .mdi-set {
   font-family: "Material Design Icons";
   font-weight: normal;
   font-style: normal;

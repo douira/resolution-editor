@@ -30,6 +30,18 @@ $.fn.triggerAll = function(eventNames, params) {
   return this;
 };
 
+//changes the icon a icon element is displaying
+$.fn.changeIcon = function(newIconName) {
+  //remove any previous icon name
+  this.removeClass((i, str) => str
+    .split(" ")
+    .filter(c => c.startsWith("mdi-"))
+    .join(" "))
+
+  //add new icon class
+  .addClass(`mdi-${newIconName}`);
+};
+
 //navigation collapse
 $(document).ready(() => {
   //init components automatically where possible

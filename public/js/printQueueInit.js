@@ -36,7 +36,7 @@ $(document).ready(() => {
     switch (firstItemPdfStage) {
       case "unrendered":
         printBtnText.text("Hover to Generate PDF");
-        printBtnIcon.text("refresh");
+        printBtnIcon.changeIcon("refresh");
         printBtn
           .attr("href", "#")
           .removeClass("btn")
@@ -60,7 +60,7 @@ $(document).ready(() => {
           .attr("href", `/rendered/${useItem.token}.pdf?c=${Date.now()}`)
           .removeClass("btn-flat")
           .addClass("btn");
-        printBtnIcon.text("print");
+        printBtnIcon.changeIcon("printer");
         printBtnText.text("View PDF");
         break;
       case "viewed":
