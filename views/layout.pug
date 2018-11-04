@@ -176,47 +176,53 @@ html(lang="en")
     //-display error here if there is one
     block error
 
-    //-navigation, prepend with .navbar-fixed: for sticky navbar
-    ul#help-dropdown.dropdown-content
-      li: a(href="/help") Help Page
-      li: a(href="/help/contentguidelines") Content Guidelines
-      li: a(href="/handytextbox") Handy Textbox
-      li: a(href="/resolution/prenew?nonew=1") Read First Page
-      li: a(href="/help/feedback") Feedback
-    ul#lists-dropdown.dropdown-content
-      li: a(href="/list/forum") Forums
-      li: a(href="/list/fcqueue") FC Work-Queue
-      li: a(href="/list/print") Print Queue
-      li: a(href="/list/booklet") Booklets
-      li: a(href="/list/overview") Resolutions
-      li: a(href="/list/codes") Codes
+    //-new nav:
+    mixin navList(navId)
+      -
+        const helpId = "help-dropdown-" + navId;
+        const listId = "lists-dropdown-" + navId;
+      ul.dropdown-content(id=listId)
+        li: a(href="/list/forum") Forums
+        li: a(href="/list/fcqueue") FC Work-Queue
+        li: a(href="/list/print") Print Queue
+        li: a(href="/list/booklet") Booklets
+        li: a(href="/list/overview") Resolutions
+        li: a(href="/list/codes") Codes
+      ul.dropdown-content(id=helpId)
+        li: a(href="/help") Help Page
+        li: a(href="/help/contentguidelines") Content Guidelines
+        li: a(href="/handytextbox") Handy Textbox
+        li: a(href="/resolution/prenew?nonew=1") Read First Page
+        li: a(href="/help/feedback") Feedback
+      if navId === "sidenav"
+        li
+          if hasSession
+            a.subheader You are logged in
+            li: a(href="/session") Session Info
+          else
+            a.subheader You are not logged in
+            li: a(href="/session") Login
+        li.divider
+      li: a(href="/") Front Page
+      li: a(href="/resolution/prenew") New Resolution
+      li: a(href="/resolution") Editor
+      //-li: a(href="/about") About
+      li: a.dropdown-button(href="#!" data-target=listId) Lists
+        +icon(icons.menuDropDown, "right")
+      li: a.dropdown-button(href="#!" data-target=helpId) Help
+        +icon(icons.menuDropDown, "right")
+      if navId === "navbar"
+      li: a(href="/session")=hasSession ? "Session Info" : "Login"
+    ul#slide-out.sidenav
+      li(class=pritext)
+        h4.center-align Navigation
+        .divider
+      +navList("sidenav")
     nav.lighten-2(class=pri role="navigation"): .nav-wrapper
       .container
-        mixin navList
-          li: a(href="/") Front Page
-          li: a(href="/resolution/prenew") New Resolution
-          li: a(href="/resolution") Editor
-          //-li: a(href="/about") About
-          li: a.dropdown-button(href="#" data-activates="lists-dropdown") Lists
-            +icon(icons.menuDropDown, "right")
-          li: a.dropdown-button(href="#" data-activates="help-dropdown") Help
-            +icon(icons.menuDropDown, "right")
-          li: a(href="/session")=hasSession ? "Session Info" : "Login"
         ul.right.hide-on-med-and-down
-          +navList(navElements)
-        ul.side-nav#nav-mobile
-          li(class=pritext)
-            h4.center-align Navigation
-            .divider
-          +navList(navElements)
-      a.button-collapse(href="#" data-activates="nav-mobile"): +icon("menu")
-
-    //-new nav:
-
-
-    //-necessary for dropdown to work, idk why. removing this prevents the dropdown from apearing
-    a.dropdown-button(href="#" data-activates="help-dropdown")
-    a.dropdown-button(href="#" data-activates="lists-dropdown")
+          +navList("navbar")
+        a.sidenav-trigger(data-target="slide-out" href="#!"): +icon("menu")
 
     //-specific page contents
     main

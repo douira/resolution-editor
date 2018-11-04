@@ -32,8 +32,11 @@ $.fn.triggerAll = function(eventNames, params) {
 
 //navigation collapse
 $(document).ready(() => {
-  //init collapsable navbar
-  $(".button-collapse").sidenav();
+  //init components automatically where possible
+  //M.AutoInit();
+
+  //init sidenav
+  $(".sidenav").sidenav();
 
   //init help dropdown menu
   $(".dropdown-button").dropdown({
@@ -52,8 +55,9 @@ $(document).ready(() => {
 //check for old browser and alert
 if (typeof Array.prototype.find !== "function") {
   //eslint-disable-next-line no-alert
-  alert("You are using an outdated browser and we strongly encourage you to update" +
-        " it immediately. Because of that, this website may not work as expected" +
-        " or not at all and you may face security issues (not just with this website," +
-        " but in general).");
+  alert(
+    "You are using an outdated browser and we strongly encourage you to update" +
+    " it immediately. Because of that, this website may not work as expected" +
+    " or not at all and you may face security issues (not just with this website," +
+    " but in general).");
 }
