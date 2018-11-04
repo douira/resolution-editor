@@ -40,7 +40,7 @@
   "main": "bin/www.js",
   "devDependencies": {
     "chai": "^4.2.0",
-    "eslint": "^5.7.0",
+    "eslint": "^5.8.0",
     "eslint-config-douira": "github:douira/eslint-config-douira",
     "mocha": "^5.2.0"
   },
