@@ -18,6 +18,7 @@ You will also have to install the full distribution of (XeLa)TeX on your system.
 npm start
 ```
 The server will then respond on the default node port. Open `http://localhost:3000` to use the client. Using the latest version of Node is usually recommended and will most likely work. (Features such as generator functions and arrow functions are used throughout the code.)
+Please also look in the contributing info file for how to properly setup linting.
 
 ### Database Authentification
 The MongoDB database start command in package.json uses the `--auth` flag which tells it to require connected clients to send credentials in order to be allowed to use the database. If you wish to use the editor without securing your database (because you're not deploying) just run the command in a separate window/tab without the flag:
@@ -58,6 +59,8 @@ db.createUser(
 ```
 (You may have to enter these commands separately.) Replace the `xyz` placeholders with the default passwords from `lib/credentials.js` or specify your own credentials a file in the same directory `resources/keys.json`. This file should not be committed and is ignored through .gitignore. The structure of the key file is the same as the object that specifies the default credentials. The server will read the specified credentials and use them to authenticate as `resolutionEditor` to the database.  
 The database has to be updated as the binary version updates. See [the mongoDB docs](https://docs.mongodb.com/manual/release-notes/4.0-upgrade-standalone/) for more info. Use `db.adminCommand( { getParameter: 1, featureCompatibilityVersion: 1 } )` to get the current version of the data and `db.adminCommand( { setFeatureCompatibilityVersion: "4.0" } )` to change the version and upgrade the data. Do this in steps while updating the mongodb binary and checking the changelog.
+
+Note that there also is a key for generating codes and tokens. This means that the server will reject codes and tokens if they don't match the current set of keys even though they might be present in the database. Codes and tokens are self-validating and the server checks them algorithmically before checking the database.
 
 ### Using PM2
 We use the process manager PM2 to manage automatic running of the server and the database.
