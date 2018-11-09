@@ -196,8 +196,8 @@ html(lang="en")
         li: a(href="/help/feedback") Feedback
       if navId === "sidenav"
         li
-          if hasSession
-            a.subheader You are logged in
+          if loggedIn
+            li: a.subheader Logged in: #[b=sessionCode] #[em (#{sessionLevel})]
             li: a(href="/session") Session Info
           else
             a.subheader You are not logged in
@@ -212,7 +212,7 @@ html(lang="en")
       li: a.dropdown-button(href="#!" data-target=helpId) Help
         +icon(icons.menuDropDown, "right")
       if navId === "navbar"
-      li: a(href="/session")=hasSession ? "Session Info" : "Login"
+      li: a(href="/session")=loggedIn ? "Session Info" : "Login"
     ul#slide-out.sidenav
       li(class=pritext)
         h4.center-align Navigation

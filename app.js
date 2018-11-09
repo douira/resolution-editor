@@ -10,6 +10,7 @@ const mongoSanitize = require("express-mongo-sanitize");
 const getTimeText = require("./public/js/getTimeText");
 const devEnv = require("./lib/devEnv");
 const { logger, applyLoggerMiddleware } = require("./lib/logger");
+const pick = require("object.pick");
 
 //require route controllers
 const index = require("./routes/index");
@@ -85,12 +86,16 @@ if (devEnv) {
   app.use(express.static(path.join(__dirname, "public"), { maxage: "7d" }));
 }
 
-//attach request local session present info
+//attach request local session info
 app.use((req, res, next) => {
   //check for present code in session
   if (typeof req.session.code === "string") {
-    //signal true in session
-    res.locals.hasSession = true;
+    //attach simple session info
+    res.locals.loggedIn = true;
+    res.locals.sessionCode = req.session.code;
+    res.locals.sessionLevel = req.session.doc.level;
+  } else {
+    res.locals.loggedIn = false;
   }
 
   //continue processing request

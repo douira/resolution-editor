@@ -22,20 +22,10 @@ router.get("/", (req, res) => {
 });
 
 //GET display enter access code page
-router.get("/login", (req, res) => {
-  //whether or not there is an existing session
-  const renderOpts = { loggedIn: typeof req.session.code === "string" };
-
-  //add code doc if logged in
-  if (renderOpts.loggedIn) {
-    //add code doc (code and level)
-    renderOpts.code = req.session.code;
-    renderOpts.level = req.session.doc.level;
-  }
-
+router.get("/login", (req, res) =>
   //render login page with code input, notfiy if already logged in
-  res.render("login", renderOpts);
-});
+  res.render("login")
+);
 
 //POST access code to auth
 router.post("/open", (req, res) => {

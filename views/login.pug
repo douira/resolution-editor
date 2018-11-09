@@ -15,7 +15,7 @@ block content
       .col.xl6.l7.m12#queue-info.justify Enter your access code to login and go back to where this permission session was necessary. If no activity is detected on this session for more than #[b five hours] it will be automatically logged out.
         if loggedIn
           br
-          span.red-text You are already logged in with level #{level} and code #{code}. To switch to another code you have to log out first.
+          span.red-text You are already logged in with level #{sessionLevel} and code #{sessionCode}. To switch to another code you have to log out first.
         else
           br
           | You are not logged in. By logging in you agree with this website using cookies to manage session information.
