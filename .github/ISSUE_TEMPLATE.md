@@ -21,8 +21,8 @@ Please check before submitting an issue:
 - [ ] Reloaded the page
 - [ ] Reloaded both the editor and the viewer if you are using LiveView
 - [ ] You are running an up-to-date browser, check here: https://www.whatismybrowser.com/
-- [ ] The browser supports JavaScript ES5 (and ES6 with an upcoming update) and WebSockets
-- [ ] There isn't any firewall or proxy that is interfering
+- [ ] The browser supports JavaScript ES6 and WebSockets
+- [ ] There isn't any firewall or proxy that is interfering with the liveview port 17750
 
 ## Bug reports:
 This is for advanced users that know a little about what is going on. ;-)
