@@ -19,7 +19,7 @@ npm start
 ```
 The server will then respond on the default node port. Open `http://localhost:3000` to use the client. Using the latest version of Node is usually recommended and will most likely work. (Features such as generator functions and arrow functions are used throughout the code.)
 
-### Database Authentification
+### Database Authentication
 The MongoDB database start command in package.json uses the `--auth` flag which tells it to require connected clients to send credentials in order to be allowed to use the database. If you wish to use the editor without securing your database (because you're not deploying) just run the command in a separate window/tab without the flag:
 ```
 //start separately (first)
