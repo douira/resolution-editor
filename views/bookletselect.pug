@@ -11,12 +11,12 @@ block content
     +icon("animation-outline", "large left blue-text")
     h3 Resolution Booklets
     .divider
-    p.justify This is a list of all resolution booklets that were created in #{year}. View booklets of
-      a.year-link(href="/list/booklet?year=" + (year - 1))  Last Year
+    p.justify This is a list of all resolution booklets that were created in #{viewYear}. View booklets of
+      a.year-link(href="/list/booklet?year=" + (viewYear - 1))  Last Year
       | ,
       a.year-link(href="/list/booklet")  Current Year
       | ,
-      a.year-link(href="/list/booklet?year=" + (year + 1))  Next Year
+      a.year-link(href="/list/booklet?year=" + (viewYear + 1))  Next Year
     h5.light Create new Booklet
     form.row#new-form(action="/list/booklet/new" method="POST")
       .input-field.col.s12.m6.l4
@@ -28,7 +28,7 @@ block content
         label Select Plenary
       .col.s12
         button.btn.waves-effect.waves-light#new-submit-btn(class=pri type="submit" form="new-form") Create New Booklet
-    h5.light List of Booklets of #{year}
+    h5.light List of Booklets of #{viewYear}
     if booklets.length
       ul.collection
         each booklet in booklets

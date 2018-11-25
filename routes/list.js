@@ -505,7 +505,9 @@ router.get("/booklet", (req, res) => {
     year
   }).toArray().then(
     //display booklet select page with all found booklets
-    booklets => res.render("bookletselect", { booklets, year }),
+    booklets => {
+      res.render("bookletselect", { booklets, viewYear: year });
+    },
     err => issueError(req, res, 500, "could not query booklets", err)
   );
 });
