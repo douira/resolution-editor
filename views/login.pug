@@ -8,7 +8,7 @@ block content
     h4.center Enter your access code to login
     br
     .row#access-input
-      .input-field.col.xl6.l5.s12: form(method="POST" action="/")#code-form
+      form(method="POST" action="/")#code-form: .input-field.col.xl6.l5.s12
         +icon(icons.code, "prefix")
         input#code-input(name="code" type="text" placeholder=placeholders.code)
         label(for="code-input") Enter access code
