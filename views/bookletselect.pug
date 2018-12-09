@@ -6,40 +6,38 @@ block title
 block styles
   +static("css", "/css/bookletSelectStyle.css")
 
-block content
-  .container
-    +page-title("animation-outline", "blue-text", "Resolution Booklets")
-    p.justify This is a list of all resolution booklets that were created in #{viewYear}. View booklets of
-      a.year-link(href="/list/booklet?year=" + (viewYear - 1))  Last Year
-      | ,
-      a.year-link(href="/list/booklet")  Current Year
-      | ,
-      a.year-link(href="/list/booklet?year=" + (viewYear + 1))  Next Year
-    h5.light Create new Booklet
-    form.row#new-form(action="/list/booklet/new" method="POST")
-      .input-field.col.s12.m6.l4
-        select(name="type")
-          mixin opt(value)
-            option(value=value)=value
-          +opt("GA")
-          +opt("ECOSOC")
-        label Select Plenary
-      .col.s12
-        button.btn.waves-effect.waves-light#new-submit-btn(class=pri type="submit" form="new-form") Create New Booklet
-    h5.light List of Booklets of #{viewYear}
-    if booklets.length
-      ul.collection
-        each booklet in booklets
-          li.collection-item
-            a(href="/list/booklet/edit/" + booklet._id) Booklet ##{booklet._id}
-            em  for #{booklet.type}
-            span.right
-              - const resAmount = booklet.resolutions.length
-              b #{resAmount || "no"} resolution
-                =resAmount === 1 ? "" : "s"
-              |  (#{booklet.year})
-    else
-      p: em.grey-text.text-darken-1 No booklets to display.
-
+block container-content
+  +page-title("animation-outline", "blue-text", "Resolution Booklets")
+  p.justify This is a list of all resolution booklets that were created in #{viewYear}. View booklets of
+    a.year-link(href="/list/booklet?year=" + (viewYear - 1))  Last Year
+    | ,
+    a.year-link(href="/list/booklet")  Current Year
+    | ,
+    a.year-link(href="/list/booklet?year=" + (viewYear + 1))  Next Year
+  h5.light Create new Booklet
+  form.row#new-form(action="/list/booklet/new" method="POST")
+    .input-field.col.s12.m6.l4
+      select(name="type")
+        mixin opt(value)
+          option(value=value)=value
+        +opt("GA")
+        +opt("ECOSOC")
+      label Select Plenary
+    .col.s12
+      button.btn.waves-effect.waves-light#new-submit-btn(class=pri type="submit" form="new-form") Create New Booklet
+  h5.light List of Booklets of #{viewYear}
+  if booklets.length
+    ul.collection
+      each booklet in booklets
+        li.collection-item
+          a(href="/list/booklet/edit/" + booklet._id) Booklet ##{booklet._id}
+          em  for #{booklet.type}
+          span.right
+            - const resAmount = booklet.resolutions.length
+            b #{resAmount || "no"} resolution
+              =resAmount === 1 ? "" : "s"
+            |  (#{booklet.year})
+  else
+    p: em.grey-text.text-darken-1 No booklets to display.
 block scripts
   +static("js", "/js/bookletSelectInit.js")

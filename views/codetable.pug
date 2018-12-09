@@ -6,26 +6,25 @@ block title
 block styles
   //+static("css", "/css/codeOverviewStyle.css")
 
-block content
-  .container
-    +page-title(icons.code, colors.plaintext)
-      h3 Code query
-      h5.subtitle-mrg.light for group type
-        em=" " + groupType
-    table.striped
-      thead
+block container-content
+  +page-title(icons.code, colors.plaintext)
+    h3 Code query
+    h5.subtitle-mrg.light for group type
+      em=" " + groupType
+  table.striped
+    thead
+      tr
+        th Level
+        th Code
+        th Name
+    tbody
+      each code in codes
         tr
-          th Level
-          th Code
-          th Name
-      tbody
-        each code in codes
-          tr
-            td=code.level
-            td=code.code
-            td
-              if code.name
-                =code.name
-              else
-                span.grey-text no name
-    br
+          td=code.level
+          td=code.code
+          td
+            if code.name
+              =code.name
+            else
+              span.grey-text no name
+  br

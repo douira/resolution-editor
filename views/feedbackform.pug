@@ -6,31 +6,30 @@ block title
 block styles
   +static("css", "/css/bookletSelectStyle.css")
 
-block content
-  .container
-    +page-title(icons.feedback, "pink-text", "Give Feedback")
-    p
-      b This is not a bug report form! Go to #[a(href=bugReportLink) File a Bug] for that.
-      |  View #[a(href="/help/feedback/list") Feedback List]
-    p You can give us feedback on the Editor here. Including a name and means of contact is optional. If you have feedback for the MUNOL conference in general, please go to #[a(href="https://munol.org/contact/") munol.org/contact] instead. While we appreciate constructive criticism, we ignore hateful or unconstructuive comments.
-    if ! response
-      form.row(action="/help/feedback/receive" method="POST")
-        .input-field.col.s12.m6
-          input#name(name="name" type="text" autocomplete="name")
-          label(for="name") Name
-        .input-field.col.s12.m6
-          input.validate#email(name="email" type="email" autocomplete="email")
-          label(for="email") Email
-        .input-field.col.s12
-          +icon(icons.edit, "prefix")
-          textarea.validate.materialize-textarea#message(name="message" required)
-          label(for="message") Your Feedback Message
-        .col.s12.center
-          button.btn.btn-large(class=pri) Submit
-    else
-      .center
-        if response === "ok"
-          h5 Thank you for your feedback!
-          br
-        else
-          p Something went wrong submitting feedback. Please try again or contact IT-Management if you belive this is a software bug.
+block container-content
+  +page-title(icons.feedback, "pink-text", "Give Feedback")
+  p
+    b This is not a bug report form! Go to #[a(href=bugReportLink) File a Bug] for that.
+    |  View #[a(href="/help/feedback/list") Feedback List]
+  p You can give us feedback on the Editor here. Including a name and means of contact is optional. If you have feedback for the MUNOL conference in general, please go to #[a(href="https://munol.org/contact/") munol.org/contact] instead. While we appreciate constructive criticism, we ignore hateful or unconstructuive comments.
+  if ! response
+    form.row(action="/help/feedback/receive" method="POST")
+      .input-field.col.s12.m6
+        input#name(name="name" type="text" autocomplete="name")
+        label(for="name") Name
+      .input-field.col.s12.m6
+        input.validate#email(name="email" type="email" autocomplete="email")
+        label(for="email") Email
+      .input-field.col.s12
+        +icon(icons.edit, "prefix")
+        textarea.validate.materialize-textarea#message(name="message" required)
+        label(for="message") Your Feedback Message
+      .col.s12.center
+        button.btn.btn-large(class=pri) Submit
+  else
+    .center
+      if response === "ok"
+        h5 Thank you for your feedback!
+        br
+      else
+        p Something went wrong submitting feedback. Please try again or contact IT-Management if you belive this is a software bug.

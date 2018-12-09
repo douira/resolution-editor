@@ -3,43 +3,42 @@ extends layout
 block title
   title Resolutions Overview
 
-block content
-  .container
-    include stages
-    +page-title("view-list", "blue-text")
-      h3 List of Resolutions
-        if forumMode
-          |  by Forum
-        else
-          |  Overview
-    p.justify
-      if isArchive
-        | This is a list of archived(deleted) resolutions grouped by stage. Go back to the #[a(href="?") list] of regular resolutions.
+block container-content
+  include stages
+  +page-title("view-list", "blue-text")
+    h3 List of Resolutions
+      if forumMode
+        |  by Forum
       else
-        | This is a list of resolutions grouped by stage.
-        if forumMode
-          //-isArchive is false if forumMode is active
-          |  These resolutions are in the forum #[b=forumName].
-        else
-          | View the #[a(href="?archive=1") list] of archived (deleted) resolutions.
-    if items.length
-      .row
-        each stage in items
-          .col.l6.s12
-            +stage-info-index(stage._id, false, true)
-            ul.collection
-              each res in stage.list
-                li.collection-item
-                  a(href="/resolution/editor/" + res.token target="_blank")=res.token
-                  if res.resolutionId && res.idYear
-                    span.res-id  [MUNOL/#{res.idYear}/#{res.resolutionId}]
-                  if ! res.forum
-                    span.grey-text  (not saved)
-                  else
-                    if ! comMode
-                      span.grey-text  in
-                      span.forum(class=res.forum ? "" : "grey-text text-darken-1")=" " + res.forum
-                    span.grey-text  by
-                    span.sponsor(class=res.sponsor ? "" : "grey-text text-darken-1")=" " + res.sponsor
+        |  Overview
+  p.justify
+    if isArchive
+      | This is a list of archived(deleted) resolutions grouped by stage. Go back to the #[a(href="?") list] of regular resolutions.
     else
-      p.center: em.grey-text.text-darken-1 No resolutions to display.
+      | This is a list of resolutions grouped by stage.
+      if forumMode
+        //-isArchive is false if forumMode is active
+        |  These resolutions are in the forum #[b=forumName].
+      else
+        | View the #[a(href="?archive=1") list] of archived (deleted) resolutions.
+  if items.length
+    .row
+      each stage in items
+        .col.l6.s12
+          +stage-info-index(stage._id, false, true)
+          ul.collection
+            each res in stage.list
+              li.collection-item
+                a(href="/resolution/editor/" + res.token target="_blank")=res.token
+                if res.resolutionId && res.idYear
+                  span.res-id  [MUNOL/#{res.idYear}/#{res.resolutionId}]
+                if ! res.forum
+                  span.grey-text  (not saved)
+                else
+                  if ! comMode
+                    span.grey-text  in
+                    span.forum(class=res.forum ? "" : "grey-text text-darken-1")=" " + res.forum
+                  span.grey-text  by
+                  span.sponsor(class=res.sponsor ? "" : "grey-text text-darken-1")=" " + res.sponsor
+  else
+    p.center: em.grey-text.text-darken-1 No resolutions to display.

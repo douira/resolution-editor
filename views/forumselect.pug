@@ -6,15 +6,14 @@ block title
 block styles
   +static("css", "/css/forumSelectStyle.css")
 
-block content
-  .container
-    +page-title("folder-move", "blue-text", "Forum Selection")
-    p.justify Select which forum you want to view the resolutions of.
-    if forums
-      ul.collection
-        each forum in forums
-          li.collection-item
-            span.grey-text.text-darken-1.forum-abbr=forum.abbr
-            a(href="/list/forum/" + forum.name.replace(/ /g, "-"))=forum.name
-    else
-      p.center: em.grey-text.text-darken-1 No forums to display.
+block container-content
+  +page-title("folder-move", "blue-text", "Forum Selection")
+  p.justify Select which forum you want to view the resolutions of.
+  if forums
+    ul.collection
+      each forum in forums
+        li.collection-item
+          span.grey-text.text-darken-1.forum-abbr=forum.abbr
+          a(href="/list/forum/" + forum.name.replace(/ /g, "-"))=forum.name
+  else
+    p.center: em.grey-text.text-darken-1 No forums to display.

@@ -6,11 +6,9 @@ block title
 block styles
   +static("css", "/css/plainviewStyle.css")
 
-block content
-  .container
-    +page-title(icons.plaintext, colors.plaintext)
-      h3 Plaintext Resolution
-      h5.subtitle-mrg.light=token
-    pre.grey-text.text-darken-3#resolution-content=data
-    br
-    br
+block container-content
+  +page-title(icons.plaintext, colors.plaintext)
+    h3 Plaintext Resolution
+    h5.subtitle-mrg.light=token
+  pre.grey-text.text-darken-3#resolution-content=data
+  br

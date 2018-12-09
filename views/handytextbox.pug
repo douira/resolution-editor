@@ -3,11 +3,9 @@ extends layout
 block title
   title Handy Textbox
 
-block content
-  .container
-    +page-title(icons.handytextbox, colors.handytextbox, "Handy Textbox")
-    p Use this handy textbox for whatever you want. It's meant to be used as a temporary text area in which you can type amendments before applying them to the editor to debate them.
-    .input-field
-      textarea#handytextbox.materialize-textarea
-      label(for="handytextbox") Type anything
-    br
+block container-content
+  +page-title(icons.handytextbox, colors.handytextbox, "Handy Textbox")
+  p Use this handy textbox for whatever you want. It's meant to be used as a temporary text area in which you can type amendments before applying them to the editor to debate them.
+  .input-field
+    textarea#handytextbox.materialize-textarea
+    label(for="handytextbox") Type anything
