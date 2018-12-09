@@ -127,3 +127,25 @@ table.striped > tbody > tr:nth-child(odd) {
 .subtitle-mrg {
   margin-top: -1rem;
 }
+
+@media print {
+  nav, footer {
+    display: none;
+  }
+
+  i.header-large:before {
+    font-size: 4rem;
+  }
+
+  body {
+    line-height: 1.3em;
+  }
+
+  .divider {
+    display: none;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1;
+  }
+}
