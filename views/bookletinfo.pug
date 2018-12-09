@@ -8,10 +8,9 @@ block styles
 
 block content
   .container
-    +icon("book-open-variant", "large left blue-text")
-    h3 Resolution Booklet #
-      span#booklet-id=booklet._id
-    .divider
+    +page-title("book-open-variant", "blue-text")
+      h3 Resolution Booklet #
+        span#booklet-id=booklet._id
     p.justify This page displays all important information about this resolution booklet. This booklet is for the #[b=booklet.type] plenary. You have to save any changes you make before leaving this page. Generating a PDF will automatically save all changes. If you remove a selected resolution that is not eligible anymore it can't be selected again after saving the changes. Eligible resolutions are sorted by forum, stage, token.
     .btn.waves-effect.waves-light.disabled#save-btn(color=pri) Save Changes
     span.hide-this#unsaved-changes-msg  There are unsaved changes!

@@ -72,28 +72,27 @@ html, button, input, optgroup, select, textarea {
   font-feature-settings: "liga";
 }
 
-i {
-  line-height: inherit;
-}
-
 i.tiny:before {
   font-size: 1rem;
 }
-
 i.small:before {
   font-size: 2rem;
 }
-
+i.mediumsmall:before {
+  font-size: 3rem;
+}
 i.medium:before {
   font-size: 4rem;
 }
-
+i.header-large:before {
+  font-size: 5.4rem;
+}
 i.large:before {
   font-size: 6rem;
 }
 
-i.mediumsmall:before {
-  font-size: 3rem;
+i.tiny, i.small, i.medium, i.large {
+  font-size: inherit;
 }
 
 .pagination li i:before {
@@ -119,4 +118,12 @@ table.striped > thead {
 
 table.striped > tbody > tr:nth-child(odd) {
   background-color: #f2f2f2;
+}
+
+.input-field .prefix {
+  top: 0;
+}
+
+.subtitle-mrg {
+  margin-top: -1rem;
 }

@@ -116,6 +116,15 @@ mixin spinner(colorCode, size)
       .circle-clipper.right
         .circle
 
+//-makes the page headers more compact
+mixin page-title(icon, iconColor, optionalTitle)
+  +icon(icon, "header-large left " + iconColor)
+  if optionalTitle
+    h3=optionalTitle
+  else
+    block
+  .divider
+
 doctype html
 html(lang="en")
   head

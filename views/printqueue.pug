@@ -8,9 +8,7 @@ block styles
 
 block content
   .container
-    +icon(icons.print, "large left blue-text")
-    h3 Print Queue
-    .divider
+    +page-title(icons.print, "blue-text", "Print Queue")
     p.justify This is a queue of all resolutions that are in stage #[a(href="/help#rstage4") 4] and need to be printed. After printing the generated PDF file, you can advance the resolution to the next stage. Once the resolution has been advanced to the next stage, it cannot be brought back into this list. Resolutions that cannot be advanced (or are static) will not appear on this list. The time a particular resolution has been waiting to print is displayed in the upper right corner of the item list.
     p.justify #[b Concurrency:] You can use this page on multiple devices at the same time if you press the "check now" link before making changes. The contents of the page may become outdated if another user makes changes.
     mixin item-core-inner

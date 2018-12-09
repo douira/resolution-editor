@@ -5,8 +5,7 @@ block title
 
 block content
   .container
-    +icon("person", "large left" + colors.session)
-    h3 Session Info
+    +page-title("account", colors.session, "Session Info")
     p You are logged in with #[b level #{level}] and #[b code #{code}]. Do not log in on devices that you don't trust or don't always have secure access to.
     .center: a.btn-large.waves-effect.waves-light(href="/session/logout" class=colors.logoutButton) Logout
     br

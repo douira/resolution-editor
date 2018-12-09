@@ -8,11 +8,10 @@ block styles
 
 block content
   .container
-    +icon(icons.code, "large left" + colors.plaintext)
-    h3 Code query
-    h5.light for group type
-      em=" " + groupType
-    .divider
+    +page-title(icons.code, colors.plaintext)
+      h3 Code query
+      h5.subtitle-mrg.light for group type
+        em=" " + groupType
     table.striped
       thead
         tr
@@ -24,5 +23,9 @@ block content
           tr
             td=code.level
             td=code.code
-            td=code.name || ""
+            td
+              if code.name
+                =code.name
+              else
+                span.grey-text no name
     br

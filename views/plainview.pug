@@ -8,10 +8,9 @@ block styles
 
 block content
   .container
-    +icon(icons.plaintext, "large left" + colors.plaintext)
-    h3 Plaintext Resolution
-    h5.light=token
-    .divider
+    +page-title(icons.plaintext, colors.plaintext)
+      h3 Plaintext Resolution
+      h5.subtitle-mrg.light=token
     pre.grey-text.text-darken-3#resolution-content=data
     br
     br

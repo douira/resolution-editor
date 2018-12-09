@@ -4,20 +4,19 @@ block title
   title Resolutions Overview
 
 block content
-  include stages
   .container
-    +icon("view-list", "large left blue-text")
-    h3 List of Resolutions
-      if forumMode
-        |  by Forum
-      else
-        |  Overview
-    .divider
+    include stages
+    +page-title("view-list", "blue-text")
+      h3 List of Resolutions
+        if forumMode
+          |  by Forum
+        else
+          |  Overview
     p.justify
       if isArchive
         | This is a list of archived(deleted) resolutions grouped by stage. Go back to the #[a(href="?") list] of regular resolutions.
       else
-        | This is a list of all resolutions grouped by stage.
+        | This is a list of resolutions grouped by stage.
         if forumMode
           //-isArchive is false if forumMode is active
           |  These resolutions are in the forum #[b=forumName].

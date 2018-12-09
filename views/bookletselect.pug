@@ -8,9 +8,7 @@ block styles
 
 block content
   .container
-    +icon("animation-outline", "large left blue-text")
-    h3 Resolution Booklets
-    .divider
+    +page-title("animation-outline", "blue-text", "Resolution Booklets")
     p.justify This is a list of all resolution booklets that were created in #{viewYear}. View booklets of
       a.year-link(href="/list/booklet?year=" + (viewYear - 1))  Last Year
       | ,
