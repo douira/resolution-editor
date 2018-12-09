@@ -16,7 +16,7 @@ block content
       ul.collection
         each message in messages
           li.collection-item
-            span.right.light=message.timestamp
+            span.right.grey-text=message.timestamp
             if message.name
               span By #[b=message.name]
                 if message.email
