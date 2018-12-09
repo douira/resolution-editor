@@ -19,6 +19,10 @@ table.responsive-table.responsive-formatted thead {
   table.responsive-table.responsive-formatted tbody {
     border-left: 1px solid #d0d0d0;
   }
+
+  table.responsive-table.responsive-formatted thead {
+    border-bottom: 0;
+  }
 }
 
 p {
