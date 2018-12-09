@@ -10,9 +10,7 @@ block styles
 block content
   .container
     include stages
-    h4.center: +icon(icons.help, "large" + colors.help)
-    h3.center Help and Information Page
-    .divider
+    +page-title(icons.help, colors.help, "Help and Information Page")
     h4: +icon(icons.code, "mediumsmall left" + colors.session)
     h4#access-levels Access Levels
     | These are the access levels of access codes that are displayed on the Editor page of each resolution.
