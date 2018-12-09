@@ -1,7 +1,12 @@
-.padd-list ul {
+.def-tree ul {
   margin-left: 20px;
-  border-left: 1px #c1c1c1 solid;
-  padding-top: 3px;
-  padding-left: 2px;
-  border-top: 1px #c1c1c1 solid;
+  margin-top: 20px;
+}
+
+.def-tree i:before {
+  font-size: 1.2em;
+}
+
+.def-tree i {
+  margin-left: 0.3em;
 }

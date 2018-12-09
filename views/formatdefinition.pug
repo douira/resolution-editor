@@ -9,17 +9,39 @@ block styles
 block container-content
   +page-title(icons.formatDef, "text-darken-2 grey-text", "Resolution Structure Format Definition")
   p.justify This object describes the format of the resolution in a file or as stored in the database. All resolutions have this format. If the format changes, resolutions in outdated file formats may become unreadable by the editor. This definition validates the formal structure of a resolution in MUNOL. Additionally, no deeper child clauses than subsub-clauses are allowed (even though that isn't represented in this definition page).
-  .row
-    .col.m6.s12
-      mixin objectlist(obj)
-        ul
-          each val, prop in obj
-            li
-              if typeof val === "object"
-                =prop + ": "
-                +objectlist(val)
-              else
-                =prop + ": " + val
-      .padd-list: +objectlist(data)
-    .col.m6.s12
-      pre=dataJson
+  .row: .col.m6.s12
+    mixin struct(obj)
+      ul
+        li Name: #[b=obj.name]
+        li Type: #{obj.type}
+        li Required:
+          if obj.required
+            |  No
+            +icon("star-circle", "teal-text")
+          else
+            |  Yes
+            +icon("alert-circle", "deep-orange-text")
+        if obj.value
+          li Required value: #{obj.value}
+        if obj.requiresField
+          li Requires sibling property: #[b=obj.requiresField]
+        case obj.type
+          when "object"
+            li Object properties:
+              each val in obj.content
+                +struct(val)
+          when "array"
+            li Minimum length: #{obj.content.minLength}
+            li Allowed Types: #{obj.content.contentTypes.join(", ")}
+    .def-tree
+      h5 Types:
+      ul
+        each val, prop in data.types
+          li(id=prop)
+            h6=prop
+            ul: each propv in val
+              li: +struct(propv)
+      h5 Structure:
+      ul
+        each val in data.structure
+          li: +struct(val)
