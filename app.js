@@ -120,8 +120,8 @@ app.use((req, res) => {
   //send the error page
   res.status(err.status);
   res.render("error", {
-    error: err,
-    devEnv
+    devEnv,
+    error: err
   });
 });
 

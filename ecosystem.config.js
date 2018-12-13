@@ -42,7 +42,7 @@ module.exports = {
       env: {
         PORT: 17750,
         PRINT_ERR: "on",
-        NODE_ENV: "production"
+        NODE_ENV: "dev"
       },
       error_file: "./log/lv/err.log",
       out_file: "./log/lv/out.log",
