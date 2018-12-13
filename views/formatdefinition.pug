@@ -12,7 +12,21 @@ block container-content
   mixin struct(obj)
     ul
       li Name: #[span.propname=obj.name]
-      li Type: #[em=obj.type]
+      li.type-def Type: #[em=obj.type]
+        =" "
+        span.blue-text.text-darken-4: case obj.type
+          when "string"
+            +icon("text")
+          when "number"
+            +icon("numeric")
+          when "boolean"
+            +icon("swap-horizontal")
+          when "object"
+            +icon("shape-outline")
+          when "array"
+            +icon("animation-outline")
+          default
+            +icon("help-rhombus-outline")
       li Required:
         if obj.required
           |  No
