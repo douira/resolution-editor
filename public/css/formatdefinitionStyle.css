@@ -1,6 +1,5 @@
-.def-tree ul {
-  margin-left: 20px;
-  margin-top: 20px;
+.def-tree ul:not(.collection-item) {
+  *margin-left: 20px;
 }
 
 .def-tree i:before {
@@ -9,4 +8,9 @@
 
 .def-tree i {
   margin-left: 0.3em;
+}
+
+.propname {
+  font-family: monospace;
+  font-weight: bold;
 }
