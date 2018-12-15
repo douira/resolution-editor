@@ -28,11 +28,11 @@ block container-content
             +icon("help-rhombus-outline")
       li Required:
         if obj.required
-          |  No
-          +icon("star-circle", "teal-text")
-        else
           |  Yes
           +icon("alert-circle", "deep-orange-text")
+        else
+          |  No
+          +icon("star-circle", "teal-text")
       if obj.value
         li Required value:
           if obj.type === "string"
