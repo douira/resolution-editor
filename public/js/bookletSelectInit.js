@@ -1,2 +1,2 @@
 //on document ready init select element
-$(document).ready(() => $("select").material_select());
+$(document).ready(() => $("select").formSelect());
