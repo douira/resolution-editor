@@ -1,4 +1,4 @@
-/*global Materialize*/
+/*global M*/
 /*exported makeAlertMessage, displayToast */
 //queue of alert message we want to display
 const alertQueue = [];
@@ -88,5 +88,5 @@ const displayToast = (msg, duration) => {
   }
 
   //do the toast
-  Materialize.toast(msg, duration);
+  M.toast({ html: msg, displayLength: duration });
 };

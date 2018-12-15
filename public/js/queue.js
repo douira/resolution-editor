@@ -209,7 +209,7 @@ $(document).ready(() => {
     //send an advance request to the server
     $.get(`/resolution/advance/${firstItem.token}?noui=1`).done(() => {
       //make a toast to notify
-      displayToast("Advanced Resolution");
+      displayToast(`Advanced Resolution ${firstItem.token}`);
 
       //update list to make new top item
       updateList();
