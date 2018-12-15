@@ -149,6 +149,10 @@ table.striped > tbody > tr:nth-child(odd) {
     line-height: 1;
   }
 
+  h1, h2, h3 {
+    font-size: 2.5rem;
+  }
+
   .light {
     font-weight: normal;
   }
