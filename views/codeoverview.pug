@@ -25,7 +25,7 @@ block container-content
       label(for=id)=label
   h5.light Add New
   p.justify You can add new codes by specifying an amount or entering a list of shorthand names. For codes with specified shorthand names, you can query the code later with a given name if you enter is exactly. However, because of data protection policies, the names themselves aren't saved directly, but rather a hash is generated.
-  .row
+  .row.row-unpad
     .col.s12: +level-select("gen-code-level-select", "Access Level")
     .col.s12.m6
       | Enter a list of (shorthand) names to assign codes to separated by newlines and/or commas.
@@ -38,28 +38,24 @@ block container-content
         input#new-code-amount(type="number")
         label(for="new-code-amount") Number of New Codes
     .col.s12.center: a.btn.waves-effect.waves-light#gen-codes-btn(class=pri) Generate Codes
-  //-#new-codes.hide-this
-    p Copy these codes and distribute them to (associated) users.
-    li.collection-item.hide-this#code-entry-template Template
-    ul.collection#new-codes-list
   h5.light
     ="Modify "
     span.grey-text#selected-codes-count 0 codes
-  .row
+  .row.row-unpad
     .col.s12.m7
       p.justify Change the access level of the selected codes to the specified level. Instead of trying to assign the access level DE, remove codes from the system that should have no privileges.
       +level-select("change-level-select", "New Access Level")
-      a.btn.waves-effect.waves-light.orange#change-level-btn Change Level
+      a.btn.waves-effect.waves-light.orange.disabled#change-level-btn Change Level
     .col.s12.m5
       p.justify Remove the selected codes from the system. They may be generated again at random though.
-      a.btn.waves-effect.waves-light.red#revoke-btn Revoke Selected
+      a.btn.waves-effect.waves-light.red.disabled#revoke-btn Revoke Selected
   h5.light Search
   .input-field
     +icon(icons.search, "prefix")
     input#search-field(type="search")
     +icon(icons.reset, "", "clear-icon")
     label(for="search-field") Code or registered Name
-  .row#list-container
+  .row.row-unpad#list-container
     mixin codeGroupPrint(group)
       a.left.print-group-icon(href="/list/codes/print/" + group target="_blank")
         +icon(icons.print, "grey-text text-darken-2")

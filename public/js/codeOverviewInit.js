@@ -8,30 +8,24 @@ $.fn.getSelectValue = function() {
     return;
   }
 
-  //internal container
-  const selectBoxContainer = selectBox.parent(".select-wrapper");
-
   //get the input element to set validation classes
-  const selectBoxInput = selectBoxContainer.children("input");
+  const selectBoxInput = selectBox
+    .parent(".select-wrapper").children("input");
 
-  //check which li element of the select wrapper is active
-  const activeOption = selectBoxContainer.children("ul").children("li.active");
+  //get instance for selector
+  const pluginInstance = M.FormSelect.getInstance(selectBox[0]);
 
-  //any must be active
-  if (! activeOption.length) {
-    //remove valdation classes
-    selectBoxInput.removeClass("invalid valid");
+  //get the active selected id
+  const activeId = pluginInstance.getSelectedValues()[0];
 
-    //none selected
+  //if nothing selected
+  if (activeId === "") {
+    //remove status styling and stop
+    selectBoxInput.removeClass("valid invalid");
     return false;
-  }
+  } else if (! ["SC", "AP", "FC", "CH", "SG", "MA"].includes(activeId)) {
+    //must be one of the possible states
 
-  //get text of that option and get id for it
-  const activeId = selectBox.children(`option:contains(${
-    activeOption.children("span").text()})`).val();
-
-  //must be one of the possible states and not the current one
-  if (! ["SC", "AP", "FC", "CH", "SG", "MA"].includes(activeId)) {
     //disable button and invalidate field
     selectBoxInput.removeClass("valid").addClass("invalid");
 
@@ -101,11 +95,37 @@ $(document).ready(() => {
     searchField.trigger("blur");
   });
 
+  //init select fields
+  $("select").formSelect();
+
   //number of selected codes
   let selectedCodeAmount = 0;
 
+  //the level selector for changing the level of the selected codes
+  const changeLevelSelector = $("#change-level-select");
+
+  //the button to apply the level change on the selected codes
+  const changeLevelButton = $("#change-level-btn");
+
+  //updates the disabled state of the change level button
+  const updateChangeLevelButton = () => {
+    //get select value from select structure
+    const selectValue = changeLevelSelector.getSelectValue();
+
+    //update button with selection state,
+    //a level needs to be selected and at least one code has to be selected
+    changeLevelButton[
+      selectValue && selectedCodeAmount ? "removeClass" : "addClass"]("disabled");
+
+    //return value for further use
+    return selectValue;
+  };
+
   //modify header selected coutner element
   const selectedCodesDisplayElem = $("#selected-codes-count");
+
+  //the revoke codes button is also disabled when there are no selected codes
+  const revokeButton = $("#revoke-btn");
 
   //selecton status an be toggled
   listContainer.on("click", ".collection-item:not(.immutable-code)", function() {
@@ -120,9 +140,15 @@ $(document).ready(() => {
     //increment or decrement counter
     selectedCodeAmount += isSelected ? -1 : 1;
 
-    //update text in modify header
+    //update text in modify header, use proper plural s
     selectedCodesDisplayElem.text(`${
-      selectedCodeAmount} code${(selectedCodeAmount === 1 ? "" : "s")}`); //proper plural s
+      selectedCodeAmount} code${(selectedCodeAmount === 1 ? "" : "s")}`);
+
+    //update change level button depending on presence of selected codes
+    updateChangeLevelButton();
+
+    //update revoke button style
+    revokeButton[selectedCodeAmount ? "removeClass" : "addClass"]("disabled");
   });
 
   //returns list of all currently selected codes
@@ -138,28 +164,6 @@ $(document).ready(() => {
 
     //return generated list
     return selectedCodes;
-  };
-
-  //init select fields
-  $("select").material_select();
-
-  //the level selector for changing the level of the selected codes
-  const changeLevelSelector = $("#change-level-select");
-
-  //the button to apply the level change on the selected codes
-  const changeLevelButton = $("#change-level-btn");
-
-  //updates the disabled state of the change level button
-  const updateChangeLevelButton = () => {
-    //get select value from select structure
-    const selectValue = changeLevelSelector.getSelectValue();
-
-    //update button with selection state
-    changeLevelButton[
-      selectValue ? "removeClass" : "addClass"]("disabled");
-
-    //return value for further use
-    return selectValue;
   };
 
   //change access level button
@@ -194,7 +198,7 @@ $(document).ready(() => {
   changeLevelSelector.on("change", updateChangeLevelButton);
 
   //revoke button
-  $("#revoke-btn").on("click", () => {
+  revokeButton.on("click", () => {
     //only if any codes were selected
     if (selectedCodeAmount) {
       //send list of codes to server endpoint
