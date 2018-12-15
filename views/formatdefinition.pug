@@ -13,7 +13,6 @@ block container-content
     ul
       li Name: #[span.propname=obj.name]
       li.type-def Type: #[em=obj.type]
-        =" "
         span.blue-text.text-darken-4: case obj.type
           when "string"
             +icon("text")
