@@ -78,7 +78,7 @@ $(document).ready(() => {
       });
     } else {
       //show all again
-      codeElements.removeClass("hide-this");
+      codeElements.parent().removeClass("hide-this");
     }
 
     //hide or show the clear button
