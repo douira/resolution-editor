@@ -4,7 +4,7 @@ block title
   title Codes Print Table
 
 block styles
-  //+static("css", "/css/codeOverviewStyle.css")
+  +static("css", "/css/codeOverviewStyle.css")
 
 block container-content
   +page-title(icons.code, colors.plaintext)
@@ -18,8 +18,8 @@ block container-content
         th Code
         th Name
     tbody
-      each code in codes
-        tr
+      each code, index in codes
+        tr(class=index && codes[index - 1].level !== code.level && "code-table-divider")
           td=code.level
           td=code.code
           td
