@@ -128,9 +128,14 @@ table.striped > tbody > tr:nth-child(odd) {
   margin-top: -1rem;
 }
 
-.row-unpad {
+.row {
   margin-left: -10px;
   margin-right: -10px;
+}
+
+.row-pad-extra {
+  margin-left: inherit;
+  margin-right: inherit;
 }
 
 @media print {
