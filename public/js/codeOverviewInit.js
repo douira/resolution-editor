@@ -48,6 +48,9 @@ $(document).ready(() => {
   //all code items
   const codeElements = listContainer.find(".code-text-content");
 
+  //the clear search button
+  const clearSearchButton = $(".clear-x");
+
   //hides and shows code list items by whether or not they include the search query
   const searchUpdate = () => {
     //get trimmed and capitalized value from input
@@ -75,21 +78,25 @@ $(document).ready(() => {
       //show all again
       codeElements.removeClass("hide-this");
     }
+
+    //hide or show the clear button
+    clearSearchButton[query.length ? "removeClass" : "addClass"]("hide-this");
   };
 
   //on keypresses in the search field
   searchField.on("paste keyup", searchUpdate);
 
   //clear on clicking clear icon button
-  $("#clear-icon").on("click", () => {
+  clearSearchButton.on("click", () => {
     //clear field
     searchField.val("");
 
     //trigger search update
     searchUpdate();
 
-    //trigger label blur
+    //trigger label blur and properly reset field
     searchField.trigger("blur");
+    searchField.siblings("label, i").removeClass("active");
   });
 
   //init select fields

@@ -24,3 +24,13 @@
 .code-table-divider {
   border-top: solid 2px lightgray;
 }
+
+.clear-x {
+  position: absolute;
+  right: 0;
+  top: 10px;
+  padding: 0 6px;
+  font-style: normal;
+  user-select: none;
+  cursor: pointer;
+}

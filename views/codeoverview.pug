@@ -24,7 +24,7 @@ block container-content
         +opt("MA")
       label(for=id)=label
   h5.light Add New
-  p.justify You can add new codes by specifying an amount or entering a list of shorthand names. For codes with specified shorthand names, you can query the code later with a given name if you enter is exactly. However, because of data protection policies, the names themselves aren't saved directly, but rather a hash is generated.
+  p.justify You can add new codes by specifying an amount or entering a list of shorthand names. Use shorthand names to keep track of which code belong to which person. You may not want to enter real names.
   .row.row-unpad
     .col.s12: +level-select("gen-code-level-select", "Access Level")
     .col.s12.m6
@@ -52,9 +52,9 @@ block container-content
   h5.light Search
   .input-field
     +icon(icons.search, "prefix")
-    input#search-field(type="search")
-    +icon(icons.reset, "", "clear-icon")
+    input#search-field(type="text")
     label(for="search-field") Code or registered Name
+    +icon(icons.reset, "clear-x grey-text text-darken-1 hide-this")
   .row.row-unpad#list-container
     mixin codeGroupPrint(group)
       a.left.print-group-icon(href="/list/codes/print/" + group target="_blank")
