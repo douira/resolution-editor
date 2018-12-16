@@ -1,5 +1,6 @@
 .hide-this {
   display: none;
+  visibility: hidden;
 }
 
 #token-preset {

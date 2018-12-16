@@ -72,7 +72,9 @@ $(document).ready(() => {
       codeElements.each(function() {
         //check if it contains the search string
         const e = $(this);
-        e[e.text().toUpperCase().includes(query) ? "removeClass" : "addClass"]("hide-this");
+        e.parent()[
+          e.text().toUpperCase().includes(query)
+          ? "removeClass" : "addClass"]("hide-this");
       });
     } else {
       //show all again
