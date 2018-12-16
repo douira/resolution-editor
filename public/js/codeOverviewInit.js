@@ -12,11 +12,8 @@ $.fn.getSelectValue = function() {
   const selectBoxInput = selectBox
     .parent(".select-wrapper").children("input");
 
-  //get instance for selector
-  const pluginInstance = M.FormSelect.getInstance(selectBox[0]);
-
   //get the active selected id
-  const activeId = pluginInstance.getSelectedValues()[0];
+  const activeId = selectBox.val();
 
   //if nothing selected
   if (activeId === "") {
