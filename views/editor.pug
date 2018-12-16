@@ -314,11 +314,9 @@ block content
                 +icon("plus-box", "left")
                 | Add Clause
       +content-card("meta-data")
-        .meta-input-wrapper
-          .right.btn-floating.btn-large.waves-effect.waves-light.deep-orange.reset-button(for="meta-data")&attributes(tooltip("Resets these fields", "left"))
-            +icon(icons.reset)
+        #meta-input-wrapper
           h5 General Data
-          .divider.reduced-width-divider
+          .divider
           .input-field
             input#author-name(type="text")
             label(for="author-name") Document Author (optional)

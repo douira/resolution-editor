@@ -1289,10 +1289,11 @@ const registerEventHandlers = loadedData => {
   });
 
   //set meta changes unsaved flag
-  $(".meta-input-wrapper")
-  .on("change", "input", () => {
-    metaChangesSaved = false; //is false correct here? (was true previously)
-  });
+  $("#meta-input-wrapper")
+  .on("change", "input", () =>
+    //set flag as change has occured
+    metaChangesSaved = false
+  );
 
   //also reset sibling labels on all not non-editor input fields
   $("input:not(.not-editor *)")
@@ -1329,10 +1330,11 @@ const registerEventHandlers = loadedData => {
     $(this).removeAttr("data-gramm");
   });
 
-  //cosponsor list
-  $(".chips#co-spon")
-  .on("init", function(e) {
-    e.stopPropagation();
+  //inits chips
+  function chipsInit(e) {
+    if (e) {
+      e.stopPropagation();
+    }
     const elem = $(this);
 
     //get instance of chips (if present) to get the already present data
@@ -1361,13 +1363,17 @@ const registerEventHandlers = loadedData => {
 
     //init the chips thing with autocomplete options
     elem.chips(chipsOpts);
-  })
+  }
+
+  //cosponsor list
+  $(".chips#co-spon")
+  .on("init", chipsInit)
   .on("reset", function(e) {
     e.stopPropagation();
     $(this).val("");
 
     //reinit on reset
-    $(this).trigger("init");
+    chipsInit.call($(this));
   });
 
   //delegated handler on container of required things, for (co sponsor) chips
@@ -1814,23 +1820,6 @@ const registerEventHandlers = loadedData => {
       .find("#eab-wrapper")
       .children()
       .trigger("updateDisabled");
-  });
-
-  //resets a clause
-  $(".reset-button")
-  .on("click", function(e) {
-    e.stopPropagation();
-
-    //trigger reset for all contained elements
-    $(`#${$(this).attr("for")}`)
-      .find("*")
-      .trigger("reset");
-
-    //changes made, now unsaved
-    changesSaved = false;
-
-    //also set meta changes unsaved flag to allow next focus on clause to autosave
-    metaChangesSaved = false;
   });
 
   //eab move down button
