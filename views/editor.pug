@@ -175,7 +175,7 @@ block content
           label Select the new state
         .justify Set the attribute state of the resolution to one of four states. #[em Read-only] restricts editing access, #[em Non-advanceable] restricts advancement and #[em static] combines the two previous states. #[em No special state] is just that; the resolution is reset to its original unrestricted state. #[span.grey-text The current state in the selector box is displayed in grey.]
         .btn-top-mrg.center: a.btn.waves-effect.waves-light#attribute-submit-btn(href="#" class=pri)&attributes(tooltip("Sets the attribute state", "bottom")) Set State
-    h5.light Actions
+    h5.light Advance
     //-secretariat doesn't edit but must be able to advance -> stage 4 displays advance field even if not editing
     if (doLoad || meta.stage === 4) && meta.stage <= 10 && allowAdvance
       .row
@@ -193,9 +193,9 @@ block content
                   +vote-input("inFavor", "infavor-vote-input", "In Favor")
                   +vote-input("against", "against-vote-input", "Against")
                   +vote-input("abstention", "abstention-vote-input", "Abstention")
-                  .col.s12
-                    input#important-question-checkbox(type="checkbox" name="importantQuestion")
-                    label(for="important-question-checkbox") Declared an important question
+                  .col.s12: label
+                    input(type="checkbox" name="importantQuestion")
+                    span Declared an important question
             .input-field(class=lvEnabled ? "xl6 m6 s12 col" : "")
               +icon(icons.code, "prefix")
               input#advance-code-input(name="code" type="text" placeholder=placeholders.code)
