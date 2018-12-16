@@ -225,7 +225,7 @@ $(document).ready(() => {
     }).fail(() =>
       //display error message
       makeAlertMessage(
-        "error_outline", "Error saving Booklet", "ok",
+        "alert-circle-outline", "Error saving Booklet", "ok",
         "The server encountered an error while saving the booklet." +
         " Ask IT-Management for help if this problem persists after" +
         " reloading the page.", "pdf_gen")
@@ -290,7 +290,7 @@ $(document).ready(() => {
         ).fail(() =>
           //display error and and help directives
           makeAlertMessage(
-            "error_outline", "Error generating PDF", "ok",
+            "alert-circle-outline", "Error generating PDF", "ok",
             "The server encountered an error while trying to generate the requested" +
             " PDF file. This may happen when a resolution or the booklet includes illegal" +
             "characters or some attribute of the booklet is invalid." +

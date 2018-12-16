@@ -37,7 +37,7 @@ const bugReportLink = (errorCode = "unknown_error") =>
 const jsonReadErrorModal = errorCode => {
   log("error reading loaded json resolution (from file)", "warn");
   makeAlertMessage(
-    "error_outline", "Error reading file", "ok",
+    "alert-circle-outline", "Error reading file", "ok",
     "The provided data could not be read and processed." +
     " This may be because the file you provided isn't in the format produced by this program or" +
     ` was corrupted in some way. Please file a ${bugReportLink(errorCode)}` +
@@ -52,7 +52,7 @@ const validateFields = (noAlert = false) => {
   //make error message if necessary
   if (! fieldsOk && ! noAlert) {
     makeAlertMessage(
-      "warning", "Invalid Fields", "ok",
+      "alert", "Invalid Fields", "ok",
       "There are fields with missing or invalid values. " +
       "Autocomplete fields must contain one of the suggested values only. " +
       "<br>Invalid fields are marked <span class='red-text'>red</span>.");
@@ -128,7 +128,7 @@ const loadJson = (json, callbackOnSuccess) => {
   //check file version, modal doesn't work yet, clashes with previous one
   if (obj.version && supportedResFileFormats.indexOf(obj.version) === -1) {
     makeAlertMessage(
-      "warning", "File format is outdated", "ok",
+      "alert", "File format is outdated", "ok",
       "The provided file could be read but is in an old and unsupported format." +
       ` Please file a ${bugReportLink("old_format")} and describe this problem.` +
       " if you wish to receive help concerning this issue.", "old_format");
@@ -183,7 +183,7 @@ const loadJson = (json, callbackOnSuccess) => {
 const loadFilePick = loadDone => {
   //make alert message file select
   makeAlertMessage(
-    "file_upload", "Open resolution file", "cancel", (body, modal) => {
+    "file-upload", "Open resolution file", "cancel", (body, modal) => {
       body.text("Select a resolution file with the extension '.rso' to open:");
       const fileSelector = modal.find("#file-selector");
       fileSelector.show();
@@ -235,7 +235,7 @@ const serverLoad = (token, doToast, callback) => {
   )
   .fail(() =>
     //there was a problem
-    makeAlertMessage("error_outline", "Error loading resolution", "ok",
+    makeAlertMessage("alert-circle-outline", "Error loading resolution", "ok",
         "The server encountered an error or denied the requst to load the resolution." +
         ` Please file a ${bugReportLink("res_load")} and describe this problem.`, "res_load")
   );
@@ -254,7 +254,7 @@ const generatePdf = () => {
 
     //display link to generated pdf
     makeAlertMessage(
-      "description", "Generated PDF file", "done",
+      "file-document", "Generated PDF file", "done",
       `Click <b><a href='${response}` +
       "' target='_blank'>here</a></b> to view your resolution as a PDF file." +
       " If the PDF does not reflect a recent change, reload the PDF viewer page.");
@@ -265,7 +265,7 @@ const generatePdf = () => {
 
     //display error and request creation of bug report
     makeAlertMessage(
-      "error_outline", "Error generating PDF", "ok",
+      "alert-circle-outline", "Error generating PDF", "ok",
       "The server encountered an error while trying to generate the requested" +
       " PDF file. Read the <a href='/help#formatting'>help page section</a> on formatting" +
       " and special characters before proceeding. If the error persists after modyfing your" +
@@ -278,7 +278,7 @@ const generatePdf = () => {
 const generatePlaintext = () =>
   //make message
   makeAlertMessage(
-    "description", "Generated Plaintext", "done",
+    "recepit", "Generated Plaintext", "done",
     `Click <b><a href='/resolution/renderplain/${resolutionToken}` +
     "' target='_blank'>here</a></b> to view your resolution as a plain text file.");
 
@@ -362,10 +362,11 @@ const getEditorObj = allowEmpty => {
   };
 
   //get co-sponsors and add if any present
-  const cosponsorData = $("#co-spon").material_chip("data");
-  if (cosponsorData.length) {
+  const chipsInstance = M.Chips.getInstance($("#co-spon"));
+  if (chipsInstance && chipsInstance.chipsData.length) {
     //map to array of strings
-    res.resolution.address.sponsor.co = cosponsorData.map(obj => obj.tag.trim());
+    res.resolution.address.sponsor.co =
+      chipsInstance.chipsData.map(obj => obj.tag.trim());
   }
 
   //return created object
@@ -479,7 +480,7 @@ const serverSave = (callback, doToast, silentFail) => {
     changesSaved = false;
 
     //there was a problem
-    makeAlertMessage("error_outline", "Error saving resolution", "ok",
+    makeAlertMessage("alert-circle-outline", "Error saving resolution", "ok",
         "The server encountered an error or denied the requst to save the resolution." +
         ` Please file a ${bugReportLink("res_save")} and describe this problem.`, "res_save");
   });
@@ -489,7 +490,7 @@ const serverSave = (callback, doToast, silentFail) => {
 const saveFileDownload = str => {
   //make element in modal to download with and add data to download
   const fileName = "resolution.rso";
-  makeAlertMessage("file_download", "Save resolution as file", "cancel", body => {
+  makeAlertMessage("download", "Save resolution as file", "cancel", body => {
     //make download button with blob data
     body.append("<br>");
     $("<a/>")

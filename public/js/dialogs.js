@@ -18,7 +18,7 @@ const checkAlertDisplay = () => {
       //add content to the modal
       modalElement
         .find(".modal-content-title")
-        .html(`<i class='material-icons small'>${modalData.icon}</i> ${modalData.title}`);
+        .html(`<i class='mdi mdi-${modalData.icon} small'></i> ${modalData.title}`);
       modalElement.find(".modal-dismiss-btn").html(modalData.buttonText);
 
       //set error code if given

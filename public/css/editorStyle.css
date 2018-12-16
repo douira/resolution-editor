@@ -16,10 +16,6 @@
   margin-bottom: 10px;
 }
 
-/*.clause-content-ext {
-  display: none;
-}*/
-
 .red-underline {
   text-decoration: underline;
   text-decoration-color: red;
@@ -120,4 +116,8 @@
 
 .introtext i.mediumsmall:before {
   font-size: 2.5rem;
+}
+
+.chips {
+  margin-top: 0;
 }

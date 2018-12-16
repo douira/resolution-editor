@@ -43,7 +43,7 @@ html, button, input, optgroup, select, textarea {
   font-family: Roboto, BlinkMacSystemFont, "Segoe UI", Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif !important;
 }
 
-.mdi:before, .mdi-set {
+.mdi:before, .mdi-set, .material-icons.close {
   font-family: "Material Design Icons";
   font-weight: normal;
   font-style: normal;
@@ -70,6 +70,22 @@ html, button, input, optgroup, select, textarea {
 
   /* Support for IE. */
   font-feature-settings: "liga";
+}
+
+/*A hack to use the close icon with Materialize chips
+which uses a different icon display technique*/
+.material-icons.close:before {
+  content: "\F156";
+  display: inline-block;
+  position: absolute;
+  text-indent: -9999px;
+  font-size: 18px;
+}
+.material-icons.close {
+  text-indent: 9999px;
+  width: 22px;
+  line-height: 31px;
+  margin-left: -5px;
 }
 
 i.tiny:before {
@@ -129,8 +145,8 @@ table.striped > tbody > tr:nth-child(odd) {
 }
 
 .row {
-  margin-left: -10px;
-  margin-right: -10px;
+  margin-left: -10px !important;
+  margin-right: -10px !important;
 }
 
 .row-pad-extra {

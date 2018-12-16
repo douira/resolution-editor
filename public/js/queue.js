@@ -216,7 +216,7 @@ $(document).ready(() => {
     }).fail(() =>
       //display error message
       makeAlertMessage(
-        "error_outline", "Error Advancing Resolution", "ok",
+        "alert-circle-outline", "Error Advancing Resolution", "ok",
         "The server encountered an error while trying to advance this resolution." +
         " If the error persists after reloading the page, ask IT-Management for help.",
         "pdf_gen")

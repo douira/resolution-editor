@@ -192,7 +192,7 @@ $(document).ready(() => {
       .done(() => location.reload()) //reload page to show changes
       .fail(() =>
         //display error message
-        makeAlertMessage("error", "Error revoking codes", "OK",
+        makeAlertMessage("alert-circle-outline", "Error revoking codes", "OK",
           "The server reported an error for the request to change the access level of" +
           " the selected codes. Please get into contact with IT-Managagement.",
           "change_level_codes_fail")
@@ -212,7 +212,7 @@ $(document).ready(() => {
       .done(() => location.reload()) //reload page to show changes
       .fail(() =>
         //display error message
-        makeAlertMessage("error", "Error changing codes", "OK",
+        makeAlertMessage("alert-circle-outline", "Error changing codes", "OK",
           "The server reported an error for the request to revoke the selected codes." +
           " Please get into contact with IT-Managagement.", "revoke_codes_fail")
       );
@@ -278,7 +278,7 @@ $(document).ready(() => {
     .done(() => location.reload()) //reload page to show changes
     .fail(() =>
       //display error message
-      makeAlertMessage("error", "Error generating codes", "OK",
+      makeAlertMessage("alert-circle-outline", "Error generating codes", "OK",
         "The server reported an error for the request to generate new codes." +
         " Please get into contact with IT-Managagement.", "gen_codes_fail")
     );

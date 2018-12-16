@@ -90,7 +90,6 @@ mixin static(type, url, noVersion)
       script(src=url)
 
 //-icon maker, more icons here if necessary: https://materialdesignicons.com/
-//-we need to reinstate -material-icons and try to adapt the mimic to preserve compatability
 mixin icon(name, classes, id)
   i.mdi(class=("mdi-" + name + " " + (classes || "")).trim() id=id aria-hidden="true")
 
@@ -139,7 +138,7 @@ html(lang="en")
       title Resolution Editor
 
     +static("css", "https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700", true)
-
+    +static("css", "/materialicons/css/materialdesignicons.min.css")
     //-custom and materialize style sheets
     if serveLocalExt
       //-uses both icons sets until transitioned

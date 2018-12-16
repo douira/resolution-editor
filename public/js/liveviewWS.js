@@ -103,9 +103,10 @@ const startWS = (isViewer, updateListener) => {
       setTimeout(() => startWS(isViewer, updateListener), 5000);
     } else if (connectTriesLeftLV === 0) {
       //stop now
-      makeAlertMessage("error_outline", "Connection failed", "ok", "The connection to the server" +
-                       " has been closed and couldn't be re-opened." +
-                       " Contact IT-Management for help.", "liveview_conn_failed");
+      makeAlertMessage(
+        "alert-circle-outline", "Connection failed", "ok", "The connection to the server" +
+        " has been closed and couldn't be re-opened." +
+        " Contact IT-Management for help.", "liveview_conn_failed");
     } //-1 means no alert
   };
 
@@ -143,8 +144,9 @@ const startWS = (isViewer, updateListener) => {
         }
 
         //alert user
-        makeAlertMessage("error_outline", "Received Error", "ok", "The server has reponded with" +
-                         ` an error: ${data.errorMsg}`, "liveview_client_got_server_error");
+        makeAlertMessage(
+          "alert-circle-outline", "Received Error", "ok", "The server has reponded with" +
+          ` an error: ${data.errorMsg}`, "liveview_client_got_server_error");
         break;
       case "ackInit": { //both, get access token for auth
         //get token from data, we are now ready to send and receive data
@@ -220,9 +222,10 @@ const startLiveviewWS = (isViewer, token, code, updateListener) => {
   //check if we can do websocket
   if (! window.WebSocket) {
     //can't do it, error and exit
-    makeAlertMessage("block", "Unsupported Browser", "ok", "Your browser is outdated and" +
-                     " doesn't support WebSocket. LiveView will not work on this browser." +
-                     " Contact IT-Management for help.", "liveview_no_websocket");
+    makeAlertMessage(
+      "block-helper", "Unsupported Browser", "ok", "Your browser is outdated and" +
+      " doesn't support WebSocket. LiveView will not work on this browser." +
+      " Contact IT-Management for help.", "liveview_no_websocket");
     return;
   }
 

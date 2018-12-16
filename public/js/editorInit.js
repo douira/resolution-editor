@@ -131,7 +131,7 @@ $.fn.detectManipulator = function() {
     if ($(this).filter("grammarly-ghost").length) {
       //make disabling alert
       makeAlertMessage(
-        "error_outline", "Attention!", "Yes, I will do that now",
+        "alert-circle-outline", "Attention!", "Yes, I will do that now",
         "Please <b>disable Grammarly</b> spellchecking on this website because it may break the " +
         "website visually, its internal workings or even obstruct its usage. It's advised that " +
         "you save your progress before <b>reloading</b> the page after having disabled Grammarly " +
@@ -328,7 +328,7 @@ const queueDisallowedCharInfo = () => {
   //show only once
   if (! showedDisallowedCharModal) {
     //display message
-    makeAlertMessage("font_download", "Resolution content warning", "OK",
+    makeAlertMessage("format-font", "Resolution content warning", "OK",
       "Some characters may haven been removed or changed. This message also serves as a word" +
       " and content length warning." +
       " In general, unnecessary special characters and line breaks are removed." +
@@ -472,8 +472,9 @@ $.fn.setSelectValueId = function(setValueId) {
     .prop("selected", true);
 
   //re-initialize
-  select.material_select("destroy");
-  select.material_select();
+  //select.material_select("destroy");
+  //select.material_select();
+  select.formSelect();
 };
 
 //checks if a input field has an autocompletable and ok value
@@ -662,7 +663,7 @@ const registerEventHandlers = loadedData => {
   //init selectors
   $("select").one("init", function() {
     //init select box
-    $(this).material_select();
+    $(this).formSelect();
   });
 
   //setup amd if lv is enabled
@@ -1334,13 +1335,14 @@ const registerEventHandlers = loadedData => {
     e.stopPropagation();
     const elem = $(this);
 
-    //get already present data (re-init is happening if this is an object)
-    const prevData = elem.material_chip("data");
+    //get instance of chips (if present) to get the already present data
+    //re-init is happening if this is an object
+    const chipsInstance = M.Chips.getInstance(elem);
 
     //init the chips thing with autocomplete options
-    elem.material_chip({
+    elem.chips({
       //chips prefilled data (loaded document)
-      data: prevData || elem.getData().initData,
+      data: chipsInstance && chipsInstance.chipsData || elem.getData().initData,
 
       //autocomplete options for the input field
       autocompleteOptions: $.extend({
@@ -1367,7 +1369,7 @@ const registerEventHandlers = loadedData => {
     const elem = $(this);
 
     //get value of field
-    const value = elem.material_chip("data");
+    const value = M.Chips.getInstance(elem).chipsData;
 
     //keep track if value invalid
     let valueBad = false;
@@ -1624,7 +1626,7 @@ const registerEventHandlers = loadedData => {
         clauseContent.indexOf(phrase.toLowerCase()) === 0
       )) {
         //display message concerning phrase field
-        makeAlertMessage("info", "Phrase found in content field", "OK",
+        makeAlertMessage("information", "Phrase found in content field", "OK",
           "The editor has detected that a clause content field in this resolution begins" +
           " with a phrase. Please use the content text area only for the clause content and not" +
           " the phrase of the clause. The text input field labeled 'Phrase' will suggest " +
@@ -1989,7 +1991,7 @@ const registerEventHandlers = loadedData => {
 
     //ask for confirmation
     makeAlertMessage(
-      "delete_forever", "Really Delete?!", "Keep",
+      "delete-forever", "Really Delete?!", "Keep",
       (contentBody, modal) => {
         //set text
         contentBody.html(
@@ -2148,7 +2150,7 @@ $(document).ready(() => {
       //log the error we have with getting the data
       log({ msg: "error loading autofill data", status, err: error });
       makeAlertMessage(
-        "error_outline", "Error loading necessary data!", "ok",
+        "alert-circle-outline", "Error loading necessary data!", "ok",
         "Failed to download data! Check the console for more info." +
         ` Please file a ${bugReportLink("data_load_fail")} and describe this problem.` +
         " (The editor won't work until you reload the page and the data is downloaded)",
@@ -2410,7 +2412,7 @@ $(document).ready(() => {
         setTimeout(() =>
           //display alert modal with alert message
           makeAlertMessage(
-            "backup", "Save Reminder", "Yes, I will do that now",
+            "cloud-upload", "Save Reminder", "Yes, I will do that now",
             "The page will attempt to prevent you" +
             " from accidentally leaving, but before registering your resolution token permanently" +
             " by saving it for the first time, auto-save will not be active. Please remember to" +
@@ -2437,7 +2439,7 @@ $(document).ready(() => {
         if (canSetFlag) {
           //provide links to help page and formatting section
           makeAlertMessage(
-            "help", "Read the Help Page", "I've read it",
+            "help-circle", "Read the Help Page", "I've read it",
             "It is strongly recommended for all users who have't yet accustomed themselves to" +
             " this editor to read the <a href='/help'>help page</a> before writing a resolution." +
             " Specifically, the section <a href='/help#formatting'>Formatting Advice and Special" +
