@@ -92,7 +92,7 @@ mixin static(type, url, noVersion)
 //-icon maker, more icons here if necessary: https://materialdesignicons.com/
 //-we need to reinstate -material-icons and try to adapt the mimic to preserve compatability
 mixin icon(name, classes, id)
-  i.mdi(class="mdi-" + name + " " + (classes || "") id=id aria-hidden)
+  i.mdi(class="mdi-" + name + " " + (classes || "") id=id aria-hidden="true")
 
 //-colorized spinner
 mixin spinner(colorCode, size)
