@@ -23,13 +23,13 @@
 
 .action-save-large span {
   font-size: 2.3rem;
+  line-height: 1rem;
   margin: 15px 0px;
   display: block;
 }
 
-.action-save-large i {
+.action-save-large i:before {
   font-size: 3rem;
-  margin: 5px 15px 5px 0px;
 }
 
 .btn-top-mrg {
