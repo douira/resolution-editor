@@ -1339,12 +1339,9 @@ const registerEventHandlers = loadedData => {
     //re-init is happening if this is an object
     const chipsInstance = M.Chips.getInstance(elem);
 
-    //init the chips thing with autocomplete options
-    elem.chips({
-      //chips prefilled data (loaded document)
-      data: chipsInstance && chipsInstance.chipsData || elem.getData().initData,
-
-      //autocomplete options for the input field
+    //construct init options
+    const chipsOpts = {
+      //extend autocomplete options for the input field
       autocompleteOptions: $.extend({
         //have it use the correct autocomplete data
         data: loadedData.simpleCountryList
@@ -1353,7 +1350,17 @@ const registerEventHandlers = loadedData => {
 
         //other settings are taken from autofillSettings
       }, autofillSettings)
-    });
+    };
+
+    //if available, provide init data
+    const initData = chipsInstance && chipsInstance.chipsData || elem.getData().initData;
+    if (initData) {
+      //chips prefilled data (loaded document)
+      chipsOpts.data = initData;
+    }
+
+    //init the chips thing with autocomplete options
+    elem.chips(chipsOpts);
   })
   .on("reset", function(e) {
     e.stopPropagation();
