@@ -1068,8 +1068,9 @@ const registerEventHandlers = loadedData => {
   if (accessLevel === "MA") {
     $("#attribute-select-box > select").one("init", () => {
       //container for all of this
-      const selectBox = $("#attribute-select-box");
-      const selectBoxContainer = selectBox.find(".select-wrapper");
+      const selectForm = $("#attribute-select-box");
+      const selector = selectForm.find("select");
+      const selectBoxContainer = selectForm.find(".select-wrapper");
 
       //get the input element to set validation classes
       const selectBoxInput = selectBoxContainer.children("input");
@@ -1079,11 +1080,11 @@ const registerEventHandlers = loadedData => {
 
       //gets the value of the selector (false returned if bad value or none selected)
       const getSelectValue = () => {
-        //check which li element of the select wrapper is active
-        const activeOption = selectBoxContainer.find("li.active");
+        //get text of that option and get id for it
+        const activeId = selector.val();
 
         //any must be active
-        if (! activeOption.length) {
+        if (activeId === "") {
           //remove valdation classes, disable button
           selectBoxInput.removeClass("invalid valid");
           selectBoxSubmitButton.addClass("disabled");
@@ -1091,10 +1092,6 @@ const registerEventHandlers = loadedData => {
           //none selected
           return false;
         }
-
-        //get text of that option and get id for it
-        const activeId = selectBoxContainer.find(`option:contains(${
-          activeOption.children("span").text()})`).val();
 
         //must be one of the four possible states and not the current one
         if (activeId === attributesString ||
@@ -1127,13 +1124,13 @@ const registerEventHandlers = loadedData => {
         //proceed to submission if the value is truthy and selection thereby valid
         if (selectedValue) {
           //inject code input element
-          selectBox.append(`<input type='hidden' name='code' value='${resolutionCode}'>`);
+          selectForm.append(`<input type='hidden' name='code' value='${resolutionCode}'>`);
 
           //add action url to form with token
-          selectBox.attr("action", `/resolution/setattribs/${resolutionToken}`);
+          selectForm.attr("action", `/resolution/setattribs/${resolutionToken}`);
 
           //submit form to set attributes and then be redirected back here
-          selectBox.submit();
+          selectForm.submit();
         }
       })
 
@@ -1141,7 +1138,7 @@ const registerEventHandlers = loadedData => {
       .on("mouseover", getSelectValue);
 
       //trigger on change of selecter, validation only
-      selectBox.find("select").on("change", getSelectValue);
+      selectForm.find("select").on("change", getSelectValue);
     });
   }
 
