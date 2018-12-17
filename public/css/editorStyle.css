@@ -117,3 +117,7 @@
 .chips {
   margin-top: 0;
 }
+
+#meta-input-divider {
+  margin-bottom: 1.5rem;
+}
