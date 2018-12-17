@@ -47,17 +47,15 @@ html, button, input, optgroup, select, textarea {
   font-family: "Material Design Icons";
   font-weight: normal;
   font-style: normal;
-  font-size: 24px;  /* Preferred icon size */
+  font-size: 24px;
   display: inline-block;
   text-rendering: auto;
-
-  /*line-height: inherit;*/
   text-transform: none;
   letter-spacing: normal;
   word-wrap: normal;
   white-space: nowrap;
   direction: ltr;
-  line-height: 1;
+  line-height: inherit;
 
   /* Support for all WebKit browsers. */
   -webkit-font-smoothing: antialiased;
@@ -78,11 +76,11 @@ which uses a different icon display technique*/
   content: "\F156";
   display: inline-block;
   position: absolute;
-  text-indent: -9999px;
+  text-indent: 9999px;
   font-size: 18px;
 }
 .material-icons.close {
-  text-indent: 9999px;
+  text-indent: -9999px;
   width: 22px;
   line-height: 31px;
   margin-left: -5px;
@@ -102,6 +100,7 @@ i.medium:before {
 }
 i.header-large:before {
   font-size: 5.4rem;
+  line-height: 1;
 }
 i.large:before {
   font-size: 6rem;
@@ -152,6 +151,10 @@ table.striped > tbody > tr:nth-child(odd) {
 .row-pad-extra {
   margin-left: inherit;
   margin-right: inherit;
+}
+
+.collapsible-header {
+  line-height: 1.5em;
 }
 
 @media print {

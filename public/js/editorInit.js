@@ -2118,6 +2118,9 @@ $(document).ready(() => {
     });
   }
 
+  //init collapsible
+  $(".collapsible").collapsible();
+
   //check if we are in no load mode
   if ($("#no-load-mode").length) {
     //register an access input group for unlock of editor

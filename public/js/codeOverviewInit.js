@@ -1,7 +1,7 @@
 /*global makeAlertMessage*/
 
 //gets the value of the selector (false returned if bad value or none selected)
-$.fn.getSelectValue = function() {
+$.fn.getLevelSelectValue = function() {
   //must be called on select element
   const selectBox = $(this);
   if (! selectBox.is("select")) {
@@ -116,7 +116,7 @@ $(document).ready(() => {
   //updates the disabled state of the change level button
   const updateChangeLevelButton = () => {
     //get select value from select structure
-    const selectValue = changeLevelSelector.getSelectValue();
+    const selectValue = changeLevelSelector.getLevelSelectValue();
 
     //update button with selection state,
     //a level needs to be selected and at least one code has to be selected
@@ -234,7 +234,7 @@ $(document).ready(() => {
   //on click of gen codes button
   genCodesButton.on("click", () => {
     //get select value of level selector
-    const selectValue = genCodesLevelSelector.getSelectValue();
+    const selectValue = genCodesLevelSelector.getLevelSelectValue();
 
     //require a valid select value
     if (! selectValue) {

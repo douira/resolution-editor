@@ -232,10 +232,10 @@ block content
           |  Rendering...
       +meta-button("action-plaintext", "View Plaintext (fallback)", icons.plaintext, "Generates a plain text version of the resolution: Only use in case of problems", "grey-text")
       if doLoad
-        +meta-button("legacy-action-save", "Save to file (deprecated)", "file-download", "Downloads the resolution in a reusable format", "grey-text")
-        +meta-button("legacy-action-load", "Open from file (deprecated)", "file-upload", "Loads a resolution from a previously saved file", "grey-text")
+        +meta-button("legacy-action-save", "Save to file (fallback)", "file-download", "Downloads the resolution in a reusable format", "grey-text")
+        +meta-button("legacy-action-load", "Open from file (fallback)", "file-upload", "Loads a resolution from a previously saved file", "grey-text")
         if accessLevel === "MA"
-          +meta-button("action-delete", "Delete resolution", "delete-forever", "Deletes the resolution permanently", "red-text text-lighten-1")
+          +meta-button("action-delete", "Archive resolution", "delete-forever", "Deletes the resolution permanently", "red-text text-lighten-1")
     - const allowAmendments = doLoad && allowSave && (lvEnabled && (accessLevel === "CH" || accessLevel === "SG") || accessLevel === "MA");
     if allowAmendments
       h5.light#amd-info Amendment
