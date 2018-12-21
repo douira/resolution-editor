@@ -65,7 +65,7 @@
     },
   ];
 mixin stage-info-icon
-  +icon("clipboard-text", "mediumsmall left text-lighten-1 light-green-text")
+  +icon(icons.stageInfo, "mediumsmall left" + colors.stageInfo)
 mixin stage-info-index(index, decorated, noDescription)
   -
     var indexName = index;
@@ -77,7 +77,7 @@ mixin stage-info-index(index, decorated, noDescription)
     var data = stageData[index];
   h5.light(id="rstage" + index)
     if decorated
-      +stage-info-icon
+      +icon(icons.stageInfo, "mediumsmall left" + colors.stageInfo)
       | Status:
     =" " + data.title
     a(href="/help#rstage" + indexName): b.text-lighten-1.grey-text=" #" + indexName

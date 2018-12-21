@@ -10,8 +10,95 @@ block styles
 block container-content
   include stages
   +page-title(icons.help, colors.help, "Help and Information Page")
-  h4: +icon(icons.code, "mediumsmall left" + colors.session)
-  h4#access-levels Access Levels
+  -
+    const toc = [
+      {
+        title: "Access Levels",
+        id: "access-levels",
+        icon: icons.code,
+        iconClass: colors.session
+      },
+      {
+        title: "Formatting Advice and Special Characters",
+        id: "formatting",
+        icon: "format-font",
+        iconClass: "blue-text",
+        items: [
+          { title: "Special Syntax", id: "special-syntax" },
+          { title: "Content Length", id: "contentlength" },
+          { title: "Whitespace", id: "whitespace" },
+          { title: "Special Characters", id: "special-chars" }
+        ]
+      },
+      {
+        title: "Phrases",
+        id: "phrases",
+        icon: "message-processing",
+        iconClass: "orange-text text-lighten-1",
+        items: [
+          { title: "Premabulatory", id: "preamb-phrases" },
+          { title: "Operative", id: "op-phrases" }
+        ]
+      },
+      {
+        title: "Handy Textbox",
+        id: "handytextbox",
+        icon: icons.handytextbox,
+        iconClass: colors.handytextbox
+      },
+      {
+        title: "Live View",
+        id: "liveview",
+        icon: icons.liveview,
+        iconClass: colors.liveview,
+        items: [
+          { title: "Colors in Amendments", id: "amdcolors" }
+        ]
+      },
+      {
+        title: "Attribute States",
+        id: "attribute-states",
+        icon: "file-lock",
+        iconClass: "text-lighten-1 indigo-text"
+      },
+      {
+        title: "Resolution Workflow Stages",
+        id: "workflow-stages",
+        icon: icons.stageInfo,
+        iconClass: colors.stageInfo
+      },
+      {
+        title: "Resolution Structure Format Definition",
+        id: "structure-definition",
+        icon: icons.formatDef,
+        iconClass: "text-darken-2 grey-text"
+      }
+    ];
+  mixin tocItem(items, level = 0)
+    ul(class=level ? "toc" : "toc-top collection-item")
+      each item in items
+        li.toc-item
+          a(href="#" + item.id)=item.title
+          if item.items
+            +tocItem(item.items, 1)
+  mixin helpIcon(item)
+    +icon(item.icon, "mediumsmall left " + item.iconClass)
+  mixin takeToc(...path)
+    - const item = path.reduce((s, e) => (s.items || s)[e], toc);
+    case path.length
+      when 1
+        h4(id=item.id)
+          +helpIcon(item)
+          =item.title
+      when 2
+        h5(id=item.id)
+          +helpIcon(item)
+          =item.title
+      default
+        h1 ToC Error
+  h5 Table of Contents
+  .collection: +tocItem(toc)
+  +takeToc(0)
   | These are the access levels of access codes that are displayed on the Editor page of each resolution.
   table.striped
     thead: tr
@@ -39,11 +126,10 @@ block container-content
         | The Secretaries General have access to resolutions until they are completed in stage #[a(href="#rstage11") #11] and can also use LiveView in plenary debates. They can also manage the creation of the resolution booklet.
       +row("Administration", "MA")
         | This level represents unrestricted access to all available functions of the website including LiveView. This also includes changing access levels of specific codes or giving out new access codes.
-  h4: +icon("format-font", "mediumsmall left blue-text")
-  h4#formatting Formatting Advice and Special Characters
+  +takeToc(1)
   p This section will inform you about the formatting rules and special character restrictions in resolutions. This is about the formal and syntactical aspects only; for content advice, see the #[a(href="/help/contentguidelines") Content Guidelines]. Ask your Chair for assistance with formatting and if you are unsure of how to achieve a certain formal element of you resolution. #[span.grey-text The exact parser code can be found in generatePdf.js and editorInit.js.]
   p A basic clause consists of a phrase and a content body optionally followed a single enumeration. The enumeration items behave similarly to a regular clause, except for the lack of a phrase. Additionally, a single block of extended content can follow the enumeration. If you're trying to create a clause with more than two content blocks, more than one enumeration or a different ordering of these elements, restructure your clause to fit the formatting restrictions. This will also increase the legibility and semantic separation of your resolution.
-  h5#special-syntax Special Syntax
+  +takeToc(1, 0)
   p The Editor will attempt to make syntax become obvious to the user by providing interface elements that facilitate the different aspects of writing and formatting a resolution. However, in some special cases, it is unavoidable to use the special syntax to achieve some formatting types within clause content. Use this special formatting sparingly, only when necessary and not as a generic stylistic device. Formatting is automatically applied to phrases and is disallowed in phrase fields. Special syntax only applies to the body of clauses and phrases will not be formatted. Nested or semi-nested multi-character special syntax may produce unexpected results.
   - const codeTransform = arr => (typeof arr === "string" ? [arr] : arr).map(v => "<code>" + v + "</code>").join(", ");
   table.striped.responsive-table.responsive-formatted
@@ -72,14 +158,14 @@ block container-content
         | Use the circumflex character #[code ^], the text you want to be rendered as a superscript followed by the pipe character #[code |] to correctly display ordinal numbers.
       +row("Faulty special syntax", "n/a", ["_^ba|r", "ba*z"])
         | Faulty special syntax will be cleaned up in some way, but the exact behavior may be unexpected.
-  h5#contentlength Content Length
+  +takeToc(1, 1)
   p If your resolution has a longer word or clause text content, restructure your clause to fit the length restrictions. This will also increase the legibility and semantic separation of your resolution. In order to prevent too long content from clogging up the rendering system, two length restrictions are automatically imposed:
   ol
     li A single word may not exceed #[b 45] characters (includes whitespace) and any longer words are not rendered in the PDF document. They are not immediately removed from the Editor but will trigger a notification.
     li A single text content may not exceed #[b 2500] characters (includes whitespace and special syntax). A text content is, for example, the main body of a clause, the content continuation of any clause like structure, an enumeration item or a sub-enumeration item.
-  h5#whitespace Whitespace
+  +takeToc(1, 2)
   p Please refrain from inserting any #[b abnormal whitespace] into clause text areas or any other input field. The Editor will most likely remove all unnecessary whitespace before rendering the resolution. Line breaks, tabs and more obscure whitespace characters will be removed from clauses in order to preserve formatting and aesthetics in the rendered document. Do not use tabs for indentation of sub clauses and instead use the integrated button, that appears in the clause when you click the edit button or start typing, to create sub clauses.
-  h5#special-chars Special Characters
+  +takeToc(1, 3)
   p Some characters have a special meaning and are removed or transformed by the Editor and the renderer. Try to find another way of expressing the meaning of a special character if it doesn't have the expected purpose of the editor. Phrases will be stripped of all non-alphanumeric characters. If any character is observed to behave differently than described here, produces an error or is necessary for correct display of the resolution although it is disallowed, please immediately contact your Chair and IT-Management!
   table.striped
     thead: tr
@@ -130,27 +216,24 @@ block container-content
             | 0123456789
             br
             | *_^|&’"-.,()/+
-  h4: +icon("message-processing", "mediumsmall left orange-text text-lighten-1")
-  h4#phrases Phrases
+  +takeToc(2)
   p For each clause a phrase for the corresponding type of clause can be used. All phrases can be combined with one prefix. In the certain special forums, additional operative phrases can be used. The Editor keeps track of which phrases can be used where. Refrain from putting phrases in clause content fields, as they will be detected by the Editor and/or removed in fruther processing of the resolution.
     |  The forums allowed to use additional phrases are: #{phrases.scopForums.join(", ")}
   mixin phrase-section(name, array)
     p
       b=name + ": "
       =array.join(", ")
-  h5#preamb-phrases Preambulatory
+  +takeToc(2, 0)
   +phrase-section("Optional Prefixes", phrases.prefix.preamb)
   +phrase-section("Phrases", phrases.preamb)
-  h5#op-phrases Operative
+  +takeToc(2, 1)
   +phrase-section("Optional Prefixes", phrases.prefix.op)
   +phrase-section("Phrases", phrases.op)
   +phrase-section("Additional Phrases in special forums", phrases.scop)
-  h4: +icon(icons.handytextbox, "mediumsmall left" + colors.handytextbox)
-  h4#handytextbox Handy Textbox
+  +takeToc(3)
   p Use this #[a(href="/handytextbox") handy textbox] for whatever you want. It's meant to be used as a temporary text area in which you can type amendments before copying them into Editor's amendment interface to debate them.
-  h4: +icon(icons.liveview, "mediumsmall left " + colors.liveview)
-  h4#liveview LiveView
-  h5#amdcolors Colors in Amendments
+  +takeToc(4)
+  +takeToc(4, 0)
   p Amendments change the resolution by adding, removing or changing content. In order to better display these changes, the affected sections are colorized according to what's happening with them. Reordering of elements in an enumeration (sub clause) list usually marks all items that changed their position as #[span.mark-yellow changed].
   ul
     li
@@ -162,22 +245,19 @@ block container-content
     li
       span.mark-yellow Text marked Yellow
       |  is being changed and will be modified as proposed if the Amendment is accepted. The section this applies to may be changed completely but will remain in the same position.
-  h4: +icon("file-lock", "mediumsmall left text-lighten-1 indigo-text")
-  h4#attribute-states Attribute States
+  +takeToc(5)
   mixin attrib-display(name)
     p: +attribute-descr(name, true)
   +attrib-display("none")
   +attrib-display("readonly")
   +attrib-display("noadvance")
   +attrib-display("static")
-  h4: +stage-info-icon
-  h4#workflow-stages Resolution Workflow Stages
+  +takeToc(6)
   - var i = 0;
   while i <= 11
     +stage-info-index(i++, false)
   p: em Please note that users with the access level MA have unrestricted access to all applicable functions of the Editor in all stages. See #[a(href="#access-levels") Access Levels]
-  h4: +icon(icons.formatDef, "mediumsmall left text-darken-2 grey-text")
-  h4#structure-definition Resolution Structure Format Definition
+  +takeToc(7)
   p Click
     a(href="/help/formatdefinition")  here
     |  to view the JSON representation of the definition object of the resolution structure format.
