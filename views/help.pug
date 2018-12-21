@@ -36,7 +36,7 @@ block container-content
         icon: "message-processing",
         iconClass: "orange-text text-lighten-1",
         items: [
-          { title: "Premabulatory", id: "preamb-phrases" },
+          { title: "Preambulatory", id: "preamb-phrases" },
           { title: "Operative", id: "op-phrases" }
         ]
       },
@@ -78,6 +78,8 @@ block container-content
     ul(class=level ? "toc" : "toc-top collection-item")
       each item in items
         li.toc-item
+          if item.icon
+            +icon(item.icon, "tiny grey-text text-darken-2")
           a(href="#" + item.id)=item.title
           if item.items
             +tocItem(item.items, 1)
