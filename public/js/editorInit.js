@@ -1413,7 +1413,8 @@ const registerEventHandlers = loadedData => {
 
     //apply to global flag
     badFieldPresent = badFieldPresent || valueBad;
-  })//;$(".chips.required")
+  });
+  $(".chips.required")
   .on("chip.add chip.delete", () => {
     //register change action
     changesSaved = false;
