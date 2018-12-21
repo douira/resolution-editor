@@ -189,4 +189,16 @@ table.striped > tbody > tr:nth-child(odd) {
   .btn, .btn-large, .btn-small {
     color: black;
   }
+
+  table.striped tbody tr {
+    border-bottom: solid 1px lightgrey;
+  }
+
+  td {
+    padding: 5px 3px;
+  }
+
+  .toc-top {
+    line-height: 1em !important;
+  }
 }
