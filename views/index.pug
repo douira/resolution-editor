@@ -39,21 +39,20 @@ block container-content
   //-input of token and code
   h4.center Open, Edit or LiveView a Resolution
   br
-  .row: .col.s12#resolution-input
-    row
-      .row.col.xl6.l5.s12
-        .input-field.col.l12.m6.s12
-          +icon(icons.token, "prefix")
-          input#token-input(type="text" placeholder=placeholders.token)
-          label(for="token-input") Enter resolution token
-        form(method="POST" action="/")#code-form: .input-field.col.l12.m6.s12
-          +icon(icons.code, "prefix")
-          input#code-input(name="code" type="text" placeholder=placeholders.code)
-          label(for="code-input") (optional) Enter access code
-      .col.xl6.l7.m12#token-info.justify Talk to your Chair if you've #[b forgotten] your resolution token. (Looking at your browser's history can be helpful too.) You're only required to enter an access code if editing access to the resolution has been #[b restricted] and you're granted elevated editing privileges with a personal access code. It's still possible to view a #[b read-only] version and metadata about a resolution if you don't have editing privileges. If you've forgotten your access code or have any other problems accessing the editor, please #[b contact IT-Management].
+  .row#resolution-input
+    .input-field.col.m6.s12
+      +icon(icons.token, "prefix")
+      input#token-input(type="text" placeholder=placeholders.token)
+      label(for="token-input") Enter resolution token
+    form(method="POST" action="/")#code-form: .input-field.col.m6.s12
+      +icon(icons.code, "prefix")
+      input#code-input(name="code" type="text" placeholder=placeholders.code)
+      label(for="code-input") (optional) Enter access code
   .center
     a.btn-large.waves-effect.waves-light#editor-submit-btn(href="#" class=pri) Editor
     a.btn-large.waves-effect.waves-light.btn-spacing#liveview-submit-btn(href="#" class=pri) LiveView
+  br
+  .center: a(href="/help#forgot") Forgot code or token
   br
 
 block scripts

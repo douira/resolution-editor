@@ -8,20 +8,9 @@ block styles
 
 block container-content
   #code-preset.hide-this=code
-  +page-title("file-check", "blue-text", "Formal Clearing Work-Queue")
-  p.justify This is a queue of all resolutions that are in stage #[a(href="/help#rstage3") 3] and need to be reviewed by the Formal Clearing. After reviewing the resolution, you can advance the resolution to the next stage. Once the resolution has been advanced to the next stage, it cannot be brought back into this list. Resolutions that cannot be advanced (or are static) will not appear on this list. The time a particular resolution has been waiting to print is displayed in the upper right corner of the item list.
+  +page-title("file-check", colors.queue, "Formal Clearing Work-Queue")
+  p.justify This is a queue of all resolutions that are in stage #[a(href="/help#rstage3") 3] and need to be reviewed by the Formal Clearing. After reviewing the resolution, you can advance the resolution to the next stage. Once the resolution has been advanced to the next stage, it cannot be brought back into this list. Resolutions that cannot be advanced (or are static) will not appear on this list. The time a particular resolution has been waiting is displayed in the upper right corner of the item list.
   p.justify #[b Concurrency:] You can use this page on multiple devices at the same time if you press the "check now" link before making changes. The contents of the page may become outdated if another user makes changes.
-  h5.light Possible Mistakes
-  ul
-    li User placed punctuation at the end of clauses
-    li Special Syntax: Abuse, Misuse or syntax errors
-    li Illegal or misplaced characters
-    li Phrases at the beginning of clause content fields; they should rather be in the correct phrase fields
-    li Makeshift structural components: for example enumerations in clause content fields
-    li Multiplse clauses in one clause field
-    li Address field mistakes
-    li Violations of the #[a(href="/help/contentguidelines") Content Guidelines]
-    li Other errors hindering the generation of a PDF (contact IT-Management if errors persist)
   mixin item-core-inner
     a.item-token(href="#" target="_blank") @ABCD1234
   mixin item-core(header)

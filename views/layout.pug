@@ -24,7 +24,7 @@
       "data-position": position
     };
 
-    //add message if not 0
+    //add message if truthy
     if (msg) {
       obj["data-tooltip"] = msg;
     }
@@ -57,7 +57,8 @@
     formatDef: "wrench",
     forward: "forward",
     clock: "clock-outline",
-    stageInfo: "clipboard-text"
+    stageInfo: "clipboard-text",
+    concurrency: "swap-horizontal-bold"
   };
 
   //colors for icons
@@ -69,7 +70,9 @@
     plaintext: " text-darken-1 purple-text",
     session: " text-darken-3 amber-text",
     logoutButton: " red lighten-1",
-    stageInfo: " text-lighten-1 light-green-text"
+    stageInfo: " text-lighten-1 light-green-text",
+    concurrency: " red-text",
+    queue: " blue-text"
   };
 
   //placeholders, for adjusting the length
