@@ -259,19 +259,7 @@ block content
         a.btn.waves-effect.waves-light.disabled.green.lighten-1#amd-apply-btn Apply
     if doLoad
       mixin floating-sm-btn(color, type, icon, tooltipText)
-        a.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)
-      #eab-inactive-anchor
-      #eab-wrapper.right.hide-this
-        //-eab stands for edit action button
-        +floating-sm-btn("blue", "eab-move-down", icons.moveDown, "Moves this clause down one space")
-        +floating-sm-btn("blue", "eab-move-up", icons.moveUp, "Moves this clause up one space")
-        +floating-sm-btn("indigo", "eab-add-sub", "format-indent-increase", "Creates a subclause in this clause")
-        +floating-sm-btn("cyan", "eab-add-ext", "playlist-plus", "Adds a continuation text field under these subclauses")
-        if allowAmendments
-          +floating-sm-btn("lime darken-1", "eab-amd", icons.amendment, "Selects this clause for an amendment")
-        +floating-sm-btn("deep-orange", "eab-clear", icons.reset, "Resets the fields in this clause and removes the content continuation field")
-        +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
-        +floating-sm-btn("green", "eab-done", icons.doneCheck, "Finishes editing and deactivates edit mode")
+        a.btn.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)
       mixin content-card(cardId)
         .row: .col.s12(id=cardId): block
       mixin clause-content-field(type, placeholder, addClasses)
@@ -279,10 +267,21 @@ block content
           textarea.materialize-textarea(class=(addClasses ? addClasses + " " : "") + type + "-text")
           label=placeholder
       mixin clause-card(cardId, clauseType, cardType)
-        +content-card(cardId)
+        div(id=cardId)
           h5=cardType + " Clauses"
           .clause-list
             .clause(data-clause-type=clauseType)
+              #eab-wrapper.right
+                //-eab stands for edit action button
+                +floating-sm-btn("blue", "eab-move-down", icons.moveDown, "Moves this clause down one space")
+                +floating-sm-btn("blue", "eab-move-up", icons.moveUp, "Moves this clause up one space")
+                +floating-sm-btn("indigo", "eab-add-sub", "format-indent-increase", "Creates a subclause in this clause")
+                +floating-sm-btn("cyan", "eab-add-ext", "playlist-plus", "Adds a continuation text field under these subclauses")
+                +floating-sm-btn("purple lighten-1", "eab-insert-below", "menu-open", "Inserts a new clause below")
+                if allowAmendments
+                  +floating-sm-btn("lime darken-1", "eab-amd", icons.amendment, "Selects this clause for an amendment")
+                +floating-sm-btn("red", "eab-delete", "trash-can-outline", "Removes this clause and all its subclauses")
+                +floating-sm-btn("green", "eab-done", icons.doneCheck, "Finishes editing and deactivates edit mode")
               .divider
               h6.grey-text.text-darken-2.clause-title
                 a.edit-mode-btn.btn.right.white-text.lighten-1(class=pri)&attributes(tooltip("Activates editing of this clause", "left"))
@@ -306,7 +305,7 @@ block content
               a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)&attributes(tooltip("Adds a new clause to the list", "right"))
                 +icon("plus-box", "left")
                 | Add Clause
-      +content-card("meta-data")
+      #meta-data
         #meta-input-wrapper
           h5 General Data
           .divider#meta-input-divider
