@@ -11,15 +11,15 @@ block container-content
   p
     b This is not a bug report form! Go to #[a(href=bugReportLink) File a Bug] for that.
     |  View #[a(href="/help/feedback/list") Feedback List]
-  p You can give us feedback on the Editor here. Including a name and means of contact is optional. If you have feedback for the MUNOL conference in general, please go to #[a(href="https://munol.org/contact/") munol.org/contact] instead. While we appreciate constructive criticism, we ignore hateful or unconstructuive comments.
+  p You can give us feedback on the Resolution Editor here. Including a name and means of contact is optional. If you have feedback for the MUNOL conference in general, please go to #[a(href="https://munol.org/contact/") munol.org/contact] instead. While we appreciate constructive criticism, we ignore hateful comments and spam.
   if ! response
     form.row(action="/help/feedback/receive" method="POST")
       .input-field.col.s12.m6
         input#name(name="name" type="text" autocomplete="name")
-        label(for="name") Name
+        label(for="name") Name (optional)
       .input-field.col.s12.m6
         input.validate#email(name="email" type="email" autocomplete="email")
-        label(for="email") Email
+        label(for="email") Email (optional)
       .input-field.col.s12
         +icon(icons.edit, "prefix")
         textarea.validate.materialize-textarea#message(name="message" required)
