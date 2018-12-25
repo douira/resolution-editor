@@ -257,7 +257,7 @@ const generatePdf = () => {
       "file-document", "Generated PDF file", "done",
       `Click <b><a href='${response}` +
       "' target='_blank'>here</a></b> to view your resolution as a PDF file." +
-      " If the PDF does not reflect a recent change, reload the PDF viewer page.");
+      " If the PDF does not reflect a recent change, save the resolution again and re-render.");
   })
   .fail(() => {
     //stop showing spinner

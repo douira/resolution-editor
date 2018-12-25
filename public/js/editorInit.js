@@ -484,7 +484,7 @@ $.fn.checkAutoCompValue = function(loadedData) {
 
       //for array type data match check if its contained, otherwise must have value 1 to be valid
       valueOk = matchData instanceof Array
-        ? matchData.indexOf(value) !== -1
+        ? matchData.includes(value)
         : matchData[value] === 1 || typeof matchData[value] === "object";
     }
   }
@@ -660,7 +660,7 @@ const registerEventHandlers = loadedData => {
     //selected clause has been removed in the mean time
     const updateAmd = sendNoUpdate => {
       //trigger edit inactive on the current selection to avoid removing the eabs
-      amdClauseListSelection.find(".clause").trigger("editInactive");
+      //amdClauseListSelection.find(".clause").trigger("editInactive");
 
       //empty clause wrapper to remove any leftover from last amd display
       amdClauseWrapper.empty();
@@ -696,7 +696,7 @@ const registerEventHandlers = loadedData => {
       //move into amendment display section
       amdClauseListSelection = amdOrigClause
         //prevent cloning of eabs
-        .trigger("editInactive")
+        //.trigger("editInactive")
 
         //clone the parent list, clause needs to be in list to make subclauses
         .parent(".clause-list")
@@ -927,7 +927,7 @@ const registerEventHandlers = loadedData => {
     });
 
     //eab amendment button
-    $("#eab-amd")
+    $(".eab-amd")
     .on("click", function(e) {
       e.stopPropagation();
 
@@ -1412,8 +1412,7 @@ const registerEventHandlers = loadedData => {
 
     //update add-ext disabled state of eab in this clause
     elem
-      .find("#eab-add-ext")
-      .not(".clause-list-sub #eab-add-ext")
+      .find("> .clause-title > .eab-wrapper > .eab-add-ext")
       .trigger("updateDisabled");
 
     //change made
@@ -1452,13 +1451,12 @@ const registerEventHandlers = loadedData => {
     const editModeBtn = elem.children(".clause-title").children(".edit-mode-btn");
 
     //hide edit button
-    editModeBtn
-      .setHide(true)
-      .before($("#eab-wrapper").setHide(false)); //show edit action buttons and move to clause
+    editModeBtn.setHide(true);
 
-    //update eab button disable
+    //show and update eab button disable
     elem
-      .find("#eab-wrapper")
+      .find("> .clause-title > .eab-wrapper")
+      .setHide(false)
       .children()
       .trigger("updateDisabled");
 
@@ -1471,9 +1469,8 @@ const registerEventHandlers = loadedData => {
     e.stopPropagation();
     const elem = $(this);
 
-    //get EABs
+    //get clause title
     const clauseTitle = elem.children(".clause-title");
-    const eabs = clauseTitle.children("#eab-wrapper");
 
     //strip illegal characters and whitespace from textareas and inputs
     //this is done on the server as well, but we want to discourage this behavior in the user
@@ -1536,14 +1533,17 @@ const registerEventHandlers = loadedData => {
         ? processCondText(textContent)
         : `${textContent}<em class='red-text'>no content</span>`);
 
-    //if they are present, we were in edit just now
-    //stop if we were already not in edit mode
-    if (! eabs.length) {
+    //get eabs
+    const eabs = clauseTitle.children(".eab-wrapper");
+
+    //eabs are visible if edit mode is being exited,
+    //stop if already hidden (not in edit mode before)
+    if (eabs.hasClass("hide-this")) {
       return;
     }
 
-    //hide edit action buttons and move to resting place
-    eabs.setHide(true).insertAfter($("#eab-inactive-anchor"));
+    //hide edit action buttons
+    eabs.setHide(true);
 
     //trigger amd update on real inactivation, (not on just-making-sure inactivation)
     //amd diff update is too costly for server and clients to do for every keypress
@@ -1618,8 +1618,7 @@ const registerEventHandlers = loadedData => {
 
     //update disabled state of buttons
     $(this)
-      .find("#eab-wrapper")
-      .children()
+      .find("> .clause-title > .eab-wrapper *")
       .trigger("updateDisabled");
   })
   .on("updateTreeDepth", function(e) {
@@ -1637,7 +1636,7 @@ const registerEventHandlers = loadedData => {
     //tries to remove this clause
     if (elem.clauseRemovable()) {
       //inactivate to make eab go away
-      elem.trigger("editInactive");
+      //elem.trigger("editInactive");
 
       //save parent
       const parent = elem.parent();
@@ -1769,13 +1768,12 @@ const registerEventHandlers = loadedData => {
 
     //update the disabled state of movement buttons
     thisClause
-      .find("#eab-wrapper")
-      .children()
+      .find("> .clause-title > .eab-wrapper *")
       .trigger("updateDisabled");
   });
 
   //eab move down button
-  $("#eab-move-down")
+  $(".eab-move-down")
   .on("click", function(e) {
     e.stopPropagation();
     const clause = $(this).closest(".clause");
@@ -1793,7 +1791,7 @@ const registerEventHandlers = loadedData => {
   .on("updateDisabled", makeEabMoveUpdateDisabledHandler(false)); //create disabled handler
 
   //eab move up button
-  $("#eab-move-up")
+  $(".eab-move-up")
   .on("click", function(e) {
     e.stopPropagation();
     const clause = $(this).closest(".clause");
@@ -1811,7 +1809,7 @@ const registerEventHandlers = loadedData => {
   .on("updateDisabled", makeEabMoveUpdateDisabledHandler(true));
 
   //eab add a subclause to the clause button
-  $("#eab-add-sub")
+  $(".eab-add-sub")
   .on("click", function(e) {
     e.stopPropagation();
     //get enclosing clause and make inactive to prevent cloning of eab and add subclause
@@ -1829,7 +1827,7 @@ const registerEventHandlers = loadedData => {
   });
 
   //eab add ext content field to clause button
-  $("#eab-add-ext")
+  $(".eab-add-ext")
   .on("click", function(e) {
     e.stopPropagation();
     const elem = $(this);
@@ -1854,18 +1852,20 @@ const registerEventHandlers = loadedData => {
       clause.children(".clause-content-ext:visible").length); //disable if already there
   });
 
-  //eab clear own fields button
-  $("#eab-clear")
+  //eab insert new clause below
+  $(".eab-insert-below")
   .on("click", function(e) {
     e.stopPropagation();
-    const clause = $(this).closest(".clause").trigger("clear");
+    const clause = $(this).closest(".clause");
 
-    //send structure update because ext cont is removed
-    sendLVUpdate("structure", "clear", clause);
+    //TODO add clause below this clause
+
+    //send structure update because clauses changed
+    sendLVUpdate("structure", "TODO", clause);
   });
 
   //eab remove clause button
-  $("#eab-delete")
+  $(".eab-delete")
   .on("click", function(e) {
     e.stopPropagation();
     $(this).closest(".clause").trigger("attemptRemove");
@@ -1878,7 +1878,7 @@ const registerEventHandlers = loadedData => {
   });
 
   //eab finish editing clause button
-  $("#eab-done")
+  $(".eab-done")
   .on("click", function(e) {
     e.stopPropagation();
     $(this).closest(".clause").trigger("editInactive", true);
@@ -2109,7 +2109,7 @@ $(document).ready(() => {
     })
     .done(extData => {
       //data object to pass to event handlers
-      const loadedData = {};
+      const loadedData = { };
 
       //maps from forum abbreviation to name and has forum object for real names, allows value check
       loadedData.forumMapping = { };
