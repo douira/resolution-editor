@@ -97,12 +97,12 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
     //is set to token only state
     if (isValid === "onlyToken") {
       //remove any other valid or invalid classes because the field doesn't matter
-      element.removeClass("valid invalid");
+      element.validationState(null);
       return;
     }
 
     //add or remove class
-    element.classState(! isValid, "invalid").classState(isValid, "valid");
+    element.validationState(isValid);
   };
 
   //updates the button state after checking the validation state of both fields
@@ -115,7 +115,7 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
        ? inputOpts.additionalValidation(setInputValidState) : true);
 
     //apply to button state
-    submitElem.classState(! allOk, "disabled");
+    submitElem.disabledState(! allOk);
   };
 
   //check button state also when change happens on additional inputs
@@ -232,7 +232,7 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
           setInputValidState(elem, checkedValues[value], fieldId);
         } else { //ask server
           //make non displaying but invalid because we're waiting for a response
-          elem.removeClass("valid invalid");
+          elem.validationState(null);
           fields[fieldId].valid = false;
 
           //register as present but unknown so we don't ask the server twice

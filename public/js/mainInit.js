@@ -10,11 +10,8 @@ if (typeof Array.prototype.find !== "function") {
 
 //sets the state of a class (adding or removing)
 $.fn.classState = function(state, className) {
-  //add or remove class depending on flag value
-  this[state ? "addClass" : "removeClass"](className);
-
-  //chaining
-  return this;
+  //add or remove class depending on flag value and return for chaining
+  return this[state ? "addClass" : "removeClass"](className);
 };
 
 //hides and unhides by adding or removing hide-this
@@ -32,7 +29,7 @@ $.fn.disabledState = function(makeDisabled) {
 //sets the invalid state
 $.fn.validationState = function(state) {
   //for given state, removes both if not boolean
-  this.classState(state, "valid").classState(state === false, "invalid");
+  return this.classState(state, "valid").classState(state === false, "invalid");
 };
 
 //triggers several events in order

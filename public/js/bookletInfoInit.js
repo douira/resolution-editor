@@ -6,6 +6,12 @@ $.fn.getResItem = function() {
   return this.closest("li.collection-item");
 };
 
+//sets the button flat state
+$.fn.btnFlatState = function(state) {
+  //set class state of btn and btn-flat
+  return this.classState(state, "btn-flat").classState(! state, "btn");
+};
+
 //on document ready
 $(document).ready(() => {
   //there are three states: not rendered, rendering, pdf not viewed (clicking goes back to stage 1)
@@ -60,7 +66,7 @@ $(document).ready(() => {
     switch (newState) {
       case "unrendered":
         //make enabled and set flat style to display action is ready
-        elems.printBtn.disabledState(false).removeClass("btn").addClass("btn-flat");
+        elems.printBtn.disabledState(false).btnFlatState(true);
 
         //set text to display that a render will happen on hover
         elems.printBtnText.text("Hover to Generate PDF");
@@ -79,7 +85,7 @@ $(document).ready(() => {
         elems.printBtnInner.setHide(false);
 
         //set normal button style (action requires click)
-        elems.printBtn.removeClass("btn-flat").addClass("btn")
+        elems.printBtn.btnFlatState(false)
 
         //and set url to pdf
         .attr("href", `/rendered/booklet${bookletId}.pdf?c=${Date.now()}`);
@@ -93,7 +99,7 @@ $(document).ready(() => {
         elems.printBtnText.text("Generate PDF");
 
         //and set default disabled style
-        elems.printBtn.disabledState(true).addClass("btn").removeClass("btn-flat");
+        elems.printBtn.disabledState(true).btnFlatState(false);
 
         //hide spinner in case it was there and show normal display text
         elems.renderingSpinner.setHide(true);
@@ -172,8 +178,8 @@ $(document).ready(() => {
   //sets the save state
   const setSaveState = saved => {
     //enable save button and message
-    elems.saveBtn.classState(saved, "disabled");
-    elems.saveMsg.classState(saved, "hide-this");
+    elems.saveBtn.disabledState(saved);
+    elems.saveMsg.setHide(saved);
 
     //set render state
     //but don't set if set as disabled, update list re-enabled when allowed
