@@ -1,11 +1,5 @@
 /*global makeAlertMessage*/
 
-//sets the invalid state
-$.fn.validationState = function(state) {
-  //for given state, removes both if not boolean
-  this.classState(state, "valid").classState(state === false, "invalid");
-};
-
 //gets the value of the selector (false returned if bad value or none selected)
 $.fn.getLevelSelectValue = function() {
   //must be called on select element

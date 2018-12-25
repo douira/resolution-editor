@@ -29,6 +29,12 @@ $.fn.disabledState = function(makeDisabled) {
   return this.classState(makeDisabled, "disabled");
 };
 
+//sets the invalid state
+$.fn.validationState = function(state) {
+  //for given state, removes both if not boolean
+  this.classState(state, "valid").classState(state === false, "invalid");
+};
+
 //triggers several events in order
 $.fn.triggerAll = function(eventNames, params) {
   //trigger all events with params
