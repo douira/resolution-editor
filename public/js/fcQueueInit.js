@@ -1,7 +1,7 @@
 /*global
 updateList,
 updateListConfig,
-advanceButton,
+queueElems,
 firstItem*/
 
 //on document ready
@@ -21,7 +21,7 @@ $(document).ready(() => {
     firstItemViewed = wasViewed;
 
     //set button state with stage
-    advanceButton.disabledState(! firstItemViewed);
+    queueElems.advanceButton.disabledState(! firstItemViewed);
   };
 
   //reset state to unrendered
