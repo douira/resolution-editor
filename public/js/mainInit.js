@@ -68,6 +68,6 @@ $(document).ready(() => {
   $("body")
   .on("touchstart", () => {
     //register touch event and remove tooltips for touch devices
-    $(".tooltipped").tooltip("remove");
+    //$(".tooltipped").tooltip("destroy");
   });
 });

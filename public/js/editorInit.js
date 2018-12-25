@@ -1391,10 +1391,7 @@ const registerEventHandlers = loadedData => {
     elem.find(".clause-list").remove();
 
     //reset phrase field with re-init
-    elem
-      .children(".phrase-input-wrapper")
-      .find(".phrase-input")
-      .trigger("init");
+    elem.find("> .phrase-input-wrapper .phrase-input").trigger("init");
   })
   .on("clear", function(e) {
     //clears field content
@@ -1514,7 +1511,7 @@ const registerEventHandlers = loadedData => {
     const phraseFieldWrapper = elem.children(".phrase-input-wrapper");
     if (phraseFieldWrapper.length) {
       //get phrase input field
-      const phraseField = phraseFieldWrapper.find("input");
+      const phraseField = phraseFieldWrapper.children("input");
 
       //put value into condensed element
       condensedWrapper.children(".cond-phrase")
@@ -1689,8 +1686,7 @@ const registerEventHandlers = loadedData => {
     //fill phrase field if present
     if ("phrase" in data) {
       elem
-        .children(".phrase-input-wrapper")
-        .find("input")
+        .find("> .phrase-input-wrapper > input")
         .val(data.phrase)
         .trigger("activateLabel");
     }

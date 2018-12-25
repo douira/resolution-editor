@@ -289,11 +289,9 @@ block content
                 span.clause-prefix
                 | Clause #
                 span.clause-number 1
-              .row.phrase-input-wrapper.hide-this
-                .col.xl4.m6.s12
-                  .input-field
-                    input.autocomplete.required.phrase-input(type="text")
-                    label Phrase
+              .phrase-input-wrapper.input-field.hide-this
+                input.autocomplete.required.phrase-input(type="text")
+                label Phrase
               +clause-content-field("clause-list-anchor clause-content", "Clause Content", "required")
               p.clause-cond.hide-this
                 span.cond-phrase
