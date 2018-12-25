@@ -56,14 +56,14 @@ const updateList = () => {
   //get new list from server
   $.get(updateListConfig.url).done(data => {
     //hide error message, we got some data
-    queueElems.errorMsg.hide();
+    queueElems.errorMsg.setHide(true);
 
     //if there are any items to display
     //list is interpreted as last items being oldest -> top of list -> to be worked on first
     if (typeof data === "object" && data instanceof Array && data.length) {
       //show list and hide message for no items
-      queueElems.list.show();
-      queueElems.noItems.hide();
+      queueElems.list.setHide(false);
+      queueElems.noItems.setHide(true);
 
       //get the next first item from the list
       const newFirst = data.pop();
@@ -93,13 +93,13 @@ const updateList = () => {
         //if more than once page in document
         if (firstItem.pageAmount > 1) {
           //show display
-          queueElems.totalPagesWrapper.show();
+          queueElems.totalPagesWrapper.setHide(false);
 
           //set total amount
           setPageAmount("#item-print-total", firstItem.copyAmount * firstItem.pageAmount);
         } else {
           //hide, not needed
-          queueElems.totalPagesWrapper.hide();
+          queueElems.totalPagesWrapper.setHide(true);
         }
       }
 
@@ -122,16 +122,16 @@ const updateList = () => {
       }
     } else {
       //hide list (makes an ugly line otherwise) and show no items message
-      queueElems.list.hide();
-      queueElems.noItems.show();
+      queueElems.list.setHide(true);
+      queueElems.noItems.setHide(false);
     }
   }).fail(() => {
     //hide other things
-    queueElems.noItems.hide();
-    queueElems.list.hide();
+    queueElems.noItems.setHide(true);
+    queueElems.list.setHide(true);
 
     //show error message, request went wrong
-    queueElems.errorMsg.show();
+    queueElems.errorMsg.setHide(false);
   });
 
   //reset timer

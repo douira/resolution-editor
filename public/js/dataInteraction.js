@@ -186,7 +186,7 @@ const loadFilePick = loadDone => {
     "file-upload", "Open resolution file", "cancel", (body, modal) => {
       body.text("Select a resolution file with the extension '.rso' to open:");
       const fileSelector = modal.find("#file-selector");
-      fileSelector.show();
+      fileSelector.setHide(false);
       const fileInput = fileSelector.find(".file-input");
       fileInput.getData().fileLoadCallback = text => {
         //close and thereby reset for other modal action
@@ -250,7 +250,7 @@ const generatePdf = () => {
   $.get(`/resolution/renderpdf/${resolutionToken}`)
   .done(response => {
     //stop showing spinner
-    spinner.addClass("hide-this");
+    spinner.setHide(true);
 
     //display link to generated pdf
     makeAlertMessage(
@@ -261,7 +261,7 @@ const generatePdf = () => {
   })
   .fail(() => {
     //stop showing spinner
-    spinner.addClass("hide-this");
+    spinner.setHide(true);
 
     //display error and request creation of bug report
     makeAlertMessage(

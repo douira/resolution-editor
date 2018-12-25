@@ -102,8 +102,7 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
     }
 
     //add or remove class
-    element[isValid ? "removeClass" : "addClass"]("invalid")[
-      isValid ? "addClass" : "removeClass"]("valid");
+    element.classState(! isValid, "invalid").classState(isValid, "valid");
   };
 
   //updates the button state after checking the validation state of both fields
@@ -116,7 +115,7 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
        ? inputOpts.additionalValidation(setInputValidState) : true);
 
     //apply to button state
-    submitElem[allOk ? "removeClass" : "addClass"]("disabled");
+    submitElem.classState(! allOk, "disabled");
   };
 
   //check button state also when change happens on additional inputs

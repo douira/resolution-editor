@@ -6,12 +6,6 @@ $.fn.getResItem = function() {
   return this.closest("li.collection-item");
 };
 
-//sets the class status for an element and given class
-$.fn.classStatus = function(useClass, status) {
-  //add or remove depening on passed status
-  this[status ? "addClass" : "removeClass"](useClass);
-};
-
 //on document ready
 $(document).ready(() => {
   //there are three states: not rendered, rendering, pdf not viewed (clicking goes back to stage 1)
@@ -66,7 +60,7 @@ $(document).ready(() => {
     switch (newState) {
       case "unrendered":
         //make enabled and set flat style to display action is ready
-        elems.printBtn.removeClass("disabled btn").addClass("btn-flat");
+        elems.printBtn.disabledState(false).removeClass("btn").addClass("btn-flat");
 
         //set text to display that a render will happen on hover
         elems.printBtnText.text("Hover to Generate PDF");
@@ -76,13 +70,13 @@ $(document).ready(() => {
         break;
       case "rendering":
         //show spinner and hide regular text
-        elems.renderingSpinner.removeClass("hide-this");
-        elems.printBtnInner.addClass("hide-this");
+        elems.renderingSpinner.setHide(false);
+        elems.printBtnInner.setHide(true);
         break;
       case "rendered":
         //hide rendering spinner and show regular text
-        elems.renderingSpinner.addClass("hide-this");
-        elems.printBtnInner.removeClass("hide-this");
+        elems.renderingSpinner.setHide(true);
+        elems.printBtnInner.setHide(false);
 
         //set normal button style (action requires click)
         elems.printBtn.removeClass("btn-flat").addClass("btn")
@@ -99,11 +93,11 @@ $(document).ready(() => {
         elems.printBtnText.text("Generate PDF");
 
         //and set default disabled style
-        elems.printBtn.addClass("disabled btn").removeClass("btn-flat");
+        elems.printBtn.disabledState(true).addClass("btn").removeClass("btn-flat");
 
         //hide spinner in case it was there and show normal display text
-        elems.renderingSpinner.addClass("hide-this");
-        elems.printBtnInner.removeClass("hide-this");
+        elems.renderingSpinner.setHide(true);
+        elems.printBtnInner.setHide(false);
 
         //set disabled icon
         elems.printBtnIcon.text("do_not_disturb");
@@ -178,8 +172,8 @@ $(document).ready(() => {
   //sets the save state
   const setSaveState = saved => {
     //enable save button and message
-    elems.saveBtn.classStatus("disabled", saved);
-    elems.saveMsg.classStatus("hide-this", saved);
+    elems.saveBtn.classState(saved, "disabled");
+    elems.saveMsg.classState(saved, "hide-this");
 
     //set render state
     //but don't set if set as disabled, update list re-enabled when allowed
@@ -242,11 +236,11 @@ $(document).ready(() => {
 
     //show and hide depending on list empty status
     if (listLength) {
-      elems.selectedListEmptyMsg.addClass("hide-this");
-      elems.selectedList.removeClass("hide-this");
+      elems.selectedListEmptyMsg.setHide(true);
+      elems.selectedList.setHide(false);
     } else {
-      elems.selectedListEmptyMsg.removeClass("hide-this");
-      elems.selectedList.addClass("hide-this");
+      elems.selectedListEmptyMsg.setHide(false);
+      elems.selectedList.setHide(true);
     }
 
     //check if the resolution can be printed

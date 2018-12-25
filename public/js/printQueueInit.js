@@ -41,16 +41,16 @@ $(document).ready(() => {
           .attr("href", "#")
           .removeClass("btn")
           .addClass("btn-flat");
-        queueElems.advanceButton.addClass("disabled");
+        queueElems.advanceButton.disabledState(true);
         break;
       case "rendering":
-        printBtnInner.addClass("hide-this");
-        pdfWaitSpinner.removeClass("hide-this");
+        printBtnInner.setHide(true);
+        pdfWaitSpinner.setHide(false);
         break;
       case "rendered":
-        printBtnInner.removeClass("hide-this");
-        pdfWaitSpinner.addClass("hide-this");
-        queueElems.advanceButton.addClass("disabled");
+        printBtnInner.setHide(false);
+        pdfWaitSpinner.setHide(true);
+        queueElems.advanceButton.disabledState(true);
 
         //set to be rendered
         useItem.unrenderedChanges = false;
@@ -64,7 +64,7 @@ $(document).ready(() => {
         printBtnText.text("View PDF");
         break;
       case "viewed":
-        queueElems.advanceButton.removeClass("disabled");
+        queueElems.advanceButton.disabledState(false);
         break;
     }
   };

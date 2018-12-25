@@ -21,7 +21,7 @@ $(document).ready(() => {
     firstItemViewed = wasViewed;
 
     //set button state with stage
-    advanceButton[firstItemViewed ? "removeClass" : "addClass"]("disabled");
+    advanceButton.disabledState(! firstItemViewed);
   };
 
   //reset state to unrendered

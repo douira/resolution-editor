@@ -221,7 +221,7 @@ $.fn.addSubClause = function(activationStateChanges) {
 
     //hide the add clause container if the clause editInactive handler isn't going to do it
     if (! activationStateChanges) {
-      subList.children(".add-clause-container").hide();
+      subList.children(".add-clause-container").setHide(true);
     }
 
     //add created list to clause, add clause button will be made visible by clause event
@@ -586,8 +586,8 @@ const registerEssentialEventHandlers = doLoad => {
       e.stopPropagation();
       const elem = $(this);
       elem.find("input,textarea").trigger("reset");
-      elem.find("#delete-action-confirm").hide();
-      elem.find("#file-selector").hide();
+      elem.find("#delete-action-confirm").setHide(true);
+      elem.find("#file-selector").setHide(true);
     });
   }
   $("#action-pdf")
@@ -638,26 +638,6 @@ const registerEventHandlers = loadedData => {
       return "You have unsaved changes that will be lost if you proceed!" +
         "Press the 'Save' button to save your resolution.";
     }
-  });
-
-  //hide liveview hint logic
-  $("#hide-liveview-hint")
-  .on("click", function(e) {
-    //toggle visibility of liveview hint
-    const clickText = $(this);
-    const hint = $("#liveview-hint");
-
-    //for both states, set visivility state and modify click text
-    if (hint.is(":visible")) {
-      hint.hide();
-      clickText.text("[Show hint]");
-    } else {
-      hint.show();
-      clickText.text("[Hide hint]");
-    }
-
-    //prevent following of link and scroll movement
-    e.preventDefault();
   });
 
   //init selectors
@@ -731,8 +711,8 @@ const registerEventHandlers = loadedData => {
         //show no-selection-message if no clause is selected
 
         //show message and hide amd clause container
-        amdClauseWrapper.hide();
-        amdNoSelectionMsg.show();
+        amdClauseWrapper.setHide(true);
+        amdNoSelectionMsg.setHide(false);
       }
 
       //displayable if a clause is given
@@ -746,10 +726,10 @@ const registerEventHandlers = loadedData => {
       }
 
       //hide select message
-      amdNoSelectionMsg.hide();
+      amdNoSelectionMsg.setHide(true);
 
       //show clause container
-      amdClauseWrapper.show();
+      amdClauseWrapper.setHide(false);
 
       //move into amendment display section
       amdClauseListSelection = amdOrigClause
@@ -1500,7 +1480,7 @@ const registerEventHandlers = loadedData => {
     //hide edit button
     editModeBtn
       .setHide(true)
-      .before($("#eab-wrapper").show()); //show edit action buttons and move to clause
+      .before($("#eab-wrapper").setHide(false)); //show edit action buttons and move to clause
 
     //update eab button disable
     elem
@@ -1510,7 +1490,7 @@ const registerEventHandlers = loadedData => {
 
     //show add clause button if we're in a subclause (otherwise it's always visible)
     if (elem.isSubClause()) {
-      elem.siblings(".add-clause-container").show();
+      elem.siblings(".add-clause-container").setHide(false);
     }
   })
   .on("editInactive", function(e, amdUpdatePossible, noExtCondUpdate) {
@@ -1589,7 +1569,7 @@ const registerEventHandlers = loadedData => {
     }
 
     //hide edit action buttons and move to resting place
-    eabs.hide().insertAfter($("#eab-inactive-anchor"));
+    eabs.setHide(true).insertAfter($("#eab-inactive-anchor"));
 
     //trigger amd update on real inactivation, (not on just-making-sure inactivation)
     //amd diff update is too costly for server and clients to do for every keypress
@@ -1602,7 +1582,7 @@ const registerEventHandlers = loadedData => {
 
     //hide add clause button if we're a subclause
     if (elem.isSubClause()) {
-      elem.siblings(".add-clause-container").hide();
+      elem.siblings(".add-clause-container").setHide(true);
     }
 
     //only check if message wasn't displayed yet
@@ -1996,7 +1976,7 @@ const registerEventHandlers = loadedData => {
           " random key smashing.");
 
         //show button
-        modal.find("#delete-action-confirm").show();
+        modal.find("#delete-action-confirm").setHide(false);
       });
   });
 

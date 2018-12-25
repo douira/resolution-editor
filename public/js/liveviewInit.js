@@ -225,7 +225,7 @@ const updateLastAmdList = () => {
         itemStatus.classState(applyStatus, "green-text").classState(! applyStatus, "red-text");
       } else {
         //nothing there, hide element
-        amdElem.addClass("hide-this");
+        amdElem.setHide(true);
       }
     }
   }
@@ -292,9 +292,9 @@ const render = () => {
     $("#co-sponsor-info").text(coSponsors.join(", "));
 
     //show enclosing row
-    $("#co-sponsor-row").removeClass("hide-this");
+    $("#co-sponsor-row").setHide(false);
   } else {
-    $("#co-sponsor-row").addClass("hide-this");
+    $("#co-sponsor-row").setHide(true);
   }
 
   //get clause content template and prepare for use
@@ -532,7 +532,7 @@ const render = () => {
       }
 
       //add the newly created clause to the document and make it visible
-      clauseWrapper.appendTo(container).show();
+      clauseWrapper.appendTo(container).setHide(false);
 
       //check if the clause is subject of the amendment
       if (isOps && amendment && amendment.clauseIndex === index) {
@@ -565,7 +565,7 @@ const render = () => {
         };
 
         //prepend before the given clause element and make visible
-        amdContainer.insertBefore(clauseWrapper).show();
+        amdContainer.insertBefore(clauseWrapper).setHide(false);
       }
     });
   });
@@ -614,9 +614,9 @@ $(document).ready(() => {
         //prepare if not prepared yet (first)
         if (! structure) {
           //show content container and hide the spinner and no-content warning
-          $("#resolution").show();
-          $("#spinner-wrapper").hide();
-          $("#no-content-msg").hide();
+          $("#resolution").setHide(false);
+          $("#spinner-wrapper").setHide(true);
+          $("#no-content-msg").setHide(true);
         }
 
         //copy given resolution to current structure
@@ -677,7 +677,7 @@ $(document).ready(() => {
         //if not given
         if (! lastAmdList) {
           //hide whole display list
-          $("#last-amd").addClass("hide-this");
+          $("#last-amd").setHide(true);
         }
 
         //re-render without amendment

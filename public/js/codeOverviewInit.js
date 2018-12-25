@@ -1,5 +1,11 @@
 /*global makeAlertMessage*/
 
+//sets the invalid state
+$.fn.validationState = function(state) {
+  //for given state, removes both if not boolean
+  this.classState(state, "valid").classState(state === false, "invalid");
+};
+
 //gets the value of the selector (false returned if bad value or none selected)
 $.fn.getLevelSelectValue = function() {
   //must be called on select element
@@ -18,20 +24,20 @@ $.fn.getLevelSelectValue = function() {
   //if nothing selected
   if (activeId === "") {
     //remove status styling and stop
-    selectBoxInput.removeClass("valid invalid");
+    selectBoxInput.validationState(null);
     return false;
   } else if (! ["SC", "AP", "FC", "CH", "SG", "MA"].includes(activeId)) {
     //must be one of the possible states
 
     //disable button and invalidate field
-    selectBoxInput.removeClass("valid").addClass("invalid");
+    selectBoxInput.validationState(false);
 
     //bad value
     return false;
   }
 
   //all is ok, display input field as valid
-  selectBoxInput.removeClass("invalid").addClass("valid");
+  selectBoxInput.validationState(true);
 
   //return truthy id string as gotten value
   return activeId;
@@ -72,17 +78,15 @@ $(document).ready(() => {
       codeElements.each(function() {
         //check if it contains the search string
         const e = $(this);
-        e.parent()[
-          e.text().toUpperCase().includes(query)
-          ? "removeClass" : "addClass"]("hide-this");
+        e.parent().setHide(! e.text().toUpperCase().includes(query));
       });
     } else {
       //show all again
-      codeElements.parent().removeClass("hide-this");
+      codeElements.parent().setHide(false);
     }
 
     //hide or show the clear button
-    clearSearchButton[query.length ? "removeClass" : "addClass"]("hide-this");
+    clearSearchButton.setHide(! query.length);
   };
 
   //on keypresses in the search field
@@ -120,8 +124,7 @@ $(document).ready(() => {
 
     //update button with selection state,
     //a level needs to be selected and at least one code has to be selected
-    changeLevelButton[
-      selectValue && selectedCodeAmount ? "removeClass" : "addClass"]("disabled");
+    changeLevelButton.disabledState(! (selectValue && selectedCodeAmount));
 
     //return value for further use
     return selectValue;
@@ -141,7 +144,7 @@ $(document).ready(() => {
     const isSelected = elem.is(".selected-code");
 
     //add or remove class depending on whether or not the class is present now
-    elem[isSelected ? "removeClass" : "addClass"]("selected-code");
+    elem.classState(! isSelected, "selected-code");
 
     //increment or decrement counter
     selectedCodeAmount += isSelected ? -1 : 1;
@@ -154,7 +157,7 @@ $(document).ready(() => {
     updateChangeLevelButton();
 
     //update revoke button style
-    revokeButton[selectedCodeAmount ? "removeClass" : "addClass"]("disabled");
+    revokeButton.disabledState(! selectedCodeAmount);
   });
 
   //returns list of all currently selected codes

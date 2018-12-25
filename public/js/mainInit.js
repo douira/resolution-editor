@@ -1,9 +1,17 @@
+//check for old browser and alert
+if (typeof Array.prototype.find !== "function") {
+  //eslint-disable-next-line no-alert
+  alert(
+    "You are using an outdated browser and we strongly encourage you to update" +
+    " it immediately. Because of that, this website may not work as expected" +
+    " or not at all and you may face security issues (not just with this website," +
+    " but in general).");
+}
+
 //sets the state of a class (adding or removing)
 $.fn.classState = function(state, className) {
   //add or remove class depending on flag value
-  this.each(function() {
-    $(this)[state ? "addClass" : "removeClass"](className);
-  });
+  this[state ? "addClass" : "removeClass"](className);
 
   //chaining
   return this;
@@ -44,9 +52,6 @@ $.fn.changeIcon = function(newIconName) {
 
 //navigation collapse
 $(document).ready(() => {
-  //init components automatically where possible
-  //M.AutoInit();
-
   //init sidenav
   $(".sidenav").sidenav();
 
@@ -59,17 +64,7 @@ $(document).ready(() => {
   //register event handlers
   $("body")
   .on("touchstart", () => {
-    //register touch event and remove tooltips for touch-devices
+    //register touch event and remove tooltips for touch devices
     $(".tooltipped").tooltip("remove");
   });
 });
-
-//check for old browser and alert
-if (typeof Array.prototype.find !== "function") {
-  //eslint-disable-next-line no-alert
-  alert(
-    "You are using an outdated browser and we strongly encourage you to update" +
-    " it immediately. Because of that, this website may not work as expected" +
-    " or not at all and you may face security issues (not just with this website," +
-    " but in general).");
-}
