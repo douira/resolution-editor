@@ -7,8 +7,8 @@ block styles
 block container-content
   +page-title(icons.liveview, colors.liveview)
     h3#lv-title Resolution LiveView
-  a.right(href="/help#liveview") Help Page Section for LiveView
-  h5.light#token-preset=token
+    a.right(href="/help#liveview") Help Page Section for LiveView
+    h5.light#token-preset=token
   #code-preset.hide-this=code
   ul.collection.hide-this#last-amd
     each i in [1, 2, 3]
@@ -26,7 +26,7 @@ block container-content
         h5#amd-text Proposal by #[span.amd-sponsor] to #[span.underline #[span.amd-action-text] #[span.amd-target]]:
       #address
         mixin info-piece(type)
-          .row
+          .row.lv-header-row
             .col.s4.l3: p=type.toUpperCase() + ":"
             .col.s8.l9: block
         +info-piece("Forum")
@@ -35,7 +35,7 @@ block container-content
           p#question-of-info ?
         +info-piece("Sponsor")
           p#sponsor-info ?
-        .row.hide-this#co-sponsor-row
+        .row.lv-header-row.hide-this#co-sponsor-row
           .col.s4.l3: p CO-SPONSORS:
           .col.s8.l9: p#co-sponsor-info
         p#address-line The #[span.forum-info ?],
@@ -45,9 +45,9 @@ block container-content
         #preamb-clauses
         ol#op-clauses
   br
-div.fixed-action-btn
-  a.btn-floating.btn-large#enter-fullscreen(class=pri)&attributes(tooltip("Enter Fullscreen mode", "left"))
-    +icon("fullscreen", "mediumsmall-i")
+  div.fixed-action-btn
+    a.btn-floating.btn-large#enter-fullscreen(class=pri)&attributes(tooltip("Enter Fullscreen mode", "left"))
+      +icon("fullscreen")
 
 block scripts
   +static("js", "/js/scrollintoview.js")

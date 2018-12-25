@@ -119,8 +119,24 @@ i.tiny, i.small, i.medium, i.large {
   line-height: inherit;
 }
 
+.btn-small i:before {
+  font-size: 1.2rem
+}
+
 .btn-floating i:before {
   font-size: 1.6rem;
+}
+
+.btn-large i:before {
+  font-size: 1.6rem;
+}
+
+.btn-floating.btn-large i:before {
+  font-size: 2.8rem;
+}
+
+.btn-floating.btn-large i {
+  line-height: 56px;
 }
 
 table.striped > thead {
@@ -139,7 +155,7 @@ table.striped > tbody > tr:nth-child(odd) {
   margin-top: -1rem;
 }
 
-.row {
+.row:not(.lv-header-row) {
   margin-left: -0.75rem !important;
   margin-right: -0.75rem !important;
 }
