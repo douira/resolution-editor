@@ -169,6 +169,10 @@ table.striped > tbody > tr:nth-child(odd) {
   line-height: 1.5em;
 }
 
+input, textarea {
+  color: inherit;
+}
+
 @media print {
   nav, footer {
     display: none;
