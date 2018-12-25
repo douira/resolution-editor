@@ -24,7 +24,7 @@ block modal
       a#delete-action-confirm.red-text.modal-action.modal-close.waves-effect.btn-flat.hide-this(class=priwaves) Delete
 
 block content
-  .section: .container
+  .container
     if code
       #code-preset.hide-this=code
       #code-access-level.hide-this=accessLevel
@@ -269,9 +269,8 @@ block content
       mixin clause-card(cardId, clauseType, cardType)
         div(id=cardId)
           h5=cardType + " Clauses"
-          .clause-list
-            .clause(data-clause-type=clauseType)
-              .divider
+          .clause-list.collection
+            .clause.collection-item(data-clause-type=clauseType)
               h6.grey-text.text-darken-2.clause-title
                 .eab-wrapper.right.hide-this
                   //-eab stands for edit action button
@@ -298,8 +297,7 @@ block content
                 span.cond-content
               +clause-content-field("clause-content-ext", "Continuation of Clause Content")
               p.clause-ext-cond.hide-this
-            .add-clause-container
-              .divider
+            .add-clause-container.collection-item
               a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)&attributes(tooltip("Adds a new clause to the list", "right"))
                 +icon("plus-box", "left")
                 | Add Clause
