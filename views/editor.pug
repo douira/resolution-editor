@@ -274,15 +274,15 @@ block content
               h6.grey-text.text-darken-2.clause-title
                 .eab-wrapper.right.hide-this
                   //-eab stands for edit action button
-                  +floating-sm-btn("blue", "eab-move-down", icons.moveDown, "Moves this clause down one space")
-                  +floating-sm-btn("blue", "eab-move-up", icons.moveUp, "Moves this clause up one space")
-                  +floating-sm-btn("indigo", "eab-add-sub", "format-indent-increase", "Creates a subclause in this clause")
-                  +floating-sm-btn("cyan", "eab-add-ext", "playlist-plus", "Adds a continuation text field under these subclauses")
-                  +floating-sm-btn("purple lighten-1", "eab-insert-below", "menu-open", "Inserts a new clause below")
+                  +floating-sm-btn("blue", "eab-move-down", icons.moveDown, "Move clause up")
+                  +floating-sm-btn("blue", "eab-move-up", icons.moveUp, "Move clause down")
+                  +floating-sm-btn("indigo", "eab-add-sub", "format-indent-increase", "Add a subclause")
+                  +floating-sm-btn("cyan", "eab-add-ext", "playlist-plus", "Add a continuation text under the subclauses")
+                  +floating-sm-btn("purple lighten-1", "eab-insert-below", "menu-open", "Insert a new clause below")
                   if allowAmendments
-                    +floating-sm-btn("lime darken-1", "eab-amd", icons.amendment, "Selects this clause for an amendment")
-                  +floating-sm-btn("red", "eab-delete", "trash-can-outline", "Removes this clause and all its subclauses")
-                  +floating-sm-btn("green", "eab-done", icons.doneCheck, "Finishes editing and deactivates edit mode")
+                    +floating-sm-btn("lime darken-1", "eab-amd", icons.amendment, "Select this clause for an amendment")
+                  +floating-sm-btn("red", "eab-delete", "trash-can-outline", "Delete this clause")
+                  +floating-sm-btn("green", "eab-done", icons.doneCheck, "Finish editing this clause")
                 a.edit-mode-btn.btn.right.white-text.lighten-1(class=pri)&attributes(tooltip("Activates editing of this clause", "left"))
                   +icon(icons.edit, "icon-sm-med")
                 span.clause-prefix

@@ -63,11 +63,4 @@ $(document).ready(() => {
     constrainWidth: false,
     hover: true
   });
-
-  //register event handlers
-  $("body")
-  .on("touchstart", () => {
-    //register touch event and remove tooltips for touch devices
-    //$(".tooltipped").tooltip("destroy");
-  });
 });
