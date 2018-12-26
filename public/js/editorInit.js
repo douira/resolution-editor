@@ -659,9 +659,6 @@ const registerEventHandlers = loadedData => {
     //also shows the no selection message if no clause is selected or the
     //selected clause has been removed in the mean time
     const updateAmd = sendNoUpdate => {
-      //trigger edit inactive on the current selection to avoid removing the eabs
-      //amdClauseListSelection.find(".clause").trigger("editInactive");
-
       //empty clause wrapper to remove any leftover from last amd display
       amdClauseWrapper.empty();
 
@@ -695,9 +692,6 @@ const registerEventHandlers = loadedData => {
 
       //move into amendment display section
       amdClauseListSelection = amdOrigClause
-        //prevent cloning of eabs
-        //.trigger("editInactive")
-
         //clone the parent list, clause needs to be in list to make subclauses
         .parent(".clause-list")
 
@@ -728,8 +722,11 @@ const registerEventHandlers = loadedData => {
       //preselect main clause
       amdClauseElem = amdClauseListSelection.children(".clause");
 
+      //if we are in remove amd type
+      const isRemoveAmd = amdActionType === "remove";
+
       //disable if in remove mode to prevent editing, only display what will be removed
-      if (amdActionType === "remove") {
+      if (isRemoveAmd) {
         //by adding the disabled class the all contained input fields and textarea inputs
         amdClauseListSelection.find("input,textarea").attr("disabled", "");
 
@@ -752,8 +749,13 @@ const registerEventHandlers = loadedData => {
         amdClauseElem.find(".phrase-input").trigger("init");
       }
 
-      //activate new amendment clause
-      amdClauseElem.trigger("editActive");
+      //activate new editing on amendment clause if not in remove mode
+      amdClauseElem.trigger(isRemoveAmd ? "editInactive" : "editActive");
+
+      //hide edit mode button for remove type
+      if (isRemoveAmd) {
+        $(".edit-mode-btn").setHide(true);
+      }
 
       //update actions buttons now that clause is present
       updateActionBtnState();
@@ -764,7 +766,7 @@ const registerEventHandlers = loadedData => {
       }
     };
 
-    //send a saveAmd message abd then resets the amd display
+    //send a saveAmd message and then resets the amd display, apply/reject buttons
     const saveAmd = saveType => {
       //validation has already been done, get amd update object
       const saveAmdUpdate = getAmendmentUpdate();
@@ -881,12 +883,12 @@ const registerEventHandlers = loadedData => {
         amdUpdate.clauseIndex = clauseIndex;
       }
 
-      //all types (add, change, replace) except for require a new clause to be specified
+      //all types (add, change, replace) except for remove require a new clause to be specified
       if (amdActionType !== "remove") {
         //get amendment clause as object and allow empty fields (to display typing progress)
         amdUpdate.newClause = amdClauseElem.clauseAsObject(true);
 
-        //change type doesn't need to specify oldClause (now obsolete) because the old clause can be
+        //the source clause that the change type changes can be
         //deducted from the passed clause index and the resolution the server keeps track of
       }
 
@@ -934,25 +936,22 @@ const registerEventHandlers = loadedData => {
       //get parent clause
       const clause = $(this).closest(".clause");
 
-      //only change if a different clause was chosen than the already selected clause
-      //we need to compare the actual com objects here because the jquery object isn't persistent
-      //doesn't aply in add mode, need to copy new in any case then
-      if (amdActionType === "add" || amdOrigClause.get(0) !== clause.get(0)) {
-        //update the selected clause object
-        amdOrigClause = clause;
+      //allow re-selecting to reset (|| amdOrigClause.get(0) !== clause.get(0))
 
-        //move the amendment display into view
-        $("#amd-info").scrollIntoView();
+      //update the selected clause object
+      amdOrigClause = clause;
 
-        //cannot be add type if clause is selected
-        if (amdActionType === "add") {
-          amdTypeSelect.setSelectValueId("noselection");
-          amdActionType = "noselection";
-        }
+      //move the amendment display into view
+      $("#amd-info").scrollIntoView();
 
-        //reset amendment display with new clause
-        updateAmd();
+      //cannot be add type if clause is selected
+      if (amdActionType === "add") {
+        amdTypeSelect.setSelectValueId("noselection");
+        amdActionType = "noselection";
       }
+
+      //reset amendment display with new clause
+      updateAmd();
     })
     .on("updateDisabled", function(e) {
       e.stopPropagation();
@@ -964,7 +963,7 @@ const registerEventHandlers = loadedData => {
       const notEligible = clause.closest("#amd-clause-wrapper").length ||
         clause.attr("data-clause-type") !== "op";
 
-      //hide if not eligible
+      //hide if not eligible (preamb or in amd already)
       $(this).setHide(notEligible);
 
       //only enabled if in top level op clause that isn't already in the amendment display
