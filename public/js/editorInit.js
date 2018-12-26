@@ -552,7 +552,7 @@ const registerEssentialEventHandlers = doLoad => {
       elem.find("#file-selector").setHide(true);
     });
   }
-  $("#action-pdf")
+  $(".action-pdf")
   .on("click", e => {
     e.stopPropagation();
 
@@ -568,7 +568,7 @@ const registerEssentialEventHandlers = doLoad => {
       serverSave(generatePdf); //why was this function call encapsulated?
     }
   });
-  $("#action-plaintext")
+  $(".action-plaintext")
   .on("click", e => {
     e.stopPropagation();
 
@@ -1920,7 +1920,7 @@ const registerEventHandlers = loadedData => {
   });
 
   //open file modal to load resolution from file
-  $("#legacy-action-load")
+  $(".action-load-file")
   .on("click", e => {
     //file actions are defined in a seperate file
     e.stopPropagation();
@@ -1933,7 +1933,7 @@ const registerEventHandlers = loadedData => {
   });
 
   //downloads the resolution as a file (json)
-  $("#legacy-action-save")
+  $(".action-save-file")
   .on("click", e => {
     e.stopPropagation();
 
@@ -1945,7 +1945,7 @@ const registerEventHandlers = loadedData => {
   });
 
   //saves the resolution to the server
-  $("#action-save")
+  $(".action-save")
   .on("click", e => {
     e.stopPropagation();
 
@@ -1968,7 +1968,7 @@ const registerEventHandlers = loadedData => {
   });
 
   //delete button opens a model asking for confirmation
-  $("#action-delete")
+  $(".action-delete")
   .on("click", e => {
     e.stopPropagation();
 

@@ -58,7 +58,8 @@
     forward: "forward",
     clock: "clock-outline",
     stageInfo: "clipboard-text",
-    concurrency: "swap-horizontal-bold"
+    concurrency: "swap-horizontal-bold",
+    resolutionSave: "cloud-upload"
   };
 
   //colors for icons
@@ -121,13 +122,14 @@ mixin spinner(colorCode, size)
         .circle
 
 //-makes the page headers more compact
-mixin page-title(icon, iconColor, optionalTitle)
+mixin page-title(icon, iconColor, optionalTitle, divider = true)
   +icon(icon, "header-large left " + iconColor)
   if optionalTitle
     h3=optionalTitle
   else
     block
-  .divider
+  if divider
+    .divider
 
 doctype html
 html(lang="en")

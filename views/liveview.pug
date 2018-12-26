@@ -5,7 +5,7 @@ block styles
   +static("css", "/css/liveviewColors.css")
 
 block container-content
-  +page-title(icons.liveview, colors.liveview)
+  +page-title(icons.liveview, colors.liveview, null, false)
     h3#lv-title Resolution LiveView
     a.right(href="/help#liveview") Help Page Section for LiveView
     h5.light#token-preset=token
@@ -45,7 +45,7 @@ block container-content
         #preamb-clauses
         ol#op-clauses
   br
-  div.fixed-action-btn
+  .fixed-action-btn
     a.btn-floating.btn-large#enter-fullscreen(class=pri)&attributes(tooltip("Enter Fullscreen mode", "left"))
       +icon("fullscreen")
 
