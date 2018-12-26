@@ -162,7 +162,7 @@ $.fn.clauseRemovable = function() {
   return this
     .parent()
     .children(".clause")
-    .length >= 2 || this.closest(".clause-list").is(".clause-list-sub");
+    .length >= 2 || this.isSubClause();
 };
 
 //checks if elemnt is a subclause
@@ -960,16 +960,20 @@ const registerEventHandlers = loadedData => {
       //get closest enclosing clause
       const clause = $(this).closest(".clause");
 
+      //check if in amendment display or is not op clause
+      const notEligible = clause.closest("#amd-clause-wrapper").length ||
+        clause.attr("data-clause-type") !== "op";
+
+      //hide if not eligible
+      $(this).setHide(notEligible);
+
       //only enabled if in top level op clause that isn't already in the amendment display
       $(this).disabledState(
-        //must be op clause
-        clause.attr("data-clause-type") !== "op" ||
-
-        //must not be in amendment display
-        clause.closest("#amd-clause-wrapper").length ||
+        //must be op clause and must not be in amendment display
+        notEligible ||
 
         //must not be inside a sub clause list (be top level clause)
-        clause.parent().hasClass("clause-list-sub")
+        clause.isSubClause()
       );
     });
 
@@ -1526,7 +1530,7 @@ const registerEventHandlers = loadedData => {
     //also move content into condensed content element
     condensedWrapper
       .children(".cond-content")
-      .html(textContent.length && textContent !== " "
+      .html(textContent.trim().length
         ? processCondText(textContent)
         : `${textContent}<em class='red-text'>no content</span>`);
 
@@ -1632,11 +1636,11 @@ const registerEventHandlers = loadedData => {
 
     //tries to remove this clause
     if (elem.clauseRemovable()) {
-      //inactivate to make eab go away
-      //elem.trigger("editInactive");
-
       //save parent
       const parent = elem.parent();
+
+      //remove tooltips, otherwise they get stuck
+      elem.find(".tooltipped").tooltip("destroy");
 
       //check if this clause is the last subclause in its list
       if (parent.children(".clause").length === 1) {
@@ -1649,7 +1653,7 @@ const registerEventHandlers = loadedData => {
           .setHide(true)
           .children("textarea");
         const contentField = clause.children(".clause-content").children("textarea");
-        contentField.val(`${contentField.val().trim()} ${extField.val().trim()}`);
+        contentField.val(`${contentField.val().trim()} ${extField.val().trim()}`.trim());
 
         //trigger autoresize on modified field
         contentField.trigger("autoresize");
@@ -1660,11 +1664,14 @@ const registerEventHandlers = loadedData => {
         //hide ext content condensed field on parent and trigger inactivation to update cond fields
         const parentClause = parent.parent();
         parentClause.children(".clause-ext-cond").setHide(true);
-        parentClause.trigger("editInactive", [false, true]);
-      }
+        parentClause.trigger("editInactive", true);
 
-      //remove this clause
-      elem.remove();
+        //delete whole clause list
+        elem.parent().remove();
+      } else {
+        //remove this clause
+        elem.remove();
+      }
 
       //update ids of other clauses around it
       parent.children(".clause").trigger("updateId");
@@ -1854,10 +1861,42 @@ const registerEventHandlers = loadedData => {
     e.stopPropagation();
     const clause = $(this).closest(".clause");
 
-    //TODO add clause below this clause
+    //get all clauses in this list
+    const listClauses = clause.parent().children(".clause");
 
-    //send structure update because clauses changed
-    sendLVUpdate("structure", "TODO", clause);
+    //add a new clause to the enclosing list by
+    //duplicating and resetting the first one of the current type
+    const addedClause = listClauses
+      .first()
+      .clone(true, true)
+      .insertAfter(clause)
+
+      //reset to activate autofill, make edit active
+      .triggerAll("reset editActive");
+
+    //re-init tooltip after clone
+    addedClause.cleanupClonedTooltips();
+
+    //made a change
+    changesSaved = false;
+
+    //update id of all clauses in section
+    listClauses.triggerAllIdUpdate();
+
+    //send structure update because clause indexes changed
+    sendLVUpdate("structure", "insert", clause);
+  })
+  .on("updateDisabled", function(e) {
+    e.stopPropagation();
+
+    //get closest enclosing clause
+    const clause = $(this).closest(".clause");
+
+    //disabled in amendment display as top clause
+    $(this).disabledState(
+      //must not be in top-level amendment display
+      clause.closest("#amd-clause-wrapper").length && ! clause.isSubClause()
+    );
   });
 
   //eab remove clause button
@@ -1939,8 +1978,8 @@ const registerEventHandlers = loadedData => {
       (contentBody, modal) => {
         //set text
         contentBody.html(
-          "Are you really sure you want to delete this resolution forever? It will be gone" +
-          " and all its content lost forever. <br>Only use this option if the resolution contains" +
+          "Are you sure you want to archive this resolution? It will be removed from" +
+          "the resolution process. <br>Only use this option if the resolution contains" +
           " content that clearly violates the <a href='/help/contentguidelines'>content" +
           " guidelines</a>! Just leave it be if it was created accidentally or filled with" +
           " random key smashing.");

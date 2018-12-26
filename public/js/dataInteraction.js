@@ -632,12 +632,12 @@ const doAmdUpdate = () => {
 //sends edit updates or handles them through another part
 //given elem can also be enclosing clause list on structure update,
 //elem must be given if not in catchup event type
-/*eventTypes, there apply to all types of clauses (mostly)
+/*eventTypes, they apply to all types of clauses (mostly)
 type: content
   type,
   autocomplete,
 type: structure
-  catchup, called when a viewed joined and previously no lv updates were being sent
+  catchup, called when a viewer joined and previously no lv updates were being sent
   remove, clause is removed (and maybe contentExt also removed)
   add, clause is added with "add clause"
   move, clause order is changed
@@ -686,8 +686,8 @@ const sendLVUpdate = (type, eventType, elem) => {
     //need index update on amd display for always catchup and for top level clauses
     //on remove, add, move or in amendment
     if (eventType === "catchup" || inAmd ||
-        isTopLevelOp && (eventType === "remove" || eventType === "add" || eventType === "move")) {
-      //send/update index
+        isTopLevelOp && ["remove", "add", "move", "insert"].includes(eventType)) {
+      //update current amd index
       doAmdUpdate();
     }
   } else if (type === "amendment") {
