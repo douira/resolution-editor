@@ -94,6 +94,10 @@ It was adapted and expanded.*/
   position: relative;
 }
 
+#clauses ol .op-wrapper.mark-green li:before {
+  counter-increment: item 0;
+}
+
 #clauses ol li:before {
   content: counter(item) ". ";
   counter-increment: item;
