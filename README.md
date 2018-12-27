@@ -99,8 +99,9 @@ PM2 will change locations with nvm when node is updated; `pm2 startup` needs to 
 Thanks for wanting to contribute, that's great! All the info on how to contribute is in the [CONTRIBUTING file](https://github.com/douira/resolution-editor/edit/meta/CONTRIBUTING.md).
 
 ## Preview
-Here are some previews of the editor as PDFs: (rendered a few months ago, update will come soon)
-- [Editor Page](https://github.com/douira/resolution-editor/blob/master/preview/Editor%20Page.pdf)
-- [Front Page](https://github.com/douira/resolution-editor/blob/master/preview/Front%20Page.pdf)
-- [Help Page](https://github.com/douira/resolution-editor/blob/master/preview/Help%20Page.pdf)
-- [Content Guidelines](https://github.com/douira/resolution-editor/blob/master/preview/Content%20Guidelines.pdf)
+Here are PDF previews of some pages of the editor. Note that these are generated in `print` rendering mode so they *will* look slightly distorted and different than the website when viewed normally in a browser.
+- [Before New Resolution](https://github.com/douira/resolution-editor/blob/master/previews/Before%20New%20Resolution.pdf)
+- [Editor with Example Resolution](https://github.com/douira/resolution-editor/blob/master/previews/Editor%20with%20Example%20Resolution.pdf)
+- [Front Page](https://github.com/douira/resolution-editor/blob/master/previews/Front%20Page.pdf)
+- [Help Page](https://github.com/douira/resolution-editor/blob/master/previews/Help%20Page.pdf)
+- [Resolutions Overview](https://github.com/douira/resolution-editor/blob/master/previews/Resolutions%20Overview.pdf)
