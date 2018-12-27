@@ -2080,18 +2080,18 @@ $(document).ready(() => {
 
         //get input elements by selecting elements with their ids
         const fields = ["#infavor-vote-input", "#against-vote-input", "#abstention-vote-input"]
-          .map($); //map selector to selected
+          .map(s => $(s)); //map selector to selected
 
         //get values from all fields and return gotten number
-        const values = fields.map(e => e.val());
+        const values = fields.map(e => parseInt(e.val(), 10));
 
-        //all of them are not positive
-        const anyPositive = ! values.every(v => v <= 0);
+        //if any is positive
+        const anyPositive = values.some(v => typeof v === "number" && v > 0);
 
         //mark with validation signs
         fields.forEach((e, index) =>
           //take individual value into consideration, all invalid if none positive
-          setFieldState(e, values[index] > 0 || anyPositive && ! values[index])
+          setFieldState(e, values[index] >= 0 && anyPositive)
         );
 
         //check that there is at least one ok value and no bad value

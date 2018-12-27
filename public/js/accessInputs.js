@@ -120,7 +120,7 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
 
   //check button state also when change happens on additional inputs
   if (typeof inputOpts.additionalInputsSelectors === "string") {
-    $(inputOpts.additionalInputsSelectors).on("keyup paste", updateButtonState);
+    $(inputOpts.additionalInputsSelectors).on("input", updateButtonState);
   }
 
   //handles a submit even (pressig a submit button or pressing enter in one of the input fields)
@@ -283,7 +283,7 @@ const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
   }
 
   //attach activity handler
-  fieldElems.on("keyup paste click", onFieldActivity);
+  fieldElems.on("input", onFieldActivity);
 
   //on keydown event for enter press in form
   fieldElems.on("keydown", e => {
