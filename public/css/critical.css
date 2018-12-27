@@ -1,13 +1,10 @@
 .hide-this {
   display: none;
+  visibility: hidden;
 }
 
 #token-preset {
   font-family: monospace;
-}
-
-.mediumsmall {
-  font-size: 3rem;
 }
 
 .justify {

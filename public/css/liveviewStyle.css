@@ -4,6 +4,11 @@
 
 #lv-title {
   margin-top: 1rem;
+  margin-bottom: 0;
+}
+
+#token-preset {
+  margin-top: 0;
 }
 
 #preamb-clauses, #op-clauses > .op-wrapper, #address {
@@ -16,10 +21,6 @@
 #viewcontent:-webkit-full-screen {
   width: 100%;
   height: 100%;
-}
-
-.mediumsmall-i {
-  font-size: 3rem !important;
 }
 
 #address .row, #address .col {
@@ -91,6 +92,10 @@ It was adapted and expanded.*/
   display: block;
   padding-left: 40px;
   position: relative;
+}
+
+#clauses ol .op-wrapper.mark-green li:before {
+  counter-increment: item 0;
 }
 
 #clauses ol li:before {

@@ -6,21 +6,66 @@ block title
 block styles
   +static("css", "/css/formatdefinitionStyle.css")
 
-block content
-  .container
-    h3 Resolution Structure Format Definition
-    p.justify This object describes the format of the resolution in a file or as stored in the database. All resolutions have this format. If the format changes, resolutions in outdated formats may become unreadable by the editor. This definition validates the formal structure of a resolution in MUNOL.
-    .row
-      .col.m6.s12
-        mixin objectlist(obj)
-          ul
-            each val, prop in obj
-              li
-                if typeof val === "object"
-                  =prop + ": "
-                  +objectlist(val)
-                else
-                  =prop + ": " + val
-        .padd-list: +objectlist(data)
-      .col.m6.s12
-        pre=dataJson
+block container-content
+  +page-title(icons.formatDef, "text-darken-2 grey-text", "Resolution Structure Format Definition")
+  p.justify This object describes the format of the resolution in a file or as stored in the database. All resolutions have this format. If the format changes, resolutions in outdated file formats may become unreadable by the editor. This definition validates the formal structure of a resolution in MUNOL. Additionally, no deeper child clauses than subsub-clauses are allowed (even though that isn't represented in this definition page).
+  mixin struct(obj)
+    ul
+      li Name: #[span.propname=obj.name]
+      li.type-def Type: #[em=obj.type]
+        span.blue-text.text-darken-4: case obj.type
+          when "string"
+            +icon("text")
+          when "number"
+            +icon("numeric")
+          when "boolean"
+            +icon("swap-horizontal")
+          when "object"
+            +icon("shape-outline")
+          when "array"
+            +icon("animation-outline")
+          default
+            +icon("help-rhombus-outline")
+      li Required:
+        if obj.required
+          |  Yes
+          +icon("alert-circle", "deep-orange-text")
+        else
+          |  No
+          +icon("star-circle", "teal-text")
+      if obj.value
+        li Required value:
+          if obj.type === "string"
+            |  "#{obj.value}"
+          else
+            |  #{obj.value}
+      if obj.requiresField
+        li Requires sibling property: #[span.propname=obj.requiresField]
+      case obj.type
+        when "object"
+          li Object properties:
+          ul.collection
+            each val in obj.content
+              li.collection-item: +struct(val)
+        when "array"
+          li Minimum length: #{obj.content.minLength}
+          li="Allowed Types: "
+            each t, i in obj.content.contentTypes
+              span.propname
+                =t
+                if i < obj.content.contentTypes.length - 1
+                  =", "
+  .row.def-tree
+    .col.l6.s12
+      h5 Types:
+      ul
+        each val, prop in data.types
+          li(id=prop)
+            h6.propname=prop
+            ul.collection: each propv in val
+              li.collection-item: +struct(propv)
+    .col.l6.s12
+      h5 Structure:
+      ul.collection
+        each val in data.structure
+          li.collection-item: +struct(val)

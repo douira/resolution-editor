@@ -3,27 +3,26 @@ extends layout
 block title
   title Session Login
 
-block content
-  .container
-    h4.center Enter your access code to login
-    br
-    .row#access-input
-      .input-field.col.xl6.l5.s12: form(method="POST" action="/")#code-form
-        +icon(icons.code, "prefix")
-        input#code-input(name="code" type="text" placeholder=placeholders.code)
-        label(for="code-input") Enter access code
-      .col.xl6.l7.m12#queue-info.justify Enter your access code to login and go back to where this permission session was necessary. If no activity is detected on this session for more than #[b five hours] it will be automatically logged out.
-        if loggedIn
-          br
-          span.red-text You are already logged in with level #{level} and code #{code}. To switch to another code you have to log out first.
-        else
-          br
-          | You are not logged in. By logging in you agree with this website using cookies to manage session information.
-    .center
-      a.btn-large.waves-effect.waves-light#login-btn(href="#" class=pri) Login
+block container-content
+  h4.center Enter your access code to log in
+  br
+  .row#access-input
+    form(method="POST" action="/")#code-form: .input-field.col.xl6.l5.s12
+      +icon(icons.code, "prefix")
+      input#code-input(name="code" type="text" placeholder=placeholders.code)
+      label(for="code-input") Enter access code
+    .col.xl6.l7.m12#queue-info.justify Enter your access code to login and go back to where this permission session was necessary.
+      br
       if loggedIn
-        a.btn-large.waves-effect.waves-light.btn-spacing#logout-btn(href="/session/logout" class=colors.logoutButton) Logout
-    br
+        span.red-text You are already logged in with level #{sessionLevel} and code #{sessionCode}. To switch to another code you have to log out first.
+      else
+        | You are not logged in. By logging in you agree with this website using cookies to manage session information.
+  .center
+    a.btn-large.waves-effect.waves-light#login-btn(href="#" class=pri) Login
+    if loggedIn
+      a.btn-large.waves-effect.waves-light.btn-spacing#logout-btn(href="/session/logout" class=colors.logoutButton) Logout
+  br
+
 block scripts
   +static("js", "/js/accessInputs.js")
   +static("js", "/js/loginInit.js")

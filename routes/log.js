@@ -1,11 +1,11 @@
-/*jshint esversion: 6, node: true */
 const express = require("express");
-const router = module.exports = express.Router();
+const router = express.Router();
+module.exports = router;
 const { logger, issueError } = require("../lib/logger");
 const { getAndPost } = require("../lib/routingUtil");
 
 //POST or GET an error
-getAndPost(router, "/", function(req, res) {
+getAndPost(router, "/", (req, res) => {
   //messages array
   let messages;
 
@@ -13,8 +13,9 @@ getAndPost(router, "/", function(req, res) {
   if (req.body && req.body.messages && req.body.messages.length) {
     //unwrap from body
     messages = req.body.messages;
-  } //alternatively allow passing of message as url object
-  else if (req.query) {
+  } else if (req.query) {
+    //alternatively allow passing of message as url object
+
     //use query as messages
     messages = req.query;
   }

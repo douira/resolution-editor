@@ -1,11 +1,10 @@
-/*jshint esversion: 6, node: true, mocha: true, expr: true*/
 const { expect } = require("chai");
 const tokenProcessor = require("../lib/token");
 const credentials = require("../lib/credentials");
 
-describe("token processor", function() {
-  describe("generation", function() {
-    it("should generate a valid token/code", function() {
+describe("token processor", () => {
+  describe("generation", () => {
+    it("should generate a valid token/code", () => {
       //make a token to inspect
       const token = tokenProcessor.makeToken();
 
@@ -29,7 +28,7 @@ describe("token processor", function() {
       expect(tokenProcessor.makeToken()).to.not.equal(tokenProcessor.makeToken());
     });
 
-    it("should not generate the same character twice in succession", function() {
+    it("should not generate the same character twice in succession", () => {
       //run many times to verify with enough confidence
       for (let i = 0; i < 1000; i ++) {
         //validate that it has no same character twice in succession
@@ -38,8 +37,8 @@ describe("token processor", function() {
     });
   });
 
-  describe("validation", function() {
-    it("should generate the same validation string for the same input", function() {
+  describe("validation", () => {
+    it("should generate the same validation string for the same input", () => {
       //should stay the same
       let seed;
       for (let i = 0; i < 10; i ++) {
@@ -58,24 +57,24 @@ describe("token processor", function() {
         .to.not.equal(tokenProcessor.getValidation(Math.random().toString(), 5));
     });
 
-    it("should invalidate bad syntax token", function() {
+    it("should invalidate bad syntax token", () => {
       expect(tokenProcessor.check()).to.be.false;
       expect(tokenProcessor.check("")).to.be.false;
       expect(tokenProcessor.check("hgfhgfd")).to.be.false;
     });
 
-    it("should validate a lower case token", function() {
+    it("should validate a lower case token", () => {
       expect(tokenProcessor.check(tokenProcessor.makeToken().toLowerCase())).to.be.true;
     });
 
-    it("should recognise a valid token as valid", function() {
+    it("should recognise a valid token as valid", () => {
       expect(tokenProcessor.check(tokenProcessor.makeToken())).to.be.true;
     });
   });
 
   describe("key hashed validation", function() {
     let cred;
-    before("copy real credentials out", function() {
+    before("copy real credentials out", () => {
       cred = {
         tokenSeed: credentials.tokenSeed,
         tokenSuffix: credentials.tokenSuffix
@@ -85,7 +84,7 @@ describe("token processor", function() {
     //retry on random collision
     this.retries(5);
 
-    it("should invalidate a token from a different tokenSeed", function() {
+    it("should invalidate a token from a different tokenSeed", () => {
       //change seed and expect it to be invalidated
       credentials.tokenSeed = 1145436668;
       const token = tokenProcessor.makeToken();
@@ -93,14 +92,14 @@ describe("token processor", function() {
       expect(tokenProcessor.check(token)).to.be.false;
     });
 
-    it("should invalidate a token from a different tokenSuffix", function() {
+    it("should invalidate a token from a different tokenSuffix", () => {
       credentials.tokenSuffix = "glfdkgGSGDF765kflgklödgkföd";
       const token = tokenProcessor.makeToken();
       credentials.tokenSeed = "1355dsfdsfsdFDSFSfdss465746";
       expect(tokenProcessor.check(token)).to.be.false;
     });
 
-    after("restore credentials", function() {
+    after("restore credentials", () => {
       credentials.tokenSeed = cred.tokenSeed;
       credentials.tokenSuffix = cred.tokenSuffix;
     });

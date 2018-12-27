@@ -1,11 +1,10 @@
-/*jshint esversion: 5, browser: true, varstmt: false, jquery: true*/
 /*exported log*/
 
 //list of log messages
-var logMessages = [];
+const logMessages = [];
 
 //log message send scheduling info
-var logSendSchedule = {
+const logSendSchedule = {
   //the last time we logged to the server
   lastLogFlush: 0,
 
@@ -22,13 +21,85 @@ var logSendSchedule = {
   maxSendRetries: 4
 };
 
+//flush the buffer of log messages to the server
+const sendBufferItems = () => {
+  //time remaining in te current wait interval
+  const sinceLastFlush = Date.now() - logSendSchedule.lastLogFlush;
+
+  //if waiting for a retry and the last log was not long enough ago
+  if (logSendSchedule.waitingForRetry ||
+      sinceLastFlush < logSendSchedule.minLogInterval) {
+    //if there is no retry set yet
+    if (! logSendSchedule.waitingForRetry) {
+      //waiting for retry now
+      logSendSchedule.waitingForRetry = true;
+
+      //set to retry in what is left to wait in the specified interval plus a little extra
+      //to avoid very fast loops
+      setTimeout(() => {
+        //reset retry flag
+        logSendSchedule.waitingForRetry = false;
+
+        //retry
+        sendBufferItems();
+      }, logSendSchedule.minLogInterval - sinceLastFlush + 50);
+    }
+
+    //stop and wait for later attempt
+    return;
+  }
+
+  //reset we are flushing to server
+  logSendSchedule.waitingForRetry = false;
+  logSendSchedule.lastLogFlush = Date.now();
+
+  //stop if nothing to log
+  if (! logMessages.length) {
+    return;
+  }
+
+  //check that jquery has loaded
+  if ($ && typeof $.post === "function") {
+    //keep track of how many messages we are sending
+    const messageAmount = logMessages.length;
+
+    //post to logging endpoint
+    $.post("/log", { messages: logMessages }).done(() => {
+      //remove as many messages as were present when the request was started
+      logMessages.splice(0, messageAmount);
+      console.log("sucessful error buffer flush");
+    }).fail(() => {
+      //seriously bad if we can't even send errors
+      console.log("Can't log error messages to server! Messages:", logMessages);
+
+      //increment failed send counter
+      logSendSchedule.failedSends ++;
+
+      //only retry if not retried too many times
+      if (logSendSchedule.failedSends < logSendSchedule.maxSendRetries) {
+        //alert user
+        alert( //eslint-disable-line no-alert
+          "Failed to log error messages to server!" +
+          " Please file an issues with the errors from the console." +
+          " See the Bug Report Link at the bottom of the page.");
+      } else {
+        //retry
+        sendBufferItems();
+      }
+    });
+  } else {
+    //retry
+    sendBufferItems();
+  }
+};
+
 //logs a message
-function log(dataOrMessage, level) {
+const log = (dataOrMessage, level) => {
   //log to console for immediate viewing
   console.log(dataOrMessage);
 
   //make log item object
-  var logItem = {
+  const logItem = {
     //include some helpful information
     url: window.location.href,
     timestamp: Date.now(),
@@ -70,115 +141,42 @@ function log(dataOrMessage, level) {
 
   //try to send to server
   sendBufferItems();
-}
-
-//flush the buffer of log messages to the server
-function sendBufferItems() {
-  //time remaining in te current wait interval
-  var sinceLastFlush = Date.now() - logSendSchedule.lastLogFlush;
-
-  //if waiting for a retry and the last log was not long enough ago
-  if (logSendSchedule.waitingForRetry ||
-      sinceLastFlush < logSendSchedule.minLogInterval) {
-    //if there is no retry set yet
-    if (! logSendSchedule.waitingForRetry) {
-      //waiting for retry now
-      logSendSchedule.waitingForRetry = true;
-
-      //set to retry in what is left to wait in the specified interval plus a little extra
-      //to avoid very fast loops
-      setTimeout(function() {
-        //reset retry flag
-        logSendSchedule.waitingForRetry = false;
-
-        //retry
-        sendBufferItems();
-      }, logSendSchedule.minLogInterval - sinceLastFlush + 50);
-    }
-
-    //stop and wait for later attempt
-    return;
-  }
-
-  //reset we are flushing to server
-  logSendSchedule.waitingForRetry = false;
-  logSendSchedule.lastLogFlush = Date.now();
-
-  //stop if nothing to log
-  if (! logMessages.length) {
-    return;
-  }
-
-  //check that jquery has loaded
-  if ($ && typeof $.post === "function") {
-    //keep track of how many messages we are sending
-    var messageAmount = logMessages.length;
-
-    //post to logging endpoint
-    $.post("/log", { messages: logMessages }).done(function() {
-      //remove as many messages as were present when the request was started
-      logMessages.splice(0, messageAmount);
-      console.log("sucessful error buffer flush");
-    }).fail(function() {
-      //seriously bad if we can't even send errors
-      console.log("Can't log error messages to server! Messages:", logMessages);
-
-      //increment failed send counter
-      logSendSchedule.failedSends ++;
-
-      //only retry if not retried too many times
-      if (logSendSchedule.failedSends < logSendSchedule.maxSendRetries) {
-        //alert user
-        alert(
-          "Failed to log error messages to server!" +
-          " Please file an issues with the errors from the console." +
-          " See the Bug Report Link at the bottom of the page.");
-      } else {
-        //retry
-        sendBufferItems();
-      }
-    });
-  } else {
-    //retry
-    sendBufferItems();
-  }
-}
+};
 
 //log uncought errors
-window.onerror = function(msg, url, line, column, error) {
+window.onerror = (msg, url, line, column, error) =>
   //log error and pass args
   log({
     msg: "uncaught error",
     errorUrl: url,
-    line: line,
-    column: column,
+    line,
+    column,
     err: error,
     stack: error && error.stack
   });
-};
 
 //handles unload by trying to send the rest of the log messages
-function handleUnload() {
+const handleUnload = () => {
   //stop if there is nothing to log
   if (! logMessages.length) {
     return;
   }
 
   //create an object to add the messages to
-  var messageObj = { };
+  const messageObj = { };
 
   //add all messages to object
-  logMessages.forEach(function(msg, index) { messageObj[index] = msg; });
+  logMessages.forEach((msg, index) => messageObj[index] = msg);
 
   //use sync post xhr instead
-  var client = new XMLHttpRequest();
+  const client = new XMLHttpRequest();
 
   //set type and url with data (false is for using sync)
-  client.open("GET", "/log?" + $.param(messageObj, false), false);
+  client.open("GET", `/log?${$.param(messageObj, false)}`, false);
 
   //send messages
   client.send(null);
-}
+};
 
 //before the window closes
 $(window).on("beforeunload", handleUnload);

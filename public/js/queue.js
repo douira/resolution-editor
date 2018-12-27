@@ -1,38 +1,31 @@
-/*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
-/*exported
-firstItem,
-updateList,
-updateListConfig*/
-/*global
-displayToast,
-makeAlertMessage,
-getTimeText*/
+/*exported firstItem, updateList, updateListConfig, queueElems*/
+/*global displayToast, makeAlertMessage, getTimeText*/
 
-//the template dom element for the list
-var templateItem;
+//config settings for the auto update
+const autoUpdateConfig = {
+  //true when the check now the link is allowed to work, prevents click spamming
+  allowCheckNow: true,
 
-//true when the check now the link is allowed to work, prevents click spamming
-var allowCheckNow = true;
+  //the last time the server was asked for an update
+  lastUpdateTime: Date.now(),
 
-//the last time the server was asked for an update
-var lastUpdateTime = Date.now();
+  //how often the data is fetched, 30 seconds by default
+  updateIntervalTime: 30000
+};
 
-//how often the data is fetched, 30 seconds by default
-var updateIntervalTime = 30000;
+//to be queried jquery dom elements
+let queueElems;
 
 //the current first item
-var firstItem;
-
-//message and list elements
-var list, errorMsg, noItems, advanceButton;
+let firstItem;
 
 //config is set by specific page code
-var updateListConfig = { };
+const updateListConfig = { };
 
 //sets the basic attributes of a list item with a given data object
-function setBasicAttribs(data, elem) {
+const setBasicAttribs = (data, elem) => {
   //set token
-  elem.find(".item-token").text(data.token).attr("href", "/resolution/editor/" + data.token);
+  elem.find(".item-token").text(data.token).attr("href", `/resolution/editor/${data.token}`);
 
   //id and year only if present in data
   if (data.idYear && data.resolutionId) {
@@ -46,61 +39,45 @@ function setBasicAttribs(data, elem) {
 
   //set age, get delta time in seconds and convert to time text
   elem.find(".item-age").text(getTimeText((Date.now() - data.waitTime) / 1000));
-}
-
-//does a list update if the last one was more than 30 seconds ago
-function updateTimer() {
-  //get time since last update
-  var timeDiff = Date.now() - lastUpdateTime;
-
-  //was long enough ago
-  if (timeDiff > updateIntervalTime) {
-    //update now, will reset timer
-    updateList();
-
-    //set to start again in 30 seconds
-    setTimeout(updateTimer, updateIntervalTime);
-  } else {
-    //try again in how much time is left until 30 seconds is reached
-    setTimeout(updateTimer, updateIntervalTime - timeDiff);
-  }
-}
+};
 
 //sets page amount in page amount field
-function setPageAmount(selector, pageAmount, names) {
+const setPageAmount = (selector, pageAmount, names) => {
   //get item and set page amount in label if set
   $(selector).text(
-    (pageAmount && pageAmount + " " + (pageAmount === 1 ? names[0] : names[1]) //correct plural
-  ) || "? " + names[1]);
-}
+    pageAmount && pageAmount +
+      //correct plural
+      (names ? ` ${pageAmount === 1 ? names[0] : names[1]}` : "") || `? ${names[1]}`
+  );
+};
 
 //updates the list of resolutions
-function updateList() {
+const updateList = () => {
   //get new list from server
-  $.get(updateListConfig.url).done(function(data) {
+  $.get(updateListConfig.url).done(data => {
     //hide error message, we got some data
-    errorMsg.hide();
+    queueElems.errorMsg.setHide(true);
 
     //if there are any items to display
     //list is interpreted as last items being oldest -> top of list -> to be worked on first
     if (typeof data === "object" && data instanceof Array && data.length) {
       //show list and hide message for no items
-      list.show();
-      noItems.hide();
+      queueElems.list.setHide(false);
+      queueElems.noItems.setHide(true);
 
       //get the next first item from the list
-      var newFirst = data.pop();
+      const newFirst = data.pop();
 
       //run pre copy handler if given
       if (typeof updateListConfig.preCopyHandler === "function") {
-        updateListConfig.preCopyHandler(newFirst, firstItem);
+        updateListConfig.preCopyHandler(newFirst, firstItem, queueElems);
       }
 
       //copy over first item
       firstItem = newFirst;
 
       //set display of first item in special first item box
-      var firstElem = $("#first-item");
+      const firstElem = $("#first-item");
 
       //set basic attribs for first element
       setBasicAttribs(firstItem, firstElem);
@@ -111,94 +88,139 @@ function updateList() {
       //set item print copies
       setPageAmount("#item-print-copies", firstItem.copyAmount, ["copy", "copies"]);
 
+      //if extended info enabled and more than one page in document
+      if (updateListConfig.extPageInfo) {
+        //if more than once page in document
+        if (firstItem.pageAmount > 1) {
+          //show display
+          queueElems.totalPagesWrapper.setHide(false);
+
+          //set total amount
+          setPageAmount("#item-print-total", firstItem.copyAmount * firstItem.pageAmount);
+        } else {
+          //hide, not needed
+          queueElems.totalPagesWrapper.setHide(true);
+        }
+      }
+
       //remove all list items that exceed the amount of items in the list
-      list.children(".list-item").slice(data.length).remove();
+      queueElems.list.children(".list-item").slice(data.length).remove();
 
       //given that there are items left
       if (data.length) {
         //set data in the left over elements
-        list.children(".list-item").each(function() {
+        queueElems.list.children(".list-item").each(function() {
           //set attributes of this item
           setBasicAttribs(data.pop(), $(this));
         });
 
         //for any remainin data items, add new items
-        data.reverse().forEach(function(item) {
+        data.reverse().forEach(item =>
           //make a clone of the template, add it to the list and add data to it
-          setBasicAttribs(item, templateItem.clone().appendTo(list));
-        });
+          setBasicAttribs(item, queueElems.templateItem.clone().appendTo(queueElems.list))
+        );
       }
     } else {
       //hide list (makes an ugly line otherwise) and show no items message
-      list.hide();
-      noItems.show();
+      queueElems.list.setHide(true);
+      queueElems.noItems.setHide(false);
     }
-  }).fail(function() {
+  }).fail(() => {
     //hide other things
-    noItems.hide();
-    list.hide();
+    queueElems.noItems.setHide(true);
+    queueElems.list.setHide(true);
 
     //show error message, request went wrong
-    errorMsg.show();
+    queueElems.errorMsg.setHide(false);
   });
 
   //reset timer
-  lastUpdateTime = Date.now();
-}
+  autoUpdateConfig.lastUpdateTime = Date.now();
+};
+
+//does a list update if the last one was more than 30 seconds ago
+const updateTimer = () => {
+  //get time since last update
+  const timeDiff = Date.now() - autoUpdateConfig.lastUpdateTime;
+
+  //was long enough ago
+  if (timeDiff > autoUpdateConfig.updateIntervalTime) {
+    //update now, will reset timer
+    updateList();
+
+    //set to start again in 30 seconds
+    setTimeout(updateTimer, autoUpdateConfig.updateIntervalTime);
+  } else {
+    //try again in how much time is left until 30 seconds is reached
+    setTimeout(updateTimer, autoUpdateConfig.updateIntervalTime - timeDiff);
+  }
+};
 
 //on document ready
-$(document).ready(function() {
-  //detach the template element from the list
-  templateItem = $("#item-template").detach().removeClass("hide-this").removeAttr("id");
+$(document).ready(() => {
+  //query total pages wrapper
+  const totalPagesWrapper = $("#item-print-total-wrapper");
 
-  //get elements
-  list = $("#queue");
-  errorMsg = $("#error-msg");
-  noItems = $("#no-items-msg");
-  advanceButton = $("#advance-btn");
+  //remove ext page info if disabled
+  if (! updateListConfig.extPageInfo) {
+    totalPagesWrapper.remove();
+  }
+
+  //query elements
+  queueElems = {
+    //detach the template element dom element for the list from the list
+    templateItem: $("#item-template").detach().removeClass("hide-this").removeAttr("id"),
+
+    //message and list elements
+    list: $("#queue"),
+    errorMsg: $("#error-msg"),
+    noItems: $("#no-items-msg"),
+    advanceButton: $("#advance-btn"),
+    checkNow: $("#update-data-now"),
+    totalPagesWrapper
+  };
 
   //register handler on link to update the list
-  var checkNow = $("#update-data-now");
-  checkNow.on("click", function() {
+  queueElems.checkNow.on("click", () => {
     //only if allowed right now
-    if (allowCheckNow) {
+    if (autoUpdateConfig.allowCheckNow) {
       //update list now
       updateList();
 
       //grey out text and disable flag
-      checkNow.addClass("grey-text");
-      allowCheckNow = false;
+      queueElems.checkNow.addClass("grey-text");
+      autoUpdateConfig.allowCheckNow = false;
 
       //and re-enable in a few seconds
-      setTimeout(function() {
+      setTimeout(() => {
         //set flag back and enable text again
-        allowCheckNow = true;
-        checkNow.removeClass("grey-text");
+        autoUpdateConfig.allowCheckNow = true;
+        queueElems.checkNow.removeClass("grey-text");
       }, 3000);
     }
   });
 
   //on click of advance button
-  advanceButton
-  .on("click", function(e) {
+  queueElems.advanceButton
+  .on("click", e => {
     //prevent default following of link (doesn't have a proper href anyways)
     e.preventDefault();
 
     //send an advance request to the server
-    $.get("/resolution/advance/" + firstItem.token + "?noui=1").done(function() {
+    $.get(`/resolution/advance/${firstItem.token}?noui=1`).done(() => {
       //make a toast to notify
-      displayToast("Advanced Resolution");
+      displayToast(`Advanced Resolution ${firstItem.token}`);
 
       //update list to make new top item
       updateList();
-    }).fail(function() {
+    }).fail(() =>
       //display error message
       makeAlertMessage(
-        "error_outline", "Error Advancing Resolution", "ok",
+        "alert-circle-outline", "Error Advancing Resolution", "ok",
         "The server encountered an error while trying to advance this resolution." +
         " If the error persists after reloading the page, ask IT-Management for help.",
-        "pdf_gen");
-    });
+        "pdf_gen")
+    );
   });
 
   //start first, will queue itself to run updateList in 30 seconds

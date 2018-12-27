@@ -1,4 +1,3 @@
-/*jshint esversion: 6, node: true */
 const express = require("express");
 const path = require("path");
 const compression = require("compression");
@@ -11,6 +10,7 @@ const mongoSanitize = require("express-mongo-sanitize");
 const getTimeText = require("./public/js/getTimeText");
 const devEnv = require("./lib/devEnv");
 const { logger, applyLoggerMiddleware } = require("./lib/logger");
+const pick = require("object.pick");
 
 //require route controllers
 const index = require("./routes/index");
@@ -22,7 +22,8 @@ const sessionRoute = require("./routes/session");
 const logRoute = require("./routes/log");
 
 //make express app
-const app = module.exports = express();
+const app = express();
+module.exports = app;
 
 //view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -59,7 +60,7 @@ app.use(session({
   saveUninitialized: false,
   //rolling: true, //reset ttl on every opening of a page
   store: new MongoStore({
-    dbPromise: dbPromise, //pass the already created mongodb connection promise
+    dbPromise, //pass the already created mongodb connection promise
     autoRemove: "disabled", //we implement our own removal index in database.js
     collection: "sessions", //make sure this collection is used
 
@@ -71,21 +72,30 @@ app.use(session({
   })
 }));
 
+//material icons installed in modules
+app.use(
+  "/materialicons",
+  express.static(path.join(__dirname, "node_modules/@mdi/font/"), { maxage: "7d" }));
+
 //set specific caching params if in production mode
-if (! devEnv) {
-  //cache regular content for a week, see pug mixin static for cache busting
-  app.use(express.static(path.join(__dirname, "public"), { maxage: "7d" }));
-} else {
+if (devEnv) {
   //static serve on anything in public with no caching in dev mode
   app.use(express.static(path.join(__dirname, "public")));
+} else {
+  //cache regular content for a week, see pug mixin static for cache busting
+  app.use(express.static(path.join(__dirname, "public"), { maxage: "7d" }));
 }
 
-//attach request local session present info
-app.use(function(req, res, next) {
+//attach request local session info
+app.use((req, res, next) => {
   //check for present code in session
   if (typeof req.session.code === "string") {
-    //signal true in session
-    res.locals.hasSession = true;
+    //attach simple session info
+    res.locals.loggedIn = true;
+    res.locals.sessionCode = req.session.code;
+    res.locals.sessionLevel = req.session.doc.level;
+  } else {
+    res.locals.loggedIn = false;
   }
 
   //continue processing request
@@ -110,19 +120,19 @@ app.use((req, res) => {
   //send the error page
   res.status(err.status);
   res.render("error", {
-    error: err,
-    devEnv: devEnv
+    devEnv,
+    error: err
   });
 });
 
 //general error handler, express needs the error handler signature to be exactly like this!
 //the default error page is displayed too sometimes though, when worse errors happen
-app.use((err, req, res, next) => { //jshint ignore: line
+app.use(function(err, req, res, next) { //eslint-disable-line no-unused-vars, prefer-arrow-callback
   //render the error page
   res.status(err.status || 500);
   res.render("error", {
     error: err,
-    devEnv: devEnv
+    devEnv
   });
 
   //log error with logger

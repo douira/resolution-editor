@@ -1,14 +1,15 @@
 #!/usr/bin/env node
-/*jshint esversion: 6, node: true */
-//require logger and do start message
 const { logger } = require("../lib/logger");
 const { createServer } = require("http");
+
+//log start message
 logger.info("start program");
 
 //require other parts
 const app = require("../app");
 const db = require("../lib/database");
 const { normalizePort, applyServerListeners } = require("../lib/httpUtil");
+const lvWS = require("../lib/lvWS");
 
 //register process stop listener
 require("../lib/processStop.js");
@@ -24,8 +25,8 @@ db.fullInit.then(() => {
 
   //check of env variable disabling lv websockets is not set
   if (process.env.WS_LV === "off") {
-    //attach liveview websocket handler
-    require("../lib/lvWS")(server);
+    //attach liveview websocket handler to server
+    lvWS(server);
   }
 
   //start lisening on connections

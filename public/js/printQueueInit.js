@@ -1,26 +1,31 @@
-/*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
 /*global
 firstItem,
 updateList,
 updateListConfig,
 makeAlertMessage,
-advanceButton*/
+queueElems*/
+
+//the url to get the data from
+updateListConfig.url = "/list/print/getitems";
+
+//enable extended page info
+updateListConfig.extPageInfo = true;
 
 //on document ready
-$(document).ready(function() {
+$(document).ready(() => {
   //current state of the buttons for the first item
   //can be: unrendered, rendering, rendered, viewed (in that order)
-  var firstItemPdfStage;
+  let firstItemPdfStage;
 
   //query elements
-  var printBtn = $("#print-btn");
-  var printBtnText = $("#print-btn-text");
-  var pdfWaitSpinner = $("#pdf-wait-spinner");
-  var printBtnInner = $("#print-btn-inner");
-  var printBtnIcon = printBtn.find("i");
+  const printBtn = $("#print-btn");
+  const printBtnText = $("#print-btn-text");
+  const pdfWaitSpinner = $("#pdf-wait-spinner");
+  const printBtnInner = $("#print-btn-inner");
+  const printBtnIcon = printBtn.find("i");
 
   //updates the buttons and spinner acording to the view stage
-  function setFirstItemStage(newStage, useItem) {
+  const setFirstItemStage = (newStage, useItem) => {
     //use given item is present
     useItem = useItem || firstItem;
 
@@ -28,68 +33,66 @@ $(document).ready(function() {
     firstItemPdfStage = newStage;
 
     //switch to stage
-    switch(firstItemPdfStage) {
+    switch (firstItemPdfStage) {
       case "unrendered":
         printBtnText.text("Hover to Generate PDF");
-        printBtnIcon.text("refresh");
+        printBtnIcon.changeIcon("refresh");
         printBtn
           .attr("href", "#")
           .removeClass("btn")
           .addClass("btn-flat");
-        advanceButton.addClass("disabled");
+        queueElems.advanceButton.disabledState(true);
         break;
       case "rendering":
-        printBtnInner.addClass("hide-this");
-        pdfWaitSpinner.removeClass("hide-this");
+        printBtnInner.setHide(true);
+        pdfWaitSpinner.setHide(false);
         break;
       case "rendered":
-        printBtnInner.removeClass("hide-this");
-        pdfWaitSpinner.addClass("hide-this");
-        advanceButton.addClass("disabled");
+        printBtnInner.setHide(false);
+        pdfWaitSpinner.setHide(true);
+        queueElems.advanceButton.disabledState(true);
 
         //set to be rendered
         useItem.unrenderedChanges = false;
 
         //setup button
         printBtn
-          .attr("href", "/rendered/" + useItem.token + ".pdf?c=" + Date.now())
+          .attr("href", `/rendered/${useItem.token}.pdf?c=${Date.now()}`)
           .removeClass("btn-flat")
           .addClass("btn");
-        printBtnIcon.text("print");
+        printBtnIcon.changeIcon("printer");
         printBtnText.text("View PDF");
         break;
       case "viewed":
-        advanceButton.removeClass("disabled");
+        queueElems.advanceButton.disabledState(false);
         break;
     }
-  }
+  };
 
   //need to set rendering state first
-  updateListConfig.preCopyHandler = function(newFirst, firstItem) {
+  updateListConfig.preCopyHandler = (newFirst, firstItem) => {
     //reset flag to given value if it's a new item
     if (! firstItem || newFirst.token !== firstItem.token ||
         newFirst.unrenderedChanges !== firstItem.unrenderedChanges) {
       //set to appropriate stage
-      setFirstItemStage(newFirst.unrenderedChanges ? "unrendered" : "rendered", newFirst);
+      setFirstItemStage(
+        newFirst.unrenderedChanges ? "unrendered" : "rendered", newFirst);
     }
   };
-
-  //the url to get the data from
-  updateListConfig.url = "/list/print/getitems";
 
   //do initial list update
   updateList();
 
   //handler how mouseenter (like hover) and click of view pdf button
   printBtn
-  .on("mouseenter", function() {
+  .on("mouseenter", () => {
     //if the resolution hasn't been rendered yet
     if (firstItemPdfStage === "unrendered") {
       //move into rendering stage
       setFirstItemStage("rendering");
 
       //ask the server to render
-      $.get("/resolution/renderpdf/" + firstItem.token).done(function() {
+      $.get(`/resolution/renderpdf/${firstItem.token}`).done(() => {
         //finished rendering, sets url
         setFirstItemStage("rendered");
 
@@ -97,13 +100,13 @@ $(document).ready(function() {
         if (! firstItem.pageAmount) {
           updateList();
         }
-      }).fail(function() {
+      }).fail(() => {
         //finished rendering
         setFirstItemStage("rendered");
 
         //display error and and help directives
         makeAlertMessage(
-          "error_outline", "Error generating PDF", "ok",
+          "alert-circle-outline", "Error generating PDF", "ok",
           "The server encountered an error while trying to generate the requested" +
           " PDF file. This may happen when the resolution includes illegal characters." +
           " Please talk to the owner of this document and ask IT-Management for help if" +
@@ -111,7 +114,7 @@ $(document).ready(function() {
       });
     }
   })
-  .on("click", function(e) {
+  .on("click", e => {
     //when the open pdf button is clicked and opened the pdf
     //make the advance resolution button appear in color
     if (firstItemPdfStage === "rendered") {

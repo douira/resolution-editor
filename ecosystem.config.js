@@ -1,4 +1,4 @@
-//jshint ignore: start
+/* eslint-disable */
 module.exports = {
   apps: [
     {
@@ -22,7 +22,7 @@ module.exports = {
         SERVE_LOCAL: "off",
         PRINT_ERR: "on",
         LOG_NORM_ACCESS: "off",
-        NODE_ENV: "production"
+        NODE_ENV: "dev"
       },
       env_offline: {
         SERVE_LOCAL: "on"
@@ -32,7 +32,7 @@ module.exports = {
       kill_timeout: 3000,
       wait_ready: true,
       exec_mode: "cluster",
-      instances: "max",
+      instances: "3",
       merge_logs: true
     },
     {
@@ -42,7 +42,7 @@ module.exports = {
       env: {
         PORT: 17750,
         PRINT_ERR: "on",
-        NODE_ENV: "production"
+        NODE_ENV: "dev"
       },
       error_file: "./log/lv/err.log",
       out_file: "./log/lv/out.log",

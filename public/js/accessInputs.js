@@ -1,55 +1,4 @@
-/*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
-/*global log*/
 /*exported registerAccessInputs*/
-//jshint ignore: start
-//install Array find polyfill
-// https://tc39.github.io/ecma262/#sec-array.prototype.find
-if (!Array.prototype.find) {
-  Object.defineProperty(Array.prototype, 'find', {
-    value: function(predicate) {
-     // 1. Let O be ? ToObject(this value).
-      if (this == null) {
-        throw new TypeError('"this" is null or not defined');
-      }
-
-      var o = Object(this);
-
-      // 2. Let len be ? ToLength(? Get(O, "length")).
-      var len = o.length >>> 0;
-
-      // 3. If IsCallable(predicate) is false, throw a TypeError exception.
-      if (typeof predicate !== 'function') {
-        throw new TypeError('predicate must be a function');
-      }
-
-      // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
-      var thisArg = arguments[1];
-
-      // 5. Let k be 0.
-      var k = 0;
-
-      // 6. Repeat, while k < len
-      while (k < len) {
-        // a. Let Pk be ! ToString(k).
-        // b. Let kValue be ? Get(O, Pk).
-        // c. Let testResult be ToBoolean(? Call(predicate, T, « kValue, k, O »)).
-        // d. If testResult is true, return kValue.
-        var kValue = o[k];
-        if (predicate.call(thisArg, kValue, k, o)) {
-          return kValue;
-        }
-        // e. Increase k by 1.
-        k++;
-      }
-
-      // 7. Return undefined.
-      return undefined;
-    },
-    configurable: true,
-    writable: true
-  });
-}
-//jshint ignore: end
 
 //deals with UI for input of token and access codes
 //handles code and token input and registers the event handlers for the given fields
@@ -61,128 +10,117 @@ if (!Array.prototype.find) {
   set an empty string as the presetToken if no token needs to be passed
   the action field of the form is automatically set and doesn't need to have a specific value
 */
-function registerAccessInputs(submitOptions, formSelector, inputOpts) {
+const registerAccessInputs = (submitOptions, formSelector, inputOpts) => {
   //get form element
-  var form = $(formSelector);
-
-  //form must be present
-  if ($(formSelector).length !== 1) {
-    //wrong
-    //console.log("accessInput registration error: selectors faulty"); TODO: proper logging
-    return;
-  }
+  const form = $(formSelector);
 
   //make array if not already
   if (! (submitOptions instanceof Array)) {
     submitOptions = [submitOptions];
   }
 
-  //get elements for submit selectors
-  submitOptions.forEach(function(opt) {
-    //get element from selector
-    opt.element = $(opt.selector);
-  });
+  //get elements for submit selectors and for each get element from selector
+  submitOptions.forEach(opt => opt.element = $(opt.selector));
 
   //make submitSelector that selects all submit elements and find the elements
-  var submitElem = $(submitOptions.map(function(opt) { return opt.selector; }).join(","));
+  const submitElem = $(submitOptions.map(opt => opt.selector).join(","));
 
   //states of the two fields
-  var fieldStates = {
+  const fields = {
     token: {
-      valid: false, //field validation states
+      valid: true, //field validation states
       checkedValues: [] //array of already queried values
     },
     code: {
-      valid: "onlyToken",
+      valid: true,
       checkedValues: []
     }
   };
 
-  //check for selector of code input field or given code for which a hidden field will be created
-  var codeFieldElem;
-  if (inputOpts.codeFieldSelector) {
-    //get selector from ops and find element
-    codeFieldElem = $(inputOpts.codeFieldSelector);
-  } else if ("presetCode" in inputOpts) {
-    //make hidden field above submit button, code is expected to be valid
-    submitElem.before(
-      "<input type='hidden' class='hidden-code-input not-editor' name='code' value='" +
-      inputOpts.presetCode + "'>");
-
-    //is given and ok
-    fieldStates.code.valid = "onlyToken";
-  } else {
-    //wrong
-    log("accessInput registration error: missing code data");
-    return;
-  }
-
   //check for selector of token input or token will be used as-is
-  var presetToken, tokenFieldElem;
+  let presetToken;
   if (inputOpts.tokenFieldSelector) {
     //get field element
-    tokenFieldElem = $(inputOpts.tokenFieldSelector);
+    fields.token.elem = $(inputOpts.tokenFieldSelector);
+
+    //not valid by default
+    fields.token.valid = false;
+
+    //throw on missing
+    if (! fields.token.elem[0]) {
+      throw Error(`Token field element ${inputOpts.tokenFieldSelector} not found`);
+    }
   } else if ("presetToken" in inputOpts) {
     //get token
     presetToken = inputOpts.presetToken;
 
     //expect valid token and signify that in validation states
-    fieldStates.token.valid = true;
-  } else {
-    //wrong
-    log("accessInput registration error: missing token data");
-    return;
+    fields.token.valid = true;
   }
 
-  //use empties if elements not found
-  codeFieldElem = codeFieldElem || $();
-  tokenFieldElem = tokenFieldElem || $();
+  //there must be either a selector or a preset for both the token and the code
+  //check for selector of code input field or given code for which a hidden field will be created
+  if (inputOpts.codeFieldSelector) {
+    //get selector from ops and find element
+    fields.code.elem = $(inputOpts.codeFieldSelector);
+
+    //not valid by default
+    fields.code.valid = false;
+
+    //throw on missing
+    if (! fields.code.elem[0]) {
+      throw Error(`Code field element ${inputOpts.codeFieldSelector} not found`);
+    }
+  } else if ("presetCode" in inputOpts) {
+    //make hidden field above submit button, code is expected to be valid
+    submitElem.before(
+      `<input type='hidden' class='hidden-code-input not-editor' name='code' value='${
+      inputOpts.presetCode}'>`);
+
+    //is given and ok
+    fields.code.valid = "onlyToken";
+  }
 
   //both field elements
-  var fieldElem = codeFieldElem.add(tokenFieldElem);
+  const fieldElems = (fields.code.elem || $()).add(fields.token.elem || $());
 
   //true if all fields are valid
-  var allOk = false;
-
-  //get the url given the element that the event came ffrom
-  function getElementUrl(elem) {
-    elem = $(elem);
-
-    //find opt with that selector and return its specified url
-    return submitOptions.find(function(opt) { return elem.is(opt.selector); }).url;
-  }
+  let allOk = false;
 
   //adds or removes the invalid flag
-  function setInputValidState(element, isValid, id) {
+  const setInputValidState = (element, isValid, id) => {
     //register state
     if (id) {
-      fieldStates[id].valid = isValid;
+      fields[id].valid = isValid;
+    }
+
+    //is set to token only state
+    if (isValid === "onlyToken") {
+      //remove any other valid or invalid classes because the field doesn't matter
+      element.validationState(null);
+      return;
     }
 
     //add or remove class
-    element[isValid ? "removeClass" : "addClass"]("invalid")
-      [isValid ? "addClass" : "removeClass"]("valid");
-  }
+    element.validationState(isValid);
+  };
 
   //updates the button state after checking the validation state of both fields
-  function updateButtonState() {
+  const updateButtonState = () => {
     //check all validation states
-    allOk = fieldStates.token.valid && (fieldStates.code.valid &&
-      (fieldStates.code.valid || ! presetToken)) &&
+    allOk = fields.token.valid && fields.code.valid &&
 
       //check with additional validation callback if given
-      (typeof inputOpts.additionalValidation === "function" ?
-       inputOpts.additionalValidation(setInputValidState) : true);
+      (typeof inputOpts.additionalValidation === "function"
+       ? inputOpts.additionalValidation(setInputValidState) : true);
 
     //apply to button state
-    submitElem[allOk ? "removeClass" : "addClass"]("disabled");
-  }
+    submitElem.disabledState(! allOk);
+  };
 
   //check button state also when change happens on additional inputs
   if (typeof inputOpts.additionalInputsSelectors === "string") {
-    $(inputOpts.additionalInputsSelectors).on("keyup paste", function() {
-      updateButtonState();
-    });
+    $(inputOpts.additionalInputsSelectors).on("input", updateButtonState);
   }
 
   //handles a submit even (pressig a submit button or pressing enter in one of the input fields)
@@ -192,13 +130,18 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
 
     //do click action if everything valid
     if (allOk) {
-      //make url path
-      var buttonUrl = getElementUrl(this) + (typeof presetToken === "undefined" ?
-        tokenFieldElem.val() : presetToken);
+      const elem = $(this);
+
+      //to make url path, find opt with that selector and return its specified url
+      const buttonUrl = submitOptions.find(opt => elem.is(opt.selector)).url +
+        (typeof presetToken === "undefined"
+          ? fields.token.elem
+            ? fields.token.elem.val() : ""
+          : presetToken);
 
       //send combined get and post request with token and code (if there is a code)
       //use only get request if no code given
-      if (fieldStates.code.valid === "onlyToken") { //only token
+      if (fields.code.valid === "onlyToken") { //only token
         //if a click event given
         if (e.type === "click") {
           //change href and allow link click follow
@@ -227,16 +170,38 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
   }
 
   //token and code input validation
-  fieldElem.on("keyup paste click checkValidation", function(e) {
-    var elem = $(this);
+  function onFieldActivity(e) {
+    //called on collection
+    let elem;
+    if (this.length) {
+      //if called on more than one element
+      if (this.length > 1) {
+        //call seperately on all other elements
+        for (let i = 0; i < this.length - 2; i ++) {
+          //call with current element and same event data
+          onFieldActivity.call(this[i], e);
+        }
+
+        //take last from collection
+        elem = this.eq(this.length - 1);
+      } else {
+        //simply the same (called on collection of one element)
+        elem = this;
+      }
+    } else {
+      //single dom element
+      elem = $(this);
+    }
 
     //get value of current input field and remove any whitespace, make capitalized
-    var value = elem.val().replace(/\s/g, "").toUpperCase();
+    let value = elem.val().replace(/\s/g, "").toUpperCase();
     elem.val(value);
 
     //check if it's the token or the code field
-    var isTokenField = elem.is(tokenFieldElem);
-    var fieldId = isTokenField ? "token" : "code";
+    const isTokenField = fields.token.elem
+      ? elem.is(fields.token.elem)
+      : ! elem.is(fields.code.elem);
+    const fieldId = isTokenField ? "token" : "code";
 
     //proceed checking only if there is anything filled in
     if (value.length) {
@@ -253,7 +218,7 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
         elem.val(value);
 
         //get checked values for fieldId
-        var checkedValues = fieldStates[fieldId].checkedValues;
+        const checkedValues = fields[fieldId].checkedValues;
 
         //check if we've already checked this value
         if (checkedValues.hasOwnProperty(value)) {
@@ -261,68 +226,67 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
           if (checkedValues[value] === null) {
             //just wait
             return;
-          } else {
-            //apply state
-            setInputValidState(elem, checkedValues[value], fieldId);
           }
+
+          //apply state with previously gotten validation answer
+          setInputValidState(elem, checkedValues[value], fieldId);
         } else { //ask server
           //make non displaying but invalid because we're waiting for a response
-          elem.removeClass("valid invalid");
-          fieldStates[fieldId].valid = false;
+          elem.validationState(null);
+          fields[fieldId].valid = false;
 
           //register as present but unknown so we don't ask the server twice
           checkedValues[value] = null;
 
           //console.log("checked", fieldId, value, e.type);
           //query server for validation
-          $.get("/resolution/checkinput/" + value, function(responseData) {
+          $.get(`/resolution/checkinput/${value}`, responseData => {
             //set to ok or not
-            var valid = responseData.substring(0, 2) === "ok";
+            const valid = responseData.substring(0, 2) === "ok";
             setInputValidState(elem, valid, fieldId);
 
             //set in check register
             checkedValues[value] = valid;
           })
-          .fail(function() {
+          .fail(() => {
             //not ok
             setInputValidState(elem, false, fieldId);
 
             //set in check register
             checkedValues[value] = false;
           })
-          .always(function() {
-            //update again, (we're in a future callback)
-            updateButtonState();
-          });
+          //update again, (we're in a future callback)
+          .always(updateButtonState);
         }
       } else {
         //flag as invalid, is too short
         setInputValidState(elem, false, fieldId);
       }
-    } else {
+    } else if (isTokenField) {
       //ok being empty if in code field, because it's optional
-      if (isTokenField) {
-        setInputValidState(elem, false, fieldId);
-      } else {
-        fieldStates.code.valid = "onlyToken"; //onlyToken means ok and empty
-
-        //remove any other valid or invalid classes because the field doesn't matter
-        elem.removeClass("valid invalid");
-      }
+      setInputValidState(fields.token.elem, false, "token");
+    } else if (fields.token.elem) {
+      setInputValidState(fields.code.elem, "onlyToken", "code");
+    } else {
+      //is code field alone
+      setInputValidState(fields.code.elem, false, "code");
     }
 
     //update button state with current validation state
     updateButtonState();
 
     //if the key was an enter key press
-    if (e.keyCode === 13) {
+    if (e && e.keyCode === 13) {
       //call submit event (by default the first one, in index it's to the editor)
       handleSubmitEvent.call(submitElem[0], e);
     }
-  });
+  }
+
+  //attach activity handler
+  fieldElems.on("input", onFieldActivity);
 
   //on keydown event for enter press in form
-  codeFieldElem.on("keydown", function(e) {
+  fieldElems.on("keydown", e => {
     //when enter key was pressed
     if (e.keyCode === 13) {
       //handle a submit event
@@ -332,14 +296,9 @@ function registerAccessInputs(submitOptions, formSelector, inputOpts) {
 
   //submit button click
   submitElem.on("click", handleSubmitEvent)
+    //hover over button updates it's state and calls validation again
+    .on("mouseover", e => onFieldActivity.call(fieldElems, e));
 
-  //hover over button updates it's state
-  .on("mouseover", function() {
-    //call validation again
-    fieldElem.trigger("checkValidation");
-  });
-
-  //initial checks
-  fieldElem.trigger("checkValidation");
-}
-
+  //initial check
+  onFieldActivity.call(fieldElems);
+};

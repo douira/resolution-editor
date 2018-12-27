@@ -4,25 +4,27 @@ block title
   title Codes Print Table
 
 block styles
-  //+static("css", "/css/codeOverviewStyle.css")
+  +static("css", "/css/codeOverviewStyle.css")
 
-block content
-  .container
-    +icon(icons.code, "large left" + colors.plaintext)
+block container-content
+  +page-title(icons.code, colors.plaintext)
     h3 Code query
-    h5.light for group type
+    h5.subtitle-mrg.light for group type
       em=" " + groupType
-    .divider
-    table.striped
-      thead
-        tr
-          th Level
-          th Code
-          th Name
-      tbody
-        each code in codes
-          tr
-            td=code.level
-            td=code.code
-            td=code.name || ""
-    br
+  table.striped
+    thead
+      tr
+        th Level
+        th Code
+        th Name
+    tbody
+      each code, index in codes
+        tr(class=index && codes[index - 1].level !== code.level && "code-table-divider")
+          td=code.level
+          td=code.code
+          td
+            if code.name
+              =code.name
+            else
+              span.grey-text no name
+  br

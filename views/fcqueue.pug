@@ -6,54 +6,41 @@ block title
 block styles
   +static("css", "/css/printQueueStyle.css")
 
-block content
-  .container
-    #code-preset.hide-this=code
-    +icon("how_to_reg", "large left blue-text")
-    h3 Formal Clearing Work-Queue
+block container-content
+  #code-preset.hide-this=code
+  +page-title("file-check", colors.queue, "Formal Clearing Work-Queue")
+  p.justify This is a queue of all resolutions that are in stage #[a(href="/help#rstage3") 3] and need to be reviewed by the Formal Clearing. After reviewing the resolution, you can advance the resolution to the next stage. Once the resolution has been advanced to the next stage, it cannot be brought back into this list. Resolutions that cannot be advanced (or are static) will not appear on this list. The time a particular resolution has been waiting is displayed in the upper right corner of the item list.
+  p.justify #[b Concurrency:] You can use this page on multiple devices at the same time if you press the "check now" link before making changes. The contents of the page may become outdated if another user makes changes.
+  mixin item-core-inner
+    a.item-token(href="#" target="_blank") @ABCD1234
+  mixin item-core(header)
+    if header
+      h5.item-token-wrapper
+        +item-core-inner
+    else
+      .item-token-wrapper
+        +item-core-inner
+    |  in #[b.item-forum ffff] by #[b.item-sponsor ssss]
+    span.item-age.grey-text.right ? minutes
+  ul.collection.hide-this#queue
+    li.collection-item#first-item
+      +item-core(true)
+      br
+      a.waves-effect.waves-light.btn.disabled#advance-btn(href="#") Advance Resolution
+        +icon(icons.forward, "left")
+    li.collection-item.hide-this.list-item#item-template
+      +item-core
+  .center.hide-this#no-items-msg
     .divider
-    p.justify This is a queue of all resolutions that are in stage #[a(href="/help#rstage3") 3] and need to be reviewed by the Formal Clearing. After reviewing the resolution, you can advance the resolution to the next stage. Once the resolution has been advanced to the next stage, it cannot be brought back into this list. Resolutions that cannot be advanced (or are static) will not appear on this list. The time a particular resolution has been waiting to print is displayed in the upper right corner of the item list.
-    p.justify #[b Concurrency:] You can use this page on multiple devices at the same time if you press the "check now" link before making changes. The contents of the page may become outdated if another user makes changes.
-    h5.light Possible Mistakes
-    ul
-      li User placed punctuation at the end of clauses
-      li Special Syntax: Abuse, Misuse or syntax errors
-      li Illegal or misplaced characters
-      li Phrases at the beginning of clause content fields; they should rather be in the correct phrase fields
-      li Makeshift structural components: for example enumerations in clause content fields
-      li Multiplse clauses in one clause field
-      li Address field mistakes
-      li Violations of the #[a(href="/help/contentguidelines") Content Guidelines]
-      li Other errors hindering the generation of a PDF (contact IT-Management if errors persist)
-    mixin item-core-inner
-      a.item-token(href="#" target="_blank") @ABCD1234
-    mixin item-core(header)
-      if header
-        h5.item-token-wrapper
-          +item-core-inner
-      else
-        .item-token-wrapper
-          +item-core-inner
-      |  in #[b.item-forum ffff] by #[b.item-sponsor ssss]
-      span.item-age.grey-text.right ? minutes
-    ul.collection.hide-this#queue
-      li.collection-item#first-item
-        +item-core(true)
-        br
-        a.waves-effect.waves-light.btn.disabled#advance-btn(href="#") Advance Resolution
-          +icon("forward", "left")
-      li.collection-item.hide-this.list-item#item-template
-        +item-core
-    .center.hide-this#no-items-msg
-      .divider
-      p There currently are no documents waiting to be reviewed by the FC.
-    .center.hide-this#error-msg
-      .divider
-      p There was an error with getting the data from the server. Contact IT-Management if this problem persists after reloading the page.
-    .center
-      span.grey-text Automatically checking the server for new data every 30 seconds.
-      a#update-data-now(href="#")  Check now
-    br
+    p There currently are no documents waiting to be reviewed by the FC.
+  .center.hide-this#error-msg
+    .divider
+    p There was an error with getting the data from the server. Contact IT-Management if this problem persists after reloading the page.
+  .center
+    span.grey-text Automatically checking the server for new data every 30 seconds.
+    a#update-data-now(href="#")  Check now
+  br
+
 block scripts
   +static("js", "/js/dialogs.js")
   +static("js", "/js/getTimeText.js")

@@ -1,0 +1,10 @@
+{
+  "env": {
+    "browser": true,
+    "jquery": true
+  },
+  "globals": {
+    "$": false,
+    "M": false
+  }
+}

@@ -1,7 +1,2 @@
-/*jshint esversion: 5, browser: true, varstmt: false, jquery: true */
-
-//on document ready
-$(document).ready(function() {
-  //init select element
-  $("select").material_select();
-});
+//on document ready init select element
+$(document).ready(() => $("select").formSelect());

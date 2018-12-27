@@ -1,8 +1,10 @@
 #!/usr/bin/env node
-/*jshint esversion: 6, node: true */
 const { createServer } = require("http");
 const { logger } = require("../lib/logger");
 const { normalizePort, applyServerListeners } = require("../lib/httpUtil");
+const lvWS = require("../lib/lvWS");
+
+//start message for log
 logger.info("start program");
 
 //for db promise fll init wait
@@ -20,7 +22,7 @@ db.fullInit.then(() => {
   const server = createServer();
 
   //pass the server to th lv websocket handler
-  require("../lib/lvWS")(server);
+  lvWS(server);
 
   //start listening for connections
   server.listen(port);

@@ -7,181 +7,327 @@ block styles
   +static("css", "/css/helpStyle.css")
   +static("css", "/css/liveviewColors.css")
 
-block content
+block container-content
   include stages
-  .container
-    h4.center: +icon(icons.help, "large" + colors.help)
-    h3.center Help and Information Page
-    .divider
-    h4: +icon(icons.code, "mediumsmall left" + colors.session)
-    h4#access-levels Access Levels
-    | These are the access levels of access codes that are displayed on the Editor page of each resolution.
-    table.striped
-      thead: tr
-        th Holder
-        th Level
-        th Description
-      tbody
-        mixin row(holder, level)
-          tr(id=level)
-            td=holder
-            td=level
-            td.justify
-              block
-        +row("Everyone (Delegates)", "DE")
-          | This level means that there is no specific access restriction and the resolution can be viewed by anyone with the token. No access codes are given out for this level.
-        +row("The Approval Panel", "AP")
-          | Editing is restricted to the Approval Panel. Resolutions are restricted to this access level when they are in stage #[a(href="#rstage2") #2].
-        +row("The Formal Clearing", "FC")
-          | Editing is restricted to the Formal Clearing. Resolutions are restricted to this access level when they are in stage #[a(href="#rstage3") #3]. The FC also has access to the print queue.
-        +row("The Secretariat", "SC")
-          | The Secretariat enters its access code in stage #[a(href="#rstage4") #4] to signify that the resolution is being printed and is to be advanced to stage #[a(href="#rstage5") #5]. It doesn't have editing access though.
-        +row("Chairs", "CH")
-          | Chairs always have access to resolutions before they reach stage #[a(href="#rstage7") #7]. This overrides other restrictions, such as the levels FC and AP. Chairs can use LiveView when a resolution is being debated in a committee.
-        +row("Secretaries General", "SG")
-          | The Secretaries General have access to resolutions until they are completed in stage #[a(href="#rstage11") #11] and can also use LiveView in plenary debates. They can also manage the creation of the resolution booklet.
-        +row("Administration", "MA")
-          | This level represents unrestricted access to all available functions of the website including LiveView. This also includes changing access levels of specific codes or giving out new access codes.
-    h4: +icon("font_download", "mediumsmall left blue-text")
-    h4#formatting Formatting Advice and Special Characters
-    p This section will inform you about the formatting rules and special character restrictions in resolutions. This is about the formal and syntactical aspects only; for content advice, see the #[a(href="/help/contentguidelines") Content Guidelines]. Ask your Chair for assistance with formatting and if you are unsure of how to achieve a certain formal element of you resolution. #[span.grey-text The exact parser code can be found in generatePdf.js and editorInit.js.]
-    p A basic clause consists of a phrase and a content body optionally followed a single enumeration. The enumeration items behave similarly to a regular clause, except for the lack of a phrase. Additionally, a single block of extended content can follow the enumeration. If you're trying to create a clause with more than two content blocks, more than one enumeration or a different ordering of these elements, restructure your clause to fit the formatting restrictions. This will also increase the legibility and semantic separation of your resolution.
-    h5#special-syntax Special Syntax
-    p The Editor will attempt to make syntax become obvious to the user by providing interface elements that facilitate the different aspects of writing and formatting a resolution. However, in some special cases, it is unavoidable to use the special syntax to achieve some formatting types within clause content. Use this special formatting sparingly, only when necessary and not as a generic stylistic device. Formatting is automatically applied to phrases and is disallowed in phrase fields. Special syntax only applies to the body of clauses and phrases will not be formatted. Nested or semi-nested multi-character special syntax may produce unexpected results.
-    - const codeTransform = arr => (typeof arr === "string" ? [arr] : arr).map(v => "<code>" + v + "</code>").join(", ");
-    table.striped.responsive-table.responsive-formatted
-      thead: tr
-        th Styling
-        th Examples
-        th Syntax
-        th Explanation
-      tbody
-        mixin row(styling, example, syntax)
-          tr
-            td=styling
-            td!=example
-            td!=codeTransform(syntax)
-            td
-              .justify: block
-        +row("Italics", "<em>A/RES/69/154</em>, <em>UNESCO Declaration...</em>", ["*A/RES/69/154*", "*UNESCO Declaration...*"])
-          | Insert Asteriks #[code *] around the text you want to be rendered in #[em italics]. Apply italics to emphasise resolution identifiers like #[em A/RES/69/154] or names of formal documents, bodies or institutions.
-        +row("Single character subscript", "H<sub>2</sub>O, CO<sub>2</sub>", ["H_2O", "CO_2"])
-          | Characters preceded by an underscore #[code _] will be rendered as subscript. Use this to correctly display molecular formulas.
-        +row("Multiple character subscript", "C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>", "C_6H_12|O_6")
-          | Use the underscore character #[code _], the text you want to be rendered as a subscript followed by the pipe character #[code |] to correctly display molecular formulas that involve subscripts consisting of multiple characters.
-        +row("Single character superscript", "Na<sup>+</sup>", "Na^+")
-          | Characters preceded by an circumflex #[code ^] will be rendered as superscript.
-        +row("Multiple character superscript", "7<sup>th</sup> of May, 42<sup>nd</sup> edition", ["7^th| of May", "42^nd| edition"])
-          | Use the circumflex character #[code ^], the text you want to be rendered as a superscript followed by the pipe character #[code |] to correctly display ordinal numbers.
-        +row("Faulty special syntax", "n/a", ["_^ba|r", "ba*z"])
-          | Faulty special syntax will be cleaned up in some way, but the exact behavior may be unexpected.
-    h5#contentlength Content Length
-    p If your resolution has a longer word or clause text content, restructure your clause to fit the length restrictions. This will also increase the legibility and semantic separation of your resolution. In order to prevent too long content from clogging up the rendering system, two length restrictions are automatically imposed:
-    ol
-      li A single word may not exceed #[b 45] characters (includes whitespace) and any longer words are not rendered in the PDF document. They are not immediately removed from the Editor but will trigger a notification.
-      li A single text content may not exceed #[b 2500] characters (includes whitespace and special syntax). A text content is, for example, the main body of a clause, the content continuation of any clause like structure, an enumeration item or a sub-enumeration item.
-    h5#whitespace Whitespace
-    p Please refrain from inserting any #[b abnormal whitespace] into clause text areas or any other input field. The Editor will most likely remove all unnecessary whitespace before rendering the resolution. Line breaks, tabs and more obscure whitespace characters will be removed from clauses in order to preserve formatting and aesthetics in the rendered document. Do not use tabs for indentation of sub clauses and instead use the integrated button, that appears in the clause when you click the edit button or start typing, to create sub clauses.
-    h5#special-chars Special Characters
-    p Some characters have a special meaning and are removed or transformed by the Editor and the renderer. Try to find another way of expressing the meaning of a special character if it doesn't have the expected purpose of the editor. Phrases will be stripped of all non-alphanumeric characters. If any character is observed to behave differently than described here, produces an error or is necessary for correct display of the resolution although it is disallowed, please immediately contact your Chair and IT-Management!
-    table.striped
-      thead: tr
-        th Character(s)
-        th Explanation
-      tbody
-        mixin row(chars)
-          tr
-            td.center!=codeTransform(chars)
-            td
-              .justify: block
-        +row(["tab", "new line", "carriage return"])
-          | See the above section on #[a(href="#whitespace") Whitespace]. All abnormal whitespace will be removed.
-        +row("$")
-          | The dollar sign is reserved for internal use. Please spell out names of currencies instead of using shorthand symbols. This recommendation applies to all currencies, in particular, those which don't use the dollar sign.
-        +row("%")
-          | The percent sign is a reserved character. Spell out the percent sign as "percent".
-        +row("#")
-          | Instead of the pound sign, use ordinal numbers to express counted items. See #[a(href="#special-syntax") Special Syntax]
-        +row("&")
-          | The ampersand is used internally as a reserved character but can still be used where required for the correct representation of names or similar descriptors.
-        +row(["\\", "{", "}", "~"])
-          | These miscellaneous reserved characters should not be used within resolutions in general and will be automatically removed. This includes the tilde #[code ~] character.
-        +row(["`", "´", "'"])
-          | Detached backticks #[code `], detached forward ticks #[code ´] and regular keyboard apostrophes #[code '] will be normalized to the typographically correct apostrophe #[code ’]. #[em Letters] with diacritical marks are allowed and won't be modified. Do not use diacritical marks as apostrophes or quotation marks, as they will most likely be removed.
-        +row(["\"", "“", "”", "‹", "›", "«", "»"])
-          | All quote-like characters are automatically converted into correctly formatted and placed typographic quotation marks #[code “] and #[code ”]. Inner quotes will not be modified or correctly formatted and therefore their use is not recommended, as they may result in unpredictable formatting.
-        +row([",", ":", ";", "."])
-          | Do not end your clauses or enumeration items with resolution specific punctuation. The renderer will reliably and correctly insert formal punctuation where necessary.
-        +row(["_", "^", "*", "|"])
-          | See #[a(href="#special-syntax") Special Syntax]. These characters are used to denote the application of special styling in the rendered document. Using them for a different purpose will produce unexpected results.
-        +row(["ö", "é", "ì"])
-          | If you need to represent names in their romanized but still foreign form, use the letters with the different marks on them instead of adding combining diacritical marks, as they will be removed and are unsupported by the renderer. Get help if this is causing problems for you.
-        +row(["_", "^", ".", ",", "-", "(", "&", "/", "+"])
-          | These characters will be removed if found at the end of a clause content block. If a clause ends with an abbreviation, simply omit the last full stop of the abbreviation.
-        +row(["|", ".", ",", "-", ")", "&", "/", "+"])
-          | These characters will be removed if found at the beginning of a clause content block.
+  +page-title(icons.help, colors.help, "Help and Information Page")
+  -
+    let tocPath = [];
+    const toc = [
+      {
+        title: "Access Levels",
+        id: "access-levels",
+        icon: icons.code,
+        iconClass: colors.session,
+        items: [
+          { title: "Forgot Access Code or Token", id: "forgot" },
+          { title: "Login Sessions", id: "sessions" }
+        ]
+      },
+      {
+        title: "Formatting Advice and Special Characters",
+        id: "formatting",
+        icon: "format-font",
+        iconClass: "blue-text",
+        items: [
+          { title: "Special Syntax", id: "special-syntax" },
+          { title: "Content Length", id: "contentlength" },
+          { title: "Whitespace", id: "whitespace" },
+          { title: "Special Characters", id: "special-chars" }
+        ]
+      },
+      {
+        title: "Phrases",
+        id: "phrases",
+        icon: "message-processing",
+        iconClass: "orange-text text-lighten-1",
+        items: [
+          { title: "Preambulatory", id: "preamb-phrases" },
+          { title: "Operative", id: "op-phrases" }
+        ]
+      },
+      {
+        title: "Handy Textbox",
+        id: "handytextbox",
+        icon: icons.handytextbox,
+        iconClass: colors.handytextbox
+      },
+      {
+        title: "Live View",
+        id: "liveview",
+        icon: icons.liveview,
+        iconClass: colors.liveview,
+        items: [
+          { title: "Using Live View", id: "usinglv" },
+          { title: "Amendment types", id: "amdtypes" },
+          { title: "Colors in Amendments", id: "amdcolors" }
+        ]
+      },
+      {
+        title: "Concurrent Use and Multiple Users",
+        id: "concurrency",
+        icon: icons.concurrency,
+        iconClass: colors.concurrency,
+        items: [
+          { title: "FC work queue and printing queue", id: "concqueues" },
+          { title: "Concurrency in Live View", id: "conclv" }
+        ]
+      },
+      {
+        title: "Possible Mistakes in Resolution Formatting",
+        id: "possiblefcmistakes",
+        icon: "file-remove",
+        iconClass: colors.queue
+      },
+      {
+        title: "Attributes",
+        id: "attributes",
+        icon: "file-lock",
+        iconClass: "text-lighten-1 indigo-text",
+        items: [
+          { title: "Attribute States", id: "attribute-states" },
+          { title: "Setting Attributes", id: "setting-attributes" }
+        ]
+      },
+      {
+        title: "Resolution Workflow Stages",
+        id: "workflow-stages",
+        icon: icons.stageInfo,
+        iconClass: colors.stageInfo
+      },
+      {
+        title: "Resolution Structure Format Definition",
+        id: "structure-definition",
+        icon: icons.formatDef,
+        iconClass: "text-darken-2 grey-text"
+      }
+    ];
+  mixin tocItem(items, level = 0)
+    ul(class=level ? "toc" : "toc-top collection-item")
+      each item in items
+        li.toc-item
+          if item.icon
+            +icon(item.icon, "tiny grey-text text-darken-2")
+          a(href="#" + item.id)=item.title
+          if item.items
+            +tocItem(item.items, 1)
+  mixin helpIcon(item)
+    +icon(item.icon, "mediumsmall left " + item.iconClass)
+  mixin takeToc(level)
+    -
+      tocPath = tocPath.slice(0, level + 1);
+      tocPath[level] = (typeof tocPath[level] === "number" ? tocPath[level] : -1) + 1;
+      const item = tocPath.reduce((s, e) => (s.items || s)[e], toc);
+    case level
+      when 0
+        h4(id=item.id)
+          +helpIcon(item)
+          =item.title
+      when 1
+        h5(id=item.id)
+          +helpIcon(item)
+          =item.title
+      default
+        h1 ToC Error
+  h5 Table of Contents
+  .collection: +tocItem(toc)
+  +takeToc(0)
+  | These are the access levels of access codes that are displayed on the Editor page of each resolution.
+  table.striped
+    thead: tr
+      th Holder
+      th Level
+      th Description
+    tbody
+      mixin row(holder, level)
+        tr(id=level)
+          td=holder
+          td=level
+          td.justify
+            block
+      +row("Everyone (Delegates)", "DE")
+        | This level means that there is no specific access restriction and the resolution can be viewed by anyone with the token. No access codes are given out for this level.
+      +row("The Approval Panel", "AP")
+        | Editing is restricted to the Approval Panel. Resolutions are restricted to this access level when they are in stage #[a(href="#rstage2") #2].
+      +row("The Formal Clearing", "FC")
+        | Editing is restricted to the Formal Clearing. Resolutions are restricted to this access level when they are in stage #[a(href="#rstage3") #3]. The FC also has access to the print queue.
+      +row("The Secretariat", "SC")
+        | The Secretariat enters its access code in stage #[a(href="#rstage4") #4] to signify that the resolution is being printed and is to be advanced to stage #[a(href="#rstage5") #5]. It doesn't have editing access though.
+      +row("Chairs", "CH")
+        | Chairs always have access to resolutions before they reach stage #[a(href="#rstage7") #7]. This overrides other restrictions, such as the levels FC and AP. Chairs can use LiveView when a resolution is being debated in a committee.
+      +row("Secretaries General", "SG")
+        | The Secretaries General have access to resolutions until they are completed in stage #[a(href="#rstage11") #11] and can also use LiveView in plenary debates. They can also manage the creation of the resolution booklet.
+      +row("Administration", "MA")
+        | This level represents unrestricted access to all available functions of the website including LiveView. This also includes changing access levels of specific codes or giving out new access codes.
+  +takeToc(1)
+  p Talk to your Chair if you've #[b forgotten] your resolution token. They have access to a list of all resolutions in your forum. Looking at your browser's history can be helpful too as it's displayed in the editor page title.
+  p You're only required to enter an access code if editing access to the resolution has been #[b restricted] and you're granted elevated editing privileges with a personal access code. It's still possible to view a #[b read-only] version and metadata about a resolution if you don't have editing privileges. If you've forgotten your access code or have any other problems accessing the editor, please #[b contact IT-Management].
+  +takeToc(1)
+  p On the login page you enter your access code to login and go back to where the permission session was necessary. If no activity is detected on this session for more than #[b five hours] it will be automatically logged out. If something requires a certain permission to view, you're usually redirected to the login page.
+  +takeToc(0)
+  p This section will inform you about the formatting rules and special character restrictions in resolutions. This is about the formal and syntactical aspects only; for content advice, see the #[a(href="/help/contentguidelines") Content Guidelines]. Ask your Chair for assistance with formatting and if you are unsure of how to achieve a certain formal element of you resolution. #[span.grey-text The exact parser code can be found in generatePdf.js and editorInit.js.]
+  p A basic clause consists of a phrase and a content body optionally followed a single enumeration. The enumeration items behave similarly to a regular clause, except for the lack of a phrase. Additionally, a single block of extended content can follow the enumeration. If you're trying to create a clause with more than two content blocks, more than one enumeration or a different ordering of these elements, restructure your clause to fit the formatting restrictions. This will also increase the legibility and semantic separation of your resolution.
+  +takeToc(1)
+  p The Editor will attempt to make syntax become obvious to the user by providing interface elements that facilitate the different aspects of writing and formatting a resolution. However, in some special cases, it is unavoidable to use the special syntax to achieve some formatting types within clause content. Use this special formatting sparingly, only when necessary and not as a generic stylistic device. Formatting is automatically applied to phrases and is disallowed in phrase fields. Special syntax only applies to the body of clauses and phrases will not be formatted. Nested or semi-nested multi-character special syntax may produce unexpected results.
+  - const codeTransform = arr => (typeof arr === "string" ? [arr] : arr).map(v => "<code>" + v + "</code>").join(", ");
+  table.striped.responsive-table.responsive-formatted
+    thead: tr
+      th Styling
+      th Examples
+      th Syntax
+      th Explanation
+    tbody
+      mixin row(styling, example, syntax)
         tr
-          td.center: em other
+          td=styling
+          td!=example
+          td!=codeTransform(syntax)
           td
-            .justify Refrain from using characters that are not listed in this list of allowed characters. Additionally the most common letters with diacritical marks in the unicode range #[code U+00C0-U+024F] are supported as well. They can be viewed #[a(href="http://jrgraphix.net/r/Unicode/00A0-00FF") here], #[a(href="http://jrgraphix.net/r/Unicode/0100-017F") here] and #[a(href="http://jrgraphix.net/r/Unicode/0180-024F") here].
+            .justify: block
+      +row("Italics", "<em>A/RES/69/154</em>, <em>UNESCO Declaration...</em>", ["*A/RES/69/154*", "*UNESCO Declaration...*"])
+        | Insert Asteriks #[code *] around the text you want to be rendered in #[em italics]. Apply italics to emphasise resolution identifiers like #[em A/RES/69/154] or names of formal documents, bodies or institutions.
+      +row("Single character subscript", "H<sub>2</sub>O, CO<sub>2</sub>", ["H_2O", "CO_2"])
+        | Characters preceded by an underscore #[code _] will be rendered as subscript. Use this to correctly display molecular formulas.
+      +row("Multiple character subscript", "C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>", "C_6H_12|O_6")
+        | Use the underscore character #[code _], the text you want to be rendered as a subscript followed by the pipe character #[code |] to correctly display molecular formulas that involve subscripts consisting of multiple characters.
+      +row("Single character superscript", "Na<sup>+</sup>", "Na^+")
+        | Characters preceded by an circumflex #[code ^] will be rendered as superscript.
+      +row("Multiple character superscript", "7<sup>th</sup> of May, 42<sup>nd</sup> edition", ["7^th| of May", "42^nd| edition"])
+        | Use the circumflex character #[code ^], the text you want to be rendered as a superscript followed by the pipe character #[code |] to correctly display ordinal numbers.
+      +row("Faulty special syntax", "n/a", ["_^ba|r", "ba*z"])
+        | Faulty special syntax will be cleaned up in some way, but the exact behavior may be unexpected.
+  +takeToc(1)
+  p If your resolution has a longer word or clause text content, restructure your clause to fit the length restrictions. This will also increase the legibility and semantic separation of your resolution. In order to prevent too long content from clogging up the rendering system, two length restrictions are automatically imposed:
+  ol
+    li A single word may not exceed #[b 45] characters (includes whitespace) and any longer words are not rendered in the PDF document. They are not immediately removed from the Editor but will trigger a notification.
+    li A single text content may not exceed #[b 2500] characters (includes whitespace and special syntax). A text content is, for example, the main body of a clause, the content continuation of any clause like structure, an enumeration item or a sub-enumeration item.
+  +takeToc(1)
+  p Please refrain from inserting any #[b abnormal whitespace] into clause text areas or any other input field. The Editor will most likely remove all unnecessary whitespace before rendering the resolution. Line breaks, tabs and more obscure whitespace characters will be removed from clauses in order to preserve formatting and aesthetics in the rendered document. Do not use tabs for indentation of sub clauses and instead use the integrated button, that appears in the clause when you click the edit button or start typing, to create sub clauses.
+  +takeToc(1)
+  p Some characters have a special meaning and are removed or transformed by the Editor and the renderer. Try to find another way of expressing the meaning of a special character if it doesn't have the expected purpose of the editor. Phrases will be stripped of all non-alphanumeric characters. If any character is observed to behave differently than described here, produces an error or is necessary for correct display of the resolution although it is disallowed, please immediately contact your Chair and IT-Management!
+  table.striped
+    thead: tr
+      th Character(s)
+      th Explanation
+    tbody
+      mixin row(chars)
+        tr
+          td.center!=codeTransform(chars)
+          td
+            .justify: block
+      +row(["tab", "new line", "carriage return"])
+        | See the above section on #[a(href="#whitespace") Whitespace]. All abnormal whitespace will be removed.
+      +row("$")
+        | The dollar sign is reserved for internal use. Please spell out names of currencies instead of using shorthand symbols. This recommendation applies to all currencies, in particular, those which don't use the dollar sign.
+      +row("%")
+        | The percent sign is a reserved character. Spell out the percent sign as "percent".
+      +row("#")
+        | Instead of the pound sign, use ordinal numbers to express counted items. See #[a(href="#special-syntax") Special Syntax]
+      +row("&")
+        | The ampersand is used internally as a reserved character but can still be used where required for the correct representation of names or similar descriptors.
+      +row(["\\", "{", "}", "~"])
+        | These miscellaneous reserved characters should not be used within resolutions in general and will be automatically removed. This includes the tilde #[code ~] character.
+      +row(["`", "´", "'"])
+        | Detached backticks #[code `], detached forward ticks #[code ´] and regular keyboard apostrophes #[code '] will be normalized to the typographically correct apostrophe #[code ’]. #[em Letters] with diacritical marks are allowed and won't be modified. Do not use diacritical marks as apostrophes or quotation marks, as they will most likely be removed.
+      +row(["\"", "“", "”", "‹", "›", "«", "»"])
+        | All quote-like characters are automatically converted into correctly formatted and placed typographic quotation marks #[code “] and #[code ”]. Inner quotes will not be modified or correctly formatted and therefore their use is not recommended, as they may result in unpredictable formatting.
+      +row([",", ":", ";", "."])
+        | Do not end your clauses or enumeration items with resolution specific punctuation. The renderer will reliably and correctly insert formal punctuation where necessary.
+      +row(["_", "^", "*", "|"])
+        | See #[a(href="#special-syntax") Special Syntax]. These characters are used to denote the application of special styling in the rendered document. Using them for a different purpose will produce unexpected results.
+      +row(["ö", "é", "ì"])
+        | If you need to represent names in their romanized but still foreign form, use the letters with the different marks on them instead of adding combining diacritical marks, as they will be removed and are unsupported by the renderer. Get help if this is causing problems for you.
+      +row(["_", "^", ".", ",", "-", "(", "&", "/", "+"])
+        | These characters will be removed if found at the end of a clause content block. If a clause ends with an abbreviation, simply omit the last full stop of the abbreviation.
+      +row(["|", ".", ",", "-", ")", "&", "/", "+"])
+        | These characters will be removed if found at the beginning of a clause content block.
+      tr
+        td.center: em other
+        td
+          .justify Refrain from using characters that are not listed in this list of allowed characters. Additionally the most common letters with diacritical marks in the unicode range #[code U+00C0-U+024F] are supported as well. They can be viewed #[a(href="http://jrgraphix.net/r/Unicode/00A0-00FF") here], #[a(href="http://jrgraphix.net/r/Unicode/0100-017F") here] and #[a(href="http://jrgraphix.net/r/Unicode/0180-024F") here].
+          br
+          .center: code.block-code
+            | abcdefghijklmnopqrstuvwxyz
             br
-            .center: code.block-code
-              | abcdefghijklmnopqrstuvwxyz
-              br
-              | ABCDEFGHIJKLMNOPQRSTUVWXYZ
-              br
-              | 0123456789
-              br
-              | *_^|&’"-.,()/+
-    h4: +icon("text_rotation_none", "mediumsmall left orange-text text-lighten-1")
-    h4#phrases Phrases
-    p For each clause a phrase for the corresponding type of clause can be used. All phrases can be combined with one prefix. In the certain special forums, additional operative phrases can be used. The Editor keeps track of which phrases can be used where. Refrain from putting phrases in clause content fields, as they will be detected by the Editor and/or removed in fruther processing of the resolution.
-      |  The forums allowed to use additional phrases are: #{phrases.scopForums.join(", ")}
-    mixin phrase-section(name, array)
-      p
-        b=name + ": "
-        =array.join(", ")
-    h5#preamb-phrases Preambulatory
-    +phrase-section("Optional Prefixes", phrases.prefix.preamb)
-    +phrase-section("Phrases", phrases.preamb)
-    h5#op-phrases Operative
-    +phrase-section("Optional Prefixes", phrases.prefix.op)
-    +phrase-section("Phrases", phrases.op)
-    +phrase-section("Additional Phrases in special forums", phrases.scop)
-    h4: +icon(icons.handytextbox, "mediumsmall left" + colors.handytextbox)
-    h4#handytextbox Handy Textbox
-    p Use this #[a(href="/handytextbox") handy textbox] for whatever you want. It's meant to be used as a temporary text area in which you can type amendments before copying them into Editor's amendment interface to debate them.
-    h4: +icon(icons.liveview, "mediumsmall left " + colors.liveview)
-    h4#liveview LiveView
-    h5#amdcolors Colors in Amendments
-    p Amendments change the resolution by adding, removing or changing content. In order to better display these changes, the affected sections are colorized according to what's happening with them. Reordering of elements in an enumeration (sub clause) list usually marks all items that changed their position as #[span.mark-yellow changed].
-    ul
-      li
-        span.mark-red Text marked Red
-        |  is being removed or replaced and will be gone completely if the Amendment is accepted.
-      li
-        span.mark-green Text marked Green
-        |  is being added and will be part of the resolution if the Amendment is accepted.
-      li
-        span.mark-yellow Text marked Yellow
-        |  is being changed and will be modified as proposed if the Amendment is accepted. The section this applies to may be changed completely but will remain in the same position.
-    h4: +icon("lock", "mediumsmall left text-lighten-1 indigo-text")
-    h4#attribute-states Attribute States
-    mixin attrib-display(name)
-      p: +attribute-descr(name, true)
-    +attrib-display("none")
-    +attrib-display("readonly")
-    +attrib-display("noadvance")
-    +attrib-display("static")
-    h4: +stage-info-icon
-    h4#workflow-stages Resolution Workflow Stages
-    - var i = 0;
-    while i <= 11
-      +stage-info-index(i++, false)
-    p: em Please note that users with the access level MA have unrestricted access to all applicable functions of the Editor in all stages. See #[a(href="#access-levels") Access Levels]
-    h4: +icon("build", "mediumsmall left text-darken-2 grey-text")
-    h4#structure-definition Resolution Structure Format Definition
-    p Click
-      a(href="/help/formatdefinition")  here
-      |  to view the JSON representation of the definition object of the resolution structure format.
+            | ABCDEFGHIJKLMNOPQRSTUVWXYZ
+            br
+            | 0123456789
+            br
+            | *_^|&’"-.,()/+
+  +takeToc(0)
+  p For each clause a phrase for the corresponding type of clause can be used. All phrases can be combined with one prefix. In the certain special forums, additional operative phrases can be used. The Editor keeps track of which phrases can be used where. Refrain from putting phrases in clause content fields, as they will be detected by the Editor and/or removed in fruther processing of the resolution.
+    |  The forums allowed to use additional phrases are: #{phrases.scopForums.join(", ")}
+  mixin phrase-section(name, array)
+    p
+      b=name + ": "
+      =array.join(", ")
+  +takeToc(1)
+  +phrase-section("Optional Prefixes", phrases.prefix.preamb)
+  +phrase-section("Phrases", phrases.preamb)
+  +takeToc(1)
+  +phrase-section("Optional Prefixes", phrases.prefix.op)
+  +phrase-section("Phrases", phrases.op)
+  +phrase-section("Additional Phrases in special forums", phrases.scop)
+  +takeToc(0)
+  p Use this #[a(href="/handytextbox") handy textbox] for whatever you want. It's meant to be used as a temporary text area in which you can type amendments before copying them into Editor's amendment interface to debate them.
+  +takeToc(0)
+  +takeToc(1)
+  h6 The following procedure is recommended:
+  p Retype amendments somehwere into your computer. This can be any text editor or this #[a(href="/handytextbox" target="_blank") handy textbox]. When you want to discuss the amendment, paste it into the amendment field and select the appropriate sponsor and action type. This will update it on the LiveView client. After discussing and voting in favour or against the amendment, click the keep or reject button below the amendment field to either apply the proposed changes to the resolution or remove them from the display.
+  +takeToc(1)
+  p Using this feature only makes sense if a #[a(href="#liveview-heading") LiveView ] client is connected. It will display the amendments you create integrated into the resolution and visually emphasize changes. Click the amendment button in an operative clause to select it for an amendment. You can then choose what type of amendment should be performed and who the sponsor of the amendment is. The resolution can be edited while in amendment mode but certain structural changes can cause unexpected behavior.
     br
+    | The #[b add] type requires the creation of a new clause and needs no prior selection of an existing clause. Selecting this type will allow you to formulate a new operative clause here and append it to the end of the resolution.
+    br
+    | The #[b change] type creates a copy of the selected clause here and will display a detailed view of the changes you make in the LiveView client.
+    br
+    | The #[b replace] type is similar to #[b change] but implies a complete change of the clause content. It doesn't create a copy of the selected clause here but rather allows you to write a new clause that will replace the selected clause.
+    br
+    | The #[b strike out] type will mark the selected clause for removal.
+  +takeToc(1)
+  p Amendments change the resolution by adding, removing or changing content. In order to better display these changes, the affected sections are colorized according to what's happening with them. Reordering of elements in an enumeration (sub clause) list usually marks all items that changed their position as #[span.mark-yellow changed].
+  ul
+    li
+      span.mark-red Text marked Red
+      |  is being removed or replaced and will be gone completely if the Amendment is accepted.
+    li
+      span.mark-green Text marked Green
+      |  is being added and will be part of the resolution if the Amendment is accepted.
+    li
+      span.mark-yellow Text marked Yellow
+      |  is being changed and will be modified as proposed if the Amendment is accepted. The section this applies to may be changed completely but will remain in the same position.
+  +takeToc(0)
+  p Please be aware of the fact that #[span.bold opening the same resolution on multiple devices can have adverse effects on the integrity of the resolution] because the changes aren't updated on other devices until the page is reloaded and all unsaved local changes are thereby deleted.
+  +takeToc(1)
+  p You can use the FC work queue page and the printing queue on multiple devices at the same time if you press the "check now" link before making changes. The contents of the page may become outdated if another user makes changes.
+  +takeToc(1)
+  p Live View is designed to be used concurrently by multiple viewing clients. A large number of viewing clients can follow allong with a debate session while there can only be one active editor client. The last joined editor client takes control of the liveview session for that resolution.
+  +takeToc(0)
+  ul
+    li User placed punctuation at the end of clauses
+    li Special Syntax: Abuse, Misuse or syntax errors
+    li Illegal or misplaced characters
+    li Phrases at the beginning of clause content fields; they should rather be in the correct phrase fields
+    li Makeshift structural components: for example enumerations in clause content fields
+    li Multiplse clauses in one clause field
+    li Address field mistakes
+    li Violations of the #[a(href="/help/contentguidelines") Content Guidelines]
+    li Other errors hindering the generation of a PDF (contact IT-Management if errors persist)
+  +takeToc(0)
+  +takeToc(1)
+  mixin attrib-display(name)
+    p: +attribute-descr(name, true)
+  +attrib-display("none")
+  +attrib-display("readonly")
+  +attrib-display("noadvance")
+  +attrib-display("static")
+  +takeToc(1)
+  p With #[em MA] level access you can set the attribute state of a resolution to one of four states. #[em Read-only] restricts editing access, #[em Non-advanceable] restricts advancement and #[em static] combines the two previous states. #[em No special state] is just that; the resolution is reset to its original unrestricted state. #[span.grey-text The current state in the selector box is displayed in grey.]
+  +takeToc(0)
+  - var i = 0;
+  while i <= 11
+    +stage-info-index(i++, false)
+  p: em Please note that users with the access level MA have unrestricted access to all applicable functions of the Editor in all stages. See #[a(href="#access-levels") Access Levels]
+  +takeToc(0)
+  p Click
+    a(href="/help/formatdefinition")  here
+    |  to view the JSON representation of the definition object of the resolution structure format.

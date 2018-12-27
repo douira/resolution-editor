@@ -13,7 +13,7 @@
  * @author Arwid Bancewicz http://arwid.ca
  * @version 0.3
  */
-//jshint ignore: start
+/* eslint-disable */
  (function($) {
     $.fn.scrollIntoView = function(duration, easing, complete) {
         // The arguments are optional.

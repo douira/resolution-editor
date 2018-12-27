@@ -19,6 +19,10 @@ table.responsive-table.responsive-formatted thead {
   table.responsive-table.responsive-formatted tbody {
     border-left: 1px solid #d0d0d0;
   }
+
+  table.responsive-table.responsive-formatted thead {
+    border-bottom: 0;
+  }
 }
 
 p {
@@ -39,4 +43,26 @@ td code {
 
 .block-code {
   display: inline-block;
+}
+
+.toc {
+  margin-left: 30px;
+  font-size: 0.92em;
+}
+
+.toc-top a, .toc-top a:visited {
+  color: inherit;
+}
+
+.toc-top a:hover {
+  color: black;
+  font-weight: bold;
+}
+
+.toc-top i {
+  margin-right: 5px;
+}
+
+.toc-top li.toc-item:hover i:before {
+  color: black;
 }

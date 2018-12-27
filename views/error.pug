@@ -1,14 +1,19 @@
 extends layout
 
 block title
-  title Error - Resolution Editor
+  title Error #{error.status || "?"} - Resolution Editor
 
-block content
-  .container
-    h4.center: +icon("gesture", "large " + colors.weakperm)
-    h3=error.message
-    h5.grey-text.text-lighten-1 Status #{error.status || "?"}
-    if devEnv && error.stack
-      .divider
-      pre=error.stack
-    br
+block container-content
+  +page-title("gesture", colors.weakperm)
+    h3 Error: Status #{error.status || "?"}
+  h5
+    case error.status
+      default
+        | We don't know what went wrong.
+      when 404
+        | This page doesn't exist.
+      when 500
+        | The server did an oopsie and had an internal problem.
+  if devEnv && error.stack
+    pre=error.stack
+  br

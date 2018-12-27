@@ -1,6 +1,6 @@
-/*jshint esversion: 6, node: true */
 const express = require("express");
-const router = module.exports = express.Router();
+const router = express.Router();
+module.exports = router;
 const resolutionFormat = require("../public/js/resolutionFormat");
 const phrases = require("../public/phrases.json");
 const { issueError } = require("../lib/logger");
@@ -13,47 +13,32 @@ require("../lib/database").fullInit.then(collections => {
   feedbackCollection = collections.feedback;
 });
 
-//GET help page
-router.get("/", function(req, res) {
-  //render help page
-  res.render("help", { phrases });
-});
+//GET render help page
+router.get("/", (req, res) => res.render("help", { phrases }));
 
 //GET resolution stucture definition
-router.get("/formatdefinition", function(req, res) {
+router.get("/formatdefinition", (req, res) =>
   //render help page
   res.render("formatdefinition", {
     data: resolutionFormat.resolutionFileFormat,
     dataJson: JSON.stringify(resolutionFormat.resolutionFileFormat, null, 2)
-  });
-});
+  })
+);
 
-//GET content guideliens page (static)
-router.get("/contentguidelines", function(req, res) {
-  //render page
-  res.render("contentguidelines");
-});
+//GET render content guidelines page (static)
+router.get("/contentguidelines", (req, res) => res.render("contentguidelines"));
 
-//GET feedback form simple
-router.get("/feedback", function(req, res) {
-  //only render feedback form page
-  res.render("feedbackform");
-});
+//GET only render feedback form page
+router.get("/feedback", (req, res) => res.render("feedbackform"));
 
-//GET feedback form with ok reponse
-router.get("/feedback/ok", function(req, res) {
-  //render ok feedback form page
-  res.render("feedbackform", { response: "ok" });
-});
+//GET render feedback form with ok reponse
+router.get("/feedback/ok", (req, res) => res.render("feedbackform", { response: "ok" }));
 
-//processes the message components for saving
-function prepareFeedbackComponent(str, n) {
-  //trim and limit to n chars
-  return str.trim().substring(0, n);
-}
+//processes the message components for saving: trim and limit to n chars
+const prepareFeedbackComponent = (str, n) => str.trim().substring(0, n);
 
 //POST receives feedback form data and saves it
-router.post("/feedback/receive", function(req, res) {
+router.post("/feedback/receive", (req, res) => {
   //discard invalid responses
   if (! (req.body && req.body.message)) {
     //display error sending feedback page and stop process
@@ -89,9 +74,9 @@ router.use("/feedback/list", (req, res, next) =>
   routingUtil.requireSession("semi-admin", req, res, () => next()));
 
 //GET display all feedback with booklet rights
-router.get("/feedback/list", function(req, res) {
+router.get("/feedback/list", (req, res) =>
   //get all feedback from db
-  feedbackCollection.find({}, { sort: [ "timestamp" ]}).toArray().then(messages => {
+  feedbackCollection.find({}, { sort: ["timestamp"] }).toArray().then(messages => {
     //respond with rendered list of feedback items
     res.render("feedbacklist", {
       //format all timestamps
@@ -100,5 +85,5 @@ router.get("/feedback/list", function(req, res) {
         return m;
       })
     });
-  }, err => issueError(req, res, 500, "could not query feedback list", err));
-});
+  }, err => issueError(req, res, 500, "could not query feedback list", err))
+);

@@ -1,6 +1,6 @@
-/*jshint esversion: 6, node: true */
 const express = require("express");
-const router = module.exports = express.Router();
+const router = express.Router();
+module.exports = router;
 const routingUtil = require("../lib/routingUtil");
 const tokenProcessor = require("../lib/token");
 const { logger, issueError } = require("../lib/logger");
@@ -20,12 +20,13 @@ require("../lib/database").fullInit.then(collections => {
 
 //require admin or SG session for resolution list
 router.use("/overview", (req, res, next) =>
-  routingUtil.requireSession("semi-admin", req, res, () => next()));
+  routingUtil.requireSession("semi-admin", req, res, () => next())
+);
 
 //GET display overview of all resolutions
-router.get("/overview", function(req, res) {
+router.get("/overview", (req, res) => {
   //check if the archive was requested
-  const useArchive = req.query.archive == "1"; //jshint ignore: line
+  const useArchive = req.query.archive == "1"; //eslint-disable-line eqeqeq
 
   //aggregate resolutions, use archive if get flag set
   (useArchive ? resolutionArchive : resolutions).aggregate([
@@ -52,22 +53,23 @@ router.get("/overview", function(req, res) {
     }}
   ]).toArray().then(items => {
     //send data to client
-    res.render("listoverview", { items: items, isArchive: useArchive, comMode: false });
+    res.render("listoverview", { items, isArchive: useArchive, comMode: false });
   }, err => issueError(req, res, 500, "could not query resolution in overview", err));
 });
 
 //list of resolutions for chairs requires chair access
 router.use("/forum", (req, res, next) =>
-  routingUtil.requireSession("forum", req, res, () => next()));
+  routingUtil.requireSession("forum", req, res, () => next())
+);
 
 //GET overview of forums
-router.get("/forum", function(req, res) {
+router.get("/forum", (req, res) =>
   //forum select interface, display possible forums
-  extDataPromise.then(extData => res.render("forumselect", { forums: extData.forums }));
-});
+  extDataPromise.then(extData => res.render("forumselect", { forums: extData.forums }))
+);
 
 //GET overview of forum resolutions
-router.get("/forum/:forumNameId", function(req, res) {
+router.get("/forum/:forumNameId", (req, res) => {
   //get forum name
   const forumName = req.params.forumNameId.replace(/-/g, " ");
 
@@ -105,7 +107,7 @@ router.get("/forum/:forumNameId", function(req, res) {
         }}
       ]).toArray().then(items => {
         //display listoverview with resolutions
-        res.render("listoverview", { items: items, forumMode: true, forumName });
+        res.render("listoverview", { items, forumMode: true, forumName });
       });
     } else {
       //bad, make an error
@@ -116,15 +118,14 @@ router.get("/forum/:forumNameId", function(req, res) {
 
 //require admin session for code management
 router.use("/codes", (req, res, next) =>
-  routingUtil.requireSession("admin", req, res, () => next()));
+  routingUtil.requireSession("admin", req, res, () => next())
+);
 
 //gets the current insert group counter
-function getInsertGroupCounter() {
-  return metadata.findOne({ _id: "codeInsertGroupCounter" });
-}
+const getInsertGroupCounter = () => metadata.findOne({ _id: "codeInsertGroupCounter" });
 
 //GET display overview of all codes and associated information
-router.get("/codes", function(req, res) {
+router.get("/codes", (req, res) =>
   Promise.all([
     //get current insert group counter
     getInsertGroupCounter(),
@@ -166,16 +167,16 @@ router.get("/codes", function(req, res) {
     
     //display code overview page
     res.render("codeoverview", {
-      codes: codes,
-      latestCodes: latestCodes,
+      codes,
+      latestCodes,
       sessionCode: req.session.code
     });
   }, err => issueError(req, res, 500,
-    "could not query codes or insert group id for overview", err));
-});
+    "could not query codes or insert group id for overview", err))
+);
 
 //GET print codes displays items in a plaintext table view that can be easily printed
-router.get("/codes/print/:group", function(req, res, next) {
+router.get("/codes/print/:group", (req, res, next) => {
   //the given print group type
   const printGroupType = req.params.group;
 
@@ -224,7 +225,7 @@ router.get("/codes/print/:group", function(req, res, next) {
 const maximumCodeGenerationTries = 50;
 
 //post to codes page performs action and then sends ok message for page reload
-router.post("/codes/:action", function(req, res) {
+router.post("/codes/:action", (req, res) => {
   //for revoke and change action type
   if (req.params.action === "change" || req.params.action === "revoke") {
     //get the list of codes to process
@@ -243,7 +244,7 @@ router.post("/codes/:action", function(req, res) {
       //for specified action
       if (req.params.action === "revoke") {
         //remove all codes that were given
-        access.deleteMany({ code: { "$in": codes }}).then(() => res.send("ok"), err => {
+        access.deleteMany({ code: { $in: codes }}).then(() => res.send("ok"), err => {
           issueError(req, res, 500, "couldn't remove specified codes", err);
         });
       } else { //change action
@@ -255,10 +256,10 @@ router.post("/codes/:action", function(req, res) {
             { code: { $in: codes }},
             { $set: { level: setLevel }}
           ).then(() => res.send("ok"), err => {
-            issueError(req, res, 500, "couldn't change specified codes to " + setLevel, err);
+            issueError(req, res, 500, `couldn't change specified codes to ${setLevel}`, err);
           });
         } else {
-          issueError(req, res, 400, "invalid code level set " + setLevel + " for change op");
+          issueError(req, res, 400, `invalid code level set ${setLevel} for change op`);
         }
       }
     } else {
@@ -272,7 +273,7 @@ router.post("/codes/:action", function(req, res) {
       const useLevel = req.body.accessLevel;
       if (! validateAccessLevel(useLevel)) {
         //complain and stop
-        issueError(req, res, 400, "invalid code level set " + useLevel + " for new codes op");
+        issueError(req, res, 400, `invalid code level set ${useLevel} for new codes op`);
         return;
       }
 
@@ -282,14 +283,14 @@ router.post("/codes/:action", function(req, res) {
         //use names a already given objects in codes
         codesArr = codesArr
           .filter(name => typeof name === "string")
-          .map(name => ({ name: name }));
+          .map(name => ({ name }));
       } else {
         //init empty
         codesArr = [];
       }
 
       //number of codes specified
-      const amountSpecified = parseInt(req.body.amount);
+      const amountSpecified = parseInt(req.body.amount, 10);
 
       //normalize to number and cap at max value
       const codeAmount = Math.min(100, Math.max(codesArr.length, amountSpecified || 0));
@@ -305,14 +306,12 @@ router.post("/codes/:action", function(req, res) {
         _id: "codeInsertGroupCounter"
       }, {
         $inc: { value: 1 }
-      }, { returnOriginal: false, upsert: true }).then(result => {
+      }, { returnOriginal: false, upsert: true }).then(result => Promise.resolve({
         //pass gotten counter value to next step
-        return Promise.resolve({
-          remainingCodes: codesArr,
-          depth: 0, //init with depth 0
-          insertGroupId: result.value.value
-        });
-      }).then(function handleRemaining(opts) { //insert codes until all codes are inserted
+        remainingCodes: codesArr,
+        depth: 0, //init with depth 0
+        insertGroupId: result.value.value
+      })).then(function handleRemaining(opts) { //insert codes until all codes are inserted
         //remaining codes are in opts
         const remainingCodes = opts.remainingCodes;
 
@@ -389,7 +388,7 @@ router.post("/codes/:action", function(req, res) {
     }
   } else {
     //error for unhandled (invalid) action type
-    issueError(req, res, 404, "no such code action " + req.params.action);
+    issueError(req, res, 404, `no such code action ${req.params.action}`);
   }
 });
 
@@ -397,17 +396,14 @@ router.post("/codes/:action", function(req, res) {
 router.use("/print", (req, res, next) =>
   routingUtil.requireSession("printqueue", req, res, () => next()));
 
-//POST secreteriat print queue page, gets code from post
-router.get("/print", function(req, res) {
-  //render the list page
-  res.render("printqueue");
-});
+//GET secreteriat print queue page, gets code with post
+router.get("/print", (req, res) => res.render("printqueue"));
 
 //maps the stage history entry from it's nexted form to a property
 //also moves the address to a top level property
-function mapListItems(items, stageHistoryIndex, forums) {
+const mapListItems = (items, stageHistoryIndex, forums) =>
   //map items and return modified
-  return items.map(i => {
+  items.map(i => {
     //set new property with value at index
     i.waitTime = i.stageHistory[stageHistoryIndex];
 
@@ -432,16 +428,15 @@ function mapListItems(items, stageHistoryIndex, forums) {
     //return original object
     return i;
   });
-}
 
 //POST return list of items to be printed
-router.get("/print/getitems", function(req, res) {
+router.get("/print/getitems", (req, res) =>
   //query resolutions in stage 4 that are advanceable (and thereby non-static)
   Promise.all([resolutions.find({
     stage: 4,
     $nor: [
       { attributes: "noadvance" },
-      { attributes: "static" },
+      { attributes: "static" }
     ]
   }).project({
     //project to only transmit necessary data, basically only want meta data
@@ -461,27 +456,24 @@ router.get("/print/getitems", function(req, res) {
   ), extDataPromise]).then(results => {
     //send data to client, rewrite and address
     res.send(mapListItems(results[0], 4, results[1].forums));
-  }, () => issueError(req, res, 500, "could not prepare print queue items"));
-});
+  }, () => issueError(req, res, 500, "could not prepare print queue items"))
+);
 
 //uses session auth for FC queue
 router.use("/fcqueue", (req, res, next) =>
   routingUtil.requireSession("fcqueue", req, res, () => next()));
 
 //GET fc work queue display
-router.get("/fcqueue", function(req, res) {
-  //render fc work queue page
-  res.render("fcqueue");
-});
+router.get("/fcqueue", (req, res) => res.render("fcqueue"));
 
 //GET fc work queue data
-router.get("/fcqueue/getitems", function(req, res) {
+router.get("/fcqueue/getitems", (req, res) =>
   //query resolutions that are in stage 3 and can be advanced
   resolutions.find({
     stage: 3,
     $nor: [
       { attributes: "noadvance" },
-      { attributes: "static" },
+      { attributes: "static" }
     ]
   }).project({
     //only need some data
@@ -492,37 +484,39 @@ router.get("/fcqueue/getitems", function(req, res) {
   }).sort({
     //sort by time in stage 3, most necessary first
     "stageHistory.3": -1
-  }).toArray().then(items => {
-    //send data to client, rewrite stageHistory and address
-    res.send(mapListItems(items, 3));
-  }, err => issueError(req, res, 500, "could not query fc work queue items", err));
-});
+  })
+  //send data to client, rewrite stageHistory and address
+  .toArray().then(items => res.send(mapListItems(items, 3)),
+  err => issueError(req, res, 500, "could not query fc work queue items", err))
+);
 
 //booklet actions require at least SG permission (booklet perm match mode)
 router.use("/booklet", (req, res, next) =>
   routingUtil.requireSession("semi-admin", req, res, () => next()));
 
 //booklet creation and selection page
-router.get("/booklet", function(req, res) {
+router.get("/booklet", (req, res) => {
   //parse year or take current as default
-  const year = (req.query && parseInt(req.query.year)) || new Date().getFullYear();
+  const year = req.query && parseInt(req.query.year, 10) || new Date().getFullYear();
 
   //query all booklets of the current year
   booklets.find({
     //use current year as default
-    year: year
+    year
   }).toArray().then(
     //display booklet select page with all found booklets
-    booklets => res.render("bookletselect", { booklets, year }),
+    booklets => {
+      res.render("bookletselect", { booklets, viewYear: year });
+    },
     err => issueError(req, res, 500, "could not query booklets", err)
   );
 });
 
 //requires and validates the given booklet id
 router.use(["/booklet/edit/:id", "/booklet/renderpdf/:id", "/booklet/save/:id"],
-  function(req, res, next) {
+  (req, res, next) => {
   //get id to query booklet with
-  const bookletId = parseInt(req.params.id);
+  const bookletId = parseInt(req.params.id, 10);
 
   //must be non-negative int
   if (isNaN(bookletId) || bookletId < 0) {
@@ -555,7 +549,7 @@ const eligibleResolutionQuery = booklet => ({
 });
 
 //edit and info page for a particular booklet
-router.get("/booklet/edit/:id", function(req, res) {
+router.get("/booklet/edit/:id", (req, res) => {
   //get the current booklet
   booklets.findOne({
     _id: req.bookletId
@@ -563,7 +557,7 @@ router.get("/booklet/edit/:id", function(req, res) {
     //make sure we found a booklet
     if (! booklet) {
       //error and stop
-      issueError(req, res, 400, "(renderpdf) no booklet exists with id " + req.bookletId);
+      issueError(req, res, 400, `(renderpdf) no booklet exists with id ${req.bookletId}`);
       return;
     }
 
@@ -572,7 +566,7 @@ router.get("/booklet/edit/:id", function(req, res) {
       {
         $or: [
           //token is one of the ones specified in the booklet
-          { token: { $in: booklet.resolutions } },
+          { token: { $in: booklet.resolutions }},
 
           //or a eligible resolution
           eligibleResolutionQuery(booklet)
@@ -602,24 +596,24 @@ router.get("/booklet/edit/:id", function(req, res) {
       //make sure we found a booklet
       if (! booklet) {
         //error and stop
-        issueError(req, res, 400, "(edit) no booklet exists with id " + req.bookletId);
+        issueError(req, res, 400, `(edit) no booklet exists with id ${req.bookletId}`);
         return;
       }
 
       //render info and edit page for booklet
       res.render("bookletinfo", {
-        booklet: booklet,
+        booklet,
         resolutions: eligibleResolutions
       });
     },
-    err => issueError(req, res, 500, "could not query booklet with id " + req.bookletId +
-      " or query eligible resolutions for booklet", err)
+    err => issueError(req, res, 500, `could not query booklet with id ${req.bookletId
+      } or query eligible resolutions for booklet`, err)
     );
   });
 });
 
 //renders the booklet
-router.get("/booklet/renderpdf/:id", function(req, res) {
+router.get("/booklet/renderpdf/:id", (req, res) =>
   //get the current booklet
   booklets.findOne({
     _id: req.bookletId
@@ -627,7 +621,7 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
     //make sure we found a booklet
     if (! booklet) {
       //error and stop
-      issueError(req, res, 400, "(renderpdf) no booklet exists with id " + req.bookletId);
+      issueError(req, res, 400, `(renderpdf) no booklet exists with id ${req.bookletId}`);
       return;
     }
 
@@ -635,7 +629,7 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
     if (! booklet.resolutions.length) {
       //error and stop
       issueError(req, res, 400,
-        "will not render booklet without any resolutions, id " + req.bookletId);
+        `will not render booklet without any resolutions, id ${req.bookletId}`);
       return;
     }
 
@@ -653,7 +647,7 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
         if (results.length !== booklet.resolutions.length) {
           //error and stop
           issueError(req, res, 500,
-            "amount of found and specified resolutions in booklet not equal, id " + req.bookletId);
+            `amount of found and specified resolutions in booklet not equal, id ${req.bookletId}`);
           return;
         }
 
@@ -661,13 +655,13 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
         if (! results.every(r => r.stage >= 7 && r.stage <= 9)) {
           //error and stop
           issueError(req, res, 400,
-            "will not render booklet with resolutions outside of stage range [7, 9], id " +
-            req.bookletId);
+            `will not render booklet with resolutions outside of stage range [7, 9], id ${
+            req.bookletId}`);
           return;
         }
 
         //make url to output pdf
-        const pdfUrl = "/rendered/booklet" + booklet._id + ".pdf?c=" + Date.now();
+        const pdfUrl = `/rendered/booklet${booklet._id}.pdf?c=${Date.now()}`;
 
         //simply return url without rendering if the booklet
         //and all resolutions don't have unrendered changes
@@ -690,7 +684,7 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
         if (! booklet.resolutions.every(res => typeof res === "object" && res.token)) {
           //error and stop
           issueError(req, res, 500,
-            "did not find all resolutions for booklet with id " + req.bookletId);
+            `did not find all resolutions for booklet with id ${req.bookletId}`);
           return;
         }
 
@@ -706,7 +700,7 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
               //save number of pages in booklet and unset unrendered changes
               booklets.updateOne({ _id: booklet._id }, {
                 $set: {
-                  pageAmount: pageAmount,
+                  pageAmount,
                   unrenderedChanges: false
                 }
               }).catch( //not interested in result
@@ -719,14 +713,14 @@ router.get("/booklet/renderpdf/:id", function(req, res) {
           err => issueError(req, res, 500, "render problem", err)
         );
       },
-      err => issueError(req, res, 500, "could not query resolutions in booklet with id " +
-        req.bookletId, err)
+      err => issueError(req, res, 500, `could not query resolutions in booklet with id ${
+        req.bookletId}`, err)
     );
-  });
-});
+  })
+);
 
 //saves the booklet
-router.post("/booklet/save/:id", function(req, res) {
+router.post("/booklet/save/:id", (req, res) => {
   //if resolutions were given
   if (req.body && req.body.resolutions && req.body.resolutions instanceof Array) {
     //deduplicate resolution tokens given in booklet
@@ -753,19 +747,19 @@ router.post("/booklet/save/:id", function(req, res) {
   }).then(
     //send ok when update happens without error
     () => res.send("ok"),
-    err => issueError(req, res, 500, "could not save booklet with id " + req.bookletId, err)
+    err => issueError(req, res, 500, `could not save booklet with id ${req.bookletId}`, err)
   );
 });
 
 //makes a new booklet and redirects to the edit page of that booklet
-router.post("/booklet/new", function(req, res) {
+router.post("/booklet/new", (req, res) => {
   //get the posted type
   const type = req.body.type;
 
   //validate type to be one of the allowed types and not none
   if (plenaryNames.indexOf(type) <= 0) {
     //error and stop
-    issueError(req, res, 400, "invalid type for new booklet given: " + type);
+    issueError(req, res, 400, `invalid type for new booklet given: ${type}`);
     return;
   }
 
@@ -789,7 +783,7 @@ router.post("/booklet/new", function(req, res) {
     //there must be a valid result
     if (result && result.ops instanceof Array) {
       //redirect to edit page for that booklet
-      res.redirect("/list/booklet/edit/" + result.ops[0]._id);
+      res.redirect(`/list/booklet/edit/${result.ops[0]._id}`);
     } else {
       issueError(req, res, 500, "error after booklet insert: did not get result");
     }

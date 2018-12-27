@@ -24,7 +24,7 @@
       "data-position": position
     };
 
-    //add message if not 0
+    //add message if truthy
     if (msg) {
       obj["data-tooltip"] = msg;
     }
@@ -35,15 +35,31 @@
 
   //icons
   const icons = {
-    reset: "clear",
-    code: "supervisor_account",
-    token: "my_location",
-    liveview: "dvr",
-    handytextbox: "format_size",
-    help: "help",
-    weakperm: "block",
+    reset: "close",
+    code: "account-key",
+    token: "crosshairs-gps",
+    liveview: "presentation-play",
+    handytextbox: "format-size",
+    help: "help-circle",
+    weakperm: "cancel",
     plaintext: "receipt",
-    contentguidelines: "gavel"
+    contentguidelines: "bullhorn",
+    menuDropDown: "menu-down",
+    moveUp: "arrow-up",
+    moveDown: "arrow-down",
+    doneCheck: "check",
+    add: "plus",
+    amendment: "message-draw",
+    search: "magnify",
+    print: "printer",
+    edit: "pencil",
+    feedback: "message-alert",
+    formatDef: "wrench",
+    forward: "forward",
+    clock: "clock-outline",
+    stageInfo: "clipboard-text",
+    concurrency: "swap-horizontal-bold",
+    resolutionSave: "cloud-upload"
   };
 
   //colors for icons
@@ -54,37 +70,42 @@
     help: " text-darken-1 amber-text",
     plaintext: " text-darken-1 purple-text",
     session: " text-darken-3 amber-text",
-    logoutButton: " red lighten-1"
+    logoutButton: " red lighten-1",
+    stageInfo: " text-lighten-1 light-green-text",
+    concurrency: " red-text",
+    queue: " blue-text"
   };
 
   //placeholders, for adjusting the length
   const placeholders = {
-    token: "@ 12345EFGH",
-    code: "! ABCD5678"
+    token: "@ XY123ABC",
+    code: "! ABC123ZY"
   };
 
 //-static file serve with cache control
-mixin static(type, url)
-  - url += "?v=4" //add version to url
+mixin static(type, url, noVersion)
+  -
+    //add version to url if allowed
+    if (! noVersion) {
+      url += "?v=4";
+    }
   case type
     when "css"
-      link(href=url type="text/css" rel="stylesheet")
+      link(href=url rel="stylesheet")
     when "js"
       script(src=url)
 
 //-icon maker, more icons here if necessary: https://materialdesignicons.com/
 mixin icon(name, classes, id)
-  i.material-icons(class=classes id=id)=name
+  i.mdi(class=("mdi-" + name + " " + (classes || "")).trim() id=id aria-hidden="true")
 
 //-colorized spinner
 mixin spinner(colorCode, size)
+  if ! size
+    - size = "medium"
+  if ! colorCode
+    - colorCode = "blue"
   -
-    if (typeof size === "undefined") {
-      size = "medium";
-    }
-    if (typeof colorCode === "undefined") {
-      colorCode = "blue";
-    }
     colorCode = ({
       "blue": "spinner-blue-only",
       "red": "spinner-red-only",
@@ -100,6 +121,16 @@ mixin spinner(colorCode, size)
       .circle-clipper.right
         .circle
 
+//-makes the page headers more compact
+mixin page-title(icon, iconColor, optionalTitle, divider = true)
+  +icon(icon, "header-large left " + iconColor)
+  if optionalTitle
+    h3=optionalTitle
+  else
+    block
+  if divider
+    .divider
+
 doctype html
 html(lang="en")
   head
@@ -107,19 +138,23 @@ html(lang="en")
     meta(charset="utf-8")
 
     //-setup for materialize
-    meta(name="viewport" content="width=device-width, initial-scale=1")
+    meta(name="viewport" content="width=device-width, initial-scale=1.0")
 
+    //-set default page title, overwritten by extending templates
     block title
       title Resolution Editor
 
+    +static("css", "https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700", true)
+    +static("css", "/materialicons/css/materialdesignicons.min.css")
     //-custom and materialize style sheets
     if serveLocalExt
-      +static("css", "/ext/material-icons-2.2.0.css")
-      +static("css", "/ext/materialize-0.100.2.min.css")
+      //-uses both icons sets until transitioned
+      +static("css", "/materialicons/css/materialdesignicons.min.css")
+      +static("css", "/ext/material-icons.css")
+      +static("css", "/ext/materialize.min.css")
     else
-      link(href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet")
-      //-link(href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700" rel="stylesheet")
-      link(rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css")
+      +static("css", "https://cdn.materialdesignicons.com/3.2.89/css/materialdesignicons.min.css", true)
+      +static("css", "https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css", true)
     +static("css", "/css/mainStyle.css")
 
     //-critical styles are inlined
@@ -155,44 +190,53 @@ html(lang="en")
     //-display error here if there is one
     block error
 
-    //-navigation, prepend with .navbar-fixed: for sticky navbar
-    ul#help-dropdown.dropdown-content
-      li: a(href="/help") Help Page
-      li: a(href="/help/contentguidelines") Content Guidelines
-      li: a(href="/handytextbox") Handy Textbox
-      li: a(href="/resolution/prenew?nonew=1") Read First Page
-      li: a(href="/help/feedback") Feedback
-    ul#lists-dropdown.dropdown-content
-      li: a(href="/list/forum") Forums
-      li: a(href="/list/fcqueue") FC Work-Queue
-      li: a(href="/list/print") Print Queue
-      li: a(href="/list/booklet") Booklets
-      li: a(href="/list/overview") Resolutions
-      li: a(href="/list/codes") Codes
+    //-new nav:
+    mixin navList(navId)
+      -
+        const helpId = "help-dropdown-" + navId;
+        const listId = "lists-dropdown-" + navId;
+      ul.dropdown-content(id=listId)
+        li: a(href="/list/forum") Forums
+        li: a(href="/list/fcqueue") FC Work-Queue
+        li: a(href="/list/print") Print Queue
+        li: a(href="/list/booklet") Booklets
+        li: a(href="/list/overview") Resolutions
+        li: a(href="/list/codes") Codes
+      ul.dropdown-content(id=helpId)
+        li: a(href="/help") Help Page
+        li: a(href="/help/contentguidelines") Content Guidelines
+        li: a(href="/handytextbox") Handy Textbox
+        li: a(href="/resolution/prenew?nonew=1") Read First Page
+        li: a(href="/help/feedback") Feedback
+      if navId === "sidenav"
+        li
+          if loggedIn
+            li: a.subheader Logged in: #[b=sessionCode] #[em (#{sessionLevel})]
+            li: a(href="/session") Session Info
+          else
+            a.subheader You are not logged in
+            li: a(href="/session") Login
+        li.divider
+      li: a(href="/") Front Page
+      li: a(href="/resolution/prenew") New Resolution
+      li: a(href="/resolution") Editor
+      //-li: a(href="/about") About
+      li: a.dropdown-button(href="#!" data-target=listId) Lists
+        +icon(icons.menuDropDown, "right")
+      li: a.dropdown-button(href="#!" data-target=helpId) Help
+        +icon(icons.menuDropDown, "right")
+      if navId === "navbar"
+      li: a(href="/session")=loggedIn ? "Session Info" : "Login"
+    ul#slide-out.sidenav
+      li(class=pritext)
+        h4.center-align Navigation
+        .divider
+      +navList("sidenav")
     nav.lighten-2(class=pri role="navigation"): .nav-wrapper
       .container
-        mixin navList
-          li: a(href="/") Front Page
-          li: a(href="/resolution/prenew") New Resolution
-          li: a(href="/resolution") Editor
-          //-li: a(href="/about") About
-          li: a.dropdown-button(href="#" data-activates="lists-dropdown") Lists
-            +icon("arrow_drop_down", "right")
-          li: a.dropdown-button(href="#" data-activates="help-dropdown") Help
-            +icon("arrow_drop_down", "right")
-          li: a(href="/session")=hasSession ? "Session Info" : "Login"
         ul.right.hide-on-med-and-down
-          +navList(navElements)
-        ul.side-nav#nav-mobile
-          li(class=pritext)
-            h4.center-align Navigation
-            .divider
-          +navList(navElements)
-      a.button-collapse(href="#" data-activates="nav-mobile"): +icon("menu")
-
-    //-necessary for dropdown to work, idk why. removing this prevents the dropdown from apearing
-    a.dropdown-button(href="#" data-activates="help-dropdown")
-    a.dropdown-button(href="#" data-activates="lists-dropdown")
+          +navList("navbar")
+        a.sidenav-trigger(data-target="slide-out" href="#!"): +icon("menu")
 
     //-specific page contents
     main
@@ -204,6 +248,8 @@ html(lang="en")
             p.modal-content-body Text content placeholder!
           .modal-footer
             a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
+      .container
+        block container-content
       block content
 
     //-general footer
@@ -220,20 +266,24 @@ html(lang="en")
                 li: a.white-text(href="https://github.com/douira/resolution-editor") Repository
                 li: a.white-text(href=bugReportLink) File a Bug
                 li: a.white-text(href="https://github.com/douira/resolution-editor/pulls") Contribute
-                li: a.white-text(href="http://munol.org") MUNOL
-                li: a.white-text(href="http://app.munol.org") MUNOL-App
+                li: a.white-text(href="https://munol.org") MUNOL
+                li: a.white-text(href="https://app.munol.org") MUNOL-App
                 li: a.white-text(href="https://munol.org/legal-notice/") Impressum
             .col.xl3.l3.m4.s6
               h5.white-text Stack
               ul
-                li: a.white-text(href="https://material.io") Material Design (+Icons)
+                li: a.white-text(href="https://material.io") Material Design
+                li: a.white-text(href="https://materialdesignicons.com/") Material Design Icons
                 li: a.white-text(href="http://materializecss.com") Materialize
                 li: a.white-text(href="https://jquery.com") jQuery
                 li: a.white-text(href="https://pugjs.org") Pug
+                li: a.white-text(href="https://www.mongodb.com/") MongoDB
+                li: a.white-text(href="https://expressjs.com/") Express
                 li: a.white-text(href="https://nodejs.org/en") node.js
                 li: a.white-text(href="https://github.com") GitHub
         .footer-copyright
-          .container Copyright © 2017 by the
+          - const year = (new Date()).getFullYear()
+          .container Copyright © 2017#{year === 2017 ? "" : "-" + year} by the
             a.text-lighten-3(class=sectext href="https://github.com/douira/resolution-editor/graphs/contributors")  Contributors
             |  on
             a.text-lighten-3(class=sectext href="https://github.com/douira/resolution-editor")  Github
@@ -245,11 +295,8 @@ html(lang="en")
       script(src="http://code.jquery.com/jquery-3.3.1.min.js"
   integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous")
     +static("js", "/js/log.js")
-    if serveLocalExt
-      +static("js", "/ext/materialize-0.100.2.min.js")
-    else
-      script(src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/js/materialize.min.js")
+    +static("js", "/ext/materialize.min.js")
     +static("js", "/js/mainInit.js")
 
-    //-specific scripts
+    //-page specific scripts
     block scripts

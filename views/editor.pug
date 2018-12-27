@@ -14,17 +14,17 @@ block modal
       span.error-code.grey-text
       p.modal-content-body Text content placeholder!
       .file-field.input-field#file-selector.hide-this
-        .btn&attributes(tooltip("Opens the native open file dialog", "right"))
+        .btn
           span Select file
           input.file-input(type="file")
         .file-path-wrapper
-          input.file-path.validate(type="text" placeholder="File Path" pattern="^.*\.rso")
+          input.file-path.validate(type="text" placeholder="File name" pattern="^.*\.rso")
     .modal-footer
       a.modal-action.modal-close.waves-effect.btn-flat.modal-dismiss-btn(class=priwaves) OK
       a#delete-action-confirm.red-text.modal-action.modal-close.waves-effect.btn-flat.hide-this(class=priwaves) Delete
 
 block content
-  .section: .container
+  .container
     if code
       #code-preset.hide-this=code
       #code-access-level.hide-this=accessLevel
@@ -37,40 +37,34 @@ block content
       const lvEnabled = meta.stage === 6 || meta.stage === 10;
     h3 Resolution Editor
     .divider
-    h5.light
-      +icon(icons.token, "mediumsmall left text-darken-3 amber-text")
-      if doLoad
-        | Your Token:
-      else
-        | Token:
-      //-git removes spaces at end of lines so this is necessary
-      =" "
-      span#token-preset.lighten-3(class=sec)=token
-    p.justify Please write this token down, because it will be used to identify your resolution when you want to continue working on it later. Talk to your Chair if you've forgotten your resolution token.
-      em  Looking at your browser's history can be helpful too.
-      br
-      | Your current access level is
-      a(href="/help#" + accessLevel)=" " + accessLevel
-      | .
-      if meta.resolutionId
+    .introtext
+      h5.light
+        +icon(icons.token, "mediumsmall left text-darken-3 amber-text")
+        //-git removes spaces at end of lines so this is necessary
+        ="Document Token: "
+        span#token-preset.lighten-3(class=sec)=token
+      p.justify Please write this token down, because it will be used to identify your resolution when you want to continue working on it later. Talk to your Chair if you've forgotten your resolution token.
+        em  Looking at your browser's history can be helpful too.
         br
-        | This resolution has been assigned a resolution ID that can be used to uniquely reference this resolution in other documents or resolutions:
-        =" "
-        span#res-id.lighten-4(class=sec) (MUNOL/#{meta.idYear}/#{meta.resolutionId})
-    include stages
-    +stage-info-index(meta.stage, true)
-    if lvEnabled && doLoad
-      h5.light#liveview-heading LiveView available
-        +icon(icons.liveview, "mediumsmall left blue-text text-darken-1")
-      .justify
-        p To open LiveView on another device open the resolution by entering the resolution token and your access code on the #[a(href="/resolution" target="_blank") Resolution Page] and clicking the "LiveView" button. LiveView will display a mock version of the rendered resolution document that will update in real time and colorize amendments you make while LiveView is active.
-        p
-          a#hide-liveview-hint.grey-text(href="#") [Hide hint]
-          span#liveview-hint  The following procedure is recommended: Retype amendments somehwere into your computer. This can be any text editor or this #[a(href="/handytextbox" target="_blank") handy textbox]. When you want to discuss the amendment, paste it into the amendment field and select the appropriate sponsor and action type. This will update it on the LiveView client. The LiveView client marks removed text #[span(class=markers.red) red] and added text #[span(class=markers.green) green]. After discussing and voting in favour or against the amendment, click the keep or reject button below the amendment field to either apply the proposed changes to the resolution or remove them from the display.
-    if doLoad
-      h5.light Important: Concurrent Editing
-        +icon("announcement", "mediumsmall left red-text")
-      p.justify Please be aware of the fact that #[span.bold opening the same resolution on multiple devices can have adverse effects on the integrity of the resolution] because the changes aren't updated on other devices until the page is reloaded and all unsaved local changes are thereby deleted.
+        | Your current access level is
+        a(href="/help#" + accessLevel)=" " + accessLevel
+        | .
+        if meta.resolutionId
+          br
+          | This resolution has been assigned a resolution ID that can be used to uniquely reference this resolution in other documents or resolutions:
+          =" "
+          span#res-id.lighten-4(class=sec) (MUNOL/#{meta.idYear}/#{meta.resolutionId})
+      include stages
+      +stage-info-index(meta.stage, true)
+      if lvEnabled && doLoad
+        h5.light#liveview-heading LiveView available
+          +icon(icons.liveview, "mediumsmall left blue-text text-darken-1")
+        .justify
+          p To open LiveView on another device open the resolution by entering the resolution token and your access code on this #[a(href="/resolution" target="_blank") Index Page] and clicking the "LiveView" button. LiveView will display a mock version of the rendered resolution document that will update in real time and colorize amendments you make while LiveView is active.
+      if doLoad
+        h5.light Important: Concurrent Editing
+          +icon(icons.concurrency, "mediumsmall left" + colors.concurrency)
+        p.justify Please be aware of the fact that #[span.bold opening the same resolution on multiple devices can have adverse effects on the integrity of the resolution] because the changes aren't updated on other devices until the page is reloaded and all unsaved local changes are thereby deleted.
     h5.light Meta-Information
     mixin collapsible-item(title, icon)
       li
@@ -81,12 +75,12 @@ block content
           table: tbody
             block
     p This information is updated every time the page is reloaded. Timestamps are in local time on the server. (Germany: CET/CEST)
-    ul.collapsible(data-collapsible="expandable")
+    ul.collapsible.z-depth-0(data-collapsible="expandable")
       mixin t-item(label, content)
         tr
           td=label
           td=content
-      +collapsible-item("Usage Log", "access_time")
+      +collapsible-item("Usage Log", icons.clock)
         +t-item("Created:", meta.created)
         +t-item("Last Change:", meta.changed)
         +t-item("Last Render:", meta.lastRender)
@@ -99,7 +93,7 @@ block content
               a(href="/help#rstage" + i): b.text-lighten-1.grey-text=" #" + i
             td=meta.stageHistory[i++]
       if meta.stage
-        +collapsible-item("Structure Analysis", "filter_list")
+        +collapsible-item("Structure Analysis", "file-tree")
           +t-item("Number of words:", meta.wordCount)
           +t-item("Number of content nodes:", meta.nodeCount)
           +t-item("Depth points per clause:", meta.depthIndex)
@@ -110,7 +104,7 @@ block content
           if meta.clauseCount[2]
             +t-item("Subsubclauses:", meta.clauseCount[2])
       if meta.amendments && meta.amendments.length
-        +collapsible-item("Amendment History", "speaker_notes")
+        +collapsible-item("Amendment History", "message-bulleted")
           ul.collection
             - const now = Date.now();
             each amendment in meta.amendments
@@ -122,7 +116,7 @@ block content
       if meta.voteResults
         li
           .collapsible-header(class=meta.stage === 7 || meta.stage === 11 ? "active" : "")
-            +icon("thumbs_up_down", "text-darken-3 light-blue-text")
+            +icon("thumbs-up-down", "text-darken-3 light-blue-text")
             | Vote Results
           .collapsible-body#vote-results
             -
@@ -134,9 +128,9 @@ block content
             each voteResult, voteTypeKey in meta.voteResults
               .center.vote-result
                 if voteResult.passed
-                  +icon("check_circle", "mediumsmall light-green-text text-darken-1")
+                  +icon("check-decagram", "mediumsmall light-green-text text-darken-1")
                 else
-                  +icon("cancel", "mediumsmall red-text text-darken-1")
+                  +icon("minus-circle", "mediumsmall red-text text-darken-1")
                 h5.light#resolution-pass-status The resolution has
                   span.bold=voteResult.passed ? " passed" : " failed"
                   =" the " + voteResult.voteType + " vote."
@@ -156,7 +150,7 @@ block content
                     span.bold=" " + voteResult.abstention
                     |  Abstention#{meta.voteResults.abstention === 1 ? "" : "s"}
                 .col.s12.l6
-                  #vote-bar.z-depth-2
+                  #vote-bar.z-depth-1
                     - const voteSum = voteResult.inFavor + voteResult.against + voteResult.abstention;
                     mixin vote-part(color, votes)
                       .vote-bar-part(class=color + " lighten-1" style="width: " + (votes * 100 / voteSum) + "%;")
@@ -176,9 +170,8 @@ block content
             +state-option("noadvance", "Non-advanceable")
             +state-option("static", "Static")
           label Select the new state
-        .justify Set the attribute state of the resolution to one of four states. #[em Read-only] restricts editing access, #[em Non-advanceable] restricts advancement and #[em static] combines the two previous states. #[em No special state] is just that; the resolution is reset to its original unrestricted state. #[span.grey-text The current state in the selector box is displayed in grey.]
-        .btn-top-mrg.center: a.btn.waves-effect.waves-light#attribute-submit-btn(href="#" class=pri)&attributes(tooltip("Sets the attribute state", "bottom")) Set State
-    h5.light Actions
+        .btn-top-mrg.center: a.btn.waves-effect.waves-light#attribute-submit-btn(href="#" class=pri) Set State
+    h5.light Advance
     //-secretariat doesn't edit but must be able to advance -> stage 4 displays advance field even if not editing
     if (doLoad || meta.stage === 4) && meta.stage <= 10 && allowAdvance
       .row
@@ -196,9 +189,9 @@ block content
                   +vote-input("inFavor", "infavor-vote-input", "In Favor")
                   +vote-input("against", "against-vote-input", "Against")
                   +vote-input("abstention", "abstention-vote-input", "Abstention")
-                  .col.s12
-                    input#important-question-checkbox(type="checkbox" name="importantQuestion")
-                    label(for="important-question-checkbox") Declared an important question
+                  .col.s12: label
+                    input(type="checkbox" name="importantQuestion")
+                    span Declared an important question
             .input-field(class=lvEnabled ? "xl6 m6 s12 col" : "")
               +icon(icons.code, "prefix")
               input#advance-code-input(name="code" type="text" placeholder=placeholders.code)
@@ -215,34 +208,32 @@ block content
             a(href="/help#rstage" + (meta.stage + 1))  stage ##{meta.stage + 1}
             |  by: #{stageData[meta.stage].advance}.
             if meta.stage
-              |  You will be redirected back to this page but may have to re-enter your access code if you still need and possess editing access to this resolution after its advancement to the next stage.
+              |  Advancing this resolution to the next stage is #[b irreversible!] You might now have editign access after advancing.
             else
               |  This is accomplished by pressing #[em Save] and will claim the token by making it persistent. The page will be automatically reloaded to update the stage and display the advancement access code input field.
         if meta.stage
-          .btn-top-mrg.col.s12.center: a.btn.btn-large.bold.waves-effect.waves-light.advance-submit-btn.red(href="#")&attributes(tooltip("Advances the resolution with given code", "bottom")) Advance
-    .collection.z-depth-1#meta-buttons
-      mixin meta-button(id, text, icon, tooltipText, classes)
-        a.collection-item.waves-effect.waves-light(class=classes id=id)&attributes(tooltip(tooltipText, "top"))
+          .btn-top-mrg.col.s12.center: a.btn.btn-large.bold.waves-effect.waves-light.advance-submit-btn.red(href="#") Advance
+    .collection#meta-buttons
+      mixin meta-button(type, text, icon, classes)
+        a.collection-item.waves-effect.waves-light(class=type + " " + (classes || ""))
           +icon(icon, "left")
           span=text
           block
       if doLoad && allowSave
-        //-larger save button in stage 0
-        +meta-button("action-save", "Save", "backup", "Saves the resolution to the server", pritext + (meta.stage ? "" : " action-save-large"))
-      +meta-button("action-pdf", "View PDF", "description", "Generates a formatted PDF document", pritext)
+        +meta-button("action-save", "Save", icons.resolutionSave, pritext + (meta.stage ? "" : " action-save-large"))
+      +meta-button("action-pdf", "View PDF", "file-document", pritext)
         .inline-spinner-wrapper.hide-this.blue-text#pdf-wait-spinner
           +spinner("blue", "inline-spinner")
           |  Rendering...
-      +meta-button("action-plaintext", "View Plaintext (fallback)", icons.plaintext, "Generates a plain text version of the resolution: Only use in case of problems", "grey-text")
+      +meta-button("action-plaintext", "View Plaintext (fallback)", icons.plaintext, "grey-text")
       if doLoad
-        +meta-button("legacy-action-save", "Save to file (deprecated)", "file_download", "Downloads the resolution in a reusable format", "grey-text")
-        +meta-button("legacy-action-load", "Open from file (deprecated)", "file_upload", "Loads a resolution from a previously saved file", "grey-text")
+        +meta-button("action-save-file", "Save to file (fallback)", "file-download", "grey-text")
+        +meta-button("action-load-file", "Open from file (fallback)", "file-upload", "grey-text")
         if accessLevel === "MA"
-          +meta-button("action-delete", "Delete resolution", "delete_forever", "Deletes the resolution permanently", "red-text text-lighten-1")
+          +meta-button("action-delete", "Archive resolution", "delete-forever", "red-text text-lighten-1")
     - const allowAmendments = doLoad && allowSave && (lvEnabled && (accessLevel === "CH" || accessLevel === "SG") || accessLevel === "MA");
     if allowAmendments
       h5.light#amd-info Amendment
-      .justify Using this feature only makes sense if a #[a(href="#liveview-heading") LiveView ] client is connected. It will display the amendments you create integrated into the resolution and visually emphasize changes. Click the amendment button in an operative clause to display it here. You can then choose what type of amendment should be performed. The resolution can be edited while in amendment mode but certain structural changes can cause unexpected behavior. #[br]The #[b add] type requires the creation of a new clause and needs no prior selection of an existing clause. Selecting this type will allow you to formulate a new operative clause here and append it to the end of the resolution. #[br]The #[b change] type creates a copy of the selected clause here and will display a detailed view of the changes you make in the LiveView client. #[br]The #[b replace] type is similar to #[b change] but implies a complete change of the clause content. It doesn't create a copy of the selected clause here but rather allows you to write a new clause that will replace the selected clause. #[br]The #[b strike out] type will mark the selected clause for removal.
       .row.no-bottom-mrg#amd-select-group
         .col.s12.m6: .input-field.not-editor#amd-type-select-box
           select
@@ -259,7 +250,7 @@ block content
           label(for="amd-spon") Submitter
       p.center.grey-text#amd-no-selection Select a clause with the
         =" "
-        +icon("rate_review", "lime-text text-darken-1")
+        +icon(icons.amendment, "lime-text text-darken-1")
         |  button or choose the action type "Add".
       #amd-clause-wrapper
       .center
@@ -267,65 +258,55 @@ block content
         a.btn.waves-effect.waves-light.disabled.green.lighten-1#amd-apply-btn Apply
     if doLoad
       mixin floating-sm-btn(color, type, icon, tooltipText)
-        a.btn-floating(class=color id=type)&attributes(tooltip(tooltipText, "top")): +icon(icon)
-      #eab-inactive-anchor
-      #eab-wrapper.right.hide-this
-        //-eab stands for edit action button
-        +floating-sm-btn("blue", "eab-move-down", "arrow_downward", "Moves this clause down one space")
-        +floating-sm-btn("blue", "eab-move-up", "arrow_upward", "Moves this clause up one space")
-        +floating-sm-btn("indigo", "eab-add-sub", "format_indent_increase", "Creates a subclause in this clause")
-        +floating-sm-btn("cyan", "eab-add-ext", "playlist_add", "Adds a continuation text field under these subclauses")
-        if allowAmendments
-          +floating-sm-btn("lime darken-1", "eab-amd", "rate_review", "Selects this clause for an amendment")
-        +floating-sm-btn("deep-orange", "eab-clear", icons.reset, "Resets the fields in this clause and removes the content continuation field")
-        +floating-sm-btn("red", "eab-delete", "delete", "Removes this clause and all its subclauses")
-        +floating-sm-btn("green", "eab-done", "done", "Finishes editing and deactivates edit mode")
+        a.btn.btn-floating.eab-btn(class=`${color} ${type}`)&attributes(tooltip(tooltipText, "top")): +icon(icon)
       mixin content-card(cardId)
-        .row
-          .col.s12(id=cardId)
-            block
+        .row: .col.s12(id=cardId): block
       mixin clause-content-field(type, placeholder, addClasses)
         .input-field.hide-this(class=type)
           textarea.materialize-textarea(class=(addClasses ? addClasses + " " : "") + type + "-text")
           label=placeholder
       mixin clause-card(cardId, clauseType, cardType)
-        +content-card(cardId)
+        div(id=cardId)
           h5=cardType + " Clauses"
-          .clause-list
-            .clause(data-clause-type=clauseType)
-              .divider
+          .clause-list.collection
+            .clause.collection-item(data-clause-type=clauseType)
               h6.grey-text.text-darken-2.clause-title
-                a.edit-mode-btn.btn.right.white-text.lighten-1(class=pri)&attributes(tooltip("Activates editing of this clause", "left"))
-                  +icon("mode_edit", "icon-sm-med")
+                .eab-wrapper.right.hide-this
+                  //-eab stands for edit action button
+                  +floating-sm-btn("blue", "eab-move-down", icons.moveDown, "Move clause up")
+                  +floating-sm-btn("blue", "eab-move-up", icons.moveUp, "Move clause down")
+                  +floating-sm-btn("indigo", "eab-add-sub", "format-indent-increase", "Add a subclause")
+                  +floating-sm-btn("cyan", "eab-add-ext", "playlist-plus", "Add a continuation text under the subclauses")
+                  +floating-sm-btn("purple lighten-1", "eab-insert-below", "menu-open", "Insert a new clause below")
+                  if allowAmendments
+                    +floating-sm-btn("lime darken-1", "eab-amd", icons.amendment, "Select this clause for an amendment")
+                  +floating-sm-btn("red", "eab-delete", "trash-can-outline", "Delete this clause")
+                  +floating-sm-btn("green", "eab-done", icons.doneCheck, "Finish editing this clause")
+                a.edit-mode-btn.btn.right.white-text.lighten-1(class=pri)
+                  +icon(icons.edit, "icon-sm-med")
                 span.clause-prefix
                 | Clause #
                 span.clause-number 1
-              .row.phrase-input-wrapper.hide-this
-                .col.xl4.m6.s12
-                  .input-field
-                    input.autocomplete.required.phrase-input(type="text")
-                    label Phrase
+              .phrase-input-wrapper.input-field.hide-this
+                input.autocomplete.required.phrase-input(type="text")
+                label Phrase
               +clause-content-field("clause-list-anchor clause-content", "Clause Content", "required")
               p.clause-cond.hide-this
                 span.cond-phrase
                 span.cond-content
               +clause-content-field("clause-content-ext", "Continuation of Clause Content")
               p.clause-ext-cond.hide-this
-            .add-clause-container
-              .divider
-              a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)&attributes(tooltip("Adds a new clause to the list", "right"))
-                +icon("add_circle_outline", "left")
+            .add-clause-container.collection-item
+              a.btn.white-text.mrg.add-clause-btn.lighten-1(class=pri)
+                +icon("plus-box", "left")
                 | Add Clause
-      +content-card("meta-data")
-        .meta-input-wrapper
-          .right.btn-floating.btn-large.waves-effect.waves-light.deep-orange.reset-button(for="meta-data")&attributes(tooltip("Resets these fields", "left"))
-            +icon(icons.reset)
+      #meta-data
+        #meta-input-wrapper
           h5 General Data
-          .divider.reduced-width-divider
+          .divider#meta-input-divider
           .input-field
             input#author-name(type="text")
-            label(for="author-name") Document Author
-          .divider
+            label(for="author-name") Document Author (optional)
           .row
             .col.xl4.m6.s12
               .input-field
@@ -333,19 +314,23 @@ block content
                 label(for="forum-name") Forum
             .col.xl4.m6.s12
               .input-field
-                input.required#question-of(type="text")
-                label(for="question-of") Question of
-            .col.xl4.s12
-              .input-field
                 input.autocomplete.required#main-spon(type="text")
                 label(for="main-spon") Main Sponsor
+            .col.xl4.s12
+              .input-field
+                input.required#question-of(type="text")
+                label(for="question-of") Question of
             .col.s12
               label(for="co-spon") Co-Sponsors
               .chips.required#co-spon
       +clause-card("preamb-clauses", "preamb", "Preambulatory")
       +clause-card("op-clauses", "op", "Operative")
+      if allowSave
+        .fixed-action-btn
+          a.btn-floating.btn-large.action-save(class=pri)
+            +icon(icons.resolutionSave)
     else
-      h4.center: +icon("highlight_off", "medium grey-text text-darken-2")
+      h4.center: +icon("account-off", "medium grey-text text-darken-2")
       .row
         .input-field.col.xl3.l4.m5.s12
           form(method="POST" action="/").not-editor#unlock-code-form
@@ -361,9 +346,11 @@ block content
                 | , #[em AP]
               when 3
                 | , #[em FC]
-            | or
+            |  or
           |  #[em MA]. See #[a(href="/help#access-levels") here] for a detailed description of all access levels.
-      .center: a.btn.waves-effect.waves-light#unlock-submit-btn(href="#" class=pri)&attributes(tooltip("Tries to open editor with the given code", "right")) Unlock
+      .center: a.btn.waves-effect.waves-light#unlock-submit-btn(href="#" class=pri) Unlock
+      br
+
 block scripts
   +static("js", "/js/scrollintoview.js")
   +static("js", "/js/accessInputs.js")

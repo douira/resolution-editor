@@ -1,28 +1,6 @@
-.reduced-width-divider {
-  margin-right: 70px;
-}
-
-.add-clause-btn {
-  margin-bottom: 20px;
-  margin-top: 20px;
-}
-
-.clause-list-sub-mrg, .clause-list-sub {
-  margin-left: 35px;
-}
-
-#eab-wrapper a {
+a.eab-btn {
   margin-left: 10px;
   margin-bottom: 10px;
-}
-
-/*.clause-content-ext {
-  display: none;
-}*/
-
-.red-underline {
-  text-decoration: underline;
-  text-decoration-color: red;
 }
 
 #token-preset {
@@ -31,13 +9,14 @@
 
 .action-save-large span {
   font-size: 2.3rem;
+  line-height: 1rem;
   margin: 15px 0px;
   display: block;
 }
 
-.action-save-large i {
+.action-save-large i:before {
   font-size: 3rem;
-  margin: 5px 15px 5px 0px;
+  line-height: 1;
 }
 
 .btn-top-mrg {
@@ -74,17 +53,12 @@
   font-family: monospace;
 }
 
-/*additional to the main style rule*/
 .inline-spinner-wrapper {
   margin-left: 0.7em;
 }
 
 /*hide the top level divider and add clause button of the amendment display clause*/
-#amd-clause-wrapper > .clause-list > .clause > .divider {
-  display: none;
-}
-
-#amd-clause-wrapper > .clause-list > .add-clause-container {
+#amd-clause-wrapper > .clause-list > .clause > .divider, #amd-clause-wrapper > .clause-list > .add-clause-container {
   display: none;
 }
 
@@ -101,11 +75,6 @@
   display: none;
 }
 
-.disabled-clause input:disabled, .disabled-clause textarea:disabled {
-  color: rgba(0, 0, 0, 0.65) !important;
-  border-bottom-width: 2px !important;
-}
-
 #preamb-clauses .cond-phrase {
   font-style: italic;
 }
@@ -114,6 +83,44 @@
   text-decoration: underline;
 }
 
+p.clause-cond, p.clause-ext-cond {
+  margin-bottom: 0.5em;
+  margin-top: 0.5em;
+}
+
 #amd-apply-btn {
   margin-left: 1em;
+}
+
+.introtext i.mediumsmall:before {
+  font-size: 2.5rem;
+}
+
+.chips {
+  margin-top: 0;
+}
+
+#meta-input-divider {
+  margin-bottom: 1.5rem;
+}
+
+.phrase-input-wrapper {
+  max-width: 300px;
+}
+
+.collection .collection-item {
+  border-bottom: none;
+  border-top: 1px solid #e0e0e0;
+}
+.collection .collection-item:first-child {
+  border-top: none;
+}
+
+.clause.collection-item {
+  padding-bottom: 0;
+  padding-top: 5px;
+}
+
+.add-clause-container.collection-item {
+  padding: 20px;
 }

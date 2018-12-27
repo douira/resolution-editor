@@ -1,0 +1,9 @@
+{
+  "extends": "eslint-config-douira",
+  "env": {
+    "node": true
+  },
+  "rules": {
+    "semi": ["error", "always"]
+  }
+}
