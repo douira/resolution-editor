@@ -217,4 +217,8 @@ input, textarea {
   .toc-top {
     line-height: 1em !important;
   }
+
+  ul.collapsible .collapsible-body {
+    display: block;
+  }
 }
