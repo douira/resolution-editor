@@ -1,7 +1,8 @@
 # resolution-editor
-[![Build Status](https://travis-ci.org/douira/resolution-editor.svg?branch=master)](https://travis-ci.org/douira/resolution-editor)  
+[![Build Status](https://travis-ci.org/douira/resolution-editor.svg?branch=master)](https://travis-ci.org/douira/resolution-editor)
+
 This editor guides the creation of a correctly formatted resolution document. It was created in need of a better way of formatting and distributing resolutions for MUNOL.
-Feel free to make a pull request if you have something you'd like to contribute to this project
+Feel free to make a pull request if you have something you'd like to contribute to this project. (If it's just a typo you can also just make an issue and I'll apply the change myself)
 
 ## How to Install
 The app can be downloaded by cloning the repo with
@@ -13,12 +14,25 @@ Install the package after cloning the repo with
 npm install
 ```
 (I can try to help you to set this up if you run into problems unsolvable with google)  
-You will also have to install the full distribution of (XeLa)TeX on your system. This is only required for rendering PDFs though. Pandoc used to be the interface between the renderer itself and the server but the server handles moving the files and generating the latex code now, so pandoc and the accompanying npm package node-pandoc are not dependencies anymore. The server expects these binaries to be present and will crash otherwise. Start the server with
+
+You will also have to install the full distribution of _XeLaTeX_ on your system. This is only required for rendering PDFs though. The server handles moving files and generates latex code for documents. Pandoc is no longer a dependency. The server expects `xelatex` to be available on the command line and will crash otherwise. Start the server with
 ```
 npm start
 ```
 The server will then respond on the default node port. Open `http://localhost:3000` to use the client. Using the latest version of Node is usually recommended and will most likely work. (Features such as generator functions and arrow functions are used throughout the code.)
 Please also look in the contributing info file for how to properly setup linting.
+
+Install `npm-check-updates` with
+```
+npm i -g npm-check-updates
+```
+and run
+```
+ncu //for info
+ncu -u
+npm update
+```
+to check for major version updates. Check for compatability after `ncu` beforeusing it with `-u`.
 
 ### Database Authentication
 The MongoDB database start command in package.json uses the `--auth` flag which tells it to require connected clients to send credentials in order to be allowed to use the database. If you wish to use the editor without securing your database (because you're not deploying) just run the command in a separate window/tab without the flag:

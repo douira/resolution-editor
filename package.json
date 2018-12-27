@@ -10,11 +10,11 @@
     "test": "mocha"
   },
   "dependencies": {
-    "@mdi/font": "^2.8.94",
+    "@mdi/font": "^3.2.89",
     "body-parser": "^1.18.3",
     "co": "^4.6.0",
     "compression": "^1.7.3",
-    "connect-mongo": "^2.0.1",
+    "connect-mongo": "^2.0.3",
     "cookie-parser": "~1.4.3",
     "dateutil": "^0.1.0",
     "deep-object-diff": "^1.1.0",
@@ -64,7 +64,7 @@
   },
   "homepage": "https://github.com/douira/resolution-editor#readme",
   "optionalDependencies": {
-    "bufferutil": "^3.0.4",
-    "utf-8-validate": "^4.0.1"
+    "bufferutil": "^4.0.1",
+    "utf-8-validate": "^5.0.2"
   }
 }
