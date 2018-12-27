@@ -7,6 +7,12 @@ displayToast*/
 //how many times we will try to connect
 const connectTriesLV = 3;
 
+//pingpong timeout, time after which connection will be reset if no message is received
+const receiveTimeout = 5000;
+
+//how fast the client responds to a ping with a pong (or some other message earlier)
+const replyDelay = 2000;
+
 //how many tries are left, reset to LVConnectTries when a connection is established
 let connectTriesLeftLV = connectTriesLV;
 
@@ -22,8 +28,12 @@ let accessToken;
 //message queue to send
 const messageQueue = [];
 
-//seends an object json encoded to the server
-const sendJsonLV = (obj = "empty", isInit = false) => {
+//keeps track of the last time a message was received from the server
+//and when this client is going to reply with a pong message
+const pingPong = {};
+
+//sends an object json encoded to the server
+const sendJsonLV = (obj, isInit = false) => {
   //if obj is "empty" the queue should be attempted to be emptied
   if (obj === "empty") {
     //send messages from the queue until none are left
@@ -46,8 +56,20 @@ const sendJsonLV = (obj = "empty", isInit = false) => {
     //send prepared object after stringify
     currentWS.send(JSON.stringify(obj));
 
+    //if present, remove old reply timeout
+    if (pingPong.replyTimeout) {
+      clearTimeout(pingPong.replyTimeout);
+    }
+
+    //set timeout to send reply message if no other message is sent beforehand
+    pingPong.replyTimeout = setTimeout(() => {
+      if (currentWS.readyState === 1) {
+        sendJsonLV({ type: "pong" });
+      }
+    }, replyDelay);
+
     //work on emptying queue
-    sendJsonLV();
+    sendJsonLV("empty");
   } else {
     //put in queue
     messageQueue.push(obj);
@@ -92,9 +114,9 @@ const startWS = (isViewer, updateListener) => {
     //reset access token
     accessToken = null;
 
-    //if wtill tries left
+    //if still tries left
     if (connectTriesLeftLV > 0) {
-      displayToast(`LV: Connection error ${connectTriesLeftLV} tries left)`);
+      displayToast(`LV: Connection error (${connectTriesLeftLV} tries left)`);
 
       //notify custom event handling
       updateListener("disconnect");
@@ -132,11 +154,27 @@ const startWS = (isViewer, updateListener) => {
       updateListener("initStructure", data);
     }
 
+    //on all but error messages
+    if (data.type !== "error") {
+      //if present, remove old receive timeout
+      if (typeof pingPong.receiveTimeout === "number") {
+        clearTimeout(pingPong.receiveTimeout);
+      }
+
+      //set timeout to reset connection if no ping
+      //or other message is received within the interval
+      pingPong.receiveTimeout = setTimeout(() => {
+        currentWS.close();
+      }, receiveTimeout);
+    }
+
     //for type of send message
     switch (data.type) {
+      case "ping":
+        //handled above
+        break;
       case "error": //both, error message from server
-        //log error
-        log({ msg: "lv received error", errMsg: data.errorMsg });
+        //do not log error to server, the server already has this error
 
         //check if we are allowed to retry
         if (! data.tryAgain) {
@@ -169,7 +207,7 @@ const startWS = (isViewer, updateListener) => {
         displayToast(displayString);
 
         //work on emptying queue now that an access token has been received
-        sendJsonLV();
+        sendJsonLV("empty");
         break;
       }
       case "editorReplaced": //viewer
@@ -202,9 +240,7 @@ const startWS = (isViewer, updateListener) => {
     }
 
     //custom event handling
-    if (typeof updateListener === "function") {
-      updateListener(data.type, data);
-    }
+    updateListener(data.type, data);
   };
 };
 
@@ -232,8 +268,8 @@ const startLiveviewWS = (isViewer, token, code, updateListener) => {
   //start the ws connection
   startWS(isViewer, updateListener);
 
-  //close websocket on page unload/close, do it on both just to be sure
-  $(window).on("unload beforeunload", () => {
+  //close websocket on page unload/close
+  $(window).on("unload", () => {
     //prevent reopen and alert
     connectTriesLeftLV = -1;
 
