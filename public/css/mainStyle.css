@@ -173,6 +173,10 @@ input, textarea {
   color: inherit;
 }
 
+.collection {
+  overflow: inherit;
+}
+
 @media print {
   nav, footer {
     display: none;
