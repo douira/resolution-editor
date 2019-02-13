@@ -15,7 +15,7 @@ npm install
 ```
 (I can try to help you to set this up if you run into problems unsolvable with google)  
 
-You will also have to install the full distribution of _XeLaTeX_ on your system. This is only required for rendering PDFs though. The server handles moving files and generates latex code for documents. Pandoc is no longer a dependency. The server expects `xelatex` to be available on the command line and will crash otherwise. Start the server with
+You will also have to install the full distribution of _XeLaTeX_ on your system. (Note: Adding `/Library/TeX/texlive` to your PATH may help after installing) This is only required for rendering PDFs though. The server handles moving files and generates latex code for documents. Pandoc is no longer a dependency. The server expects `xelatex` to be available on the command line and will crash otherwise. Start the server with
 ```
 npm start
 ```
