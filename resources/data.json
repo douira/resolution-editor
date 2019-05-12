@@ -1,474 +1,424 @@
 {
   "countries": {
-    "60": {
-      "name": "France",
-      "fullname": "Republic of France",
-      "placardname": "France"
-    },
-    "184": {
-      "name": "USA",
-      "fullname": "United States of America",
-      "placardname": "United States"
-    },
-    "57": {
-      "name": "Ethiopia",
-      "fullname": "Federal Democratic Republic of Ethiopia",
-      "placardname": "Ethiopia"
-    },
-    "188": {
-      "name": "Venezuela",
-      "fullname": "Bolivarian Republic of Venezuela",
-      "placardname": "Venezuela"
-    },
-    "24": {
-      "name": "Brazil",
-      "fullname": "Federative Republic of Brazil",
-      "placardname": "Brazil"
-    },
     "162": {
       "name": "Sudan",
       "fullname": "Republic of the Sudan",
       "placardname": "Sudan"
-    },
-    "159": {
-      "name": "South Sudan",
-      "fullname": "Republic of South Sudan",
-      "placardname": "South Sudan"
-    },
-    "182": {
-      "name": "UK",
-      "fullname": "United Kingdom of Great Britain and Northern Ireland",
-      "placardname": "United Kingdom"
-    },
-    "214": {
-      "name": "China 1",
-      "fullname": "People's Republic of China",
-      "placardname": "China"
-    },
-    "215": {
-      "name": "China 2",
-      "fullname": "People's Republic of China",
-      "placardname": "China"
-    },
-    "140": {
-      "name": "Russia",
-      "fullname": "Russian Federation",
-      "placardname": "Russia"
-    },
-    "10": {
-      "name": "Austria",
-      "fullname": "Republic of Austria",
-      "placardname": "Austria"
-    },
-    "82": {
-      "name": "Italy",
-      "fullname": "Republic of Italy",
-      "placardname": "Italy"
-    },
-    "158": {
-      "name": "South Africa",
-      "fullname": "Republic of South Africa",
-      "placardname": "South Africa"
-    },
-    "3": {
-      "name": "Algeria",
-      "fullname": "People's Democratic Republic of Algeria",
-      "placardname": "Algeria"
-    },
-    "209": {
-      "name": "World Bank",
-      "fullname": "World Bank",
-      "placardname": "World Bank"
-    },
-    "176": {
-      "name": "Turkey",
-      "fullname": "Republic of Turkey",
-      "placardname": "Turkey"
-    },
-    "102": {
-      "name": "Malaysia",
-      "fullname": "Malaysia",
-      "placardname": "Malaysia"
-    },
-    "64": {
-      "name": "Germany",
-      "fullname": "Federal Republic of Germany",
-      "placardname": "Germany"
-    },
-    "96": {
-      "name": "Libya",
-      "fullname": "Libya",
-      "placardname": "Libya"
-    },
-    "81": {
-      "name": "Israel",
-      "fullname": "State of Israel",
-      "placardname": "Israel"
-    },
-    "160": {
-      "name": "Spain",
-      "fullname": "Kingdom of Spain",
-      "placardname": "Spain"
-    },
-    "175": {
-      "name": "Tunisia",
-      "fullname": "Republic of Tunisia",
-      "placardname": "Tunisia"
-    },
-    "93": {
-      "name": "Lebanon",
-      "fullname": "Republic of Lebanon",
-      "placardname": "Lebanon"
-    },
-    "167": {
-      "name": "Syria",
-      "fullname": "Syrian Arab Republic",
-      "placardname": "Syria"
-    },
-    "114": {
-      "name": "Morocco",
-      "fullname": "Kingdom of Morocco",
-      "placardname": "Morocco"
-    },
-    "66": {
-      "name": "Greece",
-      "fullname": "Hellenic Republic",
-      "placardname": "Greece"
-    },
-    "132": {
-      "name": "Peru",
-      "fullname": "Republic of Peru",
-      "placardname": "Peru"
-    },
-    "193": {
-      "name": "Palestine",
-      "fullname": "State of Palestine",
-      "placardname": "Palestine"
-    },
-    "85": {
-      "name": "Jordan",
-      "fullname": "Hashemite Kingdom of Jordan",
-      "placardname": "Jordan"
-    },
-    "121": {
-      "name": "New Zealand",
-      "fullname": "New Zealand",
-      "placardname": "New Zealand"
-    },
-    "78": {
-      "name": "Iran",
-      "fullname": "Islamic Republic of Iran",
-      "placardname": "Iran"
-    },
-    "148": {
-      "name": "Saudi Arabia",
-      "fullname": "Kingdom of Saudi Arabia",
-      "placardname": "Saudi Arabia"
-    },
-    "165": {
-      "name": "Sweden",
-      "fullname": "Kingdom of Sweden",
-      "placardname": "Sweden"
-    },
-    "134": {
-      "name": "Poland",
-      "fullname": "Republic of Poland",
-      "placardname": "Poland"
-    },
-    "120": {
-      "name": "Netherlands",
-      "fullname": "Kingdom of the Netherlands",
-      "placardname": "Netherlands"
-    },
-    "86": {
-      "name": "Kazakhstan",
-      "fullname": "Republic of Kazakhstan",
-      "placardname": "Kazakhstan"
-    },
-    "89": {
-      "name": "Kuwait",
-      "fullname": "State of Kuwait",
-      "placardname": "Kuwait"
-    },
-    "41": {
-      "name": "C\u00f4te d\u2019Ivoire",
-      "fullname": "Republic of C\u00f4te d\u2019Ivoire\n",
-      "placardname": "C\u00f4te d\u2019Ivoire"
     },
     "54": {
       "name": "Equatorial Guinea",
       "fullname": "Republic of Equatorial Guinea",
       "placardname": "Equatorial Guinea"
     },
-    "21": {
-      "name": "Bolivia",
-      "fullname": "Plurinational State of Bolivia",
-      "placardname": "Bolivia"
-    },
-    "195": {
-      "name": "SFR Yugoslavia",
-      "fullname": "Socialist Federal Republic of Yugoslavia",
-      "placardname": "SFR Yugoslavia"
-    },
-    "194": {
-      "name": "USSR",
-      "fullname": "Union of Soviet Socialist Republics",
-      "placardname": "USSR"
-    },
-    "69": {
-      "name": "Guinea",
-      "fullname": "Republic of Guinea",
-      "placardname": "Guinea"
-    },
-    "129": {
-      "name": "Panama",
-      "fullname": "Republic of Panama",
-      "placardname": "Panama"
-    },
-    "9": {
-      "name": "Australia",
-      "fullname": "Commonwealth of Australia",
-      "placardname": "Australia"
-    },
-    "76": {
-      "name": "India",
-      "fullname": "Republic of India",
-      "placardname": "India"
-    },
     "77": {
       "name": "Indonesia",
       "fullname": "Republic of Indonesia",
       "placardname": "Indonesia"
     },
-    "87": {
-      "name": "Kenya",
-      "fullname": "Republic of Kenya",
-      "placardname": "Kenya"
+    "60": {
+      "name": "France",
+      "fullname": "Republic of France",
+      "placardname": "France"
     },
-    "79": {
-      "name": "Iraq",
-      "fullname": "Republic of Iraq",
-      "placardname": "Iraq"
-    },
-    "37": {
-      "name": "Colombia",
-      "fullname": "Republic of Colombia",
-      "placardname": "Colombia"
-    },
-    "31": {
-      "name": "Canada",
-      "fullname": "Canada",
-      "placardname": "Canada"
-    },
-    "48": {
-      "name": "Denmark",
-      "fullname": "Kingdom of Denmark",
-      "placardname": "Denmark"
-    },
-    "125": {
-      "name": "Norway",
-      "fullname": "Kingdom of Norway",
-      "placardname": "Norway"
-    },
-    "169": {
-      "name": "Thailand",
-      "fullname": "Kingdom of Thailand",
-      "placardname": "Thailand"
-    },
-    "197": {
-      "name": "Arctic Council",
-      "fullname": "Arctic Council",
-      "placardname": "Arctic Council"
-    },
-    "116": {
-      "name": "Myanmar",
-      "fullname": "Republic of the Union of Myanmar",
-      "placardname": "Myanmar"
-    },
-    "137": {
-      "name": "South Korea",
-      "fullname": "Republic of Korea",
-      "placardname": "South Korea"
-    },
-    "153": {
-      "name": "Singapore",
-      "fullname": "Republic of Singapore",
-      "placardname": "Singapore"
-    },
-    "133": {
-      "name": "Philippines",
-      "fullname": "Republic of the Philippines",
-      "placardname": "Philippines"
-    },
-    "74": {
-      "name": "Hungary",
-      "fullname": "Hungary",
-      "placardname": "Hungary"
-    },
-    "199": {
-      "name": "EU",
-      "fullname": "European Union",
-      "placardname": "European Union"
-    },
-    "55": {
-      "name": "Eritrea",
-      "fullname": "State of Eritrea",
-      "placardname": "Eritrea"
-    },
-    "136": {
-      "name": "Qatar",
-      "fullname": "State of Qatar",
-      "placardname": "Qatar"
-    },
-    "200": {
-      "name": "AI",
-      "fullname": "Amnesty International",
-      "placardname": "Amnesty International"
-    },
-    "201": {
-      "name": "AU",
-      "fullname": "African Union",
-      "placardname": "African Union"
-    },
-    "104": {
-      "name": "Mali",
-      "fullname": "Republic of Mali",
-      "placardname": "Mali"
-    },
-    "124": {
-      "name": "Nigeria",
-      "fullname": "Federal Republic of Nigeria",
-      "placardname": "Nigeria"
-    },
-    "52": {
-      "name": "Egypt",
-      "fullname": "Arab Republic of Egypt",
-      "placardname": "Egypt"
-    },
-    "84": {
-      "name": "Japan",
-      "fullname": "Japan",
-      "placardname": "Japan"
-    },
-    "181": {
-      "name": "UAE",
-      "fullname": "United Arab Emirates",
-      "placardname": "United Arab Emirates"
-    },
-    "179": {
-      "name": "Uganda",
-      "fullname": "Republic of Uganda",
-      "placardname": "Uganda"
-    },
-    "14": {
-      "name": "Bangladesh",
-      "fullname": "People's Republic of Bangladesh",
-      "placardname": "Bangladesh"
-    },
-    "190": {
-      "name": "Yemen",
-      "fullname": "Republic of Yemen",
-      "placardname": "Yemen"
+    "89": {
+      "name": "Kuwait",
+      "fullname": "State of Kuwait",
+      "placardname": "Kuwait"
     },
     "1": {
       "name": "Afghanistan",
       "fullname": "Islamic Republic of Afghanistan",
       "placardname": "Afghanistan"
     },
+    "132": {
+      "name": "Peru",
+      "fullname": "Republic of Peru",
+      "placardname": "Peru"
+    },
+    "134": {
+      "name": "Poland",
+      "fullname": "Republic of Poland",
+      "placardname": "Poland"
+    },
+    "140": {
+      "name": "Russia",
+      "fullname": "Russian Federation",
+      "placardname": "Russia"
+    },
+    "182": {
+      "name": "UK",
+      "fullname": "United Kingdom of Great Britain and Northern Ireland",
+      "placardname": "United Kingdom"
+    },
+    "159": {
+      "name": "South Sudan",
+      "fullname": "Republic of South Sudan",
+      "placardname": "South Sudan"
+    },
+    "184": {
+      "name": "USA",
+      "fullname": "United States of America",
+      "placardname": "United States"
+    },
+    "39": {
+      "name": "Congo",
+      "fullname": "Republic of the Congo",
+      "placardname": "Congo"
+    },
+    "36": {
+      "name": "China",
+      "fullname": "People's Republic of China",
+      "placardname": "China"
+    },
+    "104": {
+      "name": "Mali",
+      "fullname": "Republic of Mali",
+      "placardname": "Mali"
+    },
+    "158": {
+      "name": "South Africa",
+      "fullname": "Republic of South Africa",
+      "placardname": "South Africa"
+    },
+    "223": {
+      "name": "Czechoslovakia",
+      "fullname": "Czechoslovakia",
+      "placardname": "Czechoslovakia"
+    },
+    "61": {
+      "name": "Gabon",
+      "fullname": "Gabonese Republic",
+      "placardname": "Gabon"
+    },
+    "83": {
+      "name": "Jamaica",
+      "fullname": "Jamaica",
+      "placardname": "Jamaica"
+    },
+    "125": {
+      "name": "Norway",
+      "fullname": "Kingdom of Norway",
+      "placardname": "Norway"
+    },
+    "124": {
+      "name": "Nigeria",
+      "fullname": "Federal Republic of Nigeria",
+      "placardname": "Nigeria"
+    },
+    "37": {
+      "name": "Colombia",
+      "fullname": "Republic of Colombia",
+      "placardname": "Colombia"
+    },
+    "135": {
+      "name": "Portugal",
+      "fullname": "Republic of Portugal",
+      "placardname": "Portugal"
+    },
+    "41": {
+      "name": "C\u00f4te d\u2019Ivoire",
+      "fullname": "Republic of C\u00f4te d\u2019Ivoire\n",
+      "placardname": "C\u00f4te d\u2019Ivoire"
+    },
+    "148": {
+      "name": "Saudi Arabia",
+      "fullname": "Kingdom of Saudi Arabia",
+      "placardname": "Saudi Arabia"
+    },
+    "24": {
+      "name": "Brazil",
+      "fullname": "Federative Republic of Brazil",
+      "placardname": "Brazil"
+    },
+    "224": {
+      "name": "Dominican Republic",
+      "fullname": "Dominican Republic",
+      "placardname": "Dominican Republic"
+    },
+    "64": {
+      "name": "Germany",
+      "fullname": "Federal Republic of Germany",
+      "placardname": "Germany"
+    },
+    "191": {
+      "name": "Zambia",
+      "fullname": "Republic of Zambia",
+      "placardname": "Zambia"
+    },
+    "78": {
+      "name": "Iran",
+      "fullname": "Islamic Republic of Iran",
+      "placardname": "Iran"
+    },
+    "21": {
+      "name": "Bolivia",
+      "fullname": "Plurinational State of Bolivia",
+      "placardname": "Bolivia"
+    },
+    "17": {
+      "name": "Belgium",
+      "fullname": "Kingdom of Belgium",
+      "placardname": "Belgium"
+    },
+    "133": {
+      "name": "Philippines",
+      "fullname": "Republic of the Philippines",
+      "placardname": "Philippines"
+    },
+    "84": {
+      "name": "Japan",
+      "fullname": "Japan",
+      "placardname": "Japan"
+    },
+    "194": {
+      "name": "USSR",
+      "fullname": "Union of Soviet Socialist Republics",
+      "placardname": "USSR"
+    },
+    "96": {
+      "name": "Libya",
+      "fullname": "Libya",
+      "placardname": "Libya"
+    },
     "189": {
       "name": "Vietnam",
       "fullname": "Socialist Republic of Viet Nam",
       "placardname": "Vietnam"
     },
-    "206": {
-      "name": "UNEP",
-      "fullname": "United Nations Environment Programme",
-      "placardname": "UNEP"
+    "79": {
+      "name": "Iraq",
+      "fullname": "Republic of Iraq",
+      "placardname": "Iraq"
     },
-    "35": {
-      "name": "Chile",
-      "fullname": "Republic of Chile",
-      "placardname": "Chile"
+    "9": {
+      "name": "Australia",
+      "fullname": "Commonwealth of Australia",
+      "placardname": "Australia"
     },
-    "207": {
-      "name": "UNDP",
-      "fullname": "United Nations Development Programme",
-      "placardname": "UNDP"
+    "31": {
+      "name": "Canada",
+      "fullname": "Canada",
+      "placardname": "Canada"
     },
-    "46": {
-      "name": "DPRK",
-      "fullname": "Democratic People's Republic of Korea",
-      "placardname": "DPR Korea"
+    "29": {
+      "name": "Cambodia",
+      "fullname": "Kingdom of Cambodia",
+      "placardname": "Cambodia"
     },
-    "166": {
-      "name": "Switzerland",
-      "fullname": "Swiss Confederation",
-      "placardname": "Switzerland"
+    "137": {
+      "name": "South Korea",
+      "fullname": "Republic of Korea",
+      "placardname": "South Korea"
     },
-    "43": {
-      "name": "Cuba",
-      "fullname": "Republic of Cuba",
-      "placardname": "Cuba"
-    },
-    "47": {
-      "name": "DR Congo",
-      "fullname": "Democratic Republic of the Congo",
-      "placardname": "DR Congo"
-    },
-    "99": {
-      "name": "Luxembourg",
-      "fullname": "Grand Duchy of Luxembourg",
-      "placardname": "Luxembourg"
-    },
-    "7": {
-      "name": "Argentina",
-      "fullname": "Republic of Argentina ",
-      "placardname": "Argentina"
-    },
-    "204": {
-      "name": "FAO",
-      "fullname": "Food and Agriculture Organization of the United Nations",
-      "placardname": "FAO"
+    "192": {
+      "name": "Zimbabwe",
+      "fullname": "Republic of Zimbabwe",
+      "placardname": "Zimbabwe"
     },
     "109": {
       "name": "Mexico",
       "fullname": "United Mexican States",
       "placardname": "Mexico"
     },
-    "180": {
-      "name": "Ukraine",
-      "fullname": "Ukraine",
-      "placardname": "Ukraine"
+    "166": {
+      "name": "Switzerland",
+      "fullname": "Swiss Confederation",
+      "placardname": "Switzerland"
     },
-    "157": {
-      "name": "Somalia",
-      "fullname": "Federal Republic of Somalia",
-      "placardname": "Somalia"
+    "120": {
+      "name": "Netherlands",
+      "fullname": "Kingdom of the Netherlands",
+      "placardname": "Netherlands"
+    },
+    "153": {
+      "name": "Singapore",
+      "fullname": "Republic of Singapore",
+      "placardname": "Singapore"
+    },
+    "188": {
+      "name": "Venezuela",
+      "fullname": "Bolivarian Republic of Venezuela",
+      "placardname": "Venezuela"
+    },
+    "76": {
+      "name": "India",
+      "fullname": "Republic of India",
+      "placardname": "India"
+    },
+    "176": {
+      "name": "Turkey",
+      "fullname": "Republic of Turkey",
+      "placardname": "Turkey"
+    },
+    "130": {
+      "name": "Papua New Guinea",
+      "fullname": "Independent State of Papua New Guinea",
+      "placardname": "Papua New Guinea"
+    },
+    "227": {
+      "name": "Russia 1",
+      "fullname": "Russian Federation",
+      "placardname": "Russia"
+    },
+    "81": {
+      "name": "Israel",
+      "fullname": "State of Israel",
+      "placardname": "Israel"
+    },
+    "47": {
+      "name": "DR Congo",
+      "fullname": "Democratic Republic of the Congo",
+      "placardname": "DR Congo"
+    },
+    "122": {
+      "name": "Nicaragua",
+      "fullname": "Republic of Nicaragua",
+      "placardname": "Nicaragua"
+    },
+    "57": {
+      "name": "Ethiopia",
+      "fullname": "Federal Democratic Republic of Ethiopia",
+      "placardname": "Ethiopia"
+    },
+    "55": {
+      "name": "Eritrea",
+      "fullname": "State of Eritrea",
+      "placardname": "Eritrea"
+    },
+    "228": {
+      "name": "Cambodia 1",
+      "fullname": "Cambodia",
+      "placardname": "Cambodia"
+    },
+    "33": {
+      "name": "CAR",
+      "fullname": "Central African Republic",
+      "placardname": "Central African Republic"
+    },
+    "7": {
+      "name": "Argentina",
+      "fullname": "Republic of Argentina ",
+      "placardname": "Argentina"
+    },
+    "199": {
+      "name": "EU",
+      "fullname": "European Union",
+      "placardname": "European Union"
+    },
+    "167": {
+      "name": "Syria",
+      "fullname": "Syrian Arab Republic",
+      "placardname": "Syria"
+    },
+    "80": {
+      "name": "Ireland",
+      "fullname": "Ireland",
+      "placardname": "Ireland"
+    },
+    "207": {
+      "name": "UNDP",
+      "fullname": "United Nations Development Programme",
+      "placardname": "UNDP"
+    },
+    "102": {
+      "name": "Malaysia",
+      "fullname": "Malaysia",
+      "placardname": "Malaysia"
+    },
+    "91": {
+      "name": "Laos",
+      "fullname": "Lao People's Democratic Republic",
+      "placardname": "Laos"
+    },
+    "169": {
+      "name": "Thailand",
+      "fullname": "Kingdom of Thailand",
+      "placardname": "Thailand"
     },
     "127": {
       "name": "Pakistan",
       "fullname": "Islamic Republic of Pakistan",
       "placardname": "Pakistan"
     },
-    "210": {
-      "name": "UNESCO",
-      "fullname": "United Nations Educational, Scientific and Cultural Organization",
-      "placardname": "UNESCO"
+    "160": {
+      "name": "Spain",
+      "fullname": "Kingdom of Spain",
+      "placardname": "Spain"
+    },
+    "229": {
+      "name": "South Africa 1",
+      "fullname": "South Africa",
+      "placardname": "South Africa"
+    },
+    "52": {
+      "name": "Egypt",
+      "fullname": "Arab Republic of Egypt",
+      "placardname": "Egypt"
+    },
+    "165": {
+      "name": "Sweden",
+      "fullname": "Kingdom of Sweden",
+      "placardname": "Sweden"
+    },
+    "66": {
+      "name": "Greece",
+      "fullname": "Hellenic Republic",
+      "placardname": "Greece"
+    },
+    "230": {
+      "name": "Bangladesh 2",
+      "fullname": "People's Republic of Bangladesh",
+      "placardname": "Bangladesh"
+    },
+    "200": {
+      "name": "AI",
+      "fullname": "Amnesty International",
+      "placardname": "Amnesty International"
     },
     "211": {
       "name": "Transparency International",
       "fullname": "Transparency International e.V.",
       "placardname": "Transparency International"
     },
+    "139": {
+      "name": "Romania",
+      "fullname": "Romania",
+      "placardname": "Romania"
+    },
+    "193": {
+      "name": "Palestine",
+      "fullname": "State of Palestine",
+      "placardname": "Palestine"
+    },
+    "14": {
+      "name": "Bangladesh",
+      "fullname": "People's Republic of Bangladesh",
+      "placardname": "Bangladesh"
+    },
+    "209": {
+      "name": "World Bank",
+      "fullname": "World Bank",
+      "placardname": "World Bank"
+    },
+    "225": {
+      "name": "Philippines 1",
+      "fullname": "Philippines",
+      "placardname": "Philippines"
+    },
     "213": {
       "name": "WTO",
       "fullname": "World Trade Organization",
       "placardname": "WTO"
     },
-    "212": {
-      "name": "WHO",
-      "fullname": "World Health Organization",
-      "placardname": "WHO"
+    "43": {
+      "name": "Cuba",
+      "fullname": "Republic of Cuba",
+      "placardname": "Cuba"
+    },
+    "226": {
+      "name": "USA 1",
+      "fullname": "United Srates of America",
+      "placardname": "USA"
     }
   },
   "forums": {
@@ -476,67 +426,411 @@
       "abbr": "GA1",
       "name": "First Committee",
       "plenary": "1",
-      "countries": ["200", "199", "57", "64", "24", "66", "78", "84", "114", "160", "96", "3", "214", "60", "76", "82", "93", "158", "159", "162", "175", "176", "179", "140", "189", "81", "193", "167", "180", "181", "182", "184"]
+      "countries": [
+        "47",
+        "199",
+        "130",
+        "1",
+        "78",
+        "84",
+        "148",
+        "96",
+        "102",
+        "36",
+        "37",
+        "41",
+        "60",
+        "76",
+        "77",
+        "79",
+        "104",
+        "153",
+        "159",
+        "39",
+        "133",
+        "162",
+        "140",
+        "189",
+        "55",
+        "81",
+        "89",
+        "193",
+        "166",
+        "211",
+        "182",
+        "109",
+        "207",
+        "184"
+      ]
     },
     "2": {
       "abbr": "GA2",
       "name": "Second Committee",
       "plenary": "1",
-      "countries": ["9", "64", "24", "99", "85", "78", "84", "148", "165", "169", "121", "215", "35", "43", "60", "76", "137", "93", "129", "153", "158", "140", "81", "193", "136", "166", "211", "182", "206", "184", "209"]
+      "countries": [
+        "188",
+        "31",
+        "9",
+        "64",
+        "127",
+        "84",
+        "148",
+        "160",
+        "120",
+        "102",
+        "36",
+        "21",
+        "43",
+        "60",
+        "79",
+        "137",
+        "104",
+        "135",
+        "153",
+        "39",
+        "191",
+        "192",
+        "140",
+        "89",
+        "193",
+        "166",
+        "211",
+        "182",
+        "109",
+        "207",
+        "184",
+        "209",
+        "213"
+      ]
     },
     "3": {
       "abbr": "GA3",
       "name": "Third Committee",
       "plenary": "1",
-      "countries": ["200", "197", "31", "1", "127", "48", "125", "165", "96", "14", "214", "37", "60", "76", "159", "133", "116", "176", "190", "140", "189", "81", "167", "211", "181", "182", "207", "210", "206", "184", "209"]
+      "countries": [
+        "188",
+        "31",
+        "9",
+        "224",
+        "64",
+        "24",
+        "66",
+        "130",
+        "1",
+        "127",
+        "83",
+        "148",
+        "120",
+        "96",
+        "102",
+        "36",
+        "21",
+        "37",
+        "41",
+        "43",
+        "60",
+        "76",
+        "132",
+        "135",
+        "153",
+        "176",
+        "140",
+        "81",
+        "89",
+        "182",
+        "184"
+      ]
     },
     "4": {
       "abbr": "GA4",
       "name": "Fourth Committee",
       "plenary": "1",
-      "countries": ["200", "188", "9", "46", "64", "85", "84", "125", "148", "169", "102", "14", "214", "21", "35", "37", "43", "60", "76", "77", "137", "134", "153", "158", "133", "116", "140", "182", "109", "207", "184"]
+      "countries": [
+        "188",
+        "33",
+        "47",
+        "199",
+        "57",
+        "64",
+        "124",
+        "78",
+        "29",
+        "148",
+        "169",
+        "14",
+        "36",
+        "21",
+        "43",
+        "60",
+        "104",
+        "122",
+        "159",
+        "39",
+        "162",
+        "140",
+        "55",
+        "81",
+        "89",
+        "166",
+        "182",
+        "207",
+        "184"
+      ]
     },
     "7": {
       "abbr": "SC",
       "name": "Security Council",
       "plenary": "0",
-      "countries": ["57", "165", "120", "214", "21", "41", "54", "60", "86", "132", "134", "140", "89", "182", "184"]
+      "countries": [
+        "224",
+        "64",
+        "17",
+        "36",
+        "41",
+        "54",
+        "60",
+        "77",
+        "132",
+        "134",
+        "158",
+        "140",
+        "89",
+        "182",
+        "184"
+      ]
     },
     "9": {
       "abbr": "HRC",
       "name": "Human Rights Council",
       "plenary": "0",
-      "countries": ["201", "200", "188", "46", "199", "64", "66", "74", "78", "84", "48", "148", "160", "169", "214", "10", "60", "79", "104", "153", "133", "176", "140", "55", "89", "136", "167", "182", "207", "184"]
+      "countries": [
+        "200",
+        "52",
+        "31",
+        "33",
+        "9",
+        "47",
+        "199",
+        "64",
+        "24",
+        "78",
+        "148",
+        "165",
+        "120",
+        "96",
+        "102",
+        "36",
+        "21",
+        "7",
+        "37",
+        "43",
+        "54",
+        "60",
+        "77",
+        "79",
+        "104",
+        "135",
+        "159",
+        "39",
+        "162",
+        "176",
+        "191",
+        "139",
+        "140",
+        "81",
+        "89",
+        "166",
+        "211",
+        "182",
+        "109",
+        "207"
+      ]
     },
     "10": {
       "abbr": "EC",
       "name": "Environment Commission",
       "plenary": "2",
-      "countries": ["31", "9", "46", "24", "48", "125", "165", "169", "102", "121", "214", "10", "35", "37", "60", "76", "77", "86", "104", "129", "134", "158", "133", "140", "189", "136", "166", "181", "182", "207", "210", "206", "184"]
+      "countries": [
+        "33",
+        "64",
+        "124",
+        "80",
+        "84",
+        "125",
+        "160",
+        "165",
+        "169",
+        "120",
+        "91",
+        "102",
+        "36",
+        "37",
+        "41",
+        "60",
+        "76",
+        "77",
+        "137",
+        "153",
+        "191",
+        "192",
+        "140",
+        "89",
+        "166",
+        "182",
+        "109",
+        "184"
+      ]
     },
     "15": {
       "abbr": "HSC",
       "name": "Historical Security Council",
       "plenary": "0",
-      "countries": ["9", "214", "10", "60", "69", "76", "77", "87", "129", "132", "162", "195", "194", "182", "184"]
-    },
-    "16": {
-      "abbr": "SCG",
-      "name": "Special Conference on Globalism",
-      "plenary": "0",
-      "countries": ["201", "188", "46", "199", "64", "124", "24", "84", "148", "169", "96", "214", "60", "76", "79", "86", "104", "129", "158", "159", "162", "116", "176", "140", "81", "89", "167", "182", "207", "210", "184", "209", "213"]
+      "countries": [
+        "223",
+        "124",
+        "61",
+        "83",
+        "125",
+        "230",
+        "36",
+        "21",
+        "60",
+        "135",
+        "191",
+        "89",
+        "194",
+        "182",
+        "184"
+      ]
     },
     "17": {
       "abbr": "CPD",
       "name": "Commission on Population and Development",
       "plenary": "2",
-      "countries": ["201", "200", "52", "188", "31", "9", "47", "24", "204", "85", "84", "48", "114", "169", "120", "121", "14", "215", "7", "35", "41", "54", "60", "69", "76", "77", "104", "134", "153", "159", "133", "176", "190", "140", "55", "89", "182", "109", "207", "184", "212"]
+      "countries": [
+        "52",
+        "188",
+        "31",
+        "33",
+        "9",
+        "47",
+        "224",
+        "57",
+        "64",
+        "124",
+        "24",
+        "66",
+        "80",
+        "78",
+        "127",
+        "83",
+        "84",
+        "29",
+        "148",
+        "160",
+        "120",
+        "96",
+        "14",
+        "36",
+        "21",
+        "7",
+        "41",
+        "43",
+        "54",
+        "60",
+        "76",
+        "77",
+        "137",
+        "132",
+        "134",
+        "135",
+        "153",
+        "158",
+        "159",
+        "162",
+        "191",
+        "192",
+        "139",
+        "140",
+        "189",
+        "81",
+        "89",
+        "166",
+        "182",
+        "109",
+        "207",
+        "184"
+      ]
     },
-    "18": {
+    "19": {
       "abbr": "ECA",
-      "name": "Economic Commission for Africa",
+      "name": "Economic Commission for Asia",
       "plenary": "2",
-      "countries": ["201", "52", "199", "57", "64", "124", "157", "1", "84", "96", "3", "214", "41", "54", "60", "69", "79", "87", "137", "104", "153", "159", "162", "175", "190", "140", "55", "182", "207", "184", "213"]
+      "countries": [
+        "47",
+        "224",
+        "57",
+        "61",
+        "127",
+        "29",
+        "169",
+        "91",
+        "14",
+        "36",
+        "225",
+        "21",
+        "7",
+        "54",
+        "60",
+        "77",
+        "135",
+        "139",
+        "227",
+        "189",
+        "167",
+        "182",
+        "226"
+      ]
+    },
+    "20": {
+      "abbr": "SCT",
+      "name": "Special Conference on trade in the 21st century",
+      "plenary": "0",
+      "countries": [
+        "52",
+        "228",
+        "31",
+        "9",
+        "64",
+        "124",
+        "130",
+        "80",
+        "84",
+        "148",
+        "169",
+        "120",
+        "36",
+        "37",
+        "41",
+        "54",
+        "60",
+        "76",
+        "137",
+        "135",
+        "153",
+        "140",
+        "189",
+        "229",
+        "89",
+        "166",
+        "167",
+        "182",
+        "109",
+        "207",
+        "184",
+        "209",
+        "213"
+      ]
     }
   }
 }
