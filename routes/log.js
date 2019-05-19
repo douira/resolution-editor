@@ -21,14 +21,14 @@ getAndPost(router, "/", (req, res) => {
   }
 
   //convert to array if not array
-  if (! (messages instanceof Array)) {
+  if (!(messages instanceof Array)) {
     //create a new array
     const newArr = [];
 
     //for every property of the object
     for (const prop in messages) {
       //add to array if numeric
-      if (! isNaN(prop)) {
+      if (!isNaN(prop)) {
         newArr[prop] = messages[prop];
       }
     }

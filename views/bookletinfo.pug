@@ -15,7 +15,7 @@ block container-content
   span.hide-this#unsaved-changes-msg  There are unsaved changes!
   .row
     mixin check-nothing(resList)
-      p.center.no-cotent-msg(class=resList.length && "hide-this")
+      p.center.no-content-msg(class=resList.length && "hide-this")
         em.grey-text.text-darken-1 No resolutions to display.
     mixin res-info(res)
       block

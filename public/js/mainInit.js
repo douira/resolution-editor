@@ -3,9 +3,10 @@ if (typeof Array.prototype.find !== "function") {
   //eslint-disable-next-line no-alert
   alert(
     "You are using an outdated browser and we strongly encourage you to update" +
-    " it immediately. Because of that, this website may not work as expected" +
-    " or not at all and you may face security issues (not just with this website," +
-    " but in general).");
+      " it immediately. Because of that, this website may not work as expected" +
+      " or not at all and you may face security issues (not just with this website," +
+      " but in general)."
+  );
 }
 
 //sets the state of a class (adding or removing)
@@ -44,13 +45,15 @@ $.fn.triggerAll = function(eventNames, params) {
 //changes the icon a icon element is displaying
 $.fn.changeIcon = function(newIconName) {
   //remove any previous icon name
-  this.removeClass((i, str) => str
-    .split(" ")
-    .filter(c => c.startsWith("mdi-"))
-    .join(" "))
+  this.removeClass((i, str) =>
+    str
+      .split(" ")
+      .filter(c => c.startsWith("mdi-"))
+      .join(" ")
+  )
 
-  //add new icon class
-  .addClass(`mdi-${newIconName}`);
+    //add new icon class
+    .addClass(`mdi-${newIconName}`);
 };
 
 //navigation collapse

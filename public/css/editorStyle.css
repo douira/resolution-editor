@@ -58,7 +58,8 @@ a.eab-btn {
 }
 
 /*hide the top level divider and add clause button of the amendment display clause*/
-#amd-clause-wrapper > .clause-list > .clause > .divider, #amd-clause-wrapper > .clause-list > .add-clause-container {
+#amd-clause-wrapper > .clause-list > .clause > .divider,
+#amd-clause-wrapper > .clause-list > .add-clause-container {
   display: none;
 }
 
@@ -79,11 +80,13 @@ a.eab-btn {
   font-style: italic;
 }
 
-#op-clauses .cond-phrase, #amd-clause-wrapper .cond-phrase {
+#op-clauses .cond-phrase,
+#amd-clause-wrapper .cond-phrase {
   text-decoration: underline;
 }
 
-p.clause-cond, p.clause-ext-cond {
+p.clause-cond,
+p.clause-ext-cond {
   margin-bottom: 0.5em;
   margin-top: 0.5em;
 }

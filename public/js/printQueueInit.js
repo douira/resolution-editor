@@ -72,11 +72,16 @@ $(document).ready(() => {
   //need to set rendering state first
   updateListConfig.preCopyHandler = (newFirst, firstItem) => {
     //reset flag to given value if it's a new item
-    if (! firstItem || newFirst.token !== firstItem.token ||
-        newFirst.unrenderedChanges !== firstItem.unrenderedChanges) {
+    if (
+      !firstItem ||
+      newFirst.token !== firstItem.token ||
+      newFirst.unrenderedChanges !== firstItem.unrenderedChanges
+    ) {
       //set to appropriate stage
       setFirstItemStage(
-        newFirst.unrenderedChanges ? "unrendered" : "rendered", newFirst);
+        newFirst.unrenderedChanges ? "unrendered" : "rendered",
+        newFirst
+      );
     }
   };
 
@@ -85,47 +90,53 @@ $(document).ready(() => {
 
   //handler how mouseenter (like hover) and click of view pdf button
   printBtn
-  .on("mouseenter", () => {
-    //if the resolution hasn't been rendered yet
-    if (firstItemPdfStage === "unrendered") {
-      //move into rendering stage
-      setFirstItemStage("rendering");
+    .on("mouseenter", () => {
+      //if the resolution hasn't been rendered yet
+      if (firstItemPdfStage === "unrendered") {
+        //move into rendering stage
+        setFirstItemStage("rendering");
 
-      //ask the server to render
-      $.get(`/resolution/renderpdf/${firstItem.token}`).done(() => {
-        //finished rendering, sets url
-        setFirstItemStage("rendered");
+        //ask the server to render
+        $.get(`/resolution/renderpdf/${firstItem.token}`)
+          .done(() => {
+            //finished rendering, sets url
+            setFirstItemStage("rendered");
 
-        //if page amount was not known previously, update list to fetch and display
-        if (! firstItem.pageAmount) {
-          updateList();
-        }
-      }).fail(() => {
-        //finished rendering
-        setFirstItemStage("rendered");
+            //if page amount was not known previously, update list to fetch and display
+            if (!firstItem.pageAmount) {
+              updateList();
+            }
+          })
+          .fail(() => {
+            //finished rendering
+            setFirstItemStage("rendered");
 
-        //display error and and help directives
-        makeAlertMessage(
-          "alert-circle-outline", "Error generating PDF", "ok",
-          "The server encountered an error while trying to generate the requested" +
-          " PDF file. This may happen when the resolution includes illegal characters." +
-          " Please talk to the owner of this document and ask IT-Management for help if" +
-          " this problem persists.", "pdf_gen_printqueue");
-      });
-    }
-  })
-  .on("click", e => {
-    //when the open pdf button is clicked and opened the pdf
-    //make the advance resolution button appear in color
-    if (firstItemPdfStage === "rendered") {
-      //move into viewed stage
-      setFirstItemStage("viewed");
+            //display error and and help directives
+            makeAlertMessage(
+              "alert-circle-outline",
+              "Error generating PDF",
+              "ok",
+              "The server encountered an error while trying to generate the requested" +
+                " PDF file. This may happen when the resolution includes illegal characters." +
+                " Please talk to the owner of this document and ask IT-Management for help if" +
+                " this problem persists.",
+              "pdf_gen_printqueue"
+            );
+          });
+      }
+    })
+    .on("click", e => {
+      //when the open pdf button is clicked and opened the pdf
+      //make the advance resolution button appear in color
+      if (firstItemPdfStage === "rendered") {
+        //move into viewed stage
+        setFirstItemStage("viewed");
 
-      //blur to remove focus and prevent strange darkening
-      printBtn.blur();
-    } else {
-      //prevent click, nothing valid to see
-      e.preventDefault();
-    }
-  });
+        //blur to remove focus and prevent strange darkening
+        printBtn.blur();
+      } else {
+        //prevent click, nothing valid to see
+        e.preventDefault();
+      }
+    });
 });

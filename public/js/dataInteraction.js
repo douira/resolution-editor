@@ -31,17 +31,21 @@ const supportedResFileFormats = [6];
 const bugReportLink = (errorCode = "unknown_error") =>
   //calling it problem report because it may be user error
   "<a href='https://github.com/douira/resolution-editor/issues/new" +
-    `?title=Problem Report: ${errorCode}'>problem report</a>`;
+  `?title=Problem Report: ${errorCode}'>problem report</a>`;
 
 //displays a modal message for invalid json file at parse or apply stage
 const jsonReadErrorModal = errorCode => {
   log("error reading loaded json resolution (from file)", "warn");
   makeAlertMessage(
-    "alert-circle-outline", "Error reading file", "ok",
+    "alert-circle-outline",
+    "Error reading file",
+    "ok",
     "The provided data could not be read and processed." +
-    " This may be because the file you provided isn't in the format produced by this program or" +
-    ` was corrupted in some way. Please file a ${bugReportLink(errorCode)}` +
-    " and describe this problem if you believe this error isn't your fault.", errorCode);
+      " This may be because the file you provided isn't in the format produced by this program or" +
+      ` was corrupted in some way. Please file a ${bugReportLink(errorCode)}` +
+      " and describe this problem if you believe this error isn't your fault.",
+    errorCode
+  );
 };
 
 //validates fields with user feedback, returns false if there is a bad field
@@ -50,12 +54,15 @@ const validateFields = (noAlert = false) => {
   const fieldsOk = checkRequiredFields();
 
   //make error message if necessary
-  if (! fieldsOk && ! noAlert) {
+  if (!fieldsOk && !noAlert) {
     makeAlertMessage(
-      "alert", "Invalid Fields", "ok",
+      "alert",
+      "Invalid Fields",
+      "ok",
       "There are fields with missing or invalid values. " +
-      "Autocomplete fields must contain one of the suggested values only. " +
-      "<br>Invalid fields are marked <span class='red-text'>red</span>.");
+        "Autocomplete fields must contain one of the suggested values only. " +
+        "<br>Invalid fields are marked <span class='red-text'>red</span>."
+    );
   }
 
   //return value again
@@ -65,19 +72,22 @@ const validateFields = (noAlert = false) => {
 //returns the maximum subclause depth found in given clause list (top list is non-sub)
 const getMaxSubclauseDepth = (clauseList, depthOffset = -1) => {
   //increment with deeper level, at 0 on default
-  depthOffset ++;
+  depthOffset++;
 
   //maximum depth for all clauses in list
-  return Math.max.apply(null, clauseList.map(clause => {
-    //check if has subclauses
-    if (clause.hasOwnProperty("sub")) {
-      //recurse
-      return getMaxSubclauseDepth(clause.sub, depthOffset);
-    }
+  return Math.max.apply(
+    null,
+    clauseList.map(clause => {
+      //check if has subclauses
+      if (clause.hasOwnProperty("sub")) {
+        //recurse
+        return getMaxSubclauseDepth(clause.sub, depthOffset);
+      }
 
-    //contributes 0 depth
-    return depthOffset;
-  }));
+      //contributes 0 depth
+      return depthOffset;
+    })
+  );
 };
 
 //checks that a saved or loaded editor object has all the required data
@@ -85,8 +95,11 @@ const validateEditorData = obj => {
   //validate object structure and check maximum subclause tree depth
   if (resolutionFormat.check(obj)) {
     const clauses = obj.resolution.clauses;
-    return getMaxSubclauseDepth(clauses.preambulatory) <= allowedSubclauseDepth.preamb &&
-           getMaxSubclauseDepth(clauses.operative) <= allowedSubclauseDepth.op;
+    return (
+      getMaxSubclauseDepth(clauses.preambulatory) <=
+        allowedSubclauseDepth.preamb &&
+      getMaxSubclauseDepth(clauses.operative) <= allowedSubclauseDepth.op
+    );
   }
 
   //failed format check
@@ -128,15 +141,21 @@ const loadJson = (json, callbackOnSuccess) => {
   //check file version, modal doesn't work yet, clashes with previous one
   if (obj.version && supportedResFileFormats.indexOf(obj.version) === -1) {
     makeAlertMessage(
-      "alert", "File format is outdated", "ok",
+      "alert",
+      "File format is outdated",
+      "ok",
       "The provided file could be read but is in an old and unsupported format." +
-      ` Please file a ${bugReportLink("old_format")} and describe this problem.` +
-      " if you wish to receive help concerning this issue.", "old_format");
+        ` Please file a ${bugReportLink(
+          "old_format"
+        )} and describe this problem.` +
+        " if you wish to receive help concerning this issue.",
+      "old_format"
+    );
     return;
   }
 
   //check that the loaded data is valid
-  if (! validateEditorData(obj)) {
+  if (!validateEditorData(obj)) {
     //make error message
     jsonReadErrorModal("structure_invalid");
     return;
@@ -148,16 +167,24 @@ const loadJson = (json, callbackOnSuccess) => {
 
   //put author data into field if any present
   if (obj.author) {
-    $("#author-name").val(obj.author).trigger("activateLabel");
+    $("#author-name")
+      .val(obj.author)
+      .trigger("activateLabel");
   }
 
   //get resolution object
   const res = obj.resolution;
 
   //put data into general data fields
-  $("#question-of").val(res.address.questionOf).trigger("activateLabel");
-  $("#forum-name").val(res.address.forum).trigger("activateLabel");
-  $("#main-spon").val(res.address.sponsor.main).trigger("activateLabel");
+  $("#question-of")
+    .val(res.address.questionOf)
+    .trigger("activateLabel");
+  $("#forum-name")
+    .val(res.address.forum)
+    .trigger("activateLabel");
+  $("#main-spon")
+    .val(res.address.sponsor.main)
+    .trigger("activateLabel");
 
   //init chips with new data, convert array of tag strings to tag objects
   const elem = $("#co-spon");
@@ -167,8 +194,14 @@ const loadJson = (json, callbackOnSuccess) => {
   elem.trigger("init");
 
   //parse clauses
-  parseClauseList(res.clauses.preambulatory, $("#preamb-clauses").children(".clause-list"));
-  parseClauseList(res.clauses.operative, $("#op-clauses").children(".clause-list"));
+  parseClauseList(
+    res.clauses.preambulatory,
+    $("#preamb-clauses").children(".clause-list")
+  );
+  parseClauseList(
+    res.clauses.operative,
+    $("#op-clauses").children(".clause-list")
+  );
 
   //prepare all clauses for condensed display
   $(".clause").trigger("editInactive");
@@ -183,7 +216,10 @@ const loadJson = (json, callbackOnSuccess) => {
 const loadFilePick = loadDone => {
   //make alert message file select
   makeAlertMessage(
-    "file-upload", "Open resolution file", "cancel", (body, modal) => {
+    "file-upload",
+    "Open resolution file",
+    "cancel",
+    (body, modal) => {
       body.text("Select a resolution file with the extension '.rso' to open:");
       const fileSelector = modal.find("#file-selector");
       fileSelector.setHide(false);
@@ -198,7 +234,8 @@ const loadFilePick = loadDone => {
         //changes loaded from file are not "really" server saved
         //(and flag isn't reset because of this)
       };
-    });
+    }
+  );
 };
 
 //loads resolution from server
@@ -216,29 +253,36 @@ const serverLoad = (token, doToast, callback) => {
 
   //do ajax with settings
   $.ajax(ajaxSettings)
-  .done(response =>
-    //attempt to load json into editor
-    loadJson(response, forum => {
-      //display toast
-      if (doToast) {
-        displayToast("Successfully loaded");
-      }
+    .done(response =>
+      //attempt to load json into editor
+      loadJson(response, forum => {
+        //display toast
+        if (doToast) {
+          displayToast("Successfully loaded");
+        }
 
-      //call callback if there is one
-      if (typeof callback === "function") {
-        callback(forum);
-      }
+        //call callback if there is one
+        if (typeof callback === "function") {
+          callback(forum);
+        }
 
-      //set flag, loaded resolution is fully saved already
-      changesSaved = true;
-    })
-  )
-  .fail(() =>
-    //there was a problem
-    makeAlertMessage("alert-circle-outline", "Error loading resolution", "ok",
+        //set flag, loaded resolution is fully saved already
+        changesSaved = true;
+      })
+    )
+    .fail(() =>
+      //there was a problem
+      makeAlertMessage(
+        "alert-circle-outline",
+        "Error loading resolution",
+        "ok",
         "The server encountered an error or denied the requst to load the resolution." +
-        ` Please file a ${bugReportLink("res_load")} and describe this problem.`, "res_load")
-  );
+          ` Please file a ${bugReportLink(
+            "res_load"
+          )} and describe this problem.`,
+        "res_load"
+      )
+    );
 };
 
 //sends the current json of to the server and calls back with the URL to the generated pdf
@@ -248,39 +292,49 @@ const generatePdf = () => {
 
   //send to server
   $.get(`/resolution/renderpdf/${resolutionToken}`)
-  .done(response => {
-    //stop showing spinner
-    spinner.setHide(true);
+    .done(response => {
+      //stop showing spinner
+      spinner.setHide(true);
 
-    //display link to generated pdf
-    makeAlertMessage(
-      "file-document", "Generated PDF file", "done",
-      `Click <b><a href='${response}` +
-      "' target='_blank'>here</a></b> to view your resolution as a PDF file." +
-      " If the PDF does not reflect a recent change, save the resolution again and re-render.");
-  })
-  .fail(() => {
-    //stop showing spinner
-    spinner.setHide(true);
+      //display link to generated pdf
+      makeAlertMessage(
+        "file-document",
+        "Generated PDF file",
+        "done",
+        `Click <b><a href='${response}` +
+          "' target='_blank'>here</a></b> to view your resolution as a PDF file." +
+          " If the PDF does not reflect a recent change, save the resolution again and re-render."
+      );
+    })
+    .fail(() => {
+      //stop showing spinner
+      spinner.setHide(true);
 
-    //display error and request creation of bug report
-    makeAlertMessage(
-      "alert-circle-outline", "Error generating PDF", "ok",
-      "The server encountered an error while trying to generate the requested" +
-      " PDF file. Read the <a href='/help#formatting'>help page section</a> on formatting" +
-      " and special characters before proceeding. If the error persists after modyfing your" +
-      " resolution to conform to the formatting and special character rules, please file a " +
-      `${bugReportLink("old_format")} and describe this problem.`, "pdf_gen");
-  });
+      //display error and request creation of bug report
+      makeAlertMessage(
+        "alert-circle-outline",
+        "Error generating PDF",
+        "ok",
+        "The server encountered an error while trying to generate the requested" +
+          " PDF file. Read the <a href='/help#formatting'>help page section</a> on formatting" +
+          " and special characters before proceeding. If the error persists after modyfing your" +
+          " resolution to conform to the formatting and special character rules, please file a " +
+          `${bugReportLink("old_format")} and describe this problem.`,
+        "pdf_gen"
+      );
+    });
 };
 
 //directs the user to the plaintext view
 const generatePlaintext = () =>
   //make message
   makeAlertMessage(
-    "recepit", "Generated Plaintext", "done",
+    "recepit",
+    "Generated Plaintext",
+    "done",
     `Click <b><a href='/resolution/renderplain/${resolutionToken}` +
-    "' target='_blank'>here</a></b> to view your resolution as a plain text file.");
+      "' target='_blank'>here</a></b> to view your resolution as a plain text file."
+  );
 
 //gets a clause as an object
 //IMPORTANT: if the outputted format changes, increment the version number by one!
@@ -303,34 +357,45 @@ $.fn.clauseAsObject = function(allowEmpty) {
   }
 
   //return false if isn't a clause
-  if (! this.is(".clause")) {
+  if (!this.is(".clause")) {
     return false;
   }
 
   //make object with content
   const clauseData = {
-    content: this.children(".clause-content").find("textarea").val().trim()
+    content: this.children(".clause-content")
+      .find("textarea")
+      .val()
+      .trim()
   };
 
   //stop if no content
-  if (! clauseData.content && ! allowEmpty) {
+  if (!clauseData.content && !allowEmpty) {
     return false;
   }
 
   //check for phrase field
   if (this.children(".phrase-input-wrapper").length) {
-    clauseData.phrase = this.children(".phrase-input-wrapper").find("input").val().trim();
+    clauseData.phrase = this.children(".phrase-input-wrapper")
+      .find("input")
+      .val()
+      .trim();
   }
 
   //check for visible extended clause content
   const contentExt = this.children(".clause-content-ext");
-  const contentExtVal = contentExt.find("textarea").val().trim();
-  if (contentExtVal.length || ! contentExt.hasClass("hide-this")) {
+  const contentExtVal = contentExt
+    .find("textarea")
+    .val()
+    .trim();
+  if (contentExtVal.length || !contentExt.hasClass("hide-this")) {
     clauseData.contentExt = contentExtVal;
   }
 
   //get subclauses and add if not empty list
-  const subclauses = this.children(".clause-list-sub").clauseAsObject(allowEmpty);
+  const subclauses = this.children(".clause-list-sub").clauseAsObject(
+    allowEmpty
+  );
   if (subclauses.length) {
     clauseData.sub = subclauses;
   }
@@ -345,17 +410,27 @@ const getEditorObj = allowEmpty => {
   const res = {
     magic: resolutionFormat.magicIdentifier,
     version: Math.max.apply(null, supportedResFileFormats), //use highest supported version
-    author: $("#author-name").val().trim(),
+    author: $("#author-name")
+      .val()
+      .trim(),
     resolution: {
       address: {
-        forum: $("#forum-name").val().trim(),
-        questionOf: $("#question-of").val().trim(),
+        forum: $("#forum-name")
+          .val()
+          .trim(),
+        questionOf: $("#question-of")
+          .val()
+          .trim(),
         sponsor: {
-          main: $("#main-spon").val().trim()
+          main: $("#main-spon")
+            .val()
+            .trim()
         }
       },
       clauses: {
-        preambulatory: $("#preamb-clauses > .clause-list").clauseAsObject(allowEmpty),
+        preambulatory: $("#preamb-clauses > .clause-list").clauseAsObject(
+          allowEmpty
+        ),
         operative: $("#op-clauses > .clause-list").clauseAsObject(allowEmpty)
       }
     }
@@ -365,8 +440,9 @@ const getEditorObj = allowEmpty => {
   const chipsInstance = M.Chips.getInstance($("#co-spon"));
   if (chipsInstance && chipsInstance.chipsData.length) {
     //map to array of strings
-    res.resolution.address.sponsor.co =
-      chipsInstance.chipsData.map(obj => obj.tag.trim());
+    res.resolution.address.sponsor.co = chipsInstance.chipsData.map(obj =>
+      obj.tag.trim()
+    );
   }
 
   //return created object
@@ -408,7 +484,7 @@ const onAllSaveDone = callback => {
 //saves the resolution from editor to the server
 const serverSave = (callback, doToast, silentFail) => {
   //do not save if not allowed to
-  if (! resolutionAttributes.allowSave) {
+  if (!resolutionAttributes.allowSave) {
     return;
   }
 
@@ -418,7 +494,7 @@ const serverSave = (callback, doToast, silentFail) => {
   }
 
   //validate fields, no message if silent fail is specified
-  if (! validateFields(silentFail)) {
+  if (!validateFields(silentFail)) {
     //stop because not ok with missing data
     return;
   }
@@ -440,50 +516,57 @@ const serverSave = (callback, doToast, silentFail) => {
   onAllSaveDone(callback);
 
   //register a pending save op
-  saveOps.pending ++;
+  saveOps.pending++;
 
   //send post request
   $.post(`/resolution/save/${resolutionToken}`, data, "text")
-  .done(() => {
-    //make save ok toast if enabled
-    if (doToast) {
-      displayToast("Successfully saved");
-    }
+    .done(() => {
+      //make save ok toast if enabled
+      if (doToast) {
+        displayToast("Successfully saved");
+      }
 
-    //decrement active op counter
-    saveOps.pending --;
+      //decrement active op counter
+      saveOps.pending--;
 
-    //if there are no ops pending
-    if (! saveOps.pending) {
-      //call all callbacks in order
-      saveOps.callbacks.forEach(c => c());
+      //if there are no ops pending
+      if (!saveOps.pending) {
+        //call all callbacks in order
+        saveOps.callbacks.forEach(c => c());
 
-      //clear callbacks
-      saveOps.callbacks = [];
-    }
+        //clear callbacks
+        saveOps.callbacks = [];
+      }
 
-    //if we are in stage 0, reload the page on successful save
-    if (! resolutionStage) {
-      location.reload();
-    }
-  })
-  .fail(() => {
-    //decrement active op counter
-    saveOps.pending --;
+      //if we are in stage 0, reload the page on successful save
+      if (!resolutionStage) {
+        location.reload();
+      }
+    })
+    .fail(() => {
+      //decrement active op counter
+      saveOps.pending--;
 
-    //clear callbacks if no ops still running
-    if (! saveOps.pending) {
-      saveOps.callbacks = [];
-    }
+      //clear callbacks if no ops still running
+      if (!saveOps.pending) {
+        saveOps.callbacks = [];
+      }
 
-    //mark as not saved, problem
-    changesSaved = false;
+      //mark as not saved, problem
+      changesSaved = false;
 
-    //there was a problem
-    makeAlertMessage("alert-circle-outline", "Error saving resolution", "ok",
+      //there was a problem
+      makeAlertMessage(
+        "alert-circle-outline",
+        "Error saving resolution",
+        "ok",
         "The server encountered an error or denied the requst to save the resolution." +
-        ` Please file a ${bugReportLink("res_save")} and describe this problem.`, "res_save");
-  });
+          ` Please file a ${bugReportLink(
+            "res_save"
+          )} and describe this problem.`,
+        "res_save"
+      );
+    });
 };
 
 //save file to be downloaded
@@ -497,26 +580,34 @@ const saveFileDownload = str => {
       .addClass("waves-effect waves-light btn white-text center-align")
       .attr("download", fileName)
       .text(`Download Resolution: ${fileName}`)
-      .attr("href", URL.createObjectURL(new Blob([str], { type: "application/json" })))
+      .attr(
+        "href",
+        URL.createObjectURL(new Blob([str], { type: "application/json" }))
+      )
       .appendTo($("<div class='.clear-and-center'></div>").appendTo(body))
       .on("click", function(e) {
         e.stopPropagation();
 
         //close modal after download
-        $(this).parents(".modal").modal("close");
+        $(this)
+          .parents(".modal")
+          .modal("close");
 
         //changes saved to file are not "really" server saved
       });
     body.append(
       "If the file download doesn't start, try again and if it still doesn't work," +
-      ` please file a ${bugReportLink("download_not_starting")} and describe this problem.`);
+        ` please file a ${bugReportLink(
+          "download_not_starting"
+        )} and describe this problem.`
+    );
   });
 };
 
 //generates and downloeads json representation of the editor content
 const downloadJson = () => {
   //validate
-  if (! validateFields()) {
+  if (!validateFields()) {
     //stop because not ok with missing data
     return;
   }
@@ -558,10 +649,11 @@ $.fn.getContentPath = function() {
     const elemClasses = elem.attr("class");
 
     //map to structure format name
-    [{ from: "phrase-input", to: "phrase" },
-     { from: "clause-content-text", to: "content" },
-     { from: "clause-content-ext-text", to: "contentExt" }]
-    .forEach(classValue => {
+    [
+      { from: "phrase-input", to: "phrase" },
+      { from: "clause-content-text", to: "content" },
+      { from: "clause-content-ext-text", to: "contentExt" }
+    ].forEach(classValue => {
       //check if element has current class
       if (elemClasses.indexOf(classValue.from) !== -1) {
         //use mapped string as first path specifier, we expect this only to happen once
@@ -597,14 +689,16 @@ $.fn.getContentPath = function() {
     path.push("amendment");
   } else {
     //specify what type of clause (op or preamb)
-    path.push(elem.closest("#preamb-clauses").length ? "preambulatory" : "operative");
+    path.push(
+      elem.closest("#preamb-clauses").length ? "preambulatory" : "operative"
+    );
   }
 
   //set the path id as the current id number and increment
   elem.attr("data-path-id", nextPathId);
 
   //cache the path and increment for next path cache operation
-  pathCache[nextPathId ++] = path;
+  pathCache[nextPathId++] = path;
 
   //return calculated path
   return path;
@@ -615,10 +709,10 @@ $.fn.getContentPath = function() {
 //send/do the actual amendment update
 const doAmdUpdate = () => {
   //update amd display indexes and get the amendment descriptor object
-  const amdUpdate = getAmendmentUpdate(! sendLVUpdates);
+  const amdUpdate = getAmendmentUpdate(!sendLVUpdates);
 
   //do not send an update if it cannot be displayed in this state
-  if (! amdUpdate) {
+  if (!amdUpdate) {
     return;
   }
 
@@ -647,7 +741,7 @@ type: structure
 */
 const sendLVUpdate = (type, eventType, elem) => {
   //stop if not allowed
-  if (! allowLV) {
+  if (!allowLV) {
     return;
   }
 
@@ -660,7 +754,7 @@ const sendLVUpdate = (type, eventType, elem) => {
     const inAmd = elem && elem.closest("#amd-clause-wrapper").length;
 
     //send regular structure update if change didn't happen in amendment
-    if ((! inAmd || eventType === "catchup") && sendLVUpdates) {
+    if ((!inAmd || eventType === "catchup") && sendLVUpdates) {
       //send regular structure update
       sendJsonLV({
         type: "updateStructure",
@@ -679,14 +773,20 @@ const sendLVUpdate = (type, eventType, elem) => {
       const clauseList = isClauseList ? elem : elem.parent();
 
       //check if clause is top level and op type, check type of parent list
-      isTopLevelOp = clauseList.is(".clause-list:not(.clause-list-sub)") &&
-        (isClauseList ? elem : elem.parent()).children(".clause").attr("data-clause-type") === "op";
+      isTopLevelOp =
+        clauseList.is(".clause-list:not(.clause-list-sub)") &&
+        (isClauseList ? elem : elem.parent())
+          .children(".clause")
+          .attr("data-clause-type") === "op";
     }
 
     //need index update on amd display for always catchup and for top level clauses
     //on remove, add, move or in amendment
-    if (eventType === "catchup" || inAmd ||
-        isTopLevelOp && ["remove", "add", "move", "insert"].includes(eventType)) {
+    if (
+      eventType === "catchup" ||
+      inAmd ||
+      (isTopLevelOp && ["remove", "add", "move", "insert"].includes(eventType))
+    ) {
       //update current amd index
       doAmdUpdate();
     }
@@ -704,7 +804,7 @@ const sendLVUpdate = (type, eventType, elem) => {
     }
   } else if (type === "saveAmd") {
     //needs update to be specified
-    if (! (typeof elem === "object" && typeof elem.type === "string")) {
+    if (!(typeof elem === "object" && typeof elem.type === "string")) {
       //error and stop
       console.error("saveAmd event requires amd update object to be passed!");
       return;
@@ -729,10 +829,10 @@ const sendLVUpdate = (type, eventType, elem) => {
     });
 
     //reset path cache, otherwise applied field will send amendment content updates
-    pathCache = { };
+    pathCache = {};
   } else if (type === "content") {
     //don't send if not necessary
-    if (! sendLVUpdates) {
+    if (!sendLVUpdates) {
       return;
     }
 

@@ -42,7 +42,10 @@
     "chai": "^4.2.0",
     "eslint": "^5.14.1",
     "eslint-config-douira": "github:douira/eslint-config-douira",
-    "mocha": "^6.0.2"
+    "eslint-config-prettier": "^4.3.0",
+    "eslint-plugin-prettier": "^3.1.0",
+    "mocha": "^6.0.2",
+    "prettier": "^1.17.1"
   },
   "repository": {
     "type": "git",

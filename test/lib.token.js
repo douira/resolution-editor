@@ -25,12 +25,14 @@ describe("token processor", () => {
       this.retries(5);
 
       //should not equal two times
-      expect(tokenProcessor.makeToken()).to.not.equal(tokenProcessor.makeToken());
+      expect(tokenProcessor.makeToken()).to.not.equal(
+        tokenProcessor.makeToken()
+      );
     });
 
     it("should not generate the same character twice in succession", () => {
       //run many times to verify with enough confidence
-      for (let i = 0; i < 1000; i ++) {
+      for (let i = 0; i < 1000; i++) {
         //validate that it has no same character twice in succession
         expect(tokenProcessor.makeToken()).to.not.match(/(.)\1+/);
       }
@@ -41,10 +43,11 @@ describe("token processor", () => {
     it("should generate the same validation string for the same input", () => {
       //should stay the same
       let seed;
-      for (let i = 0; i < 10; i ++) {
+      for (let i = 0; i < 10; i++) {
         seed = Math.random().toString();
-        expect(tokenProcessor.getValidation(seed, 5))
-          .to.equal(tokenProcessor.getValidation(seed, 5));
+        expect(tokenProcessor.getValidation(seed, 5)).to.equal(
+          tokenProcessor.getValidation(seed, 5)
+        );
       }
     });
 
@@ -53,8 +56,9 @@ describe("token processor", () => {
       this.retries(5);
 
       //should be different
-      expect(tokenProcessor.getValidation(Math.random().toString(), 5))
-        .to.not.equal(tokenProcessor.getValidation(Math.random().toString(), 5));
+      expect(
+        tokenProcessor.getValidation(Math.random().toString(), 5)
+      ).to.not.equal(tokenProcessor.getValidation(Math.random().toString(), 5));
     });
 
     it("should invalidate bad syntax token", () => {
@@ -64,7 +68,8 @@ describe("token processor", () => {
     });
 
     it("should validate a lower case token", () => {
-      expect(tokenProcessor.check(tokenProcessor.makeToken().toLowerCase())).to.be.true;
+      expect(tokenProcessor.check(tokenProcessor.makeToken().toLowerCase())).to
+        .be.true;
     });
 
     it("should recognise a valid token as valid", () => {

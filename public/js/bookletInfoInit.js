@@ -9,7 +9,7 @@ $.fn.getResItem = function() {
 //sets the button flat state
 $.fn.btnFlatState = function(state) {
   //set class state of btn and btn-flat
-  return this.classState(state, "btn-flat").classState(! state, "btn");
+  return this.classState(state, "btn-flat").classState(!state, "btn");
 };
 
 //on document ready
@@ -42,20 +42,22 @@ $(document).ready(() => {
     eligibleList: $("#eligible-list"),
     selectedList: $("#selected-list"),
     saveMsg: $("#unsaved-changes-msg"),
-    selectedListEmptyMsg: $("#selected-list + .no-cotent-msg"),
+    selectedListEmptyMsg: $("#selected-list + .no-content-msg"),
     selectedResIconsTemplate: $("#icon-block-template .selected-icons")
   };
   elems.printBtnIcon = elems.printBtnInner.find("i");
 
   //preselect signature info elements in groups
-  const sigGroups = $("#sig-list .sig-field-group").map(function() {
-    //return object of both input fields
-    const elem = $(this);
-    return {
-      nameInput: elem.find("input.sig-name"),
-      posInput: elem.find("input.sig-pos")
-    };
-  }).get();
+  const sigGroups = $("#sig-list .sig-field-group")
+    .map(function() {
+      //return object of both input fields
+      const elem = $(this);
+      return {
+        nameInput: elem.find("input.sig-name"),
+        posInput: elem.find("input.sig-pos")
+      };
+    })
+    .get();
 
   //sets the render state and updates UI elements
   const setRenderState = newState => {
@@ -85,10 +87,11 @@ $(document).ready(() => {
         elems.printBtnInner.setHide(false);
 
         //set normal button style (action requires click)
-        elems.printBtn.btnFlatState(false)
+        elems.printBtn
+          .btnFlatState(false)
 
-        //and set url to pdf
-        .attr("href", `/rendered/booklet${bookletId}.pdf?c=${Date.now()}`);
+          //and set url to pdf
+          .attr("href", `/rendered/booklet${bookletId}.pdf?c=${Date.now()}`);
 
         //set text and icon to display rendering done
         elems.printBtnText.text("View PDF");
@@ -126,15 +129,18 @@ $(document).ready(() => {
       })),
 
       //get all selected resolutions
-      resolutions: elems.selectedList.find(".token").map(function() {
-        //map to token string
-        return $(this).text();
-      }).get()
+      resolutions: elems.selectedList
+        .find(".token")
+        .map(function() {
+          //map to token string
+          return $(this).text();
+        })
+        .get()
     };
 
-    //remove the eigth signature if it's empty
+    //remove the eighth signature if it's empty
     const lastSignature = data.signatures[7];
-    if (! (lastSignature.name.length || lastSignature.position.length)) {
+    if (!(lastSignature.name.length || lastSignature.position.length)) {
       //remove from signatures
       delete data.signatures[7];
     }
@@ -165,7 +171,8 @@ $(document).ready(() => {
         if (result) {
           return true;
         }
-      } else if (aValue !== bValue) { //compare values directly
+      } else if (aValue !== bValue) {
+        //compare values directly
         //unsaved change present
         return true;
       }
@@ -198,38 +205,46 @@ $(document).ready(() => {
     unsavedChanges = objectsDiffer(currentBookletState, savedBookletState);
 
     //set save state depending on unsaved changes present
-    setSaveState(! unsavedChanges);
+    setSaveState(!unsavedChanges);
   };
 
   //saves the current state of the booklet to the server
   const saveBooklet = () => {
     //no action if all changes already saved
-    if (! unsavedChanges) {
+    if (!unsavedChanges) {
       //return already resolved promise
-      return $.Deferred().resolve().promise();
+      return $.Deferred()
+        .resolve()
+        .promise();
     }
 
     //send data to server and return promise
-    return $.post(`/list/booklet/save/${bookletId}`, currentBookletState).done(() => {
-      //reset flag
-      unsavedChanges = false;
+    return $.post(`/list/booklet/save/${bookletId}`, currentBookletState)
+      .done(() => {
+        //reset flag
+        unsavedChanges = false;
 
-      //copy over current state to last saved state as we just saved the current one
-      savedBookletState = currentBookletState;
+        //copy over current state to last saved state as we just saved the current one
+        savedBookletState = currentBookletState;
 
-      //set display as saved
-      setSaveState(true);
+        //set display as saved
+        setSaveState(true);
 
-      //display feeback toast message
-      displayToast("Saved Booklet");
-    }).fail(() =>
-      //display error message
-      makeAlertMessage(
-        "alert-circle-outline", "Error saving Booklet", "ok",
-        "The server encountered an error while saving the booklet." +
-        " Ask IT-Management for help if this problem persists after" +
-        " reloading the page.", "pdf_gen")
-    );
+        //display feeback toast message
+        displayToast("Saved Booklet");
+      })
+      .fail(() =>
+        //display error message
+        makeAlertMessage(
+          "alert-circle-outline",
+          "Error saving Booklet",
+          "ok",
+          "The server encountered an error while saving the booklet." +
+            " Ask IT-Management for help if this problem persists after" +
+            " reloading the page.",
+          "pdf_gen"
+        )
+      );
   };
 
   //updates the display of the no content message and the collection list
@@ -251,13 +266,21 @@ $(document).ready(() => {
 
     //check if the resolution can be printed
     //must have at least one resolution and all resolutions in stage range [7, 9]
-    if (listLength && selectedRes.get().every(el => {
-      //get the stage of this resolution item
-      const stage = parseInt($(el).find(".res-stage").text(), 10);
+    if (
+      listLength &&
+      selectedRes.get().every(el => {
+        //get the stage of this resolution item
+        const stage = parseInt(
+          $(el)
+            .find(".res-stage")
+            .text(),
+          10
+        );
 
-      //when the stage matches the range
-      return stage >= 7 && stage <= 9;
-    })) {
+        //when the stage matches the range
+        return stage >= 7 && stage <= 9;
+      })
+    ) {
       //reset to renderable if still disabled
       if (renderState === "disabled") {
         setRenderState("unrendered");
@@ -270,52 +293,58 @@ $(document).ready(() => {
 
   //handle mouseenter (like hover) and click of view pdf button
   elems.printBtn
-  .on("mouseenter", () => {
-    //if no resolutions are selected
-    //if the booklet hasn't been rendered yet
-    if (renderState === "unrendered") {
-      //move into rendering stage (with spinner)
-      setRenderState("rendering");
+    .on("mouseenter", () => {
+      //if no resolutions are selected
+      //if the booklet hasn't been rendered yet
+      if (renderState === "unrendered") {
+        //move into rendering stage (with spinner)
+        setRenderState("rendering");
 
-      //trigger check for changes, change event might now have been fired on input yet
-      madeChange();
+        //trigger check for changes, change event might now have been fired on input yet
+        madeChange();
 
-      //save first
-      saveBooklet().done(() =>
-        //ask the server to render
-        $.get(`/list/booklet/renderpdf/${bookletId}`).always(() =>
-          //finished rendering, sets url
-          //on fail: maybe there is a older pdf to look at
-          setRenderState("rendered")
-        ).fail(() =>
-          //display error and and help directives
-          makeAlertMessage(
-            "alert-circle-outline", "Error generating PDF", "ok",
-            "The server encountered an error while trying to generate the requested" +
-            " PDF file. This may happen when a resolution or the booklet includes illegal" +
-            "characters or some attribute of the booklet is invalid." +
-            " Please talk to the owner of this document and ask IT-Management for help if" +
-            " this problem persists.", "pdf_gen_booklet")
-        )
-      );
-    }
-  })
-  .on("click", e => {
-    /*when the open pdf button is clicked and opened the pdf,
+        //save first
+        saveBooklet().done(() =>
+          //ask the server to render
+          $.get(`/list/booklet/renderpdf/${bookletId}`)
+            .always(() =>
+              //finished rendering, sets url
+              //on fail: maybe there is a older pdf to look at
+              setRenderState("rendered")
+            )
+            .fail(() =>
+              //display error and and help directives
+              makeAlertMessage(
+                "alert-circle-outline",
+                "Error generating PDF",
+                "ok",
+                "The server encountered an error while trying to generate the requested" +
+                  " PDF file. This may happen when a resolution or the booklet includes illegal" +
+                  "characters or some attribute of the booklet is invalid." +
+                  " Please talk to the owner of this document and ask IT-Management for help if" +
+                  " this problem persists.",
+                "pdf_gen_booklet"
+              )
+            )
+        );
+      }
+    })
+    .on("click", e => {
+      /*when the open pdf button is clicked and opened the pdf,
     go back to unrendered because one of the resolutions might have changed,
     we're not reporting resolution changes but the server does regard them internally
     when deciding whether or not to actually re-render the booklet*/
-    if (renderState === "rendered") {
-      //blur to remove focus that makes it go dark
-      elems.printBtn.blur();
+      if (renderState === "rendered") {
+        //blur to remove focus that makes it go dark
+        elems.printBtn.blur();
 
-      //move back to unrendered
-      setRenderState("unrendered");
-    } else {
-      //prevent following link, there is nothing valid to look at
-      e.preventDefault();
-    }
-  });
+        //move back to unrendered
+        setRenderState("unrendered");
+      } else {
+        //prevent following link, there is nothing valid to look at
+        e.preventDefault();
+      }
+    });
 
   //register change of any input
   $("input").on("change", madeChange);
@@ -324,73 +353,78 @@ $(document).ready(() => {
   elems.saveBtn.on("click", saveBooklet);
 
   //clicking on eligible resolution makes it become selected
-  elems.eligibleList.on("click", "li.collection-item:not(.selected-res)", function() {
-    const elem = $(this);
+  elems.eligibleList.on(
+    "click",
+    "li.collection-item:not(.selected-res)",
+    function() {
+      const elem = $(this);
 
-    //move a copy to the selected resolutions
-    elem
-      .clone()
-      .appendTo(elems.selectedList)
+      //move a copy to the selected resolutions
+      elem
+        .clone()
+        .appendTo(elems.selectedList)
 
-      //add ui icons
-      .append(elems.selectedResIconsTemplate.clone())
+        //add ui icons
+        .append(elems.selectedResIconsTemplate.clone())
 
-      //remove the icons meant for selection status display
-      .find(".eligible-icons")
-      .remove();
+        //remove the icons meant for selection status display
+        .find(".eligible-icons")
+        .remove();
 
-    //update the no content message status
-    updateListDisplay();
+      //update the no content message status
+      updateListDisplay();
 
-    //make eligible item selected
-    elem.addClass("selected-res");
+      //make eligible item selected
+      elem.addClass("selected-res");
 
-    //register a change (resolution added)
-    madeChange();
-  });
+      //register a change (resolution added)
+      madeChange();
+    }
+  );
 
   //action handlers on selected resolutions:
   //remove from list by clicking the x icon
-  elems.selectedList.on("click", ".remove-icon", function() {
-    //get item and token to unselect
-    const item = $(this).getResItem();
-    const token = item.find(".token").text();
+  elems.selectedList
+    .on("click", ".remove-icon", function() {
+      //get item and token to unselect
+      const item = $(this).getResItem();
+      const token = item.find(".token").text();
 
-    //remove resolution from list
-    item.remove();
+      //remove resolution from list
+      item.remove();
 
-    //unselect eligible resolution with the token of the removed item
-    elems.eligibleList
-      .find(`.token:contains(${token})`)
-      .getResItem()
-      .removeClass("selected-res");
+      //unselect eligible resolution with the token of the removed item
+      elems.eligibleList
+        .find(`.token:contains(${token})`)
+        .getResItem()
+        .removeClass("selected-res");
 
-    //update the list display (length changed)
-    updateListDisplay();
+      //update the list display (length changed)
+      updateListDisplay();
 
-    //register a change (resolution removed)
-    madeChange();
-  })
+      //register a change (resolution removed)
+      madeChange();
+    })
 
-  //move down list in clicking down icon
-  .on("click", ".down-icon", function() {
-    //insert below next sibling
-    const item = $(this).getResItem();
-    item.insertAfter(item.next());
+    //move down list in clicking down icon
+    .on("click", ".down-icon", function() {
+      //insert below next sibling
+      const item = $(this).getResItem();
+      item.insertAfter(item.next());
 
-    //changes were probably made
-    madeChange();
-  })
+      //changes were probably made
+      madeChange();
+    })
 
-  //move up list in clicking up icon
-  .on("click", ".up-icon", function() {
-    //insert above previous sibling
-    const item = $(this).getResItem();
-    item.insertBefore(item.prev());
+    //move up list in clicking up icon
+    .on("click", ".up-icon", function() {
+      //insert above previous sibling
+      const item = $(this).getResItem();
+      item.insertBefore(item.prev());
 
-    //changes were probably made
-    madeChange();
-  });
+      //changes were probably made
+      madeChange();
+    });
 
   //do initial check of selected resolution list
   updateListDisplay();
@@ -399,14 +433,14 @@ $(document).ready(() => {
   savedBookletState = getBookletState();
 
   //register do you want to leave message
-  $(window)
-  .on("beforeunload", e => {
+  $(window).on("beforeunload", e => {
     //halt close if flag set that there are unsaved changes
     if (unsavedChanges) {
       e.preventDefault();
 
       //try to send a message to the user, the default from the browser is fine too though
-      const msg = "You have unsaved changes that will be lost if you proceed!" +
+      const msg =
+        "You have unsaved changes that will be lost if you proceed!" +
         "Press the 'Save Changes' button to save the booklet state.";
       e.returnValue = msg;
       return msg;

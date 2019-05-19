@@ -5,7 +5,7 @@
 //time has to be passed in seconds
 const getTimeText = (time, suffix) => {
   //suffix is empty string if not given, add space if suffix present
-  suffix = suffix && ` ${suffix}` || "";
+  suffix = (suffix && ` ${suffix}`) || "";
 
   //super short
   if (time < 30) {

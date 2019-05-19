@@ -49,7 +49,7 @@ const sendJsonLV = (obj, isInit = false) => {
   //send if we have an accessToken
   if (accessToken || isInit) {
     //add access token for auth, if present, do not add to init message
-    if (accessToken && ! isInit) {
+    if (accessToken && !isInit) {
       obj.accessToken = accessToken;
     }
 
@@ -79,7 +79,7 @@ const sendJsonLV = (obj, isInit = false) => {
 //starts a websockets connection to the server
 const startWS = (isViewer, updateListener) => {
   //decrement try counter
-  connectTriesLeftLV --;
+  connectTriesLeftLV--;
 
   //determine location of ws server
   const wsUrl = `ws://${window.location.hostname}:17750/liveview`;
@@ -89,7 +89,7 @@ const startWS = (isViewer, updateListener) => {
 
   //get the token and code given in the page if not already present
   presetTokenLV = presetTokenLV || $("#token-preset").text();
-  if (! presetCodeLV) {
+  if (!presetCodeLV) {
     //get code from page and remove element
     const codeElement = $("#code-preset");
     presetCodeLV = codeElement.text();
@@ -99,11 +99,14 @@ const startWS = (isViewer, updateListener) => {
   //on finished opening connection, send token and code to register as listener
   currentWS.onopen = () => {
     //initial request for content updates
-    sendJsonLV({
-      type: isViewer ? "initViewer" : "initEditor", //request for connection of correct type
-      token: presetTokenLV, //give token and code for initial auth
-      code: presetCodeLV
-    }, true);
+    sendJsonLV(
+      {
+        type: isViewer ? "initViewer" : "initEditor", //request for connection of correct type
+        token: presetTokenLV, //give token and code for initial auth
+        code: presetCodeLV
+      },
+      true
+    );
 
     //notify custom event handling
     updateListener("connect");
@@ -126,9 +129,14 @@ const startWS = (isViewer, updateListener) => {
     } else if (connectTriesLeftLV === 0) {
       //stop now
       makeAlertMessage(
-        "alert-circle-outline", "Connection failed", "ok", "The connection to the server" +
-        " has been closed and couldn't be re-opened." +
-        " Contact IT-Management for help.", "liveview_conn_failed");
+        "alert-circle-outline",
+        "Connection failed",
+        "ok",
+        "The connection to the server" +
+          " has been closed and couldn't be re-opened." +
+          " Contact IT-Management for help.",
+        "liveview_conn_failed"
+      );
     } //-1 means no alert
   };
 
@@ -144,7 +152,7 @@ const startWS = (isViewer, updateListener) => {
     }
 
     //keep track of if we need to be sending updates
-    if (! isViewer && data.hasOwnProperty("sendUpdates")) {
+    if (!isViewer && data.hasOwnProperty("sendUpdates")) {
       //notify up new update necessity status
       updateListener("sendUpdates", data.sendUpdates);
     }
@@ -177,16 +185,21 @@ const startWS = (isViewer, updateListener) => {
         //do not log error to server, the server already has this error
 
         //check if we are allowed to retry
-        if (! data.tryAgain) {
+        if (!data.tryAgain) {
           connectTriesLeftLV = 0;
         }
 
         //alert user
         makeAlertMessage(
-          "alert-circle-outline", "Received Error", "ok", "The server has reponded with" +
-          ` an error: ${data.errorMsg}`, "liveview_client_got_server_error");
+          "alert-circle-outline",
+          "Received Error",
+          "ok",
+          `The server has responded with an error: ${data.errorMsg}`,
+          "liveview_client_got_server_error"
+        );
         break;
-      case "ackInit": { //both, get access token for auth
+      case "ackInit": {
+        //both, get access token for auth
         //get token from data, we are now ready to send and receive data
         accessToken = data.accessToken;
 
@@ -194,7 +207,9 @@ const startWS = (isViewer, updateListener) => {
         displayToast("LV: Connection established");
 
         //build notification message
-        let displayString = `LV: ${data.viewerAmount} Viewer${data.viewerAmount === 1 ? "" : "s"}`;
+        let displayString = `LV: ${data.viewerAmount} Viewer${
+          data.viewerAmount === 1 ? "" : "s"
+        }`;
         if (isViewer) {
           displayString += ` and ${data.editorPresent ? "an" : "no"} Editor`;
         }
@@ -234,8 +249,9 @@ const startWS = (isViewer, updateListener) => {
       case "saveAmd":
         //no special action, handling done by update listener
         break;
-      default: //both client types
-        log({ msg: "lv: unrecognised message type", data });
+      default:
+        //both client types
+        log({ msg: "lv: unrecognized message type", data });
         return;
     }
 
@@ -256,12 +272,17 @@ const startLiveviewWS = (isViewer, token, code, updateListener) => {
   }
 
   //check if we can do websocket
-  if (! window.WebSocket) {
+  if (!window.WebSocket) {
     //can't do it, error and exit
     makeAlertMessage(
-      "block-helper", "Unsupported Browser", "ok", "Your browser is outdated and" +
-      " doesn't support WebSocket. LiveView will not work on this browser." +
-      " Contact IT-Management for help.", "liveview_no_websocket");
+      "block-helper",
+      "Unsupported Browser",
+      "ok",
+      "Your browser is outdated and" +
+        " doesn't support WebSocket. LiveView will not work on this browser." +
+        " Contact IT-Management for help.",
+      "liveview_no_websocket"
+    );
     return;
   }
 

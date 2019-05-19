@@ -1,6 +1,7 @@
 ## Remove any boilerplate text that you aren't "replying to"/that doesn't apply to the issue you are submitting.
 
 ## Before you do anything
+
 - Does the issue you are about to submit already exist in some form? (Maybe even as a PR) You can comment on related or very similar issues to discuss if your idea has already been discussed/submitted. Duplicate issues will be closed. Search the issues and PRs before submitting a new issue.
 - Are you in the correct repository? The main Resolution Editor repo for MUNOL is douira/resolution-editor. If you want to say something about a fork or a similar project, please go there instead.
 - Read `CONTRIBUTING.md` if you want to contribute
@@ -8,6 +9,7 @@
 ## Reporting a Problem as an end-user?
 
 Please try to provide as much information as possible.
+
 - Operating System
 - Device Type (handheld, desktop etc.)
 - Browser + Version
@@ -18,6 +20,7 @@ Please try to provide as much information as possible.
 - Any other relevant information
 
 Please check before submitting an issue:
+
 - [ ] Reloaded the page
 - [ ] Reloaded both the editor and the viewer if you are using LiveView
 - [ ] You are running an up-to-date browser, check here: https://www.whatismybrowser.com/
@@ -25,7 +28,9 @@ Please check before submitting an issue:
 - [ ] There isn't any firewall or proxy that is interfering with the liveview port 17750
 
 ## Bug reports:
+
 This is for advanced users that know a little about what is going on. ;-)
+
 - A description of the issue
 - The information as requested in the previous section as necessary
 - Contrast the expected and observed behavior
@@ -40,7 +45,7 @@ This is for advanced users that know a little about what is going on. ;-)
   - [ ] Update packages to the latest/required version and do npm install
   - [ ] Delete the database (updates may have changed the way the server looks at the stored data)
 - Does the bug appear in other browsers too?
-  
+
 ## Features:
 
 **Please note by far the quickest way to get a new feature is to file a Pull Request.**

@@ -20,7 +20,8 @@ const pathSegmentMapping = {
   sub: e => e.children(".subs").children(),
   phrase: e => e.children("div.clause-content").children("span.phrase"),
   content: e => e.children("div.clause-content").children("span.main-content"),
-  contentExt: e => e.children("div.ext-content").children("span.ext-text-content")
+  contentExt: e =>
+    e.children("div.ext-content").children("span.ext-text-content")
 };
 
 //cache paths and the elements they result in
@@ -64,15 +65,18 @@ const applyDocumentChange = (resolution, path, content) => {
       //element is amendment clause
       currentElem = (amendmentElements.replacementClause.length
         ? amendmentElements.replacementClause
-        : amendmentElements.clause).children("li");
+        : amendmentElements.clause
+      ).children("li");
 
       //use new clause as object to modify
       structureObj = amendment.newClause;
     } else {
       //the current element we are searching in, start off with preamb/op seperation
-      currentElem = $(pathProp === "operative"
-        ? "#op-clauses > .op-wrapper > li"
-        : "#preamb-clauses > div.preamb-clause");
+      currentElem = $(
+        pathProp === "operative"
+          ? "#op-clauses > .op-wrapper > li"
+          : "#preamb-clauses > div.preamb-clause"
+      );
 
       //get object for first step from resolution
       structureObj = resolution.clauses[pathProp];
@@ -96,7 +100,10 @@ const applyDocumentChange = (resolution, path, content) => {
           //get element with selector
           currentElem = elementFinder(currentElem);
         }
-      } else if (typeof pathProp === "number" && pathProp < currentElem.length) {
+      } else if (
+        typeof pathProp === "number" &&
+        pathProp < currentElem.length
+      ) {
         //is a number and needs to be within length of elements
 
         //select nth element using given index
@@ -158,12 +165,12 @@ const getPunctuation = (subPresent, lastInClause, lastInDoc) =>
 //iterates over an object like forEach, but deals with the diff property
 const diffForEach = (obj, callback) => {
   //needs to have length property and above 0
-  if (! obj.length) {
+  if (!obj.length) {
     return;
   }
 
   //for all numeric of obj
-  for (let i = 0; i < obj.length; i ++) {
+  for (let i = 0; i < obj.length; i++) {
     //call callback with value at property, property itself, the whole object, diff for this prop
     callback(obj[i], i, obj, obj.diff && obj.diff[i]);
   }
@@ -180,7 +187,7 @@ const diffTypeColorMap = {
 //marks an element with diff colors according to the passed diff type
 $.fn.colorDiff = function(type) {
   //can't do anything if falsy
-  if (! type) {
+  if (!type) {
     return;
   }
 
@@ -193,11 +200,13 @@ const updateLastAmdList = () => {
   //if there are last amendments
   if (lastAmdList) {
     //unhide collection and get child elements
-    const lastAmdElems = $("#last-amd").removeClass("hide-this").children();
+    const lastAmdElems = $("#last-amd")
+      .removeClass("hide-this")
+      .children();
 
     //for the first three elements of the last amendments (we only expect/handle three)
     //TODO: make constiable through setting on server
-    for (let i = 0; i < 3; i ++) {
+    for (let i = 0; i < 3; i++) {
       //get element from list
       const amdItem = lastAmdList[i];
 
@@ -210,7 +219,9 @@ const updateLastAmdList = () => {
         amdElem.removeClass("hide-this");
 
         //set time text in display element
-        amdElem.find(".item-age").text(getTimeText((Date.now() - amdItem.timestamp) / 1000, "ago"));
+        amdElem
+          .find(".item-age")
+          .text(getTimeText((Date.now() - amdItem.timestamp) / 1000, "ago"));
 
         //get the apply status
         const applyStatus = amdItem.saveType === "apply";
@@ -219,10 +230,14 @@ const updateLastAmdList = () => {
         amdElem.find(".item-sponsor").text(amdItem.sponsor);
         amdElem.find(".item-clause").text(amdItem.clauseIndex + 1); //convert to 1-start counting
         amdElem.find(".item-action").text(amdActionTexts[amdItem.type]);
-        const itemStatus = amdElem.find(".item-status").text(applyStatus ? "Accepted" : "Rejected");
+        const itemStatus = amdElem
+          .find(".item-status")
+          .text(applyStatus ? "Accepted" : "Rejected");
 
         //apply color class to accepted/rejected text
-        itemStatus.classState(applyStatus, "green-text").classState(! applyStatus, "red-text");
+        itemStatus
+          .classState(applyStatus, "green-text")
+          .classState(!applyStatus, "red-text");
       } else {
         //nothing there, hide element
         amdElem.setHide(true);
@@ -247,7 +262,11 @@ const render = () => {
     amdContainer = $("#amd-container").clone();
 
     //if the structure object will be modified, copy
-    if (amendment.type === "add" || amendment.type === "replace" || amendment.type === "change") {
+    if (
+      amendment.type === "add" ||
+      amendment.type === "replace" ||
+      amendment.type === "change"
+    ) {
       //make a copy for rendering with amendment, these change types modify the structure
       renderStructure = $.extend(true, {}, structure);
     }
@@ -270,7 +289,10 @@ const render = () => {
 
       //splice into clauses (for replace and change)
       opClauses.splice(amendment.clauseIndex + 1, 0, amendment.newClause);
-    } else if (amendment.type === "change" || amendment.type === "noselection") {
+    } else if (
+      amendment.type === "change" ||
+      amendment.type === "noselection"
+    ) {
       //replace clause that is to be changed
       opClauses.splice(amendment.clauseIndex, 1, amendment.newClause);
     }
@@ -303,19 +325,23 @@ const render = () => {
     .removeAttr("id");
 
   //process clauses
-  [{
-    //the name in the resolution structure object
-    //and the selectors/tag names for the elements to create
-    name: "operative",
-    listSelector: "#op-clauses",
-    elementType: "li",
-    subListType: "ol"
-  }, {
-    name: "preambulatory",
-    listSelector: "#preamb-clauses",
-    elementType: "div",
-    subListType: "ul"
-  }].forEach(clauseType => { //for both types of clauses in the resolution
+  [
+    {
+      //the name in the resolution structure object
+      //and the selectors/tag names for the elements to create
+      name: "operative",
+      listSelector: "#op-clauses",
+      elementType: "li",
+      subListType: "ol"
+    },
+    {
+      name: "preambulatory",
+      listSelector: "#preamb-clauses",
+      elementType: "div",
+      subListType: "ul"
+    }
+  ].forEach(clauseType => {
+    //for both types of clauses in the resolution
     //get the dom list element and empty for new filling
     const container = $(clauseType.listSelector).empty();
 
@@ -323,264 +349,318 @@ const render = () => {
     const isOps = clauseType.name === "operative";
 
     //for all clauses of this type, get clauses from structure
-    renderStructure.resolution.clauses[clauseType.name].forEach((clauseData, index, arr) => {
-      //create a clause object by cloning the template
-      const content = clauseContentTemplate.clone();
-      const clause = $(`<${clauseType.elementType}/>`).append(content);
+    renderStructure.resolution.clauses[clauseType.name].forEach(
+      (clauseData, index, arr) => {
+        //create a clause object by cloning the template
+        const content = clauseContentTemplate.clone();
+        const clause = $(`<${clauseType.elementType}/>`).append(content);
 
-      //the element to be put into the container
-      let clauseWrapper = clause; //only clause itself for preambs
+        //the element to be put into the container
+        let clauseWrapper = clause; //only clause itself for preambs
 
-      //stick op clauses into an additional container for amendment display
-      if (isOps) {
-        //create a wrapper and add op-wrapper for layout and styling
-        clauseWrapper = $("<div/>").addClass("op-wrapper");
+        //stick op clauses into an additional container for amendment display
+        if (isOps) {
+          //create a wrapper and add op-wrapper for layout and styling
+          clauseWrapper = $("<div/>").addClass("op-wrapper");
 
-        //color green as replacement clause in amendment
-        if (clauseData.isReplacement) {
-          clauseWrapper.addClass("mark-green");
-        }
-
-        //set replacement clause (for scroll)
-        //this is always called after displayAmendment has run,
-        //so replacementClause won't be erased by it
-        if (clauseData.isReplacement) {
-          amendmentElements.replacementClause = clauseWrapper;
-        }
-
-        //encapsulate the inner clause element
-        clauseWrapper.append(clause);
-      } else {
-        //add clause to preamb div for identification
-        clauseWrapper.addClass("preamb-clause");
-      }
-
-      //add the space between the phrase and the content
-      content.prepend(" ");
-
-      //add the phrase span
-      content.prepend($("<span/>", {
-        class: "phrase",
-        text: clauseData.phrase.trim()
-      }));
-
-      //check if subclauses exist
-      const subsPresent = "sub" in clauseData;
-
-      //check if this is the last clause (can't be last if it's a preamb)
-      const lastClause = isOps && index === arr.length - 1;
-
-      //check if there is ext content for this subclause
-      const contentExtPresent = "contentExt" in clauseData;
-
-      //compute if the main content of this clause is the lat piece of it
-      let lastPieceOfClause = ! subsPresent && ! contentExtPresent;
-
-      //fill in the content data
-      content.children(".main-content").text(clauseData.content.trim());
-
-      //add punctuation
-      content.append(getPunctuation(subsPresent, isOps && ! subsPresent, lastClause));
-
-      //apply diff colors if given
-      if (clauseData.diff) {
-        //add coloring on content body
-        content.colorDiff(clauseData.diff.content);
-
-        //add coloring on phrase if there is any, otherwise mark as grey clause background
-        content.children(".phrase").colorDiff(clauseData.diff.phrase || "none");
-      }
-
-      //process subclauses if any specified in data
-      if (subsPresent) {
-        //add list for subclauses, choose type according to type of clause
-        const subList = $(`<${clauseType.subListType}/>`)
-          .addClass("subs")
-          .appendTo(clause); //add clause list to clause
-
-        //color whole sublist if specified
-        if (clauseData.diff) {
-          subList.colorDiff(clauseData.diff.sub);
-        }
-
-        //add subclauses
-        diffForEach(clauseData.sub, (subClauseData, subIndex, subArr, subDiffType) => {
-          //make the subclause
-          const subContent = clauseContentTemplate.clone();
-          const subClause = $("<li/>")
-            .append(subContent)
-            .appendTo(subList); //add subclause to its sub list
-
-          //color whole subclause with diff
-          subClause.colorDiff(subDiffType);
-
-          //if there are diff specs for the things in this subclause
-          if (subClauseData.diff) {
-            //color content
-            subContent.colorDiff(subClauseData.diff.content);
+          //color green as replacement clause in amendment
+          if (clauseData.isReplacement) {
+            clauseWrapper.addClass("mark-green");
           }
 
-          //check if a sub list is specified
-          const subsubsPresent = "sub" in subClauseData;
+          //set replacement clause (for scroll)
+          //this is always called after displayAmendment has run,
+          //so replacementClause won't be erased by it
+          if (clauseData.isReplacement) {
+            amendmentElements.replacementClause = clauseWrapper;
+          }
 
-          //check if there is ext content for this subclause
-          const subContentExtPresent = "contentExt" in subClauseData;
+          //encapsulate the inner clause element
+          clauseWrapper.append(clause);
+        } else {
+          //add clause to preamb div for identification
+          clauseWrapper.addClass("preamb-clause");
+        }
 
-          //check if this is the last subclause of this clause
-          //(not in preambs, those are always ",")
-          const lastSubClause = isOps && subIndex === subArr.length - 1;
+        //add the space between the phrase and the content
+        content.prepend(" ");
 
-          //compute if the main content of this subclause is the last piece of the clause
-          lastPieceOfClause =
-              ! subsubsPresent && ! contentExtPresent && ! subContentExtPresent && lastSubClause;
+        //add the phrase span
+        content.prepend(
+          $("<span/>", {
+            class: "phrase",
+            text: clauseData.phrase.trim()
+          })
+        );
 
-          //add data to content
-          subContent.children("span.main-content").text(subClauseData.content);
+        //check if subclauses exist
+        const subsPresent = "sub" in clauseData;
 
-          //add punctuation
-          subContent.append(getPunctuation(
-            subsubsPresent, lastPieceOfClause, lastPieceOfClause && lastClause));
+        //check if this is the last clause (can't be last if it's a preamb)
+        const lastClause = isOps && index === arr.length - 1;
 
-          //update lastPieceOfClause for subsubs
-          lastPieceOfClause = ! contentExtPresent && ! subContentExtPresent && lastSubClause;
+        //check if there is ext content for this subclause
+        const contentExtPresent = "contentExt" in clauseData;
 
-          //if there are subsubs
-          if (subsubsPresent) {
-            //add subclause list
-            const subsubList = $(`<${clauseType.subListType}/>`)
-              .addClass("subs subsubs")
-              .appendTo(subClause); //add sub list to clause
+        //compute if the main content of this clause is the lat piece of it
+        let lastPieceOfClause = !subsPresent && !contentExtPresent;
 
-            //color whole subsublist if specified
-            if (subClauseData.diff) {
-              subsubList.colorDiff(subClauseData.diff.sub);
-            }
+        //fill in the content data
+        content.children(".main-content").text(clauseData.content.trim());
 
-            //add all subsub clauses
-            diffForEach(subClauseData.sub,
-              (subsubClauseData, subsubIndex, subsubArr, subsubDiffType) => {
+        //add punctuation
+        content.append(
+          getPunctuation(subsPresent, isOps && !subsPresent, lastClause)
+        );
+
+        //apply diff colors if given
+        if (clauseData.diff) {
+          //add coloring on content body
+          content.colorDiff(clauseData.diff.content);
+
+          //add coloring on phrase if there is any, otherwise mark as grey clause background
+          content
+            .children(".phrase")
+            .colorDiff(clauseData.diff.phrase || "none");
+        }
+
+        //process subclauses if any specified in data
+        if (subsPresent) {
+          //add list for subclauses, choose type according to type of clause
+          const subList = $(`<${clauseType.subListType}/>`)
+            .addClass("subs")
+            .appendTo(clause); //add clause list to clause
+
+          //color whole sublist if specified
+          if (clauseData.diff) {
+            subList.colorDiff(clauseData.diff.sub);
+          }
+
+          //add subclauses
+          diffForEach(
+            clauseData.sub,
+            (subClauseData, subIndex, subArr, subDiffType) => {
               //make the subclause
-              const subsubContent = clauseContentTemplate.clone();
-              $("<li/>")
-                .append(subsubContent)
-                .appendTo(subsubList); //add subsubclause to its sub list
+              const subContent = clauseContentTemplate.clone();
+              const subClause = $("<li/>")
+                .append(subContent)
+                .appendTo(subList); //add subclause to its sub list
 
-              //color subsubclause
-              subsubContent.colorDiff(subsubDiffType);
+              //color whole subclause with diff
+              subClause.colorDiff(subDiffType);
+
+              //if there are diff specs for the things in this subclause
+              if (subClauseData.diff) {
+                //color content
+                subContent.colorDiff(subClauseData.diff.content);
+              }
+
+              //check if a sub list is specified
+              const subsubsPresent = "sub" in subClauseData;
+
+              //check if there is ext content for this subclause
+              const subContentExtPresent = "contentExt" in subClauseData;
+
+              //check if this is the last subclause of this clause
+              //(not in preambs, those are always ",")
+              const lastSubClause = isOps && subIndex === subArr.length - 1;
+
+              //compute if the main content of this subclause is the last piece of the clause
+              lastPieceOfClause =
+                !subsubsPresent &&
+                !contentExtPresent &&
+                !subContentExtPresent &&
+                lastSubClause;
 
               //add data to content
-              subsubContent.children("span.main-content").text(subsubClauseData.content);
+              subContent
+                .children("span.main-content")
+                .text(subClauseData.content);
 
               //add punctuation
-              const lastSubsubClause = subsubIndex === subsubArr.length - 1;
-              subsubContent.append(getPunctuation(
-                false,
-                lastSubsubClause && lastPieceOfClause,
-                lastSubsubClause && lastPieceOfClause && lastClause
-              ));
-            });
-          }
+              subContent.append(
+                getPunctuation(
+                  subsubsPresent,
+                  lastPieceOfClause,
+                  lastPieceOfClause && lastClause
+                )
+              );
 
-          //append ext content if specified
-          if (subContentExtPresent) {
-            //create another span with the text
-            const subContentExt = $("<div/>", {
-              class: "ext-content"
-            }).appendTo(subClause);
+              //update lastPieceOfClause for subsubs
+              lastPieceOfClause =
+                !contentExtPresent && !subContentExtPresent && lastSubClause;
 
-            //add text inside
-            subContentExt.append($("<span/>", {
-              class: "ext-text-content",
-              text: subClauseData.contentExt
-            }));
+              //if there are subsubs
+              if (subsubsPresent) {
+                //add subclause list
+                const subsubList = $(`<${clauseType.subListType}/>`)
+                  .addClass("subs subsubs")
+                  .appendTo(subClause); //add sub list to clause
 
-            //color ext content
-            if (subClauseData.diff) {
-              subContentExt.colorDiff(subClauseData.diff.contentExt);
+                //color whole subsublist if specified
+                if (subClauseData.diff) {
+                  subsubList.colorDiff(subClauseData.diff.sub);
+                }
+
+                //add all subsub clauses
+                diffForEach(
+                  subClauseData.sub,
+                  (
+                    subsubClauseData,
+                    subsubIndex,
+                    subsubArr,
+                    subsubDiffType
+                  ) => {
+                    //make the subclause
+                    const subsubContent = clauseContentTemplate.clone();
+                    $("<li/>")
+                      .append(subsubContent)
+                      .appendTo(subsubList); //add subsubclause to its sub list
+
+                    //color subsubclause
+                    subsubContent.colorDiff(subsubDiffType);
+
+                    //add data to content
+                    subsubContent
+                      .children("span.main-content")
+                      .text(subsubClauseData.content);
+
+                    //add punctuation
+                    const lastSubsubClause =
+                      subsubIndex === subsubArr.length - 1;
+                    subsubContent.append(
+                      getPunctuation(
+                        false,
+                        lastSubsubClause && lastPieceOfClause,
+                        lastSubsubClause && lastPieceOfClause && lastClause
+                      )
+                    );
+                  }
+                );
+              }
+
+              //append ext content if specified
+              if (subContentExtPresent) {
+                //create another span with the text
+                const subContentExt = $("<div/>", {
+                  class: "ext-content"
+                }).appendTo(subClause);
+
+                //add text inside
+                subContentExt.append(
+                  $("<span/>", {
+                    class: "ext-text-content",
+                    text: subClauseData.contentExt
+                  })
+                );
+
+                //color ext content
+                if (subClauseData.diff) {
+                  subContentExt.colorDiff(subClauseData.diff.contentExt);
+                }
+
+                //update whether or not this is the last piece of the clause
+                lastPieceOfClause = !contentExtPresent && lastSubClause;
+
+                //add extra punctuation for ext content
+                subContentExt.append(
+                  getPunctuation(
+                    false,
+                    lastPieceOfClause,
+                    lastPieceOfClause && lastClause
+                  )
+                );
+              }
             }
+          );
+        }
 
-            //update whether or not this is the last piece of the clause
-            lastPieceOfClause = ! contentExtPresent && lastSubClause;
+        //append ext content if specified
+        if (contentExtPresent) {
+          //create another span with the text
+          const contentExt = $("<div/>", {
+            class: "ext-content"
+          }).appendTo(clause);
 
-            //add extra punctuation for ext content
-            subContentExt.append(getPunctuation(
-              false, lastPieceOfClause, lastPieceOfClause && lastClause));
+          //add text inside
+          contentExt.append(
+            $("<span/>", {
+              class: "ext-text-content",
+              text: clauseData.contentExt
+            })
+          );
+
+          //color ext content
+          if (clauseData.diff) {
+            contentExt.colorDiff(clauseData.diff.contentExt);
           }
-        });
-      }
 
-      //append ext content if specified
-      if (contentExtPresent) {
-        //create another span with the text
-        const contentExt = $("<div/>", {
-          class: "ext-content"
-        }).appendTo(clause);
-
-        //add text inside
-        contentExt.append($("<span/>", {
-          class: "ext-text-content",
-          text: clauseData.contentExt
-        }));
-
-        //color ext content
-        if (clauseData.diff) {
-          contentExt.colorDiff(clauseData.diff.contentExt);
+          //add extra punctuation for ext content
+          contentExt.append(getPunctuation(false, isOps, lastClause));
         }
 
-        //add extra punctuation for ext content
-        contentExt.append(getPunctuation(false, isOps, lastClause));
-      }
+        //add the newly created clause to the document and make it visible
+        clauseWrapper.appendTo(container).setHide(false);
 
-      //add the newly created clause to the document and make it visible
-      clauseWrapper.appendTo(container).setHide(false);
+        //check if the clause is subject of the amendment
+        if (isOps && amendment && amendment.clauseIndex === index) {
+          //sets an amendment to be displayed inline in the resolution
+          //clauseWrapper must have a parent element that we can put the amendment element in
 
-      //check if the clause is subject of the amendment
-      if (isOps && amendment && amendment.clauseIndex === index) {
-        //sets an amendment to be displayed inline in the resolution
-        //clauseWrapper must have a parent element that we can put the amendment element in
+          //error and stop if no such type exists
+          let actionText;
+          if (amendment.type in amdActionTexts) {
+            //get action string for this type of amendment
+            actionText = amdActionTexts[amendment.type];
+          } else {
+            //throw on unknown amd type
+            throw Error(`no amendment action type '${amendment.type}' exists.`);
+          }
 
-        //error and stop if no such type exists
-        let actionText;
-        if (amendment.type in amdActionTexts) {
-          //get action string for this type of amendment
-          actionText = amdActionTexts[amendment.type];
-        } else {
-          //throw on unknown amd type
-          throw Error(`no amendment action type '${amendment.type}' exists.`);
+          //fill clone with info
+          amdContainer
+            .find("span.amd-sponsor")
+            .html(
+              amendment.sponsor ||
+                "<em class='grey-text text-darken-1'>Submitter</em>"
+            );
+          amdContainer.find("span.amd-action-text").text(actionText);
+
+          //convert to 1 indexed counting
+          amdContainer
+            .find("span.amd-target")
+            .text(`OC${amendment.clauseIndex + 1}`);
+
+          //set the dom elements
+          amendmentElements = {
+            amd: amdContainer,
+            clause: clauseWrapper,
+            replacementClause: $() //empty set
+          };
+
+          //prepend before the given clause element and make visible
+          amdContainer.insertBefore(clauseWrapper).setHide(false);
         }
-
-        //fill clone with info
-        amdContainer.find("span.amd-sponsor")
-          .html(amendment.sponsor || "<em class='grey-text text-darken-1'>Submitter</em>");
-        amdContainer.find("span.amd-action-text").text(actionText);
-
-        //convert to 1 indexed counting
-        amdContainer.find("span.amd-target").text(`OC${amendment.clauseIndex + 1}`);
-
-        //set the dom elements
-        amendmentElements = {
-          amd: amdContainer,
-          clause: clauseWrapper,
-          replacementClause: $() //empty set
-        };
-
-        //prepend before the given clause element and make visible
-        amdContainer.insertBefore(clauseWrapper).setHide(false);
       }
-    });
+    );
   });
 
   //if there is an amendment to display
   if (amendment) {
     //reset color classes
-    amendmentElements.amd.removeClass("mark-amd-green mark-amd-red mark-amd-grey");
+    amendmentElements.amd.removeClass(
+      "mark-amd-green mark-amd-red mark-amd-grey"
+    );
 
     //set the color of the amendment according to type
     if (amendment.type === "add") {
       amendmentElements.amd.addClass("mark-amd-green");
     } else if (amendment.type === "remove" || amendment.type === "replace") {
       amendmentElements.amd.addClass("mark-amd-red");
-    } else if (amendment.type === "change" || amendment.type === "noselection") {
+    } else if (
+      amendment.type === "change" ||
+      amendment.type === "noselection"
+    ) {
       amendmentElements.amd.addClass("mark-amd-grey");
     }
   }
@@ -601,7 +681,8 @@ const setLastAmdList = newList => {
 //start liveview as viewer on document load
 $(document).ready(() => {
   //true because we are a viewer, add function to deal with the updates it receives
-  startLiveviewWS(true, null, null, (type, data) => { //given type and update data
+  startLiveviewWS(true, null, null, (type, data) => {
+    //given type and update data
     //switch to update type
     switch (type) {
       case "editorJoined":
@@ -612,7 +693,7 @@ $(document).ready(() => {
       case "updateStructure": //whole resolution content is resent because structure has changed
       case "initStructure": //handle init the same way for now
         //prepare if not prepared yet (first)
-        if (! structure) {
+        if (!structure) {
           //show content container and hide the spinner and no-content warning
           $("#resolution").setHide(false);
           $("#spinner-wrapper").setHide(true);
@@ -633,10 +714,15 @@ $(document).ready(() => {
         if (structure) {
           //apply the change to the document
           applyDocumentChange(
-            structure.resolution, data.update.contentPath, data.update.content);
+            structure.resolution,
+            data.update.contentPath,
+            data.update.content
+          );
         } else {
           //bad, no content update should arrive before the init or updateStructure messages
-          log({ msg: "no content update should arrive before structure is received" });
+          log({
+            msg: "no content update should arrive before structure is received"
+          });
         }
         break;
       case "amendment":
@@ -644,11 +730,15 @@ $(document).ready(() => {
         amendment = data.update;
 
         //require new clause to be specified with types add and replace
-        if ((amendment.type === "add" || amendment.type === "replace") &&
-            ! amendment.newClause) {
+        if (
+          (amendment.type === "add" || amendment.type === "replace") &&
+          !amendment.newClause
+        ) {
           //error if not present
-          throw Error("a new clause has to be specified with the amendment " +
-                        "types add and replace, but was not.");
+          throw Error(
+            "a new clause has to be specified with the amendment " +
+              "types add and replace, but was not."
+          );
         }
 
         //render everything
@@ -675,7 +765,7 @@ $(document).ready(() => {
         setLastAmdList(data.update.lastAmd);
 
         //if not given
-        if (! lastAmdList) {
+        if (!lastAmdList) {
           //hide whole display list
           $("#last-amd").setHide(true);
         }

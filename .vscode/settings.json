@@ -1,0 +1,17 @@
+{
+  "formatFiles.excludePattern": "**/node_modules,**/.vscode,**/.chrome,**/log/**,**/ext/**,**/favicon/**,**/fonts/**,**/rendered/**,**/data/**,**/samples/**,**/previews/**",
+  "cSpell.words": [
+    "csquotes",
+    "dbpath",
+    "douira",
+    "elems",
+    "emph",
+    "munol",
+    "repo",
+    "rstage",
+    "uncommented",
+    "unrendered",
+    "xelatex",
+    "xxhashjs"
+  ]
+}

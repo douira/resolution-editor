@@ -29,32 +29,49 @@ router.get("/overview", (req, res) => {
   const useArchive = req.query.archive == "1"; //eslint-disable-line eqeqeq
 
   //aggregate resolutions, use archive if get flag set
-  (useArchive ? resolutionArchive : resolutions).aggregate([
-    //project to only transmit token, current stage and committee
-    { $project: {
-      token: 1,
-      stage: 1,
-      forum: "$content.resolution.address.forum",
-      sponsor: "$content.resolution.address.sponsor.main",
-      _id: 0,
-      resolutionId: 1,
-      idYear: 1
-    }},
+  (useArchive ? resolutionArchive : resolutions)
+    .aggregate([
+      //project to only transmit token, current stage and committee
+      {
+        $project: {
+          token: 1,
+          stage: 1,
+          forum: "$content.resolution.address.forum",
+          sponsor: "$content.resolution.address.sponsor.main",
+          _id: 0,
+          resolutionId: 1,
+          idYear: 1
+        }
+      },
 
-    //group into stages
-    { $group: {
-      _id: "$stage",
-      list: { $push: "$$ROOT" } //append whole object to list
-    }},
+      //group into stages
+      {
+        $group: {
+          _id: "$stage",
+          list: { $push: "$$ROOT" } //append whole object to list
+        }
+      },
 
-    //sort by stage
-    { $sort: {
-      _id: 1
-    }}
-  ]).toArray().then(items => {
-    //send data to client
-    res.render("listoverview", { items, isArchive: useArchive, comMode: false });
-  }, err => issueError(req, res, 500, "could not query resolution in overview", err));
+      //sort by stage
+      {
+        $sort: {
+          _id: 1
+        }
+      }
+    ])
+    .toArray()
+    .then(
+      items => {
+        //send data to client
+        res.render("listoverview", {
+          items,
+          isArchive: useArchive,
+          comMode: false
+        });
+      },
+      err =>
+        issueError(req, res, 500, "could not query resolution in overview", err)
+    );
 });
 
 //list of resolutions for chairs requires chair access
@@ -65,7 +82,9 @@ router.use("/forum", (req, res, next) =>
 //GET overview of forums
 router.get("/forum", (req, res) =>
   //forum select interface, display possible forums
-  extDataPromise.then(extData => res.render("forumselect", { forums: extData.forums }))
+  extDataPromise.then(extData =>
+    res.render("forumselect", { forums: extData.forums })
+  )
 );
 
 //GET overview of forum resolutions
@@ -78,40 +97,53 @@ router.get("/forum/:forumNameId", (req, res) => {
     //check that the given forums exists
     if (forumName in extData.forums) {
       //get all resolutions of that forum
-      resolutions.aggregate([
-        //find resolutions of this forum
-        { $match: {
-          "content.resolution.address.forum": forumName
-        }},
+      resolutions
+        .aggregate([
+          //find resolutions of this forum
+          {
+            $match: {
+              "content.resolution.address.forum": forumName
+            }
+          },
 
-        //project to only transmit necessary data
-        { $project: {
-          token: 1,
-          stage: 1,
-          forum: "$content.resolution.address.forum",
-          sponsor: "$content.resolution.address.sponsor.main",
-          _id: 0,
-          resolutionId: 1,
-          idYear: 1
-        }},
+          //project to only transmit necessary data
+          {
+            $project: {
+              token: 1,
+              stage: 1,
+              forum: "$content.resolution.address.forum",
+              sponsor: "$content.resolution.address.sponsor.main",
+              _id: 0,
+              resolutionId: 1,
+              idYear: 1
+            }
+          },
 
-        //group into stages
-        { $group: {
-          _id: "$stage",
-          list: { $push: "$$ROOT" } //append whole object to list
-        }},
+          //group into stages
+          {
+            $group: {
+              _id: "$stage",
+              list: { $push: "$$ROOT" } //append whole object to list
+            }
+          },
 
-        //sort by stage
-        { $sort: {
-          _id: 1
-        }}
-      ]).toArray().then(items => {
-        //display listoverview with resolutions
-        res.render("listoverview", { items, forumMode: true, forumName });
-      });
+          //sort by stage
+          {
+            $sort: {
+              _id: 1
+            }
+          }
+        ])
+        .toArray()
+        .then(items => {
+          //display listoverview with resolutions
+          res.render("listoverview", { items, forumMode: true, forumName });
+        });
     } else {
       //bad, make an error
-      issueError(req, res, 400, "Invalid forum name given", { badForumName: forumName });
+      issueError(req, res, 400, "Invalid forum name given", {
+        badForumName: forumName
+      });
     }
   });
 });
@@ -122,7 +154,8 @@ router.use("/codes", (req, res, next) =>
 );
 
 //gets the current insert group counter
-const getInsertGroupCounter = () => metadata.findOne({ _id: "codeInsertGroupCounter" });
+const getInsertGroupCounter = () =>
+  metadata.findOne({ _id: "codeInsertGroupCounter" });
 
 //GET display overview of all codes and associated information
 router.get("/codes", (req, res) =>
@@ -131,48 +164,71 @@ router.get("/codes", (req, res) =>
     getInsertGroupCounter(),
 
     //aggregate codes from access collection of codes
-    access.aggregate([
-      //sort by code alphabetically
-      { $sort: {
-        code: 1
-      }},
+    access
+      .aggregate([
+        //sort by code alphabetically
+        {
+          $sort: {
+            code: 1
+          }
+        },
 
-      //group into levels
-      { $group: {
-        _id: "$level",
-        list: { $push: "$$ROOT" } //append whole object to list
-      }},
+        //group into levels
+        {
+          $group: {
+            _id: "$level",
+            list: { $push: "$$ROOT" } //append whole object to list
+          }
+        },
 
-      //sort by group level
-      { $sort: {
-        _id: 1
-      }}
-    ]).toArray()
-  ]).then(results => {
-    //codes are in the second result
-    const codes = results[1];
-  
-    //check for there to be any group insert id
-    let latestCodes;
-    if (results[0]) {
-      //the first result is the current insert group id
-      const insertGroupId = results[0].value;
+        //sort by group level
+        {
+          $sort: {
+            _id: 1
+          }
+        }
+      ])
+      .toArray()
+  ]).then(
+    results => {
+      //codes are in the second result
+      const codes = results[1];
 
-      //list of the recently added codes, they have the current insert group counter
-      latestCodes = codes.reduce(
-        //append all codes thatmatch the current insert group index
-        (acc, group) => acc.concat(
-          group.list.filter(codeObj => codeObj.insertGroupId === insertGroupId)), []);
-    }
-    
-    //display code overview page
-    res.render("codeoverview", {
-      codes,
-      latestCodes,
-      sessionCode: req.session.code
-    });
-  }, err => issueError(req, res, 500,
-    "could not query codes or insert group id for overview", err))
+      //check for there to be any group insert id
+      let latestCodes;
+      if (results[0]) {
+        //the first result is the current insert group id
+        const insertGroupId = results[0].value;
+
+        //list of the recently added codes, they have the current insert group counter
+        latestCodes = codes.reduce(
+          //append all codes thatmatch the current insert group index
+          (acc, group) =>
+            acc.concat(
+              group.list.filter(
+                codeObj => codeObj.insertGroupId === insertGroupId
+              )
+            ),
+          []
+        );
+      }
+
+      //display code overview page
+      res.render("codeoverview", {
+        codes,
+        latestCodes,
+        sessionCode: req.session.code
+      });
+    },
+    err =>
+      issueError(
+        req,
+        res,
+        500,
+        "could not query codes or insert group id for overview",
+        err
+      )
+  )
 );
 
 //GET print codes displays items in a plaintext table view that can be easily printed
@@ -186,14 +242,21 @@ router.get("/codes/print/:group", (req, res, next) => {
   //for the all group, prepare query for all codes
   if (printGroupType === "all") {
     //query all codes
-    query = Promise.resolve({ });
+    query = Promise.resolve({});
   } else if (printGroupType === "latest") {
     //get insert group counter
     query = getInsertGroupCounter().then(
       counterResult => ({
         insertGroupId: counterResult.value
       }),
-      err => issueError(req, res, 500, "could not query insert group id for code print table", err)
+      err =>
+        issueError(
+          req,
+          res,
+          500,
+          "could not query insert group id for code print table",
+          err
+        )
     );
   } else if (validateAccessLevel(printGroupType)) {
     //query for codes with this access level
@@ -209,13 +272,26 @@ router.get("/codes/print/:group", (req, res, next) => {
   //resolve promise for query
   query.then(
     //query codes
-    query => access.find(query, { sort: ["level", "code"] }).toArray().then(
-      //render result
-      result => res.render("codetable", {
-        codes: result,
-        groupType: printGroupType
-      }),
-      err => issueError(req, res, 500, "could not query codes for print table", err))
+    query =>
+      access
+        .find(query, { sort: ["level", "code"] })
+        .toArray()
+        .then(
+          //render result
+          result =>
+            res.render("codetable", {
+              codes: result,
+              groupType: printGroupType
+            }),
+          err =>
+            issueError(
+              req,
+              res,
+              500,
+              "could not query codes for print table",
+              err
+            )
+        )
   );
 });
 
@@ -229,13 +305,18 @@ router.post("/codes/:action", (req, res) => {
   //for revoke and change action type
   if (req.params.action === "change" || req.params.action === "revoke") {
     //get the list of codes to process
-    if (req.body && req.body.codes && req.body.codes instanceof Array && req.body.codes.length) {
+    if (
+      req.body &&
+      req.body.codes &&
+      req.body.codes instanceof Array &&
+      req.body.codes.length
+    ) {
       //remove the current session code
       const sessionCode = req.session.code;
       const codes = req.body.codes.filter(code => code !== sessionCode);
 
       //if there are codes
-      if (! codes.length) {
+      if (!codes.length) {
         //send error
         issueError(req, res, 404, "no valid codes given");
         return;
@@ -244,22 +325,39 @@ router.post("/codes/:action", (req, res) => {
       //for specified action
       if (req.params.action === "revoke") {
         //remove all codes that were given
-        access.deleteMany({ code: { $in: codes }}).then(() => res.send("ok"), err => {
-          issueError(req, res, 500, "couldn't remove specified codes", err);
-        });
-      } else { //change action
+        access.deleteMany({ code: { $in: codes } }).then(
+          () => res.send("ok"),
+          err => {
+            issueError(req, res, 500, "couldn't remove specified codes", err);
+          }
+        );
+      } else {
+        //change action
         //require correct new level to be set
         const setLevel = req.body.level;
         if (validateAccessLevel(setLevel)) {
           //change level for all codes
-          access.updateMany(
-            { code: { $in: codes }},
-            { $set: { level: setLevel }}
-          ).then(() => res.send("ok"), err => {
-            issueError(req, res, 500, `couldn't change specified codes to ${setLevel}`, err);
-          });
+          access
+            .updateMany({ code: { $in: codes } }, { $set: { level: setLevel } })
+            .then(
+              () => res.send("ok"),
+              err => {
+                issueError(
+                  req,
+                  res,
+                  500,
+                  `couldn't change specified codes to ${setLevel}`,
+                  err
+                );
+              }
+            );
         } else {
-          issueError(req, res, 400, `invalid code level set ${setLevel} for change op`);
+          issueError(
+            req,
+            res,
+            400,
+            `invalid code level set ${setLevel} for change op`
+          );
         }
       }
     } else {
@@ -271,9 +369,14 @@ router.post("/codes/:action", (req, res) => {
     if (req.body) {
       //require valid level to be specified
       const useLevel = req.body.accessLevel;
-      if (! validateAccessLevel(useLevel)) {
+      if (!validateAccessLevel(useLevel)) {
         //complain and stop
-        issueError(req, res, 400, `invalid code level set ${useLevel} for new codes op`);
+        issueError(
+          req,
+          res,
+          400,
+          `invalid code level set ${useLevel} for new codes op`
+        );
         return;
       }
 
@@ -293,98 +396,126 @@ router.post("/codes/:action", (req, res) => {
       const amountSpecified = parseInt(req.body.amount, 10);
 
       //normalize to number and cap at max value
-      const codeAmount = Math.min(100, Math.max(codesArr.length, amountSpecified || 0));
+      const codeAmount = Math.min(
+        100,
+        Math.max(codesArr.length, amountSpecified || 0)
+      );
 
       //fill with empty objects until amount reached
-      for (let i = codesArr.length; i < codeAmount; i ++) {
+      for (let i = codesArr.length; i < codeAmount; i++) {
         //add empty
-        codesArr[i] = { };
+        codesArr[i] = {};
       }
 
       //get the current value of the insertion group counter
-      metadata.findOneAndUpdate({
-        _id: "codeInsertGroupCounter"
-      }, {
-        $inc: { value: 1 }
-      }, { returnOriginal: false, upsert: true }).then(result => Promise.resolve({
-        //pass gotten counter value to next step
-        remainingCodes: codesArr,
-        depth: 0, //init with depth 0
-        insertGroupId: result.value.value
-      })).then(function handleRemaining(opts) { //insert codes until all codes are inserted
-        //remaining codes are in opts
-        const remainingCodes = opts.remainingCodes;
+      metadata
+        .findOneAndUpdate(
+          {
+            _id: "codeInsertGroupCounter"
+          },
+          {
+            $inc: { value: 1 }
+          },
+          { returnOriginal: false, upsert: true }
+        )
+        .then(result =>
+          Promise.resolve({
+            //pass gotten counter value to next step
+            remainingCodes: codesArr,
+            depth: 0, //init with depth 0
+            insertGroupId: result.value.value
+          })
+        )
+        .then(
+          function handleRemaining(opts) {
+            //insert codes until all codes are inserted
+            //remaining codes are in opts
+            const remainingCodes = opts.remainingCodes;
 
-        //object of codes to be generated
-        const codesObj = {};
+            //object of codes to be generated
+            const codesObj = {};
 
-        //generate codes for entries
-        for (let i = 0; i < remainingCodes.length; i ++) {
-          //generate new codes until it hasn't been generated yet
-          let newCode;
-          do {
-            //generate random unverified code for this entry
-            newCode = tokenProcessor.makeCode();
-          } while (codesObj[newCode]);
+            //generate codes for entries
+            for (let i = 0; i < remainingCodes.length; i++) {
+              //generate new codes until it hasn't been generated yet
+              let newCode;
+              do {
+                //generate random unverified code for this entry
+                newCode = tokenProcessor.makeCode();
+              } while (codesObj[newCode]);
 
-          //code holding object for this index
-          const currentCodeObj = remainingCodes[i];
+              //code holding object for this index
+              const currentCodeObj = remainingCodes[i];
 
-          //add new unique code to object with name
-          codesObj[newCode] = currentCodeObj.name || true;
+              //add new unique code to object with name
+              codesObj[newCode] = currentCodeObj.name || true;
 
-          //add code to code object
-          currentCodeObj.code = newCode;
+              //add code to code object
+              currentCodeObj.code = newCode;
 
-          //set level to that specified and set recent insert counter value
-          currentCodeObj.level = useLevel;
-          currentCodeObj.insertGroupId = opts.insertGroupId;
-        }
+              //set level to that specified and set recent insert counter value
+              currentCodeObj.level = useLevel;
+              currentCodeObj.insertGroupId = opts.insertGroupId;
+            }
 
-        //insert all into collection
-        access.insertMany(remainingCodes, {
-          //continue inserting if one fails
-          ordered: false
-        }).then(() => {
-          //no duplicate codes need to be handled, send ok
-          res.send("ok");
-        }, err => {
-          //stop at maximum depth, in case of code space exhaustion
-          if (opts.depth > maximumCodeGenerationTries) {
-            issueError(req, res, 500, "most likely no codes left to give out, too many tries", err);
-            return;
-          }
+            //insert all into collection
+            access
+              .insertMany(remainingCodes, {
+                //continue inserting if one fails
+                ordered: false
+              })
+              .then(
+                () => {
+                  //no duplicate codes need to be handled, send ok
+                  res.send("ok");
+                },
+                err => {
+                  //stop at maximum depth, in case of code space exhaustion
+                  if (opts.depth > maximumCodeGenerationTries) {
+                    issueError(
+                      req,
+                      res,
+                      500,
+                      "most likely no codes left to give out, too many tries",
+                      err
+                    );
+                    return;
+                  }
 
-          //get the write errors, if the error has .writeErrors there is an array
-          //otherwise the given error is an write error
-          const writeErrors = err.writeErrors ? err.writeErrors : [err];
+                  //get the write errors, if the error has .writeErrors there is an array
+                  //otherwise the given error is an write error
+                  const writeErrors = err.writeErrors ? err.writeErrors : [err];
 
-          //construct an array of remaining codes (some of which may have name properties)
-          //and handle as remaining
-          handleRemaining({
-            remainingCodes: writeErrors.map(err => {
-              //get the not inserted object
-              const doc = err.getOperation();
+                  //construct an array of remaining codes (some of which may have name properties)
+                  //and handle as remaining
+                  handleRemaining({
+                    remainingCodes: writeErrors.map(err => {
+                      //get the not inserted object
+                      const doc = err.getOperation();
 
-              //construct object with level
-              const newCodeObj = {
-                level: doc.level
-              };
+                      //construct object with level
+                      const newCodeObj = {
+                        level: doc.level
+                      };
 
-              //add name if there is one
-              if (doc.name) {
-                newCodeObj.name = doc.name;
-              }
+                      //add name if there is one
+                      if (doc.name) {
+                        newCodeObj.name = doc.name;
+                      }
 
-              //return to be inserted again with new code
-              return newCodeObj;
-            }),
+                      //return to be inserted again with new code
+                      return newCodeObj;
+                    }),
 
-            //increment recursion depth
-            depth: opts.depth + 1
-          });
-        });
-      }, err => issueError(req, res, 500, "error while inserting new codes", err));
+                    //increment recursion depth
+                    depth: opts.depth + 1
+                  });
+                }
+              );
+          },
+          err =>
+            issueError(req, res, 500, "error while inserting new codes", err)
+        );
     }
   } else {
     //error for unhandled (invalid) action type
@@ -394,7 +525,8 @@ router.post("/codes/:action", (req, res) => {
 
 //print queue needs SC or FC access
 router.use("/print", (req, res, next) =>
-  routingUtil.requireSession("printqueue", req, res, () => next()));
+  routingUtil.requireSession("printqueue", req, res, () => next())
+);
 
 //GET secreteriat print queue page, gets code with post
 router.get("/print", (req, res) => res.render("printqueue"));
@@ -432,36 +564,45 @@ const mapListItems = (items, stageHistoryIndex, forums) =>
 //POST return list of items to be printed
 router.get("/print/getitems", (req, res) =>
   //query resolutions in stage 4 that are advanceable (and thereby non-static)
-  Promise.all([resolutions.find({
-    stage: 4,
-    $nor: [
-      { attributes: "noadvance" },
-      { attributes: "static" }
-    ]
-  }).project({
-    //project to only transmit necessary data, basically only want meta data
-    token: 1,
-    stageHistory: 1,
-    resolutionId: 1,
-    idYear: 1,
-    "content.resolution.address": 1,
-    _id: 0,
-    unrenderedChanges: 1,
-    pageAmount: 1
-  }).sort({
-    //sort by time in stage 4 (most necessary first), index 4 becase 0 is also a stage
-    "stageHistory.4": -1
-  }).toArray().catch(
-    err => issueError(req, res, 500, "could not query print queue items", err)
-  ), extDataPromise]).then(results => {
-    //send data to client, rewrite and address
-    res.send(mapListItems(results[0], 4, results[1].forums));
-  }, () => issueError(req, res, 500, "could not prepare print queue items"))
+  Promise.all([
+    resolutions
+      .find({
+        stage: 4,
+        $nor: [{ attributes: "noadvance" }, { attributes: "static" }]
+      })
+      .project({
+        //project to only transmit necessary data, basically only want meta data
+        token: 1,
+        stageHistory: 1,
+        resolutionId: 1,
+        idYear: 1,
+        "content.resolution.address": 1,
+        _id: 0,
+        unrenderedChanges: 1,
+        pageAmount: 1
+      })
+      .sort({
+        //sort by time in stage 4 (most necessary first), index 4 becase 0 is also a stage
+        "stageHistory.4": -1
+      })
+      .toArray()
+      .catch(err =>
+        issueError(req, res, 500, "could not query print queue items", err)
+      ),
+    extDataPromise
+  ]).then(
+    results => {
+      //send data to client, rewrite and address
+      res.send(mapListItems(results[0], 4, results[1].forums));
+    },
+    () => issueError(req, res, 500, "could not prepare print queue items")
+  )
 );
 
 //uses session auth for FC queue
 router.use("/fcqueue", (req, res, next) =>
-  routingUtil.requireSession("fcqueue", req, res, () => next()));
+  routingUtil.requireSession("fcqueue", req, res, () => next())
+);
 
 //GET fc work queue display
 router.get("/fcqueue", (req, res) => res.render("fcqueue"));
@@ -469,68 +610,79 @@ router.get("/fcqueue", (req, res) => res.render("fcqueue"));
 //GET fc work queue data
 router.get("/fcqueue/getitems", (req, res) =>
   //query resolutions that are in stage 3 and can be advanced
-  resolutions.find({
-    stage: 3,
-    $nor: [
-      { attributes: "noadvance" },
-      { attributes: "static" }
-    ]
-  }).project({
-    //only need some data
-    token: 1,
-    stageHistory: 1, //id and year are assigned with advance to stage 4
-    "content.resolution.address": 1,
-    _id: 0
-  }).sort({
-    //sort by time in stage 3, most necessary first
-    "stageHistory.3": -1
-  })
-  //send data to client, rewrite stageHistory and address
-  .toArray().then(items => res.send(mapListItems(items, 3)),
-  err => issueError(req, res, 500, "could not query fc work queue items", err))
+  resolutions
+    .find({
+      stage: 3,
+      $nor: [{ attributes: "noadvance" }, { attributes: "static" }]
+    })
+    .project({
+      //only need some data
+      token: 1,
+      stageHistory: 1, //id and year are assigned with advance to stage 4
+      "content.resolution.address": 1,
+      _id: 0
+    })
+    .sort({
+      //sort by time in stage 3, most necessary first
+      "stageHistory.3": -1
+    })
+    //send data to client, rewrite stageHistory and address
+    .toArray()
+    .then(
+      items => res.send(mapListItems(items, 3)),
+      err =>
+        issueError(req, res, 500, "could not query fc work queue items", err)
+    )
 );
 
 //booklet actions require at least SG permission (booklet perm match mode)
 router.use("/booklet", (req, res, next) =>
-  routingUtil.requireSession("semi-admin", req, res, () => next()));
+  routingUtil.requireSession("semi-admin", req, res, () => next())
+);
 
 //booklet creation and selection page
 router.get("/booklet", (req, res) => {
   //parse year or take current as default
-  const year = req.query && parseInt(req.query.year, 10) || new Date().getFullYear();
+  const year =
+    (req.query && parseInt(req.query.year, 10)) || new Date().getFullYear();
 
   //query all booklets of the current year
-  booklets.find({
-    //use current year as default
-    year
-  }).toArray().then(
-    //display booklet select page with all found booklets
-    booklets => {
-      res.render("bookletselect", { booklets, viewYear: year });
-    },
-    err => issueError(req, res, 500, "could not query booklets", err)
-  );
+  booklets
+    .find({
+      //use current year as default
+      year
+    })
+    .toArray()
+    .then(
+      //display booklet select page with all found booklets
+      booklets => {
+        res.render("bookletselect", { booklets, viewYear: year });
+      },
+      err => issueError(req, res, 500, "could not query booklets", err)
+    );
 });
 
 //requires and validates the given booklet id
-router.use(["/booklet/edit/:id", "/booklet/renderpdf/:id", "/booklet/save/:id"],
+router.use(
+  ["/booklet/edit/:id", "/booklet/renderpdf/:id", "/booklet/save/:id"],
   (req, res, next) => {
-  //get id to query booklet with
-  const bookletId = parseInt(req.params.id, 10);
+    //get id to query booklet with
+    const bookletId = parseInt(req.params.id, 10);
 
-  //must be non-negative int
-  if (isNaN(bookletId) || bookletId < 0) {
-    //error and stop processing
-    issueError(req, res, 400, "booklet id given is invalid");
-    return;
+    //must be non-negative int
+    if (isNaN(bookletId) || bookletId < 0) {
+      //error and stop processing
+      issueError(req, res, 400, "booklet id given is invalid");
+      return;
+    }
+
+    //attach validated booklet id
+    req.bookletId = bookletId;
+
+    //deal with actualy request
+    next();
   }
-
-  //attach validated booklet id
-  req.bookletId = bookletId;
-
-  //deal with actualy request
-  next();
-});
+);
 
 //the plenary ids and names
 const plenaryNames = ["none", "GA", "ECOSOC"];
@@ -551,178 +703,271 @@ const eligibleResolutionQuery = booklet => ({
 //edit and info page for a particular booklet
 router.get("/booklet/edit/:id", (req, res) => {
   //get the current booklet
-  booklets.findOne({
-    _id: req.bookletId
-  }).then(booklet => {
-    //make sure we found a booklet
-    if (! booklet) {
-      //error and stop
-      issueError(req, res, 400, `(renderpdf) no booklet exists with id ${req.bookletId}`);
-      return;
-    }
-
-    //find eligible and selected resolutions
-    resolutions.find(
-      {
-        $or: [
-          //token is one of the ones specified in the booklet
-          { token: { $in: booklet.resolutions }},
-
-          //or a eligible resolution
-          eligibleResolutionQuery(booklet)
-        ]
-      }
-    ).sort({
-      //sort by committee, level, token
-      "content.resolution.address.forum": 1,
-      stage: 1,
-      token: 1
-    }).toArray().then(eligibleResolutions => {
-      //for all tokens specified in the booklet
-      booklet.resolutions = booklet.resolutions.map(token => {
-        //find the corresponding eligible resolution
-        const eligibleRes = eligibleResolutions.find(res => res.token === token);
-
-        //mark eligible resolution as selected (because it is present in booklet)
-        eligibleRes.selected = true;
-
-        //return eligible resolution for display
-        return eligibleRes;
-      });
-
-      //filter eligibleResolutions to remove selected but not anymore eligible resolutions
-      eligibleResolutions = eligibleResolutions.filter(res => res.stage <= 9);
-
+  booklets
+    .findOne({
+      _id: req.bookletId
+    })
+    .then(booklet => {
       //make sure we found a booklet
-      if (! booklet) {
+      if (!booklet) {
         //error and stop
-        issueError(req, res, 400, `(edit) no booklet exists with id ${req.bookletId}`);
+        issueError(
+          req,
+          res,
+          400,
+          `(renderpdf) no booklet exists with id ${req.bookletId}`
+        );
         return;
       }
 
-      //render info and edit page for booklet
-      res.render("bookletinfo", {
-        booklet,
-        resolutions: eligibleResolutions
-      });
-    },
-    err => issueError(req, res, 500, `could not query booklet with id ${req.bookletId
-      } or query eligible resolutions for booklet`, err)
-    );
-  });
+      //find eligible and selected resolutions
+      resolutions
+        .find({
+          $or: [
+            //token is one of the ones specified in the booklet
+            { token: { $in: booklet.resolutions } },
+
+            //or a eligible resolution
+            eligibleResolutionQuery(booklet)
+          ]
+        })
+        .sort({
+          //sort by committee, level, token
+          "content.resolution.address.forum": 1,
+          stage: 1,
+          token: 1
+        })
+        .toArray()
+        .then(
+          eligibleResolutions => {
+            //for all tokens specified in the booklet
+            booklet.resolutions = booklet.resolutions.map(token => {
+              //find the corresponding eligible resolution
+              const eligibleRes = eligibleResolutions.find(
+                res => res.token === token
+              );
+
+              //mark eligible resolution as selected (because it is present in booklet)
+              eligibleRes.selected = true;
+
+              //return eligible resolution for display
+              return eligibleRes;
+            });
+
+            //filter eligibleResolutions to remove selected but not anymore eligible resolutions
+            eligibleResolutions = eligibleResolutions.filter(
+              res => res.stage <= 9
+            );
+
+            //make sure we found a booklet
+            if (!booklet) {
+              //error and stop
+              issueError(
+                req,
+                res,
+                400,
+                `(edit) no booklet exists with id ${req.bookletId}`
+              );
+              return;
+            }
+
+            //render info and edit page for booklet
+            res.render("bookletinfo", {
+              booklet,
+              resolutions: eligibleResolutions
+            });
+          },
+          err =>
+            issueError(
+              req,
+              res,
+              500,
+              `could not query booklet with id ${
+                req.bookletId
+              } or query eligible resolutions for booklet`,
+              err
+            )
+        );
+    });
 });
 
 //renders the booklet
 router.get("/booklet/renderpdf/:id", (req, res) =>
   //get the current booklet
-  booklets.findOne({
-    _id: req.bookletId
-  }).then(booklet => {
-    //make sure we found a booklet
-    if (! booklet) {
-      //error and stop
-      issueError(req, res, 400, `(renderpdf) no booklet exists with id ${req.bookletId}`);
-      return;
-    }
-
-    //booklet must contain at least one resolution
-    if (! booklet.resolutions.length) {
-      //error and stop
-      issueError(req, res, 400,
-        `will not render booklet without any resolutions, id ${req.bookletId}`);
-      return;
-    }
-
-    //query resolutions of this booklet
-    resolutions.find(
-      //extend eligible resolution query,
-      //all resolutions we render should be valid booklet resolutions
-      Object.assign({
-        //token must be one of the ones specified in the booklet
-        token: { $in: booklet.resolutions }
-      }, eligibleResolutionQuery(booklet))
-    ).toArray().then(
-      results => {
-        //there must be the correct amount of resolutions
-        if (results.length !== booklet.resolutions.length) {
-          //error and stop
-          issueError(req, res, 500,
-            `amount of found and specified resolutions in booklet not equal, id ${req.bookletId}`);
-          return;
-        }
-
-        //all resolutions of booklet must be at least in stage 7 and at most in stage 9
-        if (! results.every(r => r.stage >= 7 && r.stage <= 9)) {
-          //error and stop
-          issueError(req, res, 400,
-            `will not render booklet with resolutions outside of stage range [7, 9], id ${
-            req.bookletId}`);
-          return;
-        }
-
-        //make url to output pdf
-        const pdfUrl = `/rendered/booklet${booklet._id}.pdf?c=${Date.now()}`;
-
-        //simply return url without rendering if the booklet
-        //and all resolutions don't have unrendered changes
-        if (! (booklet.unrenderedChanges || results.some(res => res.unrenderedChanges))) {
-          //respond with url and stop
-          res.send(pdfUrl);
-          return;
-        }
-
-        //index of found resolutions
-        const foundRes = { };
-
-        //add all found resolutions to index
-        results.forEach(res => foundRes[res.token] = res);
-
-        //replace the resolution tokens with the actual resolutions
-        booklet.resolutions = booklet.resolutions.map(token => foundRes[token]);
-
-        //error if not all were found
-        if (! booklet.resolutions.every(res => typeof res === "object" && res.token)) {
-          //error and stop
-          issueError(req, res, 500,
-            `did not find all resolutions for booklet with id ${req.bookletId}`);
-          return;
-        }
-
-        //render booklet
-        generatePdf(booklet, "booklet").then(
-          //when done rendering
-          pageAmount => {
-            //send url to confirm render
-            res.send(pdfUrl);
-
-            //check if the page amount could be determined
-            if (pageAmount) {
-              //save number of pages in booklet and unset unrendered changes
-              booklets.updateOne({ _id: booklet._id }, {
-                $set: {
-                  pageAmount,
-                  unrenderedChanges: false
-                }
-              }).catch( //not interested in result
-                err => logger.error("could not update booklet page amount", { stack: err.stack })
-              );
-            }
-          },
-
-          //print and notify of error
-          err => issueError(req, res, 500, "render problem", err)
+  booklets
+    .findOne({
+      _id: req.bookletId
+    })
+    .then(booklet => {
+      //make sure we found a booklet
+      if (!booklet) {
+        //error and stop
+        issueError(
+          req,
+          res,
+          400,
+          `(renderpdf) no booklet exists with id ${req.bookletId}`
         );
-      },
-      err => issueError(req, res, 500, `could not query resolutions in booklet with id ${
-        req.bookletId}`, err)
-    );
-  })
+        return;
+      }
+
+      //booklet must contain at least one resolution
+      if (!booklet.resolutions.length) {
+        //error and stop
+        issueError(
+          req,
+          res,
+          400,
+          `will not render booklet without any resolutions, id ${req.bookletId}`
+        );
+        return;
+      }
+
+      //query resolutions of this booklet
+      resolutions
+        .find(
+          //extend eligible resolution query,
+          //all resolutions we render should be valid booklet resolutions
+          Object.assign(
+            {
+              //token must be one of the ones specified in the booklet
+              token: { $in: booklet.resolutions }
+            },
+            eligibleResolutionQuery(booklet)
+          )
+        )
+        .toArray()
+        .then(
+          results => {
+            //there must be the correct amount of resolutions
+            if (results.length !== booklet.resolutions.length) {
+              //error and stop
+              issueError(
+                req,
+                res,
+                500,
+                `amount of found and specified resolutions in booklet not equal, id ${
+                  req.bookletId
+                }`
+              );
+              return;
+            }
+
+            //all resolutions of booklet must be at least in stage 7 and at most in stage 9
+            if (!results.every(r => r.stage >= 7 && r.stage <= 9)) {
+              //error and stop
+              issueError(
+                req,
+                res,
+                400,
+                `will not render booklet with resolutions outside of stage range [7, 9], id ${
+                  req.bookletId
+                }`
+              );
+              return;
+            }
+
+            //make url to output pdf
+            const pdfUrl = `/rendered/booklet${
+              booklet._id
+            }.pdf?c=${Date.now()}`;
+
+            //simply return url without rendering if the booklet
+            //and all resolutions don't have unrendered changes
+            if (
+              !(
+                booklet.unrenderedChanges ||
+                results.some(res => res.unrenderedChanges)
+              )
+            ) {
+              //respond with url and stop
+              res.send(pdfUrl);
+              return;
+            }
+
+            //index of found resolutions
+            const foundRes = {};
+
+            //add all found resolutions to index
+            results.forEach(res => (foundRes[res.token] = res));
+
+            //replace the resolution tokens with the actual resolutions
+            booklet.resolutions = booklet.resolutions.map(
+              token => foundRes[token]
+            );
+
+            //error if not all were found
+            if (
+              !booklet.resolutions.every(
+                res => typeof res === "object" && res.token
+              )
+            ) {
+              //error and stop
+              issueError(
+                req,
+                res,
+                500,
+                `did not find all resolutions for booklet with id ${
+                  req.bookletId
+                }`
+              );
+              return;
+            }
+
+            //render booklet
+            generatePdf(booklet, "booklet").then(
+              //when done rendering
+              pageAmount => {
+                //send url to confirm render
+                res.send(pdfUrl);
+
+                //check if the page amount could be determined
+                if (pageAmount) {
+                  //save number of pages in booklet and unset unrendered changes
+                  booklets
+                    .updateOne(
+                      { _id: booklet._id },
+                      {
+                        $set: {
+                          pageAmount,
+                          unrenderedChanges: false
+                        }
+                      }
+                    )
+                    .catch(
+                      //not interested in result
+                      err =>
+                        logger.error("could not update booklet page amount", {
+                          stack: err.stack
+                        })
+                    );
+                }
+              },
+
+              //print and notify of error
+              err => issueError(req, res, 500, "render problem", err)
+            );
+          },
+          err =>
+            issueError(
+              req,
+              res,
+              500,
+              `could not query resolutions in booklet with id ${req.bookletId}`,
+              err
+            )
+        );
+    })
 );
 
 //saves the booklet
 router.post("/booklet/save/:id", (req, res) => {
   //if resolutions were given
-  if (req.body && req.body.resolutions && req.body.resolutions instanceof Array) {
+  if (
+    req.body &&
+    req.body.resolutions &&
+    req.body.resolutions instanceof Array
+  ) {
     //deduplicate resolution tokens given in booklet
     req.body.resolutions = req.body.resolutions.filter(
       //return if first index matches current index
@@ -735,20 +980,32 @@ router.post("/booklet/save/:id", (req, res) => {
   }
 
   //save the booklet
-  booklets.updateOne({
-    //select given booklet
-    _id: req.bookletId
-  }, {
-    //set all given attributes
-    $set: Object.assign(req.body, {
-      //also set unrendered changes on save
-      unrenderedChanges: true
-    })
-  }).then(
-    //send ok when update happens without error
-    () => res.send("ok"),
-    err => issueError(req, res, 500, `could not save booklet with id ${req.bookletId}`, err)
-  );
+  booklets
+    .updateOne(
+      {
+        //select given booklet
+        _id: req.bookletId
+      },
+      {
+        //set all given attributes
+        $set: Object.assign(req.body, {
+          //also set unrendered changes on save
+          unrenderedChanges: true
+        })
+      }
+    )
+    .then(
+      //send ok when update happens without error
+      () => res.send("ok"),
+      err =>
+        issueError(
+          req,
+          res,
+          500,
+          `could not save booklet with id ${req.bookletId}`,
+          err
+        )
+    );
 });
 
 //makes a new booklet and redirects to the edit page of that booklet
@@ -764,28 +1021,45 @@ router.post("/booklet/new", (req, res) => {
   }
 
   //get and increment booklet id counter
-  metadata.findOneAndUpdate({
-    _id: "bookletId"
-  }, {
-    $inc: { value: 1 }
-  }, { returnOriginal: false, upsert: true }).then(
-    //insert a new booklet with that id, current year and given type
-    result => booklets.insertOne({
-      _id: result.value.value, //unpack result
-      year: new Date().getFullYear(),
-      type,
-      resolutions: [],
-      signatures: [],
-      unrenderedChanges: true
-    }),
-    err => issueError(req, res, 500, "could not increment booklet id counter", err)
-  ).then(result => {
-    //there must be a valid result
-    if (result && result.ops instanceof Array) {
-      //redirect to edit page for that booklet
-      res.redirect(`/list/booklet/edit/${result.ops[0]._id}`);
-    } else {
-      issueError(req, res, 500, "error after booklet insert: did not get result");
-    }
-  }, err => issueError(req, res, 500, "could not insert new booklet", err));
+  metadata
+    .findOneAndUpdate(
+      {
+        _id: "bookletId"
+      },
+      {
+        $inc: { value: 1 }
+      },
+      { returnOriginal: false, upsert: true }
+    )
+    .then(
+      //insert a new booklet with that id, current year and given type
+      result =>
+        booklets.insertOne({
+          _id: result.value.value, //unpack result
+          year: new Date().getFullYear(),
+          type,
+          resolutions: [],
+          signatures: [],
+          unrenderedChanges: true
+        }),
+      err =>
+        issueError(req, res, 500, "could not increment booklet id counter", err)
+    )
+    .then(
+      result => {
+        //there must be a valid result
+        if (result && result.ops instanceof Array) {
+          //redirect to edit page for that booklet
+          res.redirect(`/list/booklet/edit/${result.ops[0]._id}`);
+        } else {
+          issueError(
+            req,
+            res,
+            500,
+            "error after booklet insert: did not get result"
+          );
+        }
+      },
+      err => issueError(req, res, 500, "could not insert new booklet", err)
+    );
 });

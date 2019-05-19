@@ -32,7 +32,9 @@ router.get("/contentguidelines", (req, res) => res.render("contentguidelines"));
 router.get("/feedback", (req, res) => res.render("feedbackform"));
 
 //GET render feedback form with ok reponse
-router.get("/feedback/ok", (req, res) => res.render("feedbackform", { response: "ok" }));
+router.get("/feedback/ok", (req, res) =>
+  res.render("feedbackform", { response: "ok" })
+);
 
 //processes the message components for saving: trim and limit to n chars
 const prepareFeedbackComponent = (str, n) => str.trim().substring(0, n);
@@ -40,7 +42,7 @@ const prepareFeedbackComponent = (str, n) => str.trim().substring(0, n);
 //POST receives feedback form data and saves it
 router.post("/feedback/receive", (req, res) => {
   //discard invalid responses
-  if (! (req.body && req.body.message)) {
+  if (!(req.body && req.body.message)) {
     //display error sending feedback page and stop process
     res.render("feedbackform", { response: false });
   }
@@ -63,27 +65,37 @@ router.post("/feedback/receive", (req, res) => {
   }
 
   //save feedback in database
-  feedbackCollection.insertOne(feedback).then(() => {
-    //redirect to feedback form, prevent resubmission
-    res.redirect("/help/feedback/ok");
-  }, err => issueError(req, res, 500, "could not save feedback data to db", err));
+  feedbackCollection.insertOne(feedback).then(
+    () => {
+      //redirect to feedback form, prevent resubmission
+      res.redirect("/help/feedback/ok");
+    },
+    err => issueError(req, res, 500, "could not save feedback data to db", err)
+  );
 });
 
 //require admin or SG session for feedback list
 router.use("/feedback/list", (req, res, next) =>
-  routingUtil.requireSession("semi-admin", req, res, () => next()));
+  routingUtil.requireSession("semi-admin", req, res, () => next())
+);
 
 //GET display all feedback with booklet rights
 router.get("/feedback/list", (req, res) =>
   //get all feedback from db
-  feedbackCollection.find({}, { sort: ["timestamp"] }).toArray().then(messages => {
-    //respond with rendered list of feedback items
-    res.render("feedbacklist", {
-      //format all timestamps
-      messages: messages.map(m => {
-        m.timestamp = resUtil.getFormattedDate(m.timestamp);
-        return m;
-      })
-    });
-  }, err => issueError(req, res, 500, "could not query feedback list", err))
+  feedbackCollection
+    .find({}, { sort: ["timestamp"] })
+    .toArray()
+    .then(
+      messages => {
+        //respond with rendered list of feedback items
+        res.render("feedbacklist", {
+          //format all timestamps
+          messages: messages.map(m => {
+            m.timestamp = resUtil.getFormattedDate(m.timestamp);
+            return m;
+          })
+        });
+      },
+      err => issueError(req, res, 500, "could not query feedback list", err)
+    )
 );

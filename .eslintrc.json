@@ -1,9 +1,9 @@
 {
-  "extends": "eslint-config-douira",
+  "extends": ["eslint-config-douira", "plugin:prettier/recommended"],
   "env": {
     "node": true
   },
   "rules": {
-    "semi": ["error", "always"]
+    "no-alert": "off"
   }
 }

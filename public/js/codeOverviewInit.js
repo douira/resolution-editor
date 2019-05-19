@@ -4,13 +4,12 @@
 $.fn.getLevelSelectValue = function() {
   //must be called on select element
   const selectBox = $(this);
-  if (! selectBox.is("select")) {
+  if (!selectBox.is("select")) {
     return;
   }
 
   //get the input element to set validation classes
-  const selectBoxInput = selectBox
-    .parent(".select-wrapper").children("input");
+  const selectBoxInput = selectBox.parent(".select-wrapper").children("input");
 
   //get the active selected id
   const activeId = selectBox.val();
@@ -20,7 +19,7 @@ $.fn.getLevelSelectValue = function() {
     //remove status styling and stop
     selectBoxInput.validationState(null);
     return false;
-  } else if (! ["SC", "AP", "FC", "CH", "SG", "MA"].includes(activeId)) {
+  } else if (!["SC", "AP", "FC", "CH", "SG", "MA"].includes(activeId)) {
     //must be one of the possible states
 
     //disable button and invalidate field
@@ -72,7 +71,12 @@ $(document).ready(() => {
       codeElements.each(function() {
         //check if it contains the search string
         const e = $(this);
-        e.parent().setHide(! e.text().toUpperCase().includes(query));
+        e.parent().setHide(
+          !e
+            .text()
+            .toUpperCase()
+            .includes(query)
+        );
       });
     } else {
       //show all again
@@ -80,7 +84,7 @@ $(document).ready(() => {
     }
 
     //hide or show the clear button
-    clearSearchButton.setHide(! query.length);
+    clearSearchButton.setHide(!query.length);
   };
 
   //on keypresses in the search field
@@ -118,7 +122,7 @@ $(document).ready(() => {
 
     //update button with selection state,
     //a level needs to be selected and at least one code has to be selected
-    changeLevelButton.disabledState(! (selectValue && selectedCodeAmount));
+    changeLevelButton.disabledState(!(selectValue && selectedCodeAmount));
 
     //return value for further use
     return selectValue;
@@ -131,28 +135,33 @@ $(document).ready(() => {
   const revokeButton = $("#revoke-btn");
 
   //selecton status an be toggled
-  listContainer.on("click", ".collection-item:not(.immutable-code)", function() {
-    const elem = $(this);
+  listContainer.on(
+    "click",
+    ".collection-item:not(.immutable-code)",
+    function() {
+      const elem = $(this);
 
-    //check if is selected
-    const isSelected = elem.is(".selected-code");
+      //check if is selected
+      const isSelected = elem.is(".selected-code");
 
-    //add or remove class depending on whether or not the class is present now
-    elem.classState(! isSelected, "selected-code");
+      //add or remove class depending on whether or not the class is present now
+      elem.classState(!isSelected, "selected-code");
 
-    //increment or decrement counter
-    selectedCodeAmount += isSelected ? -1 : 1;
+      //increment or decrement counter
+      selectedCodeAmount += isSelected ? -1 : 1;
 
-    //update text in modify header, use proper plural s
-    selectedCodesDisplayElem.text(`${
-      selectedCodeAmount} code${(selectedCodeAmount === 1 ? "" : "s")}`);
+      //update text in modify header, use proper plural s
+      selectedCodesDisplayElem.text(
+        `${selectedCodeAmount} code${selectedCodeAmount === 1 ? "" : "s"}`
+      );
 
-    //update change level button depending on presence of selected codes
-    updateChangeLevelButton();
+      //update change level button depending on presence of selected codes
+      updateChangeLevelButton();
 
-    //update revoke button style
-    revokeButton.disabledState(! selectedCodeAmount);
-  });
+      //update revoke button style
+      revokeButton.disabledState(!selectedCodeAmount);
+    }
+  );
 
   //returns list of all currently selected codes
   const getSelectedCodes = () => {
@@ -171,31 +180,38 @@ $(document).ready(() => {
 
   //change access level button
   changeLevelButton
-  //update button appearance
-  .on("mouseover", updateChangeLevelButton)
-  .on("click", () => {
-    //only if any codes were selected
-    if (selectedCodeAmount) {
-      //update button state and get select value
-      const selectValue = updateChangeLevelButton();
+    //update button appearance
+    .on("mouseover", updateChangeLevelButton)
+    .on("click", () => {
+      //only if any codes were selected
+      if (selectedCodeAmount) {
+        //update button state and get select value
+        const selectValue = updateChangeLevelButton();
 
-      //stop on invalid value
-      if (! selectValue) {
-        return;
+        //stop on invalid value
+        if (!selectValue) {
+          return;
+        }
+
+        //send request to server to change access level for selected clauses
+        $.post("/list/codes/change", {
+          codes: getSelectedCodes(),
+          level: selectValue
+        })
+          .done(() => location.reload()) //reload page to show changes
+          .fail(() =>
+            //display error message
+            makeAlertMessage(
+              "alert-circle-outline",
+              "Error revoking codes",
+              "OK",
+              "The server reported an error for the request to change the access level of" +
+                " the selected codes. Please get into contact with IT-Managagement.",
+              "change_level_codes_fail"
+            )
+          );
       }
-
-      //send request to server to change access level for selected clauses
-      $.post("/list/codes/change", { codes: getSelectedCodes(), level: selectValue })
-      .done(() => location.reload()) //reload page to show changes
-      .fail(() =>
-        //display error message
-        makeAlertMessage("alert-circle-outline", "Error revoking codes", "OK",
-          "The server reported an error for the request to change the access level of" +
-          " the selected codes. Please get into contact with IT-Managagement.",
-          "change_level_codes_fail")
-      );
-    }
-  });
+    });
 
   //on change of selection value, update button disabled state
   changeLevelSelector.on("change", updateChangeLevelButton);
@@ -206,13 +222,18 @@ $(document).ready(() => {
     if (selectedCodeAmount) {
       //send list of codes to server endpoint
       $.post("/list/codes/revoke", { codes: getSelectedCodes() })
-      .done(() => location.reload()) //reload page to show changes
-      .fail(() =>
-        //display error message
-        makeAlertMessage("alert-circle-outline", "Error changing codes", "OK",
-          "The server reported an error for the request to revoke the selected codes." +
-          " Please get into contact with IT-Managagement.", "revoke_codes_fail")
-      );
+        .done(() => location.reload()) //reload page to show changes
+        .fail(() =>
+          //display error message
+          makeAlertMessage(
+            "alert-circle-outline",
+            "Error changing codes",
+            "OK",
+            "The server reported an error for the request to revoke the selected codes." +
+              " Please get into contact with IT-Managagement.",
+            "revoke_codes_fail"
+          )
+        );
     }
   });
 
@@ -234,7 +255,7 @@ $(document).ready(() => {
     const selectValue = genCodesLevelSelector.getLevelSelectValue();
 
     //require a valid select value
-    if (! selectValue) {
+    if (!selectValue) {
       return;
     }
 
@@ -272,12 +293,17 @@ $(document).ready(() => {
 
     //send request to server with settings
     $.post("/list/codes/new", genCodeSettings)
-    .done(() => location.reload()) //reload page to show changes
-    .fail(() =>
-      //display error message
-      makeAlertMessage("alert-circle-outline", "Error generating codes", "OK",
-        "The server reported an error for the request to generate new codes." +
-        " Please get into contact with IT-Managagement.", "gen_codes_fail")
-    );
+      .done(() => location.reload()) //reload page to show changes
+      .fail(() =>
+        //display error message
+        makeAlertMessage(
+          "alert-circle-outline",
+          "Error generating codes",
+          "OK",
+          "The server reported an error for the request to generate new codes." +
+            " Please get into contact with IT-Managagement.",
+          "gen_codes_fail"
+        )
+      );
   });
 });

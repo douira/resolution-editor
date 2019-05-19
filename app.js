@@ -39,9 +39,11 @@ app.locals.serveLocalExt = process.env.SERVE_LOCAL === "on";
 app.use(compression()); //use compression to make it faster
 
 //prevent mongodb query injection
-app.use(mongoSanitize({
-  replaceWith: "___" //something that can be easily found
-}));
+app.use(
+  mongoSanitize({
+    replaceWith: "___" //something that can be easily found
+  })
+);
 
 //apply logger middlewares to app
 applyLoggerMiddleware(app);
@@ -54,28 +56,33 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 //register session parser
-app.use(session({
-  secret: credentials.cookieSecret,
-  resave: false,
-  saveUninitialized: false,
-  //rolling: true, //reset ttl on every opening of a page
-  store: new MongoStore({
-    dbPromise, //pass the already created mongodb connection promise
-    autoRemove: "disabled", //we implement our own removal index in database.js
-    collection: "sessions", //make sure this collection is used
+app.use(
+  session({
+    secret: credentials.cookieSecret,
+    resave: false,
+    saveUninitialized: false,
+    //rolling: true, //reset ttl on every opening of a page
+    store: new MongoStore({
+      dbPromise, //pass the already created mongodb connection promise
+      autoRemove: "disabled", //we implement our own removal index in database.js
+      collection: "sessions", //make sure this collection is used
 
-    //more efficient if not stringyfied for every save, mongodb can handle nested objects!
-    stringify: false,
+      //more efficient if not stringified for every save, mongodb can handle nested objects!
+      stringify: false,
 
-    //expire after specified time
-    ttl: sessionExpireSeconds
+      //expire after specified time
+      ttl: sessionExpireSeconds
+    })
   })
-}));
+);
 
 //material icons installed in modules
 app.use(
   "/materialicons",
-  express.static(path.join(__dirname, "node_modules/@mdi/font/"), { maxage: "7d" }));
+  express.static(path.join(__dirname, "node_modules/@mdi/font/"), {
+    maxage: "7d"
+  })
+);
 
 //set specific caching params if in production mode
 if (devEnv) {
@@ -127,7 +134,8 @@ app.use((req, res) => {
 
 //general error handler, express needs the error handler signature to be exactly like this!
 //the default error page is displayed too sometimes though, when worse errors happen
-app.use(function(err, req, res, next) { //eslint-disable-line no-unused-vars, prefer-arrow-callback
+app.use(function(err, req, res, next) {
+  //eslint-disable-line no-unused-vars, prefer-arrow-callback
   //render the error page
   res.status(err.status || 500);
   res.render("error", {

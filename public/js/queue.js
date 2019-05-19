@@ -20,12 +20,15 @@ let queueElems;
 let firstItem;
 
 //config is set by specific page code
-const updateListConfig = { };
+const updateListConfig = {};
 
 //sets the basic attributes of a list item with a given data object
 const setBasicAttribs = (data, elem) => {
   //set token
-  elem.find(".item-token").text(data.token).attr("href", `/resolution/editor/${data.token}`);
+  elem
+    .find(".item-token")
+    .text(data.token)
+    .attr("href", `/resolution/editor/${data.token}`);
 
   //id and year only if present in data
   if (data.idYear && data.resolutionId) {
@@ -45,94 +48,113 @@ const setBasicAttribs = (data, elem) => {
 const setPageAmount = (selector, pageAmount, names) => {
   //get item and set page amount in label if set
   $(selector).text(
-    pageAmount && pageAmount +
-      //correct plural
-      (names ? ` ${pageAmount === 1 ? names[0] : names[1]}` : "") || `? ${names[1]}`
+    (pageAmount &&
+      pageAmount +
+        //correct plural
+        (names ? ` ${pageAmount === 1 ? names[0] : names[1]}` : "")) ||
+      `? ${names[1]}`
   );
 };
 
 //updates the list of resolutions
 const updateList = () => {
   //get new list from server
-  $.get(updateListConfig.url).done(data => {
-    //hide error message, we got some data
-    queueElems.errorMsg.setHide(true);
+  $.get(updateListConfig.url)
+    .done(data => {
+      //hide error message, we got some data
+      queueElems.errorMsg.setHide(true);
 
-    //if there are any items to display
-    //list is interpreted as last items being oldest -> top of list -> to be worked on first
-    if (typeof data === "object" && data instanceof Array && data.length) {
-      //show list and hide message for no items
-      queueElems.list.setHide(false);
-      queueElems.noItems.setHide(true);
+      //if there are any items to display
+      //list is interpreted as last items being oldest -> top of list -> to be worked on first
+      if (typeof data === "object" && data instanceof Array && data.length) {
+        //show list and hide message for no items
+        queueElems.list.setHide(false);
+        queueElems.noItems.setHide(true);
 
-      //get the next first item from the list
-      const newFirst = data.pop();
+        //get the next first item from the list
+        const newFirst = data.pop();
 
-      //run pre copy handler if given
-      if (typeof updateListConfig.preCopyHandler === "function") {
-        updateListConfig.preCopyHandler(newFirst, firstItem, queueElems);
-      }
-
-      //copy over first item
-      firstItem = newFirst;
-
-      //set display of first item in special first item box
-      const firstElem = $("#first-item");
-
-      //set basic attribs for first element
-      setBasicAttribs(firstItem, firstElem);
-
-      //set print amount of pages per document, question mark if not given
-      setPageAmount("#item-print-length", firstItem.pageAmount, ["page", "pages"]);
-
-      //set item print copies
-      setPageAmount("#item-print-copies", firstItem.copyAmount, ["copy", "copies"]);
-
-      //if extended info enabled and more than one page in document
-      if (updateListConfig.extPageInfo) {
-        //if more than once page in document
-        if (firstItem.pageAmount > 1) {
-          //show display
-          queueElems.totalPagesWrapper.setHide(false);
-
-          //set total amount
-          setPageAmount("#item-print-total", firstItem.copyAmount * firstItem.pageAmount);
-        } else {
-          //hide, not needed
-          queueElems.totalPagesWrapper.setHide(true);
+        //run pre copy handler if given
+        if (typeof updateListConfig.preCopyHandler === "function") {
+          updateListConfig.preCopyHandler(newFirst, firstItem, queueElems);
         }
+
+        //copy over first item
+        firstItem = newFirst;
+
+        //set display of first item in special first item box
+        const firstElem = $("#first-item");
+
+        //set basic attribs for first element
+        setBasicAttribs(firstItem, firstElem);
+
+        //set print amount of pages per document, question mark if not given
+        setPageAmount("#item-print-length", firstItem.pageAmount, [
+          "page",
+          "pages"
+        ]);
+
+        //set item print copies
+        setPageAmount("#item-print-copies", firstItem.copyAmount, [
+          "copy",
+          "copies"
+        ]);
+
+        //if extended info enabled and more than one page in document
+        if (updateListConfig.extPageInfo) {
+          //if more than once page in document
+          if (firstItem.pageAmount > 1) {
+            //show display
+            queueElems.totalPagesWrapper.setHide(false);
+
+            //set total amount
+            setPageAmount(
+              "#item-print-total",
+              firstItem.copyAmount * firstItem.pageAmount
+            );
+          } else {
+            //hide, not needed
+            queueElems.totalPagesWrapper.setHide(true);
+          }
+        }
+
+        //remove all list items that exceed the amount of items in the list
+        queueElems.list
+          .children(".list-item")
+          .slice(data.length)
+          .remove();
+
+        //given that there are items left
+        if (data.length) {
+          //set data in the left over elements
+          queueElems.list.children(".list-item").each(function() {
+            //set attributes of this item
+            setBasicAttribs(data.pop(), $(this));
+          });
+
+          //for any remainin data items, add new items
+          data.reverse().forEach(item =>
+            //make a clone of the template, add it to the list and add data to it
+            setBasicAttribs(
+              item,
+              queueElems.templateItem.clone().appendTo(queueElems.list)
+            )
+          );
+        }
+      } else {
+        //hide list (makes an ugly line otherwise) and show no items message
+        queueElems.list.setHide(true);
+        queueElems.noItems.setHide(false);
       }
-
-      //remove all list items that exceed the amount of items in the list
-      queueElems.list.children(".list-item").slice(data.length).remove();
-
-      //given that there are items left
-      if (data.length) {
-        //set data in the left over elements
-        queueElems.list.children(".list-item").each(function() {
-          //set attributes of this item
-          setBasicAttribs(data.pop(), $(this));
-        });
-
-        //for any remainin data items, add new items
-        data.reverse().forEach(item =>
-          //make a clone of the template, add it to the list and add data to it
-          setBasicAttribs(item, queueElems.templateItem.clone().appendTo(queueElems.list))
-        );
-      }
-    } else {
-      //hide list (makes an ugly line otherwise) and show no items message
+    })
+    .fail(() => {
+      //hide other things
+      queueElems.noItems.setHide(true);
       queueElems.list.setHide(true);
-      queueElems.noItems.setHide(false);
-    }
-  }).fail(() => {
-    //hide other things
-    queueElems.noItems.setHide(true);
-    queueElems.list.setHide(true);
 
-    //show error message, request went wrong
-    queueElems.errorMsg.setHide(false);
-  });
+      //show error message, request went wrong
+      queueElems.errorMsg.setHide(false);
+    });
 
   //reset timer
   autoUpdateConfig.lastUpdateTime = Date.now();
@@ -162,14 +184,17 @@ $(document).ready(() => {
   const totalPagesWrapper = $("#item-print-total-wrapper");
 
   //remove ext page info if disabled
-  if (! updateListConfig.extPageInfo) {
+  if (!updateListConfig.extPageInfo) {
     totalPagesWrapper.remove();
   }
 
   //query elements
   queueElems = {
     //detach the template element dom element for the list from the list
-    templateItem: $("#item-template").detach().removeClass("hide-this").removeAttr("id"),
+    templateItem: $("#item-template")
+      .detach()
+      .removeClass("hide-this")
+      .removeAttr("id"),
 
     //message and list elements
     list: $("#queue"),
@@ -201,26 +226,30 @@ $(document).ready(() => {
   });
 
   //on click of advance button
-  queueElems.advanceButton
-  .on("click", e => {
+  queueElems.advanceButton.on("click", e => {
     //prevent default following of link (doesn't have a proper href anyways)
     e.preventDefault();
 
     //send an advance request to the server
-    $.get(`/resolution/advance/${firstItem.token}?noui=1`).done(() => {
-      //make a toast to notify
-      displayToast(`Advanced Resolution ${firstItem.token}`);
+    $.get(`/resolution/advance/${firstItem.token}?noui=1`)
+      .done(() => {
+        //make a toast to notify
+        displayToast(`Advanced Resolution ${firstItem.token}`);
 
-      //update list to make new top item
-      updateList();
-    }).fail(() =>
-      //display error message
-      makeAlertMessage(
-        "alert-circle-outline", "Error Advancing Resolution", "ok",
-        "The server encountered an error while trying to advance this resolution." +
-        " If the error persists after reloading the page, ask IT-Management for help.",
-        "pdf_gen")
-    );
+        //update list to make new top item
+        updateList();
+      })
+      .fail(() =>
+        //display error message
+        makeAlertMessage(
+          "alert-circle-outline",
+          "Error Advancing Resolution",
+          "ok",
+          "The server encountered an error while trying to advance this resolution." +
+            " If the error persists after reloading the page, ask IT-Management for help.",
+          "pdf_gen"
+        )
+      );
   });
 
   //start first, will queue itself to run updateList in 30 seconds

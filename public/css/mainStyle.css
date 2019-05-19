@@ -39,11 +39,19 @@
   text-decoration: underline;
 }
 
-html, button, input, optgroup, select, textarea {
-  font-family: Roboto, BlinkMacSystemFont, "Segoe UI", Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif !important;
+html,
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: Roboto, BlinkMacSystemFont, "Segoe UI", Oxygen-Sans, Ubuntu,
+    Cantarell, "Helvetica Neue", sans-serif !important;
 }
 
-.mdi:before, .mdi-set, .material-icons.close {
+.mdi:before,
+.mdi-set,
+.material-icons.close {
   font-family: "Material Design Icons";
   font-weight: normal;
   font-style: normal;
@@ -102,7 +110,10 @@ i.large:before {
   font-size: 6rem;
 }
 
-i.tiny, i.small, i.medium, i.large {
+i.tiny,
+i.small,
+i.medium,
+i.large {
   font-size: inherit;
 }
 
@@ -110,7 +121,9 @@ i.tiny, i.small, i.medium, i.large {
   font-size: 2rem;
 }
 
-.btn i:before, .btn-large i:before, .btn-small i:before,
+.btn i:before,
+.btn-large i:before,
+.btn-small i:before,
 .btn-floating i:before,
 .btn-large i:before,
 .btn-small i:before,
@@ -120,7 +133,7 @@ i.tiny, i.small, i.medium, i.large {
 }
 
 .btn-small i:before {
-  font-size: 1.2rem
+  font-size: 1.2rem;
 }
 
 .btn-floating i:before {
@@ -169,7 +182,8 @@ table.striped > tbody > tr:nth-child(odd) {
   line-height: 1.5em;
 }
 
-input, textarea {
+input,
+textarea {
   color: inherit;
 }
 
@@ -178,7 +192,8 @@ input, textarea {
 }
 
 @media print {
-  nav, footer {
+  nav,
+  footer {
     display: none;
   }
 
@@ -194,11 +209,18 @@ input, textarea {
     display: none;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     line-height: 1;
   }
 
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     font-size: 2.5rem;
   }
 
@@ -206,7 +228,9 @@ input, textarea {
     font-weight: normal;
   }
 
-  .btn, .btn-large, .btn-small {
+  .btn,
+  .btn-large,
+  .btn-small {
     color: black;
   }
 

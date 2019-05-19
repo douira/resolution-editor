@@ -27,10 +27,12 @@ const sendBufferItems = () => {
   const sinceLastFlush = Date.now() - logSendSchedule.lastLogFlush;
 
   //if waiting for a retry and the last log was not long enough ago
-  if (logSendSchedule.waitingForRetry ||
-      sinceLastFlush < logSendSchedule.minLogInterval) {
+  if (
+    logSendSchedule.waitingForRetry ||
+    sinceLastFlush < logSendSchedule.minLogInterval
+  ) {
     //if there is no retry set yet
-    if (! logSendSchedule.waitingForRetry) {
+    if (!logSendSchedule.waitingForRetry) {
       //waiting for retry now
       logSendSchedule.waitingForRetry = true;
 
@@ -54,7 +56,7 @@ const sendBufferItems = () => {
   logSendSchedule.lastLogFlush = Date.now();
 
   //stop if nothing to log
-  if (! logMessages.length) {
+  if (!logMessages.length) {
     return;
   }
 
@@ -64,29 +66,36 @@ const sendBufferItems = () => {
     const messageAmount = logMessages.length;
 
     //post to logging endpoint
-    $.post("/log", { messages: logMessages }).done(() => {
-      //remove as many messages as were present when the request was started
-      logMessages.splice(0, messageAmount);
-      console.log("sucessful error buffer flush");
-    }).fail(() => {
-      //seriously bad if we can't even send errors
-      console.log("Can't log error messages to server! Messages:", logMessages);
+    $.post("/log", { messages: logMessages })
+      .done(() => {
+        //remove as many messages as were present when the request was started
+        logMessages.splice(0, messageAmount);
+        console.log("successful error buffer flush");
+      })
+      .fail(() => {
+        //seriously bad if we can't even send errors
+        console.log(
+          "Can't log error messages to server! Messages:",
+          logMessages
+        );
 
-      //increment failed send counter
-      logSendSchedule.failedSends ++;
+        //increment failed send counter
+        logSendSchedule.failedSends++;
 
-      //only retry if not retried too many times
-      if (logSendSchedule.failedSends < logSendSchedule.maxSendRetries) {
-        //alert user
-        alert( //eslint-disable-line no-alert
-          "Failed to log error messages to server!" +
-          " Please file an issues with the errors from the console." +
-          " See the Bug Report Link at the bottom of the page.");
-      } else {
-        //retry
-        sendBufferItems();
-      }
-    });
+        //only retry if not retried too many times
+        if (logSendSchedule.failedSends < logSendSchedule.maxSendRetries) {
+          //alert user
+          alert(
+            //eslint-disable-line no-alert
+            "Failed to log error messages to server!" +
+              " Please file an issues with the errors from the console." +
+              " See the Bug Report Link at the bottom of the page."
+          );
+        } else {
+          //retry
+          sendBufferItems();
+        }
+      });
   } else {
     //retry
     sendBufferItems();
@@ -118,7 +127,7 @@ const log = (dataOrMessage, level) => {
 
     //data has msg property
     if (dataOrMessage.msg) {
-      //extract and put seperately into item
+      //extract and put separately into item
       logItem.msg = dataOrMessage.msg;
       delete dataOrMessage.msg;
     }
@@ -143,7 +152,7 @@ const log = (dataOrMessage, level) => {
   sendBufferItems();
 };
 
-//log uncought errors
+//log uncaught errors
 window.onerror = (msg, url, line, column, error) =>
   //log error and pass args
   log({
@@ -158,15 +167,15 @@ window.onerror = (msg, url, line, column, error) =>
 //handles unload by trying to send the rest of the log messages
 const handleUnload = () => {
   //stop if there is nothing to log
-  if (! logMessages.length) {
+  if (!logMessages.length) {
     return;
   }
 
   //create an object to add the messages to
-  const messageObj = { };
+  const messageObj = {};
 
   //add all messages to object
-  logMessages.forEach((msg, index) => messageObj[index] = msg);
+  logMessages.forEach((msg, index) => (messageObj[index] = msg));
 
   //use sync post xhr instead
   const client = new XMLHttpRequest();

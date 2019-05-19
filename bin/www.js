@@ -35,4 +35,3 @@ db.fullInit.then(() => {
   //apply extra error and startup handlers to server
   applyServerListeners(server, port);
 });
-

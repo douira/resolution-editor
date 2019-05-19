@@ -212,10 +212,12 @@ const validateObjectStructure = (obj, format) => {
       //add or expand with required and optional fields or values
       format.forEach(fieldSpec => {
         //try find matching element from present object
-        let field = fields.find(presentField => presentField.name === fieldSpec.name);
+        let field = fields.find(
+          presentField => presentField.name === fieldSpec.name
+        );
 
         //check if a present field was found
-        if (! field) {
+        if (!field) {
           //make a new field with a name
           field = {
             name: fieldSpec.name,
@@ -243,24 +245,24 @@ const validateObjectStructure = (obj, format) => {
       });
 
       //check all fields to be ok
-      return fields.every(field =>
-        //check for fields that are present but not in the spec (requiredType must be a property)
-        "requiredType" in field &&
-
+      return fields.every(
+        field =>
+          //check for fields that are present but not in the spec (requiredType must be a property)
+          "requiredType" in field &&
           //check for missing required fields
           (field.required ? field.present : true) &&
-
           //check for mismatching values (for primitives comparable with ===)
-          (! ("requiredValue" in field) ||
+          (!("requiredValue" in field) ||
             field.requiredValue === field.presentValue) &&
-
           //required fields are present
-          (! ("requiresField" in field) ||
+          (!("requiresField" in field) ||
             fields.some(f => f.name === field.requiresField)) &&
-
           //check for valid types with content if present
-          (! field.present ||
-            typeValidators[field.requiredType](field.presentValue, field.content))
+          (!field.present ||
+            typeValidators[field.requiredType](
+              field.presentValue,
+              field.content
+            ))
       );
     },
 
@@ -268,25 +270,26 @@ const validateObjectStructure = (obj, format) => {
     array: (val, format) =>
       //is of type array
       val instanceof Array &&
-
-        //minimum and maxmimum length is correct
-        (! format.hasOwnProperty("minLength") || val.length >= format.minLength) &&
-        (! format.hasOwnProperty("maxLength") || val.length <= format.maxLength) &&
-
-        //only allowed types are used
-        val.every(entry =>
-          //valid as any of the allowed types (can't have content descriptor like object type)
-          format.contentTypes.some(type => typeValidators[type](entry))
-        )
+      //minimum and maxmimum length is correct
+      (!format.hasOwnProperty("minLength") || val.length >= format.minLength) &&
+      (!format.hasOwnProperty("maxLength") || val.length <= format.maxLength) &&
+      //only allowed types are used
+      val.every(entry =>
+        //valid as any of the allowed types (can't have content descriptor like object type)
+        format.contentTypes.some(type => typeValidators[type](entry))
+      )
   };
 
   //function that returns a function that validates an object with the given format
-  const makeObjectFormatValidator = format => val => typeValidators.object(val, format);
+  const makeObjectFormatValidator = format => val =>
+    typeValidators.object(val, format);
 
   //add other types
   for (const typeName in format.types) {
     //register function that validates object with this format specifier
-    typeValidators[typeName] = makeObjectFormatValidator(format.types[typeName]);
+    typeValidators[typeName] = makeObjectFormatValidator(
+      format.types[typeName]
+    );
   }
 
   //transform with intermediary function, uncomment for debugging (don't delete this)

@@ -39,7 +39,7 @@ router.post("/open", (req, res) => {
     req.session.doc.isSessionDoc = true;
 
     //redirect to where the get query param backto refers to, use main page as default
-    res.redirect(req.query && req.query.backto || "/");
+    res.redirect((req.query && req.query.backto) || "/");
   });
 });
 
@@ -52,25 +52,36 @@ router.get("/logout", (req, res) => {
 //GET a master code with the key stored in keys.json
 router.get(`/getaccess/${credentials.makeCodesSuffix}`, (req, res) => {
   //try to find a existing MA code
-  access.findOne({
-    level: "MA"
-  }).then(
-    result => {
-      //if there is a result
-      if (result) {
-        //respond with gotten code
-        res.send(`MA: ${result.code}`);
-      } else {
-        //make a new valid code
-        resUtil.makeNewThing(req, res, false).then(code =>
-          //add to the database
-          access.insertOne({ level: "MA", code }).then(
-            //respond with code as content
-            () => res.send(`MA: ${code}`),
-            err => issueError(req, res, 500, "Error inserting getaccess code", err))
-        );
-      }
-    },
-    err => issueError(req, res, 500, "could not check for existing code in getaccess", err)
-  );
+  access
+    .findOne({
+      level: "MA"
+    })
+    .then(
+      result => {
+        //if there is a result
+        if (result) {
+          //respond with gotten code
+          res.send(`MA: ${result.code}`);
+        } else {
+          //make a new valid code
+          resUtil.makeNewThing(req, res, false).then(code =>
+            //add to the database
+            access.insertOne({ level: "MA", code }).then(
+              //respond with code as content
+              () => res.send(`MA: ${code}`),
+              err =>
+                issueError(req, res, 500, "Error inserting getaccess code", err)
+            )
+          );
+        }
+      },
+      err =>
+        issueError(
+          req,
+          res,
+          500,
+          "could not check for existing code in getaccess",
+          err
+        )
+    );
 });

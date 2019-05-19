@@ -21,13 +21,13 @@ $(document).ready(() => {
     firstItemViewed = wasViewed;
 
     //set button state with stage
-    queueElems.advanceButton.disabledState(! firstItemViewed);
+    queueElems.advanceButton.disabledState(!firstItemViewed);
   };
 
   //reset state to unrendered
   updateListConfig.preCopyHandler = (newFirst, firstItem) => {
     //reset flag to given value if it's a new item
-    if (! firstItem || newFirst.token !== firstItem.token) {
+    if (!firstItem || newFirst.token !== firstItem.token) {
       //reset to not viewed
       setFirstItemViewed(false, newFirst);
     }

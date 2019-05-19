@@ -11,8 +11,11 @@
   margin-top: 0;
 }
 
-#preamb-clauses, #op-clauses > .op-wrapper, #address {
-  font-family: TimesNewRoman, "Times New Roman", Times, Baskerville, Georgia, serif;
+#preamb-clauses,
+#op-clauses > .op-wrapper,
+#address {
+  font-family: TimesNewRoman, "Times New Roman", Times, Baskerville, Georgia,
+    serif;
   font-size: 16px;
   line-height: 1.3em;
   text-align: justify;
@@ -23,7 +26,8 @@
   height: 100%;
 }
 
-#address .row, #address .col {
+#address .row,
+#address .col {
   margin: 0;
   padding: 0;
 }
@@ -137,7 +141,8 @@ It was adapted and expanded.*/
 Use .mark-amd- only for the amendment element itself
 Use .mark- for all other elements that need to be colored
 */
-#amd-container + .op-wrapper, .op-wrapper.mark-green {
+#amd-container + .op-wrapper,
+.op-wrapper.mark-green {
   margin-left: -2rem;
   margin-right: -2rem;
   padding: 1rem 2rem;

@@ -106,14 +106,7 @@
   ],
   "scopForums": ["Historical Security Council", "Security Council"],
   "prefix": {
-    "op": [
-      "Further",
-      "Strongly"
-    ],
-    "preamb": [
-      "Further",
-      "Fully",
-      "Deeply"
-    ]
+    "op": ["Further", "Strongly"],
+    "preamb": ["Further", "Fully", "Deeply"]
   }
 }
