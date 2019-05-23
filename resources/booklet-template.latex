@@ -33,7 +33,7 @@
 \def\luecke{0.5}
 \def\erstezeile{4}
 \def\zweitezeile{1}
-\def\offsetsieben{\bottomstrichbreite/2+\luecke/2}
+\def\offsetsieben{(\strichbreite*4-\bottomstrichbreite*3)/2+\luecke/2}
 
 \setlength\parindent{0pt}
 \newenvironment{preamb}[2]{
