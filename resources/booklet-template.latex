@@ -29,6 +29,7 @@
 
 %TikZ Variables for Signature lines
 \def\strichbreite{3.25}
+\def\bottomstrichbreite{4}
 \def\luecke{0.5}
 \def\erstezeile{4}
 \def\zweitezeile{1}
