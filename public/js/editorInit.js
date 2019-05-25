@@ -2376,8 +2376,28 @@ $(document).ready(() => {
 
         //function that generates country name mappings for a given selected forum name in loadedData
         loadedData.generateAutofillData = selectedForum => {
-          //get selected forum object
-          let forumCountries = loadedData.forumMapping[selectedForum];
+          //one forum country object or an array of forum country objects
+          let forumCountries;
+
+          //if in plenary
+          if (resolutionStage >= 8) {
+            //get the currently selected forum
+            forumCountries = [loadedData.forumMapping[selectedForum]];
+
+            //get all countries that are in the plenary of the selected forum
+            for (const forumName in loadedData.forumMapping) {
+              //add to list of allowed forums if has same plenary as selected forum
+              if (
+                loadedData.forumMapping[forumName].plenary ===
+                forumCountries[0].plenary
+              ) {
+                forumCountries.push(loadedData.forumMapping[forumName]);
+              }
+            }
+          } else {
+            //get list of forums, allow the countries of the currently selected forum
+            forumCountries = loadedData.forumMapping[selectedForum];
+          }
 
           //keeps track of what things changed
           const newDataFor = {
@@ -2388,7 +2408,12 @@ $(document).ready(() => {
           //stop if not present
           if (forumCountries) {
             //get list of countries
-            forumCountries = forumCountries.countries;
+            forumCountries =
+              forumCountries.countries ||
+              forumCountries.reduce(
+                (acc, mapping) => acc.concat(mapping.countries),
+                []
+              );
           } else {
             //nothing changed
             return newDataFor;
