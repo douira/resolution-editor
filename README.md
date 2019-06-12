@@ -1,6 +1,7 @@
-# resolution-editor
+# Warning: This version is outdated
+Version 1 (this repo) of the Resolution Editor is being superseded by version 2 of the Resolution Editor. (The "_Next_" version) The new version is private for now. I'm not going to call this version _deprecated_ just yet but I'm not planing on investing any more time in it.
 
-[![Build Status](https://travis-ci.org/douira/resolution-editor.svg?branch=master)](https://travis-ci.org/douira/resolution-editor)
+# resolution-editor
 
 This editor guides the creation of a correctly formatted resolution document. It was created in need of a better way of formatting and distributing resolutions for MUNOL.
 Feel free to make a pull request if you have something you'd like to contribute to this project. (If it's just a typo you can also just make an issue and I'll apply the change myself)
