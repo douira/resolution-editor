@@ -7,7 +7,9 @@
     "restart": "pm2 reload ecosystem.config.js",
     "stop": "pm2 stop ecosystem.config.js",
     "lint": "eslint .",
-    "test": "mocha"
+    "test": "mocha",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "dependencies": {
     "@mdi/font": "^3.5.95",
@@ -34,7 +36,8 @@
     "uuid": "^3.3.2",
     "winston": "^3.2.1",
     "ws": "^6.1.4",
-    "xxhashjs": "^0.2.2"
+    "xxhashjs": "^0.2.2",
+    "snyk": "^1.189.0"
   },
   "description": "Guides the creation of a correctly formatted resolution document",
   "main": "bin/www.js",
@@ -69,5 +72,6 @@
   "optionalDependencies": {
     "bufferutil": "^4.0.1",
     "utf-8-validate": "^5.0.2"
-  }
+  },
+  "snyk": true
 }
