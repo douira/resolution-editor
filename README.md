@@ -6,6 +6,10 @@ Version 1 (this repo) of the Resolution Editor is being superseded by version 2 
 This editor guides the creation of a correctly formatted resolution document. It was created in need of a better way of formatting and distributing resolutions for MUNOL.
 Feel free to make a pull request if you have something you'd like to contribute to this project. (If it's just a typo you can also just make an issue and I'll apply the change myself)
 
+## Contributing
+
+Thanks for wanting to contribute, that's great! However, it makes no sense to put work into this project as I'm working on a new version. If you have a great idea, you can still make an issue and I'll have a look.
+
 ## How to Install
 
 The app can be downloaded by cloning the repo with
@@ -114,10 +118,6 @@ pm2 startup
 ```
 
 PM2 will change locations with nvm when node is updated; `pm2 startup` needs to be executed after every node update with nvm. See [The PM2 docs](http://pm2.keymetrics.io/docs/usage/startup/)
-
-## How to contribute
-
-Thanks for wanting to contribute, that's great! All the info on how to contribute is in the [CONTRIBUTING file](https://github.com/douira/resolution-editor/edit/meta/CONTRIBUTING.md).
 
 ## Preview
 
