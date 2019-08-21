@@ -1,5 +1,5 @@
-# Warning: This version is outdated
-Version 1 (this repo) of the Resolution Editor is being superseded by version 2 of the Resolution Editor. (The "_Next_" version) The new version is private for now. I'm not going to call this version _deprecated_ just yet but I'm not planing on investing any more time in it.
+# Warning: This version is being superseded by a seperate project
+Version 1 (this repo) of the Resolution Editor is being superseded by version 2 of the Resolution Editor. (The "_Next_" version) The new version is private for now. I'm not going to call this version _deprecated_ just yet but I'm not planing on investing any more time in it. The plan is to have it ready for the June 2020 MUNOL Conference but I'm not making any promises as this is quite an ambitious amount of work.
 
 # resolution-editor
 
