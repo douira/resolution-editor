@@ -1,5 +1,7 @@
-# Warning: This version is being superseded
-Version 1 (this repo) of the Resolution Editor is being superseded by version 2 of the Resolution Editor. (The "_Next_" version) The new version is private for now. I'm not going to call this version _deprecated_ just yet but I'm not planing on investing any more time in it. The plan is to have it ready for the June 2020 MUNOL Conference but I'm not making any promises as this is quite an ambitious amount of work.
+# Warning: This version is being replaced
+Version 1 (this repo) of the Resolution Editor is being superseded by version 2 of the Resolution Editor. (The "_Next_" version) The new version is private for now. I'm not going to call this version _deprecated_ just yet but I'm not planing on investing any more time in it.
+
+The plan was to have it ready for the June 2020 MUNOL Conference but it was cancelled because of the 2020 Coronavirus epidemic. There's most likely going to be some sort of debate coming-together near the original date of the 2020 conference where the new version of the Resolution Editor is probably going to be tested. Since this also means the next conference is now in planned for 2021, there is ample time to make the new version include all necessary features. Therefore it's unlikely that this old version will be productively used in the future.
 
 # resolution-editor
 
